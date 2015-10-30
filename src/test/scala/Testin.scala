@@ -8,7 +8,7 @@ import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.support.PageFactory
 import org.openqa.selenium.{By, WebElement}
 import org.scalatest.time.{Seconds, Span}
-import org.scalatest.{BeforeAndAfterAll, FunSuite, ShouldMatchers}
+import org.scalatest.{ParallelTestExecution, BeforeAndAfterAll, FunSuite, ShouldMatchers}
 
 import scala.io.Source
 
@@ -16,7 +16,7 @@ import scala.io.Source
  * Created by seveniruby on 15/10/14.
  */
 
-class Testin extends FunSuite with ShouldMatchers with XueqiuBrowser with BeforeAndAfterAll {
+class Testin extends FunSuite with ShouldMatchers with XueqiuBrowser with BeforeAndAfterAll with ParallelTestExecution {
 
   implicit var driver: XueqiuDriver[WebElement] = _
 
@@ -60,7 +60,7 @@ class Testin extends FunSuite with ShouldMatchers with XueqiuBrowser with Before
     val mark=s"${json(i).brand.as[String]}_${json(i).release.as[String]}_${json(i).model.as[String]}"
     test(s"${mark} login testcase") {
       setup(json(i).url.as[String])
-      login(mark)
+      login(mark+"_")
     }
   })
 

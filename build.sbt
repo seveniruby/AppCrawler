@@ -12,3 +12,5 @@ libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
 libraryDependencies += "com.propensive" %% "rapture" % "2.0.0-M1"
 libraryDependencies += "com.propensive" %% "rapture-json" % "2.0.0-M1"
 libraryDependencies += "com.propensive" %% "rapture-json-json4s" % "2.0.0-M1"
+
+testOptions in Test += Tests.Argument("-P")
