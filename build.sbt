@@ -9,3 +9,6 @@ libraryDependencies += "org.seleniumhq.selenium" % "selenium-java" % "2.35.0" % 
 libraryDependencies += "io.selendroid" % "selendroid" % "0.16.0"
 libraryDependencies += "io.selendroid" % "selendroid-client" % "0.16.0"
 libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
+libraryDependencies += "com.propensive" %% "rapture" % "2.0.0-M1"
+libraryDependencies += "com.propensive" %% "rapture-json" % "2.0.0-M1"
+libraryDependencies += "com.propensive" %% "rapture-json-json4s" % "2.0.0-M1"
