@@ -58,14 +58,21 @@ class AppiumDsl extends FunSuite with XueqiuBrowser with BeforeAndAfterAll {
   }
 
   test("login xueqiu with dsl") {
-    setCaptureDir("/Users/seveniruby/projects/LBSRefresh/")
-    capture to "start.png"
+    markup("start")
     implicitlyWait(Span(10, Seconds))
+    markup("set capture dir")
+    setCaptureDir("/Users/seveniruby/projects/LBSRefresh/")
+    markup("start.png")
+    capture to "start.png"
     retry {
+      markup("account_before.png")
       capture to "account_before.png"
+      markup("click on account")
       click on id("account")
     }
+    markup("15600534760")
     driver.getKeyboard.sendKeys("15600534760")
+    markup("account.png")
     capture to "account.png"
     click on id("password")
     driver.getKeyboard.sendKeys("hys2xueqiu")
