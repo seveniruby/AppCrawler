@@ -7,8 +7,9 @@ import io.appium.java_client.remote.MobileCapabilityType
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.support.PageFactory
 import org.openqa.selenium.{By, WebElement}
+import org.scalatest.selenium.WebBrowser
 import org.scalatest.time.{Seconds, Span}
-import org.scalatest.{ParallelTestExecution, BeforeAndAfterAll, FunSuite, ShouldMatchers}
+import org.scalatest.{ParallelTestExecution, BeforeAndAfterAll, FunSuite}
 
 import scala.io.Source
 
@@ -16,7 +17,7 @@ import scala.io.Source
  * Created by seveniruby on 15/10/14.
  */
 
-class Testin extends FunSuite with ShouldMatchers with XueqiuBrowser with BeforeAndAfterAll with ParallelTestExecution {
+class Testin extends FunSuite with XueqiuBrowser with BeforeAndAfterAll with ParallelTestExecution {
 
   implicit var driver: XueqiuDriver[WebElement] = _
 
@@ -44,6 +45,10 @@ class Testin extends FunSuite with ShouldMatchers with XueqiuBrowser with Before
     //setup()
   }
 
+  override def afterAll(): Unit = {
+    driver.quit()
+  }
+
 
   val raw = Source.fromURL("http://prj.testin.cn:4720/devices").mkString
 
@@ -54,38 +59,41 @@ class Testin extends FunSuite with ShouldMatchers with XueqiuBrowser with Before
   val json = Json.parse(raw)
   println(json)
   println(json.\\("url"))
-  0 to json.as[List[Any]].length-1 foreach (i => {
+  0 to json.as[List[Any]].length - 1 foreach (i => {
     println(json(i).url)
     println(json(i).brand.as[String])
-    val mark=s"${json(i).brand.as[String]}_${json(i).release.as[String]}_${json(i).model.as[String]}"
+    val mark = s"${json(i).brand.as[String]}_${json(i).release.as[String]}_${json(i).model.as[String]}"
     test(s"${mark} login testcase") {
       setup(json(i).url.as[String])
-      login(mark+"_")
+      login(mark + "_")
     }
   })
 
 
   def login(mark: String = "") {
+    markup(mark+"start")
     setCaptureDir("./")
-    capture to mark + "start.png"
+    markup("""capture to mark + "start.png" """)
     implicitlyWait(Span(10, Seconds))
     retry {
+      markup("account")
       click on id("account")
     }
     driver.getKeyboard.sendKeys("15600534760")
-    capture to mark + "account.png"
+    markup("""capture to mark + "account.png" """)
     click on id("password")
     driver.getKeyboard.sendKeys("hys2xueqiu")
-    capture to mark + "password.png"
+    markup(""" capture to mark + "password.png" """)
     click on id("button_next")
-    capture to mark + "button_next.png"
+    markup(""" capture to mark + "button_next.png" """)
     retry {
       click on id("tip_step_one")
     }
-    capture to mark + "one.png"
+    markup("""capture to mark + "one.png" """)
     click on id("tip_step_two")
-    capture to mark + "two.png"
+    markup("""capture to mark + "two.png" """)
     click on id("tip_step_three")
+    markup("""capture to mark + "three.png" """)
     capture to mark + "three.png"
 
   }
