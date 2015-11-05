@@ -8,13 +8,13 @@ import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.support.PageFactory
 import org.openqa.selenium.{By, WebElement}
 import org.scalatest.time.{Seconds, Span}
-import org.scalatest.{BeforeAndAfterAll, FunSuite, ShouldMatchers}
+import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 /**
  * Created by seveniruby on 15/10/14.
  */
 
-class AppiumDsl extends FunSuite with ShouldMatchers with XueqiuBrowser with BeforeAndAfterAll {
+class AppiumDsl extends FunSuite with XueqiuBrowser with BeforeAndAfterAll {
 
   implicit var driver:XueqiuDriver[WebElement]=_
   def setup() {
@@ -62,6 +62,7 @@ class AppiumDsl extends FunSuite with ShouldMatchers with XueqiuBrowser with Bef
     capture to "start.png"
     implicitlyWait(Span(10, Seconds))
     retry {
+      capture to "account_before.png"
       click on id("account")
     }
     driver.getKeyboard.sendKeys("15600534760")
@@ -72,6 +73,7 @@ class AppiumDsl extends FunSuite with ShouldMatchers with XueqiuBrowser with Bef
     click on id("button_next")
     capture to "button_next.png"
     retry{
+      capture to "tip_step_one_before.png"
       click on id("tip_step_one")
     }
     capture to "one.png"
