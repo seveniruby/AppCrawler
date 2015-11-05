@@ -46,7 +46,9 @@ class Testin extends FunSuite with XueqiuBrowser with BeforeAndAfterAll with Par
   }
 
   override def afterAll(): Unit = {
-    driver.quit()
+    if(driver!=null) {
+      driver.quit()
+    }
   }
 
 
