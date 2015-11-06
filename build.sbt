@@ -18,4 +18,4 @@ addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.fu
 
 
 parallelExecution in Test := true
-(testOptions in Test) += Tests.Argument(TestFrameworks.ScalaTest, "-o", "-u", "target/test-reports", "-h", "target/test-reports")
+(testOptions in Test) += Tests.Argument(TestFrameworks.ScalaTest, "-o", "-P2", -u", "target/test-reports", "-h", "target/test-reports")

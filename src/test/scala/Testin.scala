@@ -73,7 +73,7 @@ class Testin extends FunSuite with XueqiuBrowser with BeforeAndAfterAll with Par
 
 
   def login(mark: String = "") {
-    markup(mark+"start")
+    markup("start")
     setCaptureDir("./")
     markup("""capture to mark + "start.png" """)
     implicitlyWait(Span(10, Seconds))
@@ -83,12 +83,14 @@ class Testin extends FunSuite with XueqiuBrowser with BeforeAndAfterAll with Par
     }
     driver.getKeyboard.sendKeys("15600534760")
     markup("""capture to mark + "account.png" """)
+    markup("password")
     click on id("password")
     driver.getKeyboard.sendKeys("hys2xueqiu")
     markup(""" capture to mark + "password.png" """)
     click on id("button_next")
     markup(""" capture to mark + "button_next.png" """)
     retry {
+      markup("one")
       click on id("tip_step_one")
     }
     markup("""capture to mark + "one.png" """)
