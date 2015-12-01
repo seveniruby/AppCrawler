@@ -6,11 +6,11 @@ import org.scalatest.FunSuite
 class Traversal extends FunSuite{
   test("travel"){
     val appium=new XueqiuAppium
-    val android=appium.setupAndroid()
-    appium.rule("account", "15600534760")
-    appium.rule("password", "hys2xueqiu")
-    appium.rule("button_next", "click")
-    appium.rule("自选", "click")
+    val android=appium.setupAndroid("/Users/seveniruby/Downloads/xueqiu_rc_722.apk")
+    appium.rule("LoginActivity.account", "15600534760")
+    appium.rule("LoginActivity.password", "hys2xueqiu")
+    appium.rule("LoginActivity.button_next", "click")
+    //appium.rule("edit_text_name_cube", "ZuHe")
     appium.traversal()
     println("clcikedList=")
     println(appium.clickedList.mkString("\n"))
