@@ -114,7 +114,7 @@ class XueqiuAppium {
     //黑名单需要back. launcher可以直接退出.
     //todo:  "StockMoreInfoActivity", "StockDetailActivity"
     //Laucher不直接退出是为了看到底递归了多少层. 并且可以留出时间让你手工辅助点到其他的界面继续挽救遍历.
-    val blackScreenList = List("Launcher")
+    val blackScreenList = List("Launcher", "StockMoreInfoActivity", "UserProfileActivity")
     if (blackScreenList.filter(activityName.contains(_)).length > 0) {
       println("should return")
       return true
@@ -129,20 +129,14 @@ class XueqiuAppium {
     * @return
     */
   def isBlack(uid: String): Boolean = {
-    val blackList = List(".*stock_item_value.*", ".*[0-9]{2}.*", ".*\\._$", "取消", "up", "home", "user_profile_icon")
-    blackList.filter(uid.matches(_)).length > 0
+    val blackList = List("stock_item_value", "[0-9]{2}", ".*\\._$", "弹幕", "发送", "保存", "up", "user_profile_icon")
+    blackList.filter(b=>uid.matches(s".*${b}.*")).length > 0
   }
 
   def traversal(): Unit = {
     var needBack = true
     var needSkip = false
 
-    if (stack.size <= 1) {
-      Thread.sleep(10000)
-    } else {
-      //不等也没关系. 会自动刷新的
-      //Thread.sleep(2000)
-    }
     needBack = !isReturn()
     println(s"current context=${driver.getContext} activity=${getUrl()}")
     doRuleAction()
@@ -215,7 +209,7 @@ class XueqiuAppium {
     clickedList.append(uid)
     uid.split('.')(1) match {
       case "EditText"=>{
-        doAppium(x.sendKeys(uid.split('.').take(2).mkString("")))
+        doAppium(x.sendKeys(uid.split('.').take(3).last))
       }
       case _=>{
         doAppium(x.click())

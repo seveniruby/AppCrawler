@@ -10,6 +10,7 @@ class Traversal extends FunSuite{
     appium.rule("LoginActivity.account", "15600534760")
     appium.rule("LoginActivity.password", "hys2xueqiu")
     appium.rule("LoginActivity.button_next", "click")
+    appium.rule("WriteStatusActivity.不保存", "click")
     //appium.rule("edit_text_name_cube", "ZuHe")
     appium.traversal()
     println("clcikedList=")
