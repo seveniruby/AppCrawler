@@ -26,13 +26,13 @@ class Traversal extends FunSuite{
   test("test freemind"){
     val appium=new XueqiuAppium
     appium.generateFreeMind(ListBuffer(
-      ELement("a","","1",""),
-      ELement("a","","2",""),
-      ELement("a","","3",""),
-      ELement("b","","11",""),
-      ELement("b","","12",""),
-      ELement("b","","13",""),
-      ELement("c","","21","")
+      ELement("com/a","","1",""),
+      ELement("com/a","","2",""),
+      ELement("abc/a","","3",""),
+      ELement("com/b","","11",""),
+      ELement("abc/b","","12",""),
+      ELement("com/b","","13",""),
+      ELement("abc/c","","21","")
     ))
 
     val click=ListBuffer[ELement]()

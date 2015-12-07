@@ -1,6 +1,4 @@
 import java.net.URL
-import javax.security.auth.callback.Callback
-import javax.swing.tree.TreeNode
 
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.remote.MobileCapabilityType
@@ -10,8 +8,8 @@ import org.openqa.selenium.{By, WebElement}
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 import scala.reflect.io.File
-import scala.util.{Failure, Success, Try}
 import scala.util.control.Breaks._
+import scala.util.{Failure, Success, Try}
 
 
 case class ELement(url: String, tag: String, id: String, name: String) {
@@ -26,8 +24,8 @@ case class ELement(url: String, tag: String, id: String, name: String) {
 
 
 /**
-  * Created by seveniruby on 15/11/28.
-  */
+ * Created by seveniruby on 15/11/28.
+ */
 class XueqiuAppium {
   type AM = Map[String, String]
   implicit var driver: AndroidDriver[WebElement] = _
@@ -43,46 +41,17 @@ class XueqiuAppium {
 
   case class Node[T](value: T, children: ListBuffer[Node[T]] = ListBuffer[Node[T]]())
 
-  val freemind = Node(Map("id" -> "Start"))
+  val freemind = Node(Map("url" -> "Start", "id" -> "Start", "name" -> null))
 
   def generateFreeMind(list: ListBuffer[ELement]): Unit = {
     list.foreach(l => {
-      var nameNode = Node(Map("url" -> l.url, "id" -> l.id, "name" -> l.name))
-      var idNode = Node(Map("url" -> l.url, "id" -> l.id, "name" -> null))
-      var urlNode = Node(Map("url" -> l.url, "id" -> null, "name" -> null))
-
-
-      val before = (tree: Node[AM]) => {
-        tree.value == urlNode.value
-      }
-      val after = (tree: Node[AM]) => {
-      }
-
-      find(freemind, urlNode) match {
-        case Some(v) => urlNode=v
-        case None =>freemind.children.append(urlNode)
-      }
-      find(freemind, urlNode) match {
-        case Some(v) => urlNode=v
-        //case None =>freemind.children.append(urlNode)
-      }
-
-      find(freemind, idNode) match {
-        case Some(v) => idNode=v
-        case None => urlNode.children.append(idNode)
-      }
-      find(freemind, idNode) match {
-        case Some(v) => idNode=v
-        //case None => urlNode.children.append(idNode)
-      }
-      find(freemind, nameNode) match {
-        case Some(v) => {}
-        case None => idNode.children.append(nameNode)
-      }
+      // 去掉url的前缀: android/gz  com.xueqiu.android/gz
+      val fixedUrl = l.url.split("/")(1)
+      var nameNode = Node(Map("url" -> fixedUrl, "id" -> l.id, "name" -> l.name))
+      appendNodes(freemind, nameNode)
     })
 
     println(freemind)
-
 
     println( """<map version="1.0.1">""")
     toXml(freemind)
@@ -90,10 +59,49 @@ class XueqiuAppium {
 
   }
 
+  def appendNodes(currenTree: Node[AM], node: Node[AM]): Unit = {
+    var newTree = currenTree
+    //add url node
+    if (node.value("url") != null) {
+      val newNode = Node(Map("url" -> node.value("url"), "id" -> null, "name" -> null))
+      newTree = appendNode(newTree, newNode)
+    }
+    //add id node
+    if (node.value("id") != null) {
+      val newNode = Node(Map("url" -> node.value("url"), "id" -> node.value("id"), "name" -> null))
+      newTree = appendNode(newTree, newNode)
+    }
+    //add name node
+    if (node.value("name") != null) {
+      val newNode = Node(Map("url" -> node.value("url"), "id" -> node.value("id"), "name" -> node.value("name")))
+      appendNode(newTree, newNode)
+    }
+  }
+
+  def appendNode(currenTree: Node[AM], node: Node[AM]): Node[AM] = {
+    find(currenTree, node) match {
+      case Some(v) => {
+        return v
+      }
+      case None => {
+        currenTree.children.append(node)
+        return node
+      }
+    }
+  }
+
+
   def toXml(tree: Node[AM]): Unit = {
     val before = (tree: Node[AM]) => {
-      println( s"""<node  TEXT="${tree.value("id")}">""")
-      return true
+      var output = ""
+      if (tree.value("name") != null) {
+        output = tree.value("name")
+      } else if (tree.value("id") != null) {
+        output = tree.value("id")
+      } else if (tree.value("url") != null) {
+        output = tree.value("url")
+      }
+      println( s"""<node  TEXT="${output}">""")
     }
     val after = (tree: Node[AM]) => {
       println("</node>")
@@ -102,7 +110,7 @@ class XueqiuAppium {
   }
 
   def traversal[T](tree: Node[T],
-                   before: (Node[T]) => Boolean,
+                   before: (Node[T]) => Unit = (x: Node[T]) => Unit,
                    after: (Node[T]) => Unit = (x: Node[T]) => Unit): Unit = {
     before(tree)
     tree.children.foreach(t => {
@@ -195,10 +203,10 @@ class XueqiuAppium {
   }
 
   /**
-    * 获取控件的基本属性并设置一个唯一的uid作为识别. screenName+id+name
-    * @param x
-    * @return
-    */
+   * 获取控件的基本属性并设置一个唯一的uid作为识别. screenName+id+name
+   * @param x
+   * @return
+   */
   def getElementId(x: WebElement): Option[ELement] = {
     val tag = doAppium(x.getTagName) match {
       case Some(v) => {
@@ -256,10 +264,10 @@ class XueqiuAppium {
   }
 
   /**
-    * 黑名单过滤. 通过正则匹配
-    * @param uid
-    * @return
-    */
+   * 黑名单过滤. 通过正则匹配
+   * @param uid
+   * @return
+   */
   def isBlack(uid: ELement): Boolean = {
     val blackList = List("stock_item_value", "[0-9]{2}", "弹幕", "发送", "保存", "确定",
       "up", "user_profile_icon", "selectAll", "cut", "copy", "send")
