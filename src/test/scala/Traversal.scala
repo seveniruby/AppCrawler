@@ -1,4 +1,8 @@
+
 import org.scalatest.FunSuite
+
+import scala.collection.mutable.ListBuffer
+import scala.io.Source
 
 /**
   * Created by seveniruby on 15/11/28.
@@ -6,7 +10,7 @@ import org.scalatest.FunSuite
 class Traversal extends FunSuite{
   test("travel"){
     val appium=new XueqiuAppium
-    val android=appium.setupAndroid("/Users/seveniruby/Downloads/xueqiu_rc_722.apk")
+    val android=appium.setupAndroid("/Users/seveniruby/Downloads/xueqiu_rc_723.apk")
     appium.rule("LoginActivity.account", "15600534760")
     appium.rule("LoginActivity.password", "hys2xueqiu")
     appium.rule("LoginActivity.button_next", "click")
@@ -17,6 +21,35 @@ class Traversal extends FunSuite{
     println(appium.clickedList.mkString("\n"))
     println("elements=")
     println(appium.elements.mkString("\n"))
+  }
+
+  test("test freemind"){
+    val appium=new XueqiuAppium
+    appium.generateFreeMind(ListBuffer(
+      ELement("a","","1",""),
+      ELement("a","","2",""),
+      ELement("a","","3",""),
+      ELement("b","","11",""),
+      ELement("b","","12",""),
+      ELement("b","","13",""),
+      ELement("c","","21","")
+    ))
+
+    val click=ListBuffer[ELement]()
+    Source.fromFile("clicked.log").getLines().foreach(line=>{
+      val arr=line.split(',')
+      if (arr.length==3) {
+        val url = arr(0)
+        val id = arr(1)
+        val text = arr(2)
+        click.append(ELement(url,"",id,text))
+      }
+    })
+
+    appium.generateFreeMind(click)
+
+
+
   }
 
 }
