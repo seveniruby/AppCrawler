@@ -26,7 +26,7 @@ class Traversal extends FunSuite{
   test("test freemind"){
     val appium=new XueqiuAppium
     appium.generateFreeMind(ListBuffer(
-      ELement("com/a","","1",""),
+      ELement("a","","1",""),
       ELement("com/a","","2",""),
       ELement("abc/a","","3",""),
       ELement("com/b","","11",""),
@@ -42,6 +42,11 @@ class Traversal extends FunSuite{
         val url = arr(0)
         val id = arr(1)
         val text = arr(2)
+        click.append(ELement(url,"",id,text))
+      }else if (arr.length==2) {
+        val url = arr(0)
+        val id = arr(1)
+        val text = null
         click.append(ELement(url,"",id,text))
       }
     })
