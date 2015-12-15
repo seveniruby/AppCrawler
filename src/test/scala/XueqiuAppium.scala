@@ -1,16 +1,37 @@
 import java.net.URL
 
+import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
+import io.appium.java_client.ios.{IOSElement, IOSDriver}
 import io.appium.java_client.remote.MobileCapabilityType
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.{By, WebElement}
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Map}
 import scala.reflect.io.File
 import scala.util.control.Breaks._
 import scala.util.{Failure, Success, Try}
+import scala.xml.XML
+import org.json4s.Xml._
+import org.json4s.native.JsonMethods._
+
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+
+import org.w3c.dom.{Attr, Document, NodeList}
+;
+import java.io.{ByteArrayInputStream, IOException}
+;
+import org.xml.sax.SAXException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import javax.xml.xpath._
+import javax.xml.xpath._
 
 
 case class ELement(url: String, tag: String, id: String, name: String) {
@@ -25,11 +46,11 @@ case class ELement(url: String, tag: String, id: String, name: String) {
 
 
 /**
- * Created by seveniruby on 15/11/28.
- */
+  * Created by seveniruby on 15/11/28.
+  */
 class XueqiuAppium {
   type AM = Map[String, String]
-  implicit var driver: AndroidDriver[WebElement] = _
+  implicit var driver: AppiumDriver[WebElement] = _
   val elements: scala.collection.mutable.Map[String, Boolean] = scala.collection.mutable.Map()
   val blackList = ListBuffer[String]()
   val rule = ListBuffer[Map[String, String]]()
@@ -39,14 +60,22 @@ class XueqiuAppium {
   val timestamp = new java.text.SimpleDateFormat("YYYYMMddHHmm").format(new java.util.Date())
   var md5Last = ""
   var nId = 0
+  var automationName = "appium"
+  var platformName = ""
+  var backButton = ""
+  var depth=0
+  /**优先遍历元素*/
+  val firstList=ListBuffer[String]()
+  var pageSource=""
 
+  case class Node[T](value: T, children: ListBuffer[Node[T]] = ListBuffer[Node[T]]()) {
+    val nId: String = {
+      getNodeId()
+    }
 
-  case class Node[T](value: T, children: ListBuffer[Node[T]] = ListBuffer[Node[T]]()){
-    val nId: String = {getNodeId()}
-
-    def equals(node:Node[AM]): Boolean ={
+    def equals(node: Node[AM]): Boolean = {
       List("url", "id", "name").foreach(attr => {
-        if (node.value(attr) != value.asInstanceOf[AM](attr)){
+        if (node.value(attr) != value.asInstanceOf[AM](attr)) {
           return false
         }
       })
@@ -62,7 +91,7 @@ class XueqiuAppium {
     list.foreach(l => {
       var fixedUrl = l.url
       // 去掉url的前缀: android/gz  com.xueqiu.android/gz
-      if (l.url.split("/").length > 1){
+      if (l.url.split("/").length > 1) {
         fixedUrl = l.url.split("/")(1)
       }
       var nameNode = Node(Map("url" -> fixedUrl,
@@ -118,7 +147,7 @@ class XueqiuAppium {
       addedNodes += newTree
     }
     //add targetlink to just append node
-    if (lastAddedNodes.length > 0 && addedNodes.length > 0 && lastAddedNodes.last.value("url") != addedNodes.head.value("url")){
+    if (lastAddedNodes.length > 0 && addedNodes.length > 0 && lastAddedNodes.last.value("url") != addedNodes.head.value("url")) {
       var arrowId = getArrowId()
       //add attrs of linktarget to new node
       addedNodes.head.value += ("type" -> "linktarget")
@@ -161,13 +190,13 @@ class XueqiuAppium {
       println( s"""<node ID="ID_${tree.nId}" TEXT="${output}">""")
 
       //add linktarget and arrowlink if needed
-      if (tree.value.contains("type")){
+      if (tree.value.contains("type")) {
         tree.value("type") match {
           case "linktarget" => {
-            println(s"""<linktarget COLOR="#b0b0b0" DESTINATION="ID_${tree.value("destination")}" ENDARROW="Default" ENDINCLINATION="24;0;" ID="${tree.value("aid")}" SOURCE="${tree.value("source")}" STARTARROW="None" STARTINCLINATION="24;0;"/>""")
+            println( s"""<linktarget COLOR="#b0b0b0" DESTINATION="ID_${tree.value("destination")}" ENDARROW="Default" ENDINCLINATION="24;0;" ID="${tree.value("aid")}" SOURCE="${tree.value("source")}" STARTARROW="None" STARTINCLINATION="24;0;"/>""")
           }
           case "arrowlink" => {
-            println(s"""<arrowlink DESTINATION="ID_${tree.value("destination")}" ENDARROW="Default" ENDINCLINATION="24;0;" ID="${tree.value("aid")}" STARTARROW="None" STARTINCLINATION="24;0;"/>""")
+            println( s"""<arrowlink DESTINATION="ID_${tree.value("destination")}" ENDARROW="Default" ENDINCLINATION="24;0;" ID="${tree.value("aid")}" STARTARROW="None" STARTINCLINATION="24;0;"/>""")
           }
         }
       }
@@ -202,7 +231,33 @@ class XueqiuAppium {
   }
 
 
+  def setupIOS(app: String, url: String = "http://127.0.0.1:4723/wd/hub") {
+    platformName = "iOS"
+    val capabilities = new DesiredCapabilities()
+    capabilities.setCapability("deviceName", "iPhone 4s")
+    capabilities.setCapability("platformName", "iOS")
+    capabilities.setCapability("platformVersion", "9.1")
+    capabilities.setCapability("autoLaunch", "true")
+    capabilities.setCapability("autoAcceptAlerts", "true")
+    //主要做遍历测试和异常测试. 所以暂不使用selendroid. 兼容性测试需要使用selendroid
+    //capabilities.setCapability("automationName", "Selendroid")
+    //todo: Appium模式太慢
+    capabilities.setCapability("automationName", "Appium")
+
+    capabilities.setCapability(MobileCapabilityType.APP, app)
+    //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")
+    //driver = new XueqiuDriver[WebElement](new URL("http://127.0.0.1:4729/wd/hub"), capabilities)
+    driver = new IOSDriver[WebElement](new URL(url), capabilities)
+
+
+    //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
+    //PageFactory.initElements(new AppiumFieldDecorator(driver, 10, TimeUnit.SECONDS), this)
+    //implicitlyWait(Span(10, Seconds))
+  }
+
+
   def setupAndroid(app: String, url: String = "http://127.0.0.1:4723/wd/hub") {
+    platformName = "Android"
     val capabilities = new DesiredCapabilities()
     capabilities.setCapability("deviceName", "emulator-5554");
     capabilities.setCapability("platformVersion", "4.4");
@@ -227,16 +282,8 @@ class XueqiuAppium {
     //implicitlyWait(Span(10, Seconds))
   }
 
-  def whiteList(): Unit = {
-
-  }
-
   def black(key: String): Unit = {
     blackList.append(key)
-  }
-
-  def inputRule(): Unit = {
-
   }
 
   def md5(format: String) = {
@@ -257,110 +304,129 @@ class XueqiuAppium {
   }
 
 
-  def getUrl(): String = {
-    //selendroid和appium在这块上不一致. api不一样.  appium不遵从标准.
-    val screenName = driver.getCapabilities.getCapability("automationName").toString.toLowerCase() match {
-      case "appium" => {
-        driver.currentActivity().split('.').last
+  /**
+    * 根据xpath来获得想要的元素列表
+    * @param raw
+    * @param xpath
+    * @return
+    */
+  def getAllElements(raw: String, xpath: String): ListBuffer[Map[String, String]] = {
+    val nodeList = ListBuffer[Map[String, String]]()
+    val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
+    val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
+    val xPath: XPath = XPathFactory.newInstance().newXPath()
+    val compexp = xPath.compile(xpath)
+    val document: Document = builder.parse(new ByteArrayInputStream(raw.getBytes()))
+    val node = compexp.evaluate(document, XPathConstants.NODESET)
+    node match {
+      case n: NodeList => {
+        println(s"xpath=${xpath} length=${n.getLength}")
+        0 until n.getLength foreach (i => {
+          val nodeMap = Map[String, String]()
+          nodeMap("tag") = n.item(i).getNodeName
+          val nodeAttributes = n.item(i).getAttributes
+          0 until nodeAttributes.getLength foreach (a => {
+            val attr = nodeAttributes.item(a).asInstanceOf[Attr]
+            nodeMap(attr.getName) = attr.getValue
+          })
+          nodeList.append(nodeMap)
+        })
       }
-      case "selendroid" => {
-        driver.getCurrentUrl.split('.').last
-      }
+      case _ => println("typecast to NodeList failed")
     }
-    println(s"url=${screenName}")
-    return screenName
+    return nodeList
+
   }
 
   /**
-   * 获取控件的基本属性并设置一个唯一的uid作为识别. screenName+id+name
-   * @param x
-   * @return
-   */
-  def getElementId(x: WebElement): Option[ELement] = {
-    val tag = doAppium(x.getTagName) match {
-      case Some(v) => {
-        println(s"tag=${v}")
-        v.split('.').last
-      }
-      case None => {
-        //如果发生了异常就不需要再读取其他属性了, 因为读取一个不存在的元素会有一个默认等待时间. 浪费资源
-        println("read tag name exception")
-        return None
-      }
-    }
-    val text = doAppium(x.getText).getOrElse("NoText").replace("\n", "\\n")
-    val resourceId = driver.getCapabilities.getCapability("automationName").toString.toLowerCase() match {
-      case "selendroid" => {
-        doAppium(x.getAttribute("NativeId"))
-      }
-      case "appium" => {
-        doAppium(x.getAttribute("resourceId"))
-      }
-    }
-    println(s"id=${resourceId}")
-    val appName = resourceId.getOrElse("NoId").split(':').head
-    var id = resourceId.getOrElse("NoId").split('/').last
-    if (id == "") {
-      println("set id to NoId")
-      id = "NoId"
-    }
-    val url = s"${appName}/${getUrl()}"
-    //val uid = s"${getUrl()}.${tag}.${id}_${text}"
-    val node = ELement(url, tag, id, text)
+    * 尝试识别当前的页面
+    * @return
+    */
+  def getSchema(): String ={
+    val nodeList=getAllElements(pageSource, "//UIAWindow[1]//*")
+    //todo: 未来应该支持黑名单
+    md5(nodeList.filter(node=>node("tag")!="UIATableCell").map(node=>node("tag")).mkString(""))
+  }
 
-    if (List("android", "com.xueqiu.android").contains(appName)) {
-      return Some(node)
-    } else {
-      return None
-    }
+  def getUrl(): String = {
+    return "not impled"
+  }
 
+  /**
+    * 获取控件的基本属性并设置一个唯一的uid作为识别. screenName+id+name
+    * @param x
+    * @return
+    */
+  def getElementId(x: Map[String, String]): Option[ELement] = {
+    val tag = x.getOrElse("tag", "NoTag")
+    val text = x.getOrElse("value", "NoValue").replace("\n", "\\n")
+    var name = x.getOrElse("name", text)
+    if (name == "") name = text
+    val resourceId = x.getOrElse("label", "NoId")
+    val id = resourceId.split('/').last
+    val url = getUrl()
+    val node = ELement(url, tag, id, name)
+    return Some(node)
+
+    //    if (List("android", "com.xueqiu.android").contains(appName)) {
+    //      return Some(node)
+    //    } else {
+    //      return None
+    //    }
 
   }
 
   def isReturn(): Boolean = {
-    //selendroid和appium实现模式还是不一样.
-    val activityName = getUrl()
-    //黑名单需要back. launcher可以直接退出.
-    //todo:  "StockMoreInfoActivity", "StockDetailActivity"
-    //Laucher不直接退出是为了看到底递归了多少层. 并且可以留出时间让你手工辅助点到其他的界面继续挽救遍历.
-    val blackScreenList = List("Launcher", "StockMoreInfoActivity", "UserProfileActivity")
-    if (blackScreenList.filter(activityName.contains(_)).length > 0) {
-      println("should return")
-      return true
-    } else {
-      return false
-    }
+    return false
   }
 
   /**
-   * 黑名单过滤. 通过正则匹配
-   * @param uid
-   * @return
-   */
+    * 黑名单过滤. 通过正则匹配
+    * @param uid
+    * @return
+    */
   def isBlack(uid: ELement): Boolean = {
+    //包括backButton
     val blackList = List("stock_item_value", "[0-9]{2}", "弹幕", "发送", "保存", "确定",
-      "up", "user_profile_icon", "selectAll", "cut", "copy", "send")
+      "up", "user_profile_icon", "selectAll", "cut", "copy", "send", backButton)
     blackList.filter(b => {
       uid.id.matches(s".*${b}.*") || uid.name.matches(s".*${b}.*")
     }).length > 0
   }
 
+  def getClickableElements(): Option[Seq[Map[String, String]]] = {
+    println("getClickableElements start")
+    return None
+  }
+
+  def first(xpath:String): Unit ={
+    firstList.append(xpath)
+  }
+  def back(name: String): Unit = {
+    backButton = name
+  }
+
+  def refreshPage(): Unit ={
+    doAppium(driver.getPageSource) match {
+      case Some(v)=> pageSource=v
+      case None => {println("get page source error")}
+    }
+    println(pageSource)
+    println("schema="+getSchema())
+  }
+
   def traversal(): Unit = {
+    println("traversal start")
+    depth+=1
+    println(s"depth=${depth}")
+    refreshPage()
     var needBack = true
     var needSkip = false
-
     needBack = !isReturn()
-    println(s"current context=${driver.getContext} activity=${getUrl()}")
+    //先判断是否命中规则.
     doRuleAction()
     //在selendroid的JsonXmlUtil.java:70有个bug. 导致无法获取当前界面的所有元素. ^_^
-    println("get all elements")
-    val all_ids: Option[Seq[WebElement]] = doAppium(driver.findElements(By.xpath("//*[@resource-id!='']")))
-    //val all_clickable: Option[Seq[WebElement]] = doAppium(driver.findElements(By.xpath("//*[@clickable='true']")))
-    //val all:Seq[WebElement]=driver.findElements(By.xpath("//*[@clickable=true]"))
-
-    var all = all_ids.getOrElse(Seq[WebElement]()) // ++ all_clickable.getOrElse(Seq[WebElement]())
-    all = all.distinct
-
+    val all = getClickableElements().getOrElse(Seq[Map[String, String]]())
     if (all.length == 0) {
       //获取列表失败就重试
       println("activity change")
@@ -375,7 +441,10 @@ class XueqiuAppium {
           //是否需要退出
           if (isReturn()) {
             needBack = true
+            println("break")
             break()
+          } else {
+            println("no need to break")
           }
           //如果触发了任意操作, 当前界面会变化. 需要重新刷新, 跳过无谓的循环
           val uid = getElementId(x) match {
@@ -397,15 +466,32 @@ class XueqiuAppium {
           if (elements.contains(uid.toString())) {
             println("skip")
             needSkip = true
+          } else {
+            needSkip=false
+            println("first show, need click")
           }
           //如果未曾点击
           if (needSkip == false) {
-            println("first show")
+            println("just click")
             elements(uid.toString()) = true
-            doDefaultAction(uid, x)
+            //doDefaultAction(uid)
+            doAppiumAction(uid, "click") match {
+              case Some(v) => {
+                println("do appium action success")
+              }
+              case None => {
+                println("do appium action exception, break")
+              }
+            }
             //说明还不需要back到上一界面, 遍历完所有的元素才表示需要回退
             needBack = false
-            println("md5=" + md5(driver.getPageSource))
+            //任何点击都需要重新刷新元素. 防止其他元素被遮盖
+
+            //任何界面变化都需要进入新的递归. 而不是只到新界面.
+            traversal()
+
+          } else {
+            println("already clicked, so skip")
           }
         })
       }
@@ -413,24 +499,37 @@ class XueqiuAppium {
     //子界面遍历返回后继续遍历当前界面中剩下的界面
     if (needBack == true) {
       println("back")
-      driver.navigate().back()
-    }
+      if (backButton == "") {
+        //todo: iOS上的back貌似有问题
+        driver.navigate().back()
+      } else {
+        doAppiumActionByName(backButton, "click")
+      }
+      //任何界面变化都需要进入新的递归. 而不是只到新界面.
+      traversal()
 
-    //记录点击log
-    File(s"clickedList_${timestamp}.log").writeAll(clickedList.mkString("\n"))
-    //任何界面变化都需要进入新的递归. 而不是只到新界面.
-    traversal()
+    }
+    depth-=1
   }
 
-  def doDefaultAction(uid: ELement, x: WebElement): Unit = {
-    //放前面是怕有的控件的确是无法点击. 无法点击的可以先跳过.不影响遍历
-    clickedList.append(uid.toString())
-    uid.tag match {
-      case "EditText" => {
-        doAppium(x.sendKeys(uid.id))
+  //todo:优化查找方法
+  def findElementByUid(uid: ELement): Option[WebElement] = {
+    println(s"find by name")
+    doAppium(driver.findElementByXPath(s"//*[@name='${uid.name}']")) match {
+      case Some(v) => {
+        return Some(v)
       }
-      case _ => {
-        doAppium(x.click())
+      case None => {
+        println("find by value")
+        doAppium(driver.findElementByXPath(s"//*[@value='${uid.name}']")) match {
+          case Some(v) => {
+            return Some(v)
+          }
+          case None => {
+            return None
+          }
+        }
+        return None
       }
     }
   }
@@ -450,65 +549,86 @@ class XueqiuAppium {
 
   }
 
-  def doAppiumAction(v: WebElement, action: String): Unit = {
-    action match {
-      case "click" => {
-        doAppium(v.click())
+  def doAppiumActionByName(name: String, action: String = "click"): Option[Unit] = {
+    val element = ELement("", "*", "", name)
+    doAppiumAction(element, action)
+  }
+
+  def doAppiumAction(e: ELement, action: String = "click"): Option[Unit] = {
+    findElementByUid(e) match {
+      case Some(v) => {
+        action match {
+          case "click" => {
+            println(s"click ${v}")
+            val res = doAppium(v.click())
+            clickedList.append(e.toString())
+            //记录点击log
+            File(s"clickedList_${timestamp}.log").writeAll(clickedList.mkString("\n"))
+            File(s"ElementList_${timestamp}.log").writeAll(elements.mkString("\n"))
+            return res
+          }
+          case str: String => {
+            println(s"sendkeys ${v} with ${str}")
+            doAppium(v.sendKeys(str)) match {
+              case Some(v) => {
+                clickedList.append(e.toString())
+                //记录点击log
+                File(s"clickedList_${timestamp}.log").writeAll(clickedList.mkString("\n"))
+                File(s"ElementList_${timestamp}.log").writeAll(elements.mkString("\n"))
+                driver.hideKeyboard()
+                return Some(v)
+              }
+              case None => return None
+            }
+          }
+        }
+
       }
-      case str: String => {
-        doAppium(v.sendKeys(str))
+      case None => {
+        println("find error")
+        return None
       }
     }
+
 
   }
 
   //通过规则实现操作. 不管元素是否被点击过
   def doRuleAction(): Unit = {
-    val currentScreenName = getUrl()
+    println("rule match start")
     //先判断是否在期望的界面里. 提升速度
-    rule.filter(r => {
-      val screenName = r.head._1.split('.').head
-      currentScreenName.matches(s".*${screenName}.*")
-    }).foreach(r => {
-      println("hit rule action")
+    rule.foreach(r => {
+      println("for each rule")
       val idOrName = r.head._1.split('.').last
       val action = r.head._2
-      println(s"Find ${idOrName}")
-      var x = doAppium(driver.findElementsById(idOrName).head)
-      x = x match {
-        case Some(v) => {
-          Some(v)
-        }
-        case None => {
-          //找不到id再找name, name在appium表示元素的文本标签或者内容
-          doAppium(driver.findElementsByName(idOrName).last)
-        }
-      }
-
-      x match {
-        case Some(v) => {
-          //先删除已经命中的规则
-          rule.foreach(r => {
-            println(s"r=${r}")
-            if (r.head._1 == idOrName) {
-              println(s"remove ${r}")
-              rule -= r
+      println(s"idOrName=${idOrName} action=${action}")
+      //重新获取变化后的列表
+      val all = getClickableElements().get++getAllElements(pageSource,
+        "//UIAWindow[1]//UIAStaticText[@visible='true' and @enabled='true' and @valid='true']")
+      breakable{
+        (all.filter(_ ("name").matches(idOrName)) ++ all.filter(_ ("value").matches(idOrName))).distinct.foreach(x => {
+        println("hit rule action")
+        println(x)
+        //获得正式的定位id
+        getElementId(x) match {
+          case Some(e) => {
+            println(s"element=${e} action=${action}")
+            println("do rule action")
+            doAppiumAction(e, action) match {
+              case None=>{
+                println("do rule action fail")
+                break()
+              }
+              case Some(v)=>{
+                println("do rule action success")
+              }
             }
-          })
-          //获得正式的定位id
-          getElementId(v) match {
-            case Some(e) => {
-              println(s"element=${e} action=${action}")
-              clickedList.append(e.toString())
-              doAppiumAction(v, action)
-            }
-            case None => println("get none")
+            //todo: 暂不删除, 允许复用
+            //rule -= r
           }
-
+          case None => println("get element id error")
         }
-        case None => {
-          println("can't find")
-        }
+      })
       }
     })
 
