@@ -8,48 +8,6 @@ import scala.io.Source
   * Created by seveniruby on 15/11/28.
   */
 class TestTraversal extends FunSuite{
-  test("travel"){
-    val appium=new XueqiuAppium
-    val android=appium.setupAndroid("/Users/seveniruby/Downloads/xueqiu_rc_723.apk")
-    appium.rule("LoginActivity.account", "15600534760")
-    appium.rule("LoginActivity.password", "hys2xueqiu")
-    appium.rule("LoginActivity.button_next", "click")
-    appium.rule("WriteStatusActivity.不保存", "click")
-    //appium.rule("edit_text_name_cube", "ZuHe")
-    appium.traversal()
-    println("clcikedList=")
-    println(appium.clickedList.mkString("\n"))
-    println("elements=")
-    println(appium.elements.mkString("\n"))
-  }
-
-
-  test("iOS自动遍历"){
-    val appium=new IOSTraversal
-    //val android=appium.setupIOS("/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphoneos/Snowball.app")
-    val android=appium.setupIOS("/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app")
-
-    appium.rule("请输入手机号或邮箱登录", "15600534760")
-    appium.rule("密码", "hys2xueqiu")
-    appium.rule("登 录", "click")
-    appium.rule("不保存", "click")
-    appium.rule("点此进入消息通知中心", "click")
-    appium.rule("点此访问个人主页进行应用设置", "click")
-    appium.rule("持仓盈亏搬到这里，改名模拟盈亏", "click")
-    //appium.rule("自选", "click")
-    appium.back("nav_icon_back")
-    appium.black("message")
-    appium.black("消息")
-    appium.first("//UIAWindow[1]//UIATableView//*[@visible='true' and @enabled='true' and @valid='true' and @name!='']")
-    //appium.rule("edit_text_name_cube", "ZuHe")
-    appium.traversal()
-    println("clcikedList=")
-    println(appium.clickedList.mkString("\n"))
-    println("elements=")
-    println(appium.elements.mkString("\n"))
-
-  }
-
   test("test freemind"){
     val appium=new XueqiuAppium
     appium.generateFreeMind(ListBuffer(
@@ -353,6 +311,21 @@ class TestTraversal extends FunSuite{
     val appium=new XueqiuAppium
     println(appium.getAllElements(xml, "//UIAWindow[1]//*[@visible='true' and @name!='']"))
     println(appium.getAllElements(xml, "//UIAWindow[1]//*[@visible='true' and @value!='']"))
+  }
+
+  test("whilespace"){
+    "abc\000df\001ef\nfef中国s\088\\x00x00f".foreach(x=>{
+      println(x)
+      println(x.isWhitespace)
+    })
+
+  }
+
+  test("assert result"){
+    assertResult("1", "expection=1"){
+      2
+    }
+
   }
 
 }

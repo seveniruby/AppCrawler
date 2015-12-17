@@ -1,37 +1,22 @@
+import java.io.ByteArrayInputStream
 import java.net.URL
+import java.nio.charset.StandardCharsets
+import javax.xml.parsers.{DocumentBuilder, DocumentBuilderFactory}
+import javax.xml.xpath.{XPath, XPathFactory, _}
 
 import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
-import io.appium.java_client.ios.{IOSElement, IOSDriver}
+import io.appium.java_client.ios.IOSDriver
 import io.appium.java_client.remote.MobileCapabilityType
+import org.apache.commons.io.FileUtils
 import org.openqa.selenium.remote.DesiredCapabilities
-import org.openqa.selenium.{By, WebElement}
+import org.openqa.selenium.{TakesScreenshot, OutputType, WebElement}
+import org.w3c.dom.{Attr, Document, NodeList}
 
-import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
-import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Map}
 import scala.reflect.io.File
 import scala.util.control.Breaks._
 import scala.util.{Failure, Success, Try}
-import scala.xml.XML
-import org.json4s.Xml._
-import org.json4s.native.JsonMethods._
-
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
-
-import org.w3c.dom.{Attr, Document, NodeList}
-;
-import java.io.{ByteArrayInputStream, IOException}
-;
-import org.xml.sax.SAXException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import javax.xml.xpath._
-import javax.xml.xpath._
 
 
 case class ELement(url: String, tag: String, id: String, name: String) {
@@ -52,7 +37,9 @@ class XueqiuAppium {
   type AM = Map[String, String]
   implicit var driver: AppiumDriver[WebElement] = _
   val elements: scala.collection.mutable.Map[String, Boolean] = scala.collection.mutable.Map()
-  val blackList = ListBuffer[String]()
+  //包括backButton
+  val blackList = ListBuffer("stock_item_value", "[0-9]{2}", "弹幕", "发送", "保存", "确定",
+    "up", "user_profile_icon", "selectAll", "cut", "copy", "send", "买[0-9]", "卖[0-9]")
   val rule = ListBuffer[Map[String, String]]()
   var isSkip = false
   val stack = scala.collection.mutable.Stack[String]()
@@ -316,7 +303,7 @@ class XueqiuAppium {
     val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
     val xPath: XPath = XPathFactory.newInstance().newXPath()
     val compexp = xPath.compile(xpath)
-    val document: Document = builder.parse(new ByteArrayInputStream(raw.getBytes()))
+    val document: Document = builder.parse(new ByteArrayInputStream(raw.replaceAll("[\\x00-\\x1F]", "").getBytes(StandardCharsets.UTF_8)))
     val node = compexp.evaluate(document, XPathConstants.NODESET)
     node match {
       case n: NodeList => {
@@ -329,6 +316,18 @@ class XueqiuAppium {
             val attr = nodeAttributes.item(a).asInstanceOf[Attr]
             nodeMap(attr.getName) = attr.getValue
           })
+          if(!nodeMap.contains("name")){
+            nodeMap("name")=""
+            nodeMap("value")=""
+          }
+          if(nodeMap.contains("resource-id")){
+            nodeMap("name")=nodeMap("resource-id").split('/').last
+          }
+          if(nodeMap.contains("text")){
+            nodeMap("value")=nodeMap("text")
+          }
+
+          println(nodeMap)
           nodeList.append(nodeMap)
         })
       }
@@ -343,9 +342,7 @@ class XueqiuAppium {
     * @return
     */
   def getSchema(): String ={
-    val nodeList=getAllElements(pageSource, "//UIAWindow[1]//*")
-    //todo: 未来应该支持黑名单
-    md5(nodeList.filter(node=>node("tag")!="UIATableCell").map(node=>node("tag")).mkString(""))
+    return ""
   }
 
   def getUrl(): String = {
@@ -359,11 +356,18 @@ class XueqiuAppium {
     */
   def getElementId(x: Map[String, String]): Option[ELement] = {
     val tag = x.getOrElse("tag", "NoTag")
-    val text = x.getOrElse("value", "NoValue").replace("\n", "\\n")
-    var name = x.getOrElse("name", text)
-    if (name == "") name = text
-    val resourceId = x.getOrElse("label", "NoId")
+
+    //name为Android的description/text属性, 或者iOS的value属性
+    var name = x.getOrElse("value", "").replace("\n", "\\n")
+    //name为id/name属性. 为空的时候为value属性
+
+    //id表示android的resource-id或者iOS的name属性
+    val resourceId = x.getOrElse("name", "")
+    //id为value/text属性
+    //todo: 将来做调整, 这个跟findElmentByUid有关系
     val id = resourceId.split('/').last
+
+    //所在的页面. 通过控制url可以决定一个元素的唯一性
     val url = getUrl()
     val node = ELement(url, tag, id, name)
     return Some(node)
@@ -386,9 +390,6 @@ class XueqiuAppium {
     * @return
     */
   def isBlack(uid: ELement): Boolean = {
-    //包括backButton
-    val blackList = List("stock_item_value", "[0-9]{2}", "弹幕", "发送", "保存", "确定",
-      "up", "user_profile_icon", "selectAll", "cut", "copy", "send", backButton)
     blackList.filter(b => {
       uid.id.matches(s".*${b}.*") || uid.name.matches(s".*${b}.*")
     }).length > 0
@@ -404,6 +405,7 @@ class XueqiuAppium {
   }
   def back(name: String): Unit = {
     backButton = name
+    black(backButton)
   }
 
   def refreshPage(): Unit ={
@@ -412,6 +414,9 @@ class XueqiuAppium {
       case None => {println("get page source error")}
     }
     println(pageSource)
+    val contexts=doAppium(driver.getContextHandles).getOrElse("")
+    val windows=doAppium(driver.getWindowHandles).getOrElse("")
+    println(s"context=${contexts} windows=${windows}")
     println("schema="+getSchema())
   }
 
@@ -419,6 +424,7 @@ class XueqiuAppium {
     println("traversal start")
     depth+=1
     println(s"depth=${depth}")
+    println("refresh page")
     refreshPage()
     var needBack = true
     var needSkip = false
@@ -461,14 +467,21 @@ class XueqiuAppium {
 
           //是否黑名单
           needSkip = isBlack(uid)
+          if(needSkip==true){
+            println("in black list")
+          }else{
+            println("not in black list")
+          }
           //是否已经点击过
           //todo: 新界面入口需要设置为false
-          if (elements.contains(uid.toString())) {
-            println("skip")
-            needSkip = true
-          } else {
-            needSkip=false
-            println("first show, need click")
+          if(needSkip==false) {
+            if (elements.contains(uid.toString())) {
+              println("skip")
+              needSkip = true
+            } else {
+              needSkip = false
+              println("first show, need click")
+            }
           }
           //如果未曾点击
           if (needSkip == false) {
@@ -514,24 +527,27 @@ class XueqiuAppium {
 
   //todo:优化查找方法
   def findElementByUid(uid: ELement): Option[WebElement] = {
-    println(s"find by name")
-    doAppium(driver.findElementByXPath(s"//*[@name='${uid.name}']")) match {
-      case Some(v) => {
-        return Some(v)
-      }
-      case None => {
-        println("find by value")
-        doAppium(driver.findElementByXPath(s"//*[@value='${uid.name}']")) match {
-          case Some(v) => {
-            return Some(v)
-          }
-          case None => {
-            return None
-          }
-        }
-        return None
+    if(uid.id !="") {
+      println(s"find by id")
+      doAppium(driver.findElementById(uid.id)) match {
+        case Some(v) => return Some(v)
+        case None => {}
       }
     }
+    if(uid.name!=""){
+      println(s"find by name")
+      doAppium(driver.findElementByName(uid.name)) match {
+        case Some(v) => return Some(v)
+        case None => {}
+      }
+    }
+    println(s"find by xpath")
+    doAppium(driver.findElementByXPath(s"//*[@value='${uid.name}']")) match {
+      case Some(v) => return Some(v)
+      case None => {}
+    }
+
+    return None
   }
 
   def doAppium[T](r: => T): Option[T] = {
@@ -554,6 +570,23 @@ class XueqiuAppium {
     doAppiumAction(element, action)
   }
 
+  def saveLog(): Unit ={
+    //记录点击log
+    File(s"clickedList_${timestamp}.log").writeAll(clickedList.mkString("\n"))
+    File(s"ElementList_${timestamp}.log").writeAll(elements.mkString("\n"))
+  }
+
+  def saveScreen(path:String): Unit ={
+    doAppium((driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)) match {
+      case Some(src)=>{
+        FileUtils.copyFile(src, new java.io.File(path))
+      }
+      case None=>{
+        println("get screenshot error")
+      }
+    }
+  }
+
   def doAppiumAction(e: ELement, action: String = "click"): Option[Unit] = {
     findElementByUid(e) match {
       case Some(v) => {
@@ -562,9 +595,9 @@ class XueqiuAppium {
             println(s"click ${v}")
             val res = doAppium(v.click())
             clickedList.append(e.toString())
-            //记录点击log
-            File(s"clickedList_${timestamp}.log").writeAll(clickedList.mkString("\n"))
-            File(s"ElementList_${timestamp}.log").writeAll(elements.mkString("\n"))
+            saveLog()
+            saveScreen(s"pic/${timestamp}_${depth}_"+e.toString().replace(",","_").replace(" ", "")+".jpg")
+            doAppium(driver.hideKeyboard())
             return res
           }
           case str: String => {
@@ -572,10 +605,8 @@ class XueqiuAppium {
             doAppium(v.sendKeys(str)) match {
               case Some(v) => {
                 clickedList.append(e.toString())
-                //记录点击log
-                File(s"clickedList_${timestamp}.log").writeAll(clickedList.mkString("\n"))
-                File(s"ElementList_${timestamp}.log").writeAll(elements.mkString("\n"))
-                driver.hideKeyboard()
+                saveLog()
+                doAppium(driver.hideKeyboard())
                 return Some(v)
               }
               case None => return None
@@ -593,6 +624,14 @@ class XueqiuAppium {
 
   }
 
+  /**
+    * 子类重载
+    * @return
+    */
+  def getRuleMatchNodes(): ListBuffer[Map[String, String]] ={
+    return ListBuffer[Map[String, String]]()
+  }
+
   //通过规则实现操作. 不管元素是否被点击过
   def doRuleAction(): Unit = {
     println("rule match start")
@@ -603,8 +642,7 @@ class XueqiuAppium {
       val action = r.head._2
       println(s"idOrName=${idOrName} action=${action}")
       //重新获取变化后的列表
-      val all = getClickableElements().get++getAllElements(pageSource,
-        "//UIAWindow[1]//UIAStaticText[@visible='true' and @enabled='true' and @valid='true']")
+      val all = getRuleMatchNodes()
       breakable{
         (all.filter(_ ("name").matches(idOrName)) ++ all.filter(_ ("value").matches(idOrName))).distinct.foreach(x => {
         println("hit rule action")
