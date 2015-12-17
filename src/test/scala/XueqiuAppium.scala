@@ -269,8 +269,8 @@ class XueqiuAppium {
     //implicitlyWait(Span(10, Seconds))
   }
 
-  def black(key: String): Unit = {
-    blackList.append(key)
+  def black(keys: String*): Unit = {
+    keys.foreach(blackList.append(_))
   }
 
   def md5(format: String) = {
@@ -538,15 +538,16 @@ class XueqiuAppium {
       println(s"find by name")
       doAppium(driver.findElementByName(uid.name)) match {
         case Some(v) => return Some(v)
-        case None => {}
+        case None => {
+          println(s"find by xpath")
+          //照顾iOS android会在findByName的时候自动找text属性.
+          doAppium(driver.findElementByXPath(s"//*[@value='${uid.name}']")) match {
+            case Some(v) => return Some(v)
+            case None => {}
+          }
+        }
       }
     }
-    println(s"find by xpath")
-    doAppium(driver.findElementByXPath(s"//*[@value='${uid.name}']")) match {
-      case Some(v) => return Some(v)
-      case None => {}
-    }
-
     return None
   }
 
@@ -596,7 +597,7 @@ class XueqiuAppium {
             val res = doAppium(v.click())
             clickedList.append(e.toString())
             saveLog()
-            saveScreen(s"pic/${timestamp}_${depth}_"+e.toString().replace(",","_").replace(" ", "")+".jpg")
+            saveScreen(s"pic/${timestamp}/${depth}_"+e.toString().replace(",","_").replace(" ", "")+".jpg")
             doAppium(driver.hideKeyboard())
             return res
           }

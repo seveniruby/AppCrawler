@@ -47,7 +47,10 @@ class AndroidTraversal extends XueqiuAppium {
     //黑名单需要back. launcher可以直接退出.
     //todo:  "StockMoreInfoActivity", "StockDetailActivity"
     //Laucher不直接退出是为了看到底递归了多少层. 并且可以留出时间让你手工辅助点到其他的界面继续挽救遍历.
-    val blackScreenList = List("Launcher", "StockMoreInfoActivity", "UserProfileActivity")
+    if("Launcher"==activityName){
+      System.exit(0)
+    }
+    val blackScreenList = List("StockMoreInfoActivity", "UserProfileActivity")
     if (blackScreenList.filter(activityName.contains(_)).length > 0) {
       println("should return")
       return true
@@ -60,7 +63,7 @@ class AndroidTraversal extends XueqiuAppium {
     //selendroid和appium在这块上不一致. api不一样.  appium不遵从标准. 需要改进
     val screenName = automationName.toLowerCase() match {
       case "appium" => {
-        driver.asInstanceOf[AndroidDriver[WebElement]].currentActivity().split('.').last
+        doAppium(driver.asInstanceOf[AndroidDriver[WebElement]].currentActivity()).getOrElse("").split('.').last
       }
       case "selendroid" => {
         driver.getCurrentUrl.split('.').last
@@ -85,28 +88,4 @@ class AndroidTraversal extends XueqiuAppium {
   override def getRuleMatchNodes(): ListBuffer[Map[String, String]] ={
     getAllElements(pageSource, "//*")
   }
-
-  //todo:优化查找方法
-  override def findElementByUid(uid: ELement): Option[WebElement] = {
-    println(s"find by name")
-    doAppium(driver.findElementById(uid.name)) match {
-      case Some(v) => {
-        return Some(v)
-      }
-      case None => {
-        println("find by value")
-        doAppium(driver.findElementByName(uid.name)) match {
-          case Some(v) => {
-            return Some(v)
-          }
-          case None => {
-            return None
-          }
-        }
-        return None
-      }
-    }
-  }
-
-
 }

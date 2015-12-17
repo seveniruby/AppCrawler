@@ -20,27 +20,14 @@ class TestIOSTraversal extends FunSuite{
     appium.rule("持仓盈亏搬到这里，改名模拟盈亏", "click")
     appium.rule("取消", "click")
     appium.rule("关闭", "click")
-    appium.rule("分时", "click")
-    appium.rule("5日", "click")
-    appium.rule("日k", "click")
-    appium.rule("月k", "click")
     appium.rule("好", "click")
+    appium.rule("Cancel", "click")
 
     //appium.rule("自选", "click")
     appium.back("nav_icon_back")
-    appium.black("message")
-    appium.black("消息")
-    appium.black("弹幕")
-    appium.black("发射")
-    appium.black("Photos")
-    appium.black("地址")
-    appium.black("网址")
-    appium.black("发送")
-    appium.black("拉黑")
-    appium.black("举报")
-    appium.black("camera")
-    appium.black("Camera")
-    appium.black("Moments")
+    appium.black("seveniruby", "message", "消息", "弹幕", "发射", "Photos","地址", "网址", "发送", "拉黑", "举报",
+      "camera","Camera", "点评")
+
 
     //把列表挨个点击一遍
     appium.first("//UIAWindow[1]//UIATableView//UIATableCell[@visible='true' and @enabled='true' and @valid='true' and @name!='']")
