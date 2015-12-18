@@ -1,7 +1,7 @@
 
 import org.scalatest.FunSuite
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.{Map, ListBuffer}
 import scala.io.Source
 
 /**
@@ -9,7 +9,7 @@ import scala.io.Source
   */
 class TestTraversal extends FunSuite{
   test("test freemind"){
-    val appium=new XueqiuAppium
+    val appium=new Node[Map[String, String]](Map[String, String]())
     appium.generateFreeMind(ListBuffer(
       ELement("a","","1",""),
       ELement("com/a","","2",""),
@@ -308,7 +308,7 @@ class TestTraversal extends FunSuite{
         |
       """.stripMargin
 
-    val appium=new XueqiuAppium
+    val appium=new Traversal
     println(appium.getAllElements(xml, "//UIAWindow[1]//*[@visible='true' and @name!='']"))
     println(appium.getAllElements(xml, "//UIAWindow[1]//*[@visible='true' and @value!='']"))
   }

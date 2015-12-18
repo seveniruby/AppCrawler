@@ -2,12 +2,11 @@ import io.appium.java_client.android.AndroidDriver
 import org.openqa.selenium.WebElement
 
 import scala.collection.mutable.{ListBuffer, Map}
-import scala.xml.XML
 
 /**
   * Created by seveniruby on 15/12/10.
   */
-class AndroidTraversal extends XueqiuAppium {
+class AndroidTraversal extends Traversal {
 
   val selectedList=ListBuffer[String]("*")
   override def getClickableElements(): Option[Seq[Map[String, String]]] ={

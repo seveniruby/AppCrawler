@@ -1,10 +1,9 @@
 import scala.collection.mutable.{ListBuffer, Map}
-import scala.xml.XML
 
 /**
   * Created by seveniruby on 15/12/10.
   */
-class IOSTraversal extends XueqiuAppium{
+class IOSTraversal extends Traversal{
   val selectedList=ListBuffer[String](
     "UIATextField", "UIASecureTextField",
     "UIATableCell", "UIAButton",

@@ -3,11 +3,11 @@ import org.scalatest.FunSuite
 /**
   * Created by seveniruby on 15/12/15.
   */
-class TestIOSTraversal extends FunSuite{
+class iOS extends FunSuite{
   test("iOS"){
     val appium=new IOSTraversal
-    //val android=appium.setupIOS("/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphoneos/Snowball.app")
-    appium.setupIOS("/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app")
+    appium.setupIOS("/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphoneos/Snowball.app")
+    //appium.setupIOS("/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app")
     //appium.setupIOS("/Users/seveniruby/Downloads/xueqiu_7.3-rc-588.ipa")
 
 
@@ -22,11 +22,12 @@ class TestIOSTraversal extends FunSuite{
     appium.rule("关闭", "click")
     appium.rule("好", "click")
     appium.rule("Cancel", "click")
+    appium.rule("确定", "click")
 
     //appium.rule("自选", "click")
     appium.back("nav_icon_back")
     appium.black("seveniruby", "message", "消息", "弹幕", "发射", "Photos","地址", "网址", "发送", "拉黑", "举报",
-      "camera","Camera", "点评")
+      "camera","Camera", "点评", "nav_icon_home")
 
 
     //把列表挨个点击一遍

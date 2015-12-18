@@ -10,7 +10,7 @@ import io.appium.java_client.ios.IOSDriver
 import io.appium.java_client.remote.MobileCapabilityType
 import org.apache.commons.io.FileUtils
 import org.openqa.selenium.remote.DesiredCapabilities
-import org.openqa.selenium.{TakesScreenshot, OutputType, WebElement}
+import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
 import org.w3c.dom.{Attr, Document, NodeList}
 
 import scala.collection.mutable.{ListBuffer, Map}
@@ -19,22 +19,13 @@ import scala.util.control.Breaks._
 import scala.util.{Failure, Success, Try}
 
 
-case class ELement(url: String, tag: String, id: String, name: String) {
-  override def toString(): String = {
-    if (tag.toLowerCase().contains("edit")) {
-      s"${url},${tag}_${id},"
-    } else {
-      s"${url},${tag}_${id},${name}"
-    }
-  }
-}
+
 
 
 /**
   * Created by seveniruby on 15/11/28.
   */
-class XueqiuAppium {
-  type AM = Map[String, String]
+class Traversal {
   implicit var driver: AppiumDriver[WebElement] = _
   val elements: scala.collection.mutable.Map[String, Boolean] = scala.collection.mutable.Map()
   //包括backButton
@@ -46,7 +37,6 @@ class XueqiuAppium {
   val clickedList = ListBuffer[String]()
   val timestamp = new java.text.SimpleDateFormat("YYYYMMddHHmm").format(new java.util.Date())
   var md5Last = ""
-  var nId = 0
   var automationName = "appium"
   var platformName = ""
   var backButton = ""
@@ -54,168 +44,7 @@ class XueqiuAppium {
   /**优先遍历元素*/
   val firstList=ListBuffer[String]()
   var pageSource=""
-
-  case class Node[T](value: T, children: ListBuffer[Node[T]] = ListBuffer[Node[T]]()) {
-    val nId: String = {
-      getNodeId()
-    }
-
-    def equals(node: Node[AM]): Boolean = {
-      List("url", "id", "name").foreach(attr => {
-        if (node.value(attr) != value.asInstanceOf[AM](attr)) {
-          return false
-        }
-      })
-      return true
-    }
-  }
-
-  val freemind = Node(Map("url" -> "Start", "id" -> "Start", "name" -> null))
-
-  def generateFreeMind(list: ListBuffer[ELement]): Unit = {
-    // 保留上一个node用来加linktarget箭头
-    var lastAddedNodes = ListBuffer[Node[AM]]()
-    list.foreach(l => {
-      var fixedUrl = l.url
-      // 去掉url的前缀: android/gz  com.xueqiu.android/gz
-      if (l.url.split("/").length > 1) {
-        fixedUrl = l.url.split("/")(1)
-      }
-      var nameNode = Node(Map("url" -> fixedUrl,
-        "id" -> l.id,
-        "name" -> l.name))
-      lastAddedNodes = appendNodes(freemind, nameNode, lastAddedNodes)
-    })
-
-    println(freemind)
-
-    println( """<map version="1.0.1">""")
-    toXml(freemind)
-    println("</map>")
-
-  }
-
-  def getNodeId(): String = {
-    nId += 1
-    return nId.toString
-  }
-
-  def getArrowId(): String = {
-    nId += 1
-    return nId.toString
-  }
-
-  def appendNodes(currenTree: Node[AM], node: Node[AM], lastAddedNodes: ListBuffer[Node[AM]]): ListBuffer[Node[AM]] = {
-    var newTree = currenTree
-    var addedNodes = ListBuffer[Node[AM]]()
-
-    //add url node
-    if (node.value("url") != null) {
-      val newNode = Node(Map("url" -> node.value("url"),
-        "id" -> null,
-        "name" -> null))
-      newTree = appendNode(newTree, newNode)
-      addedNodes += newTree
-    }
-    //add id node
-    if (node.value("id") != null) {
-      val newNode = Node(Map("url" -> node.value("url"),
-        "id" -> node.value("id"),
-        "name" -> null))
-      newTree = appendNode(newTree, newNode)
-      addedNodes += newTree
-    }
-    //add name node
-    if (node.value("name") != null) {
-      val newNode = Node(Map("url" -> node.value("url"),
-        "id" -> node.value("id"),
-        "name" -> node.value("name")))
-      newTree = appendNode(newTree, newNode)
-      addedNodes += newTree
-    }
-    //add targetlink to just append node
-    if (lastAddedNodes.length > 0 && addedNodes.length > 0 && lastAddedNodes.last.value("url") != addedNodes.head.value("url")) {
-      var arrowId = getArrowId()
-      //add attrs of linktarget to new node
-      addedNodes.head.value += ("type" -> "linktarget")
-      addedNodes.head.value += ("destination" -> addedNodes.head.nId)
-      addedNodes.head.value += ("source" -> lastAddedNodes.last.nId)
-      addedNodes.head.value += ("aid" -> s"Arrow_ID_${arrowId}")
-
-      //add attrs of arrowlink to the last node
-      lastAddedNodes.last.value += ("type" -> "arrowlink")
-      lastAddedNodes.last.value += ("destination" -> addedNodes.head.nId)
-      lastAddedNodes.last.value += ("aid" -> s"Arrow_ID_${arrowId}")
-    }
-
-    return addedNodes
-  }
-
-  def appendNode(currenTree: Node[AM], node: Node[AM]): Node[AM] = {
-    find(currenTree, node) match {
-      case Some(v) => {
-        return v
-      }
-      case None => {
-        currenTree.children.append(node)
-        return node
-      }
-    }
-  }
-
-
-  def toXml(tree: Node[AM]): Unit = {
-    val before = (tree: Node[AM]) => {
-      var output = ""
-      if (tree.value("name") != null) {
-        output = tree.value("name")
-      } else if (tree.value("id") != null) {
-        output = tree.value("id")
-      } else if (tree.value("url") != null) {
-        output = tree.value("url")
-      }
-      println( s"""<node ID="ID_${tree.nId}" TEXT="${output}">""")
-
-      //add linktarget and arrowlink if needed
-      if (tree.value.contains("type")) {
-        tree.value("type") match {
-          case "linktarget" => {
-            println( s"""<linktarget COLOR="#b0b0b0" DESTINATION="ID_${tree.value("destination")}" ENDARROW="Default" ENDINCLINATION="24;0;" ID="${tree.value("aid")}" SOURCE="${tree.value("source")}" STARTARROW="None" STARTINCLINATION="24;0;"/>""")
-          }
-          case "arrowlink" => {
-            println( s"""<arrowlink DESTINATION="ID_${tree.value("destination")}" ENDARROW="Default" ENDINCLINATION="24;0;" ID="${tree.value("aid")}" STARTARROW="None" STARTINCLINATION="24;0;"/>""")
-          }
-        }
-      }
-    }
-    val after = (tree: Node[AM]) => {
-      println("</node>")
-    }
-    traversal[AM](tree, before, after)
-  }
-
-  def traversal[T](tree: Node[T],
-                   before: (Node[T]) => Unit = (x: Node[T]) => Unit,
-                   after: (Node[T]) => Unit = (x: Node[T]) => Unit): Unit = {
-    before(tree)
-    tree.children.foreach(t => {
-      traversal(t, before, after)
-    })
-    after(tree)
-  }
-
-  def find(tree: Node[AM], node: Node[AM]): Option[Node[AM]] = {
-    if (tree.equals(node)) {
-      return Some(tree)
-    }
-    tree.children.map(t => {
-      find(t, node) match {
-        case Some(v) => return Some(v)
-        case None => {}
-      }
-    })
-    return None
-  }
+  var img_index=0
 
 
   def setupIOS(app: String, url: String = "http://127.0.0.1:4723/wd/hub") {
@@ -355,20 +184,20 @@ class XueqiuAppium {
     * @return
     */
   def getElementId(x: Map[String, String]): Option[ELement] = {
+    //控件的类型
     val tag = x.getOrElse("tag", "NoTag")
 
     //name为Android的description/text属性, 或者iOS的value属性
-    var name = x.getOrElse("value", "").replace("\n", "\\n")
+    val name = x.getOrElse("value", "").replace("\n", "\\n")
     //name为id/name属性. 为空的时候为value属性
 
     //id表示android的resource-id或者iOS的name属性
     val resourceId = x.getOrElse("name", "")
-    //id为value/text属性
-    //todo: 将来做调整, 这个跟findElmentByUid有关系
     val id = resourceId.split('/').last
 
-    //所在的页面. 通过控制url可以决定一个元素的唯一性
+    //所在的页面特征. 可以是title或者dom的hash
     val url = getUrl()
+
     val node = ELement(url, tag, id, name)
     return Some(node)
 
@@ -409,11 +238,28 @@ class XueqiuAppium {
   }
 
   def refreshPage(): Unit ={
-    doAppium(driver.getPageSource) match {
-      case Some(v)=> pageSource=v
-      case None => {println("get page source error")}
+    //获取页面结构, 最多重试10次.
+    var refreshFinish=false
+    pageSource=""
+    1 to 10 foreach(i=>{
+      if(refreshFinish==false) {
+        doAppium(driver.getPageSource) match {
+          case Some(v) => {
+            println("get page source success")
+            pageSource = v
+            refreshFinish = true
+          }
+          case None => {
+            println("get page source error")
+          }
+        }
+      }
+    })
+    if(refreshFinish==false){
+      print("retry time > 10 exit")
+      System.exit(0)
     }
-    println(pageSource)
+    println("PageSource=\n"+pageSource)
     val contexts=doAppium(driver.getContextHandles).getOrElse("")
     val windows=doAppium(driver.getWindowHandles).getOrElse("")
     println(s"context=${contexts} windows=${windows}")
@@ -422,6 +268,8 @@ class XueqiuAppium {
 
   def traversal(): Unit = {
     println("traversal start")
+    //等待一秒防止太快
+    Thread.sleep(2000)
     depth+=1
     println(s"depth=${depth}")
     println("refresh page")
@@ -577,7 +425,10 @@ class XueqiuAppium {
     File(s"ElementList_${timestamp}.log").writeAll(elements.mkString("\n"))
   }
 
-  def saveScreen(path:String): Unit ={
+  def saveScreen(e: ELement): Unit ={
+    Thread.sleep(1000)
+    img_index+=1
+    val path=s"pic/${timestamp}/${img_index}_"+e.toString().replaceAll("[ /,]", "")+".jpg"
     doAppium((driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)) match {
       case Some(src)=>{
         FileUtils.copyFile(src, new java.io.File(path))
@@ -597,7 +448,7 @@ class XueqiuAppium {
             val res = doAppium(v.click())
             clickedList.append(e.toString())
             saveLog()
-            saveScreen(s"pic/${timestamp}/${depth}_"+e.toString().replace(",","_").replace(" ", "")+".jpg")
+            saveScreen(e)
             doAppium(driver.hideKeyboard())
             return res
           }

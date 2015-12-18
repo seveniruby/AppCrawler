@@ -3,7 +3,7 @@ import org.scalatest.FunSuite
 /**
   * Created by seveniruby on 15/12/15.
   */
-class TestAndroidTraversal extends FunSuite{
+class Android extends FunSuite{
   test("Android"){
     val appium=new AndroidTraversal
     val android=appium.setupAndroid("/Users/seveniruby/Downloads/xueqiu_7.3-rc-655.apk", "http://127.0.0.1:4730/wd/hub")
