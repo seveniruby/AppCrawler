@@ -1,3 +1,10 @@
+import java.net.URL
+
+import io.appium.java_client.ios.IOSDriver
+import io.appium.java_client.remote.MobileCapabilityType
+import org.openqa.selenium.WebElement
+import org.openqa.selenium.remote.DesiredCapabilities
+
 import scala.collection.mutable.{ListBuffer, Map}
 
 /**
@@ -8,6 +15,30 @@ class IOSTraversal extends Traversal{
     "UIATextField", "UIASecureTextField",
     "UIATableCell", "UIAButton",
     "UIAImage", "UIACollectionCell")
+
+  override def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub") {
+    platformName = "iOS"
+    val capabilities = new DesiredCapabilities()
+    capabilities.setCapability("deviceName", "iPhone 4s")
+    capabilities.setCapability("platformName", "iOS")
+    capabilities.setCapability("platformVersion", "9.1")
+    capabilities.setCapability("autoLaunch", "true")
+    capabilities.setCapability("autoAcceptAlerts", "true")
+    //主要做遍历测试和异常测试. 所以暂不使用selendroid. 兼容性测试需要使用selendroid
+    //capabilities.setCapability("automationName", "Selendroid")
+    //todo: Appium模式太慢
+    capabilities.setCapability("automationName", "Appium")
+
+    capabilities.setCapability(MobileCapabilityType.APP, app)
+    //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")
+    //driver = new XueqiuDriver[WebElement](new URL("http://127.0.0.1:4729/wd/hub"), capabilities)
+    driver = new IOSDriver[WebElement](new URL(url), capabilities)
+
+
+    //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
+    //PageFactory.initElements(new AppiumFieldDecorator(driver, 10, TimeUnit.SECONDS), this)
+    //implicitlyWait(Span(10, Seconds))
+  }
   override def getClickableElements(): Option[Seq[Map[String, String]]] ={
     doAppium(pageSource) match {
       case Some(v)=>{

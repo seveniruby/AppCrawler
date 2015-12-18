@@ -6,7 +6,8 @@ import org.scalatest.FunSuite
 class Android extends FunSuite{
   test("Android"){
     val appium=new AndroidTraversal
-    val android=appium.setupAndroid("/Users/seveniruby/Downloads/xueqiu_7.3-rc-655.apk", "http://127.0.0.1:4730/wd/hub")
+    val android=appium.setupApp("http://qaci.snowballfinance.com/view/Snowball-Android/job/snowball-droid-rc/lastSuccessfulBuild/artifact/snowball/build/outputs/apk/xueqiu.apk",
+      "http://127.0.0.1:4730/wd/hub")
 
     appium.rule("account", "15600534760")
     appium.rule("password", "hys2xueqiu")
@@ -21,7 +22,7 @@ class Android extends FunSuite{
 
     //appium.back("nav_icon_back")
     appium.black("seveniruby", "message", "消息", "弹幕", "发射", "Photos","地址", "网址", "发送", "拉黑", "举报",
-      "camera","Camera", "点评")
+      "camera","Camera", "点评", "评论", "回复", "咨询")
 
     //appium.rule("edit_text_name_cube", "ZuHe")
     appium.traversal()

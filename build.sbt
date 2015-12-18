@@ -1,4 +1,4 @@
-name := "LBSRefresh"
+name := "Traversal"
 
 version := "1.0"
 
@@ -16,6 +16,8 @@ libraryDependencies += "org.pegdown" % "pegdown" % "1.4.2" //html report
 
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
 
+enablePlugins(JavaAppPackaging)
+
 
 parallelExecution in Test := true
 (testOptions in Test) += Tests.Argument(TestFrameworks.ScalaTest, "-o", "-u", "target/test-reports", "-h", "target/test-reports")
@@ -27,3 +29,4 @@ testOptions in Test += Tests.Cleanup(() => {
   println("Cleanup")
 }
 )
+

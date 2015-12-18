@@ -46,57 +46,10 @@ class Traversal {
   var pageSource=""
   var img_index=0
 
+  def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"): Unit ={
 
-  def setupIOS(app: String, url: String = "http://127.0.0.1:4723/wd/hub") {
-    platformName = "iOS"
-    val capabilities = new DesiredCapabilities()
-    capabilities.setCapability("deviceName", "iPhone 4s")
-    capabilities.setCapability("platformName", "iOS")
-    capabilities.setCapability("platformVersion", "9.1")
-    capabilities.setCapability("autoLaunch", "true")
-    capabilities.setCapability("autoAcceptAlerts", "true")
-    //主要做遍历测试和异常测试. 所以暂不使用selendroid. 兼容性测试需要使用selendroid
-    //capabilities.setCapability("automationName", "Selendroid")
-    //todo: Appium模式太慢
-    capabilities.setCapability("automationName", "Appium")
-
-    capabilities.setCapability(MobileCapabilityType.APP, app)
-    //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")
-    //driver = new XueqiuDriver[WebElement](new URL("http://127.0.0.1:4729/wd/hub"), capabilities)
-    driver = new IOSDriver[WebElement](new URL(url), capabilities)
-
-
-    //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
-    //PageFactory.initElements(new AppiumFieldDecorator(driver, 10, TimeUnit.SECONDS), this)
-    //implicitlyWait(Span(10, Seconds))
   }
 
-
-  def setupAndroid(app: String, url: String = "http://127.0.0.1:4723/wd/hub") {
-    platformName = "Android"
-    val capabilities = new DesiredCapabilities()
-    capabilities.setCapability("deviceName", "emulator-5554");
-    capabilities.setCapability("platformVersion", "4.4");
-    capabilities.setCapability("appPackage", "com.xueqiu.android");
-    capabilities.setCapability(MobileCapabilityType.APP_ACTIVITY, "com.xueqiu.android.view.WelcomeActivityAlias")
-    //capabilities.setCapability("appActivity", ".ApiDemos");
-    capabilities.setCapability("autoLaunch", "true")
-    capabilities.setCapability("unicodeKeyboard", "true")
-    //主要做遍历测试和异常测试. 所以暂不使用selendroid. 兼容性测试需要使用selendroid
-    //capabilities.setCapability("automationName", "Selendroid")
-    //todo: Appium模式太慢
-    capabilities.setCapability("automationName", "Appium")
-
-    capabilities.setCapability(MobileCapabilityType.APP, app)
-    //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")
-    //driver = new XueqiuDriver[WebElement](new URL("http://127.0.0.1:4729/wd/hub"), capabilities)
-    driver = new AndroidDriver[WebElement](new URL(url), capabilities)
-
-
-    //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
-    //PageFactory.initElements(new AppiumFieldDecorator(driver, 10, TimeUnit.SECONDS), this)
-    //implicitlyWait(Span(10, Seconds))
-  }
 
   def black(keys: String*): Unit = {
     keys.foreach(blackList.append(_))
@@ -269,7 +222,7 @@ class Traversal {
   def traversal(): Unit = {
     println("traversal start")
     //等待一秒防止太快
-    Thread.sleep(2000)
+    Thread.sleep(500)
     depth+=1
     println(s"depth=${depth}")
     println("refresh page")
@@ -519,6 +472,35 @@ class Traversal {
           case None => println("get element id error")
         }
       })
+      }
+    })
+
+  }
+
+
+}
+
+object Traversal{
+  def sbt(args: String): Unit = {
+    import scala.sys.process._
+    //val sbt="/usr/local/Cellar/sbt/0.13.8/libexec/sbt-launch.jar"
+    val project_dir=getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath.
+      split("/").dropRight(2).mkString("/")
+    val sbt = s"${project_dir}/lib/sbt-launch.jar"
+    val cmd = Seq("java", "-jar", sbt, args) // You
+    println(cmd)
+    cmd ! ProcessLogger(stdout append _ + "\n", stderr append _ + "\n")
+  }
+
+  def main(args: Array[String]) {
+    args.foreach(arg=>{
+      arg.toLowerCase() match {
+        case "ios"=>{
+          sbt("test-only iOS")
+        }
+        case "android"=>{
+          sbt("test-only Android")
+        }
       }
     })
 
