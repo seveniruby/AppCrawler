@@ -27,7 +27,7 @@ class iOS extends FunSuite{
     //appium.rule("自选", "click")
     appium.back("nav_icon_back")
     appium.black("seveniruby", "message", "消息", "弹幕", "发射", "Photos","地址", "网址", "发送", "拉黑", "举报",
-      "camera","Camera", "点评", "nav_icon_home", "点评", "评论", "回复", "咨询")
+      "camera","Camera", "点评", "nav_icon_home", "点评", "评论", "回复", "咨询", "分享", "转发")
 
     //把列表挨个点击一遍
     appium.first("//UIAWindow[1]//UIATableView//UIATableCell[@visible='true' and @enabled='true' and @valid='true' and @name!='']")

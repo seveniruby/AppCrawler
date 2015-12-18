@@ -22,7 +22,7 @@ class Android extends FunSuite{
 
     //appium.back("nav_icon_back")
     appium.black("seveniruby", "message", "消息", "弹幕", "发射", "Photos","地址", "网址", "发送", "拉黑", "举报",
-      "camera","Camera", "点评", "评论", "回复", "咨询")
+      "camera","Camera", "点评", "评论", "回复", "咨询", "分享", "转发")
 
     //appium.rule("edit_text_name_cube", "ZuHe")
     appium.traversal()

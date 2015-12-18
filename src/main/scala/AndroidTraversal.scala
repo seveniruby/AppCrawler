@@ -12,7 +12,12 @@ import scala.collection.mutable.{ListBuffer, Map}
   */
 class AndroidTraversal extends Traversal {
 
-  val selectedList=ListBuffer[String]("*")
+  val selectedList=ListBuffer[String](
+    "//*[@enabled='true' and @resource-id!='' and not(contains(name(), 'Layout'))]",
+    "//*[@enabled='true' and @content-desc!='' and not(contains(name(), 'Layout'))]",
+    "//android.widget.TextView[@enabled='true' and @clickable='true']",
+    "//android.widget.ImageView[@enabled='true' and @clickable='true']"
+  )
 
   override def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub") {
     platformName = "Android"
@@ -50,13 +55,7 @@ class AndroidTraversal extends Traversal {
         })
 
         selectedList.foreach(xpath=>{
-          val selected=getAllElements(pageSource,
-            s"//${xpath}[@enabled='true' and @resource-id!='']")
-          all=all++selected
-        })
-        selectedList.foreach(xpath=>{
-          val selected=getAllElements(pageSource,
-            s"//android.widget.EditText[@enabled='true' and @text!='']")
+          val selected=getAllElements(pageSource, xpath)
           all=all++selected
         })
         all=all.distinct
