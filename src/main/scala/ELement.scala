@@ -8,9 +8,9 @@ case class ELement(url: String, tag: String, id: String, name: String) {
   //定义url是遍历的关键. 这是一门艺术
   override def toString(): String = {
     if (tag.toLowerCase().contains("edit")) {
-      s"${url},${tag}_${id},"
+      s"${url}-${tag}-${id}-"
     } else {
-      s"${url},${tag}_${id},${name}"
+      s"${url}-${tag}-${id}-${name}"
     }
   }
 }

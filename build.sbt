@@ -19,7 +19,7 @@ addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.fu
 enablePlugins(JavaAppPackaging)
 
 
-parallelExecution in Test := true
+parallelExecution in Test := false
 (testOptions in Test) += Tests.Argument(TestFrameworks.ScalaTest, "-o", "-u", "target/test-reports", "-h", "target/test-reports")
 testOptions in Test += Tests.Setup(() => {
   println("Setup")

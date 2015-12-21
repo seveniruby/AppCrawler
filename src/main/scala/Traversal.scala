@@ -1,18 +1,15 @@
-import java.io.ByteArrayInputStream
-import java.net.URL
+import java.io.{ByteArrayInputStream, StringWriter}
 import java.nio.charset.StandardCharsets
 import javax.xml.parsers.{DocumentBuilder, DocumentBuilderFactory}
 import javax.xml.xpath.{XPath, XPathFactory, _}
 
 import io.appium.java_client.AppiumDriver
-import io.appium.java_client.android.AndroidDriver
-import io.appium.java_client.ios.IOSDriver
-import io.appium.java_client.remote.MobileCapabilityType
 import org.apache.commons.io.FileUtils
-import org.openqa.selenium.remote.DesiredCapabilities
+import org.apache.xml.serialize.{OutputFormat, XMLSerializer}
 import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
 import org.w3c.dom.{Attr, Document, NodeList}
 
+import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Map}
 import scala.reflect.io.File
 import scala.util.control.Breaks._
@@ -27,24 +24,52 @@ import scala.util.{Failure, Success, Try}
   */
 class Traversal {
   implicit var driver: AppiumDriver[WebElement] = _
-  val elements: scala.collection.mutable.Map[String, Boolean] = scala.collection.mutable.Map()
+
+  private val elements: scala.collection.mutable.Map[String, Boolean] = scala.collection.mutable.Map()
   //包括backButton
-  val blackList = ListBuffer("stock_item_value", "[0-9]{2}", "弹幕", "发送", "保存", "确定",
-    "up", "user_profile_icon", "selectAll", "cut", "copy", "send", "买[0-9]", "卖[0-9]")
-  val rule = ListBuffer[Map[String, String]]()
-  var isSkip = false
-  val stack = scala.collection.mutable.Stack[String]()
+  /**黑名单列表 matches风格*/
+  val blackList = ListBuffer[String]()
+
+  /**引导规则. name, value, times三个元素组成*/
+  val rule = ListBuffer[scala.collection.mutable.Map[String, Any]]()
+  private var isSkip = false
+  /**点击顺序, 留作画图用*/
   val clickedList = ListBuffer[String]()
   val timestamp = new java.text.SimpleDateFormat("YYYYMMddHHmm").format(new java.util.Date())
   var md5Last = ""
   var automationName = "appium"
   var platformName = ""
-  var backButton = ""
+
+  /**后退按钮标记, 主要用于iOS, xpath*/
+  var backButton = ListBuffer[String]()
+  //意义不大. 并不是真正的层次
   var depth=0
   /**优先遍历元素*/
   val firstList=ListBuffer[String]()
+  /**默认遍历列表*/
+  val selectedList = ListBuffer[String]()
+  /**最后遍历列表*/
+  val appendList=ListBuffer[String]()
+
+  /**url黑名单.用于排除某些页面 contains风格. 不过最好还是正则比较好*/
+  val blackUrlList = ListBuffer("StockMoreInfoActivity", "UserProfileActivity")
+
   var pageSource=""
-  var img_index=0
+  private var pageDom:Document=null
+  private var img_index=0
+  private var backRetry=0
+  private var needExit=false
+
+  /**当前的url路径*/
+  var url=""
+  /**用来确定url的元素定位xpath 他的text会被取出当作url因素*/
+  var urlXPath=""
+  /**设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度*/
+  var baseUrl=""
+  /**默认的最大深度10, 结合baseUrl可很好的控制遍历的范围*/
+  var maxDepth=10
+
+  val urlStack=mutable.Stack[String]()
 
   def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"): Unit ={
 
@@ -68,25 +93,42 @@ class Traversal {
   }
 
 
-  def rule(loc: String, action: String): Unit = {
-    rule.append(Map(loc -> action))
+  def rule(loc: String, action: String, times:Int=0): Unit = {
+    rule.append(Map(
+      "idOrName" -> loc,
+      "action"->action,
+      "times"->times))
   }
 
 
+  def parseXml(raw:String): Document ={
+    val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
+    val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
+    val document: Document = builder.parse(new ByteArrayInputStream(raw.replaceAll("[\\x00-\\x1F]", "").getBytes(StandardCharsets.UTF_8)))
+
+    val format = new OutputFormat(document); //document is an instance of org.w3c.dom.Document
+    format.setLineWidth(65);
+    format.setIndenting(true);
+    format.setIndent(2);
+    val out = new StringWriter();
+    val serializer = new XMLSerializer(out, format);
+    serializer.serialize(document);
+    val formattedXML = out.toString();
+    println(formattedXML)
+    return document
+  }
+
   /**
     * 根据xpath来获得想要的元素列表
-    * @param raw
     * @param xpath
     * @return
     */
-  def getAllElements(raw: String, xpath: String): ListBuffer[Map[String, String]] = {
+  def getAllElements(xpath: String): ListBuffer[Map[String, String]] = {
     val nodeList = ListBuffer[Map[String, String]]()
-    val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
-    val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
+
     val xPath: XPath = XPathFactory.newInstance().newXPath()
     val compexp = xPath.compile(xpath)
-    val document: Document = builder.parse(new ByteArrayInputStream(raw.replaceAll("[\\x00-\\x1F]", "").getBytes(StandardCharsets.UTF_8)))
-    val node = compexp.evaluate(document, XPathConstants.NODESET)
+    val node = compexp.evaluate(pageDom, XPathConstants.NODESET)
     node match {
       case n: NodeList => {
         println(s"xpath=${xpath} length=${n.getLength}")
@@ -108,8 +150,6 @@ class Traversal {
           if(nodeMap.contains("text")){
             nodeMap("value")=nodeMap("text")
           }
-
-          println(nodeMap)
           nodeList.append(nodeMap)
         })
       }
@@ -128,7 +168,10 @@ class Traversal {
   }
 
   def getUrl(): String = {
-    return "not impled"
+    if(urlXPath!="") {
+      return getAllElements(urlXPath).map(_("value")).lift(0).getOrElse("")
+    }
+    return ""
   }
 
   /**
@@ -148,9 +191,6 @@ class Traversal {
     val resourceId = x.getOrElse("name", "")
     val id = resourceId.split('/').last
 
-    //所在的页面特征. 可以是title或者dom的hash
-    val url = getUrl()
-
     val node = ELement(url, tag, id, name)
     return Some(node)
 
@@ -163,7 +203,20 @@ class Traversal {
   }
 
   def isReturn(): Boolean = {
+    if (url.matches("Launcher.*")) {
+      println(s"maybe back to desktop ${urlStack.reverse.mkString("-")}")
+      needExit=true
+    }
+    if (blackUrlList.filter(url.contains(_)).length > 0) {
+      println("should return")
+      return true
+    }
+    if(urlStack.length>maxDepth){
+      println(s"urlStack.depth=${urlStack.length} > maxDepth=${maxDepth}")
+      return true
+    }
     return false
+
   }
 
   /**
@@ -171,23 +224,49 @@ class Traversal {
     * @param uid
     * @return
     */
-  def isBlack(uid: ELement): Boolean = {
+  def isBlack(uid: Map[String,String]): Boolean = {
     blackList.filter(b => {
-      uid.id.matches(s".*${b}.*") || uid.name.matches(s".*${b}.*")
-    }).length > 0
+      uid("value").matches(b) || uid("name").matches(b)
+    }).length>=1
   }
 
+
   def getClickableElements(): Option[Seq[Map[String, String]]] = {
-    println("getClickableElements start")
-    return None
+    var all = Seq[Map[String, String]]()
+    var firstElements=Seq[Map[String, String]]()
+    var appendElements=Seq[Map[String, String]]()
+    var commonElements=Seq[Map[String, String]]()
+
+    firstList.foreach(xpath => {
+      firstElements ++= getAllElements(xpath)
+    })
+
+    appendList.foreach(xpath => {
+      appendElements ++= getAllElements(xpath)
+    })
+
+    selectedList.foreach(xpath => {
+      commonElements ++= getAllElements(xpath)
+    })
+
+    commonElements=commonElements diff firstElements
+    commonElements=commonElements diff appendElements
+
+    all = (firstElements++commonElements++appendElements).distinct
+    println(s"all length=${all.length}")
+    return Some(all)
+
   }
 
   def first(xpath:String): Unit ={
     firstList.append(xpath)
   }
+  def last(xpath:String): Unit ={
+    appendList.append(xpath)
+  }
   def back(name: String): Unit = {
-    backButton = name
-    black(backButton)
+    backButton.append(name)
+    backButton.foreach(black(_))
   }
 
   def refreshPage(): Unit ={
@@ -200,6 +279,7 @@ class Traversal {
           case Some(v) => {
             println("get page source success")
             pageSource = v
+            pageDom=parseXml(pageSource)
             refreshFinish = true
           }
           case None => {
@@ -212,13 +292,32 @@ class Traversal {
       print("retry time > 10 exit")
       System.exit(0)
     }
-    println("PageSource=\n"+pageSource)
+    val currentUrl=getUrl()
+    //保存url深度
+    if(urlStack.contains(currentUrl)){
+      while(urlStack.head!=currentUrl){
+        urlStack.pop()
+      }
+    }else {
+      urlStack.push(currentUrl)
+    }
+    //判断新的url堆栈中是否包含baseUrl, 如果有就清空栈记录并从新计数
+    if(urlStack.head.matches(baseUrl)) {
+      urlStack.clear()
+      urlStack.push(currentUrl)
+    }
+    url=urlStack.reverse.takeRight(2).mkString("-")
+    println(s"urlStack=${urlStack.reverse}")
     val contexts=doAppium(driver.getContextHandles).getOrElse("")
     val windows=doAppium(driver.getWindowHandles).getOrElse("")
     println(s"context=${contexts} windows=${windows}")
     println("schema="+getSchema())
   }
 
+  /*
+  /**
+    * 最早实现的一个递归算法. 不是尾递归. 代码也很挫, 留作娱乐
+    */
   def traversal(): Unit = {
     println("traversal start")
     //等待一秒防止太快
@@ -253,6 +352,13 @@ class Traversal {
           } else {
             println("no need to break")
           }
+          //是否黑名单
+          needSkip = isBlack(x)
+          if(needSkip==true){
+            println("in black list")
+          }else{
+            println("not in black list")
+          }
           //如果触发了任意操作, 当前界面会变化. 需要重新刷新, 跳过无谓的循环
           val uid = getElementId(x) match {
             case Some(v) => v
@@ -266,13 +372,6 @@ class Traversal {
           }
           println(s"id=${uid}")
 
-          //是否黑名单
-          needSkip = isBlack(uid)
-          if(needSkip==true){
-            println("in black list")
-          }else{
-            println("not in black list")
-          }
           //是否已经点击过
           //todo: 新界面入口需要设置为false
           if(needSkip==false) {
@@ -317,34 +416,163 @@ class Traversal {
         //todo: iOS上的back貌似有问题
         driver.navigate().back()
       } else {
-        doAppiumActionByName(backButton, "click")
+        getAllElements(backButton).lift(0) match {
+          case Some(v)=>{
+            getElementId(v) match {
+              case Some(element)=>{
+                doAppiumAction(element, "click")
+              }
+            }
+          }
+        }
       }
+
+      saveScreen(ELement(url, "Back", "Back", "Back"))
       //任何界面变化都需要进入新的递归. 而不是只到新界面.
       traversal()
 
     }
     depth-=1
   }
+*/
 
-  //todo:优化查找方法
-  def findElementByUid(uid: ELement): Option[WebElement] = {
-    if(uid.id !="") {
-      println(s"find by id")
-      doAppium(driver.findElementById(uid.id)) match {
-        case Some(v) => return Some(v)
-        case None => {}
+  def isClicked(uid:ELement): Boolean ={
+    if (elements.contains(uid.toString())) {
+      return true
+    } else {
+      println(s"uid=${uid} first show, need click")
+      return false
+    }
+  }
+
+  def clickElement(uid:ELement): Unit ={
+    println(s"just click ${uid}")
+    elements(uid.toString()) = true
+    //doDefaultAction(uid)
+    doAppiumAction(uid, "click") match {
+      case Some(v) => {
+        println("do appium action success")
+      }
+      case None => {
+        println("do appium action exception, break")
       }
     }
-    if(uid.name!=""){
-      println(s"find by name")
-      doAppium(driver.findElementByName(uid.name)) match {
-        case Some(v) => return Some(v)
-        case None => {
-          println(s"find by xpath")
-          //照顾iOS android会在findByName的时候自动找text属性.
-          doAppium(driver.findElementByXPath(s"//*[@value='${uid.name}']")) match {
-            case Some(v) => return Some(v)
+  }
+  def goBack(): Unit ={
+    println("go back")
+    if (backButton.length == 0) {
+      //todo: iOS上的back貌似有问题
+      driver.navigate().back()
+    } else {
+      backButton.foreach(b=>{
+
+      })
+      backButton.map(getAllElements(_)).flatten.lift(0) match {
+        case Some(v)=>{
+          getElementId(v) match {
+            case Some(element)=>{
+              doAppiumAction(element, "click")
+            }
+            case None=>{println("几乎不会发生这个异常")}
+          }
+        }
+        case None=>println("find back button error")
+      }
+    }
+    backRetry+=1
+    //超过十次连续不停的回退就认为是需要退出
+    if(backRetry>10){
+      needExit=true
+    }else{
+      println(s"backRetry=${backRetry}")
+    }
+    saveScreen(ELement(url, "Back", "Back", "Back"))
+
+  }
+
+  /**
+    * 优化后的递归方法. 尾递归.
+    */
+  def traversal(): Unit = {
+    if(needExit){
+      return
+    }
+    println("traversal start")
+    //等待一秒防止太快
+    Thread.sleep(500)
+    depth+=1
+    println(s"depth=${depth}")
+    println("refresh page")
+    refreshPage()
+    //是否需要退出或者后退
+    if (isReturn()) {
+      goBack()
+      depth-=1
+    } else {
+      //先判断是否命中规则.
+      if(doRuleAction()==true){
+        traversal()
+      }else {
+        //获取可点击元素
+        var all = getClickableElements().getOrElse(Seq[Map[String, String]]())
+        println(all.length)
+        //去掉黑名单, 这样rule优先级高于黑名单
+        all = all.filter(isBlack(_) == false)
+        println(all.length)
+        //把元素转换为Element对象
+        var allElements = all.map(getElementId(_).get)
+        //获得所有未点击元素
+        println(allElements.length)
+        //过滤已经被点击过的元素
+        allElements = allElements.filter(!isClicked(_))
+        println(allElements.length)
+        if (allElements.length > 0) {
+          clickElement(allElements.head)
+          backRetry=0
+        } else {
+          goBack()
+          depth -= 1
+        }
+      }
+    }
+    traversal()
+  }
+
+
+  //todo:优化查找方法
+  //找到统一的定位方法就在这里定义, 找不到就分别在子类中重载定义
+  def findElementByUid(uid: ELement): Option[WebElement] = {
+    println(s"find element by uid ${uid}")
+    platformName.toLowerCase() match {
+      case "ios"=>{
+        println(s"find by xpath")
+        //照顾iOS android会在findByName的时候自动找text属性.
+        doAppium(driver.findElementByXPath(s"//${uid.tag}[@name='${uid.id}' and @value='${uid.name}']")) match {
+          case Some(v) => return Some(v)
+          case None => {}
+        }
+      }
+      case "android"=>{
+        if(uid.id !="") {
+          println(s"find by id=${uid.id}")
+          doAppium(driver.findElementsById(uid.id)) match {
+            case Some(v) => {
+              if(v.toArray.length==1){
+                //公司的首页有4个id一摸一样的控件, 已经通知他们修改. 这是个临时性的方案.
+                return Some(v.toArray().head.asInstanceOf[WebElement])
+              }else{
+                println("find multi, change to find by name")
+              }
+            }
             case None => {}
+          }
+        }
+        if(uid.name!=""){
+          println(s"find by name=${uid.name}")
+          doAppium(driver.findElementByName(uid.name)) match {
+            case Some(v) => return Some(v)
+            case None => {
+            }
           }
         }
       }
@@ -374,14 +602,17 @@ class Traversal {
 
   def saveLog(): Unit ={
     //记录点击log
-    File(s"clickedList_${timestamp}.log").writeAll(clickedList.mkString("\n"))
-    File(s"ElementList_${timestamp}.log").writeAll(elements.mkString("\n"))
+    if(new java.io.File(s"${platformName}_${timestamp}").exists()==false){
+      FileUtils.forceMkdir(new java.io.File(s"${platformName}_${timestamp}"))
+    }
+    File(s"${platformName}_${timestamp}/clickedList.log").writeAll(clickedList.mkString("\n"))
+    File(s"${platformName}_${timestamp}/ElementList.log").writeAll(elements.mkString("\n"))
   }
 
   def saveScreen(e: ELement): Unit ={
     Thread.sleep(1000)
     img_index+=1
-    val path=s"pic/${timestamp}/${img_index}_"+e.toString().replaceAll("[ /,]", "")+".jpg"
+    val path=s"${platformName}_${timestamp}/${img_index}_"+e.toString().replace("\n", "").replaceAll("[ /,]", "").take(100)+".jpg"
     doAppium((driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)) match {
       case Some(src)=>{
         FileUtils.copyFile(src, new java.io.File(path))
@@ -438,15 +669,16 @@ class Traversal {
   }
 
   //通过规则实现操作. 不管元素是否被点击过
-  def doRuleAction(): Unit = {
+  def doRuleAction(): Boolean = {
     println("rule match start")
     //先判断是否在期望的界面里. 提升速度
+    var isHit=false
     rule.foreach(r => {
       println("for each rule")
-      val idOrName = r.head._1.split('.').last
-      val action = r.head._2
+      val idOrName = r("idOrName").toString.split('.').last
+      val action = r("action").toString
+      val times=r("times").toString.toInt
       println(s"idOrName=${idOrName} action=${action}")
-      //重新获取变化后的列表
       val all = getRuleMatchNodes()
       breakable{
         (all.filter(_ ("name").matches(idOrName)) ++ all.filter(_ ("value").matches(idOrName))).distinct.foreach(x => {
@@ -457,13 +689,18 @@ class Traversal {
           case Some(e) => {
             println(s"element=${e} action=${action}")
             println("do rule action")
-            doAppiumAction(e, action) match {
+            isHit=true
+            doAppiumAction(e, action.toString) match {
               case None=>{
                 println("do rule action fail")
                 break()
               }
               case Some(v)=>{
                 println("do rule action success")
+                r("times")=times-1
+                if(times==1){
+                  rule-=r
+                }
               }
             }
             //todo: 暂不删除, 允许复用
@@ -474,6 +711,8 @@ class Traversal {
       })
       }
     })
+
+    return isHit
 
   }
 
