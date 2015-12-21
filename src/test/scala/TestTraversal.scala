@@ -1,6 +1,7 @@
 
 import org.scalatest.FunSuite
 
+import scala.collection.mutable
 import scala.collection.mutable.{Map, ListBuffer}
 import scala.io.Source
 
@@ -41,6 +42,23 @@ class TestTraversal extends FunSuite{
 
 
   }
+
+  test("isBlack"){
+    val appium=new Traversal
+    appium.black("stock_item.*")
+    val m1=mutable.Map("name"->"stock_item_1", "value"->"")
+    val m2=mutable.Map("value"->"stock_item_1", "name"->"")
+    val m3=mutable.Map("name"->"stock_item_1", "value"->"stock_item_1")
+    val m4=mutable.Map("name"->"", "value"->"")
+    val m5=mutable.Map("name"->"ss", "value"->"dd")
+    assert(true==appium.isBlack(m1))
+    assert(true==appium.isBlack(m2))
+    assert(true==appium.isBlack(m3))
+    assert(false==appium.isBlack(m4))
+    assert(false==appium.isBlack(m5))
+
+  }
+
 
   test("getAllElements"){
     val xml=
@@ -309,8 +327,10 @@ class TestTraversal extends FunSuite{
       """.stripMargin
 
     val appium=new Traversal
-    println(appium.getAllElements(xml, "//UIAWindow[1]//*[@visible='true' and @name!='']"))
-    println(appium.getAllElements(xml, "//UIAWindow[1]//*[@visible='true' and @value!='']"))
+    appium.pageSource=xml
+    appium.parseXml(appium.pageSource)
+    println(appium.getAllElements("//UIAWindow[1]//*[@visible='true' and @name!='']"))
+    println(appium.getAllElements("//UIAWindow[1]//*[@visible='true' and @value!='']"))
   }
 
   test("whilespace"){

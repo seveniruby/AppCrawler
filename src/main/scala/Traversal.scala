@@ -306,7 +306,7 @@ class Traversal {
       urlStack.clear()
       urlStack.push(currentUrl)
     }
-    url=urlStack.reverse.takeRight(2).mkString("-")
+    url=urlStack.reverse.takeRight(3).mkString("-")
     println(s"urlStack=${urlStack.reverse}")
     val contexts=doAppium(driver.getContextHandles).getOrElse("")
     val windows=doAppium(driver.getWindowHandles).getOrElse("")
@@ -463,10 +463,9 @@ class Traversal {
     if (backButton.length == 0) {
       //todo: iOS上的back貌似有问题
       driver.navigate().back()
+      saveScreen(ELement(url, "Back", "Back", "Back"))
     } else {
-      backButton.foreach(b=>{
-
-      })
+      //找到可能的关闭按钮, 取第一个可用的关闭按钮
       backButton.map(getAllElements(_)).flatten.lift(0) match {
         case Some(v)=>{
           getElementId(v) match {
@@ -486,8 +485,6 @@ class Traversal {
     }else{
       println(s"backRetry=${backRetry}")
     }
-    saveScreen(ELement(url, "Back", "Back", "Back"))
-
   }
 
   /**
@@ -510,9 +507,7 @@ class Traversal {
       depth-=1
     } else {
       //先判断是否命中规则.
-      if(doRuleAction()==true){
-        traversal()
-      }else {
+      if(doRuleAction()==false){
         //获取可点击元素
         var all = getClickableElements().getOrElse(Seq[Map[String, String]]())
         println(all.length)
@@ -612,7 +607,7 @@ class Traversal {
   def saveScreen(e: ELement): Unit ={
     Thread.sleep(1000)
     img_index+=1
-    val path=s"${platformName}_${timestamp}/${img_index}_"+e.toString().replace("\n", "").replaceAll("[ /,]", "").take(100)+".jpg"
+    val path=s"${platformName}_${timestamp}/${img_index}_"+e.toString().replace("\n", "").replaceAll("[ /,]", "").take(200)+".jpg"
     doAppium((driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)) match {
       case Some(src)=>{
         FileUtils.copyFile(src, new java.io.File(path))

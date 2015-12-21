@@ -21,6 +21,7 @@ class iOS extends XueqiuTraversal{
     appium.rule("common guide icon ok", "click", 1)
     appium.back("//*[@name='nav_icon_back']")
     appium.back("//UIAButton[@name='取消']")
+    appium.back("//UIAButton[@name='Cancel']")
     appium.baseUrl=".*SNBHomeView.*"
 
     //把列表挨个点击一遍
@@ -76,13 +77,10 @@ class iOS extends XueqiuTraversal{
     val t=setupAppium()
     subTraversal(t, "首页")
   }
-  test("首页 depth=1"){
+  test("首页 depth=2"){
     val t=setupAppium()
-    t.maxDepth=1
+    t.maxDepth=2
     t.baseUrl=".*SNBHomeView.*"
     subTraversal(t, "首页")
   }
-
-
-
 }
