@@ -309,7 +309,8 @@ class Traversal {
     url=urlStack.reverse.takeRight(3).mkString("-")
     println(s"urlStack=${urlStack.reverse}")
     val contexts=doAppium(driver.getContextHandles).getOrElse("")
-    val windows=doAppium(driver.getWindowHandles).getOrElse("")
+    //val windows=doAppium(driver.getWindowHandles).getOrElse("")
+    val windows=""
     println(s"context=${contexts} windows=${windows}")
     println("schema="+getSchema())
   }

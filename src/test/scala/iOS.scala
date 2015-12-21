@@ -22,6 +22,8 @@ class iOS extends XueqiuTraversal{
     appium.back("//*[@name='nav_icon_back']")
     appium.back("//UIAButton[@name='取消']")
     appium.back("//UIAButton[@name='Cancel']")
+    appium.back("//UIAButton[@name='关闭']")
+    appium.back("//*[@value='首页']")
     appium.baseUrl=".*SNBHomeView.*"
 
     //把列表挨个点击一遍
