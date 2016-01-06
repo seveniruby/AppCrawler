@@ -1,5 +1,6 @@
 import java.net.URL
 
+import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.remote.MobileCapabilityType
 import org.openqa.selenium.WebElement
@@ -16,10 +17,11 @@ class AndroidTraversal extends Traversal {
     "//*[@enabled='true' and @resource-id!='' and not(contains(name(), 'Layout'))]",
     "//*[@enabled='true' and @content-desc!='' and not(contains(name(), 'Layout'))]",
     "//android.widget.TextView[@enabled='true' and @clickable='true']",
+    "//android.widget.ImageView[@clickable='true']",
     "//android.widget.ImageView[@enabled='true' and @clickable='true']"
   ))
 
-  override def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub") {
+  override def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"): AppiumDriver[WebElement] = {
     platformName = "Android"
     val capabilities = new DesiredCapabilities()
     capabilities.setCapability("deviceName", "emulator-5554");
@@ -38,8 +40,7 @@ class AndroidTraversal extends Traversal {
     //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")
     //driver = new XueqiuDriver[WebElement](new URL("http://127.0.0.1:4729/wd/hub"), capabilities)
     driver = new AndroidDriver[WebElement](new URL(url), capabilities)
-
-
+    return driver
     //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
     //PageFactory.initElements(new AppiumFieldDecorator(driver, 10, TimeUnit.SECONDS), this)
     //implicitlyWait(Span(10, Seconds))
@@ -55,7 +56,7 @@ class AndroidTraversal extends Traversal {
         driver.getCurrentUrl.split('.').last
       }
     }
-    screenName=s"${screenName}_${super.getUrl()}"
+    screenName = s"${screenName}_${super.getUrl()}"
     println(s"url=${screenName}")
     return screenName
   }

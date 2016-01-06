@@ -71,8 +71,8 @@ class Traversal {
 
   val urlStack=mutable.Stack[String]()
 
-  def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"): Unit ={
-
+  def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"): AppiumDriver[WebElement] ={
+    return null
   }
 
 
@@ -145,7 +145,13 @@ class Traversal {
             nodeMap("value")=""
           }
           if(nodeMap.contains("resource-id")){
-            nodeMap("name")=nodeMap("resource-id").split('/').last
+            //todo: /结尾的会被解释为/之前的内容
+            val arr=nodeMap("resource-id").split('/')
+            if(arr.length==1){
+              nodeMap("name") = ""
+            }else {
+              nodeMap("name") = nodeMap("resource-id").split('/').last
+            }
           }
           if(nodeMap.contains("text")){
             nodeMap("value")=nodeMap("text")
@@ -190,6 +196,9 @@ class Traversal {
     //id表示android的resource-id或者iOS的name属性
     val resourceId = x.getOrElse("name", "")
     val id = resourceId.split('/').last
+    println("id=xx")
+    println(resourceId)
+    println(id)
 
     val node = ELement(url, tag, id, name)
     return Some(node)
@@ -437,11 +446,11 @@ class Traversal {
   }
 */
 
-  def isClicked(uid:ELement): Boolean ={
-    if (elements.contains(uid.toString())) {
-      return true
+  def isClicked(ele: ELement): Boolean ={
+    if (elements.contains(ele.toString())) {
+      return elements(ele.toString())
     } else {
-      println(s"uid=${uid} first show, need click")
+      println(s"element=${ele} first show, need click")
       return false
     }
   }
@@ -511,17 +520,24 @@ class Traversal {
       if(doRuleAction()==false){
         //获取可点击元素
         var all = getClickableElements().getOrElse(Seq[Map[String, String]]())
-        println(all.length)
+        println(s"all nodes length=${all.length}")
         //去掉黑名单, 这样rule优先级高于黑名单
         all = all.filter(isBlack(_) == false)
         println(all.length)
+        println(s"all non-black nodes length=${all.length}")
         //把元素转换为Element对象
         var allElements = all.map(getElementId(_).get)
         //获得所有未点击元素
-        println(allElements.length)
+        println(s"all elements length=${allElements.length}")
         //过滤已经被点击过的元素
         allElements = allElements.filter(!isClicked(_))
-        println(allElements.length)
+        println(s"fresh elements length=${allElements.length}")
+        //记录未被点击的元素
+        allElements.foreach(e=>{
+          if(!elements.contains(e.toString())){
+            elements(e.toString())=false
+          }
+        })
         if (allElements.length > 0) {
           clickElement(allElements.head)
           backRetry=0
@@ -735,6 +751,9 @@ object Traversal{
         }
         case "android"=>{
           sbt("test-only Android")
+        }
+        case cmd: String =>{
+          sbt(s"test-only ${cmd}")
         }
       }
     })

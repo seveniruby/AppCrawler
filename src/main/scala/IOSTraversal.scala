@@ -1,5 +1,6 @@
 import java.net.URL
 
+import io.appium.java_client.AppiumDriver
 import io.appium.java_client.ios.IOSDriver
 import io.appium.java_client.remote.MobileCapabilityType
 import org.openqa.selenium.WebElement
@@ -25,18 +26,20 @@ class IOSTraversal extends Traversal {
     s"//UIAWindow[2]//UIAButton[@visible='true' and @enabled='true' and @valid='true']"
   ))
 
-  override def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub") {
+  override def
+  setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"):AppiumDriver[WebElement]={
     platformName = "iOS"
     val capabilities = new DesiredCapabilities()
-    capabilities.setCapability("deviceName", "iPhone 4s")
+    capabilities.setCapability("deviceName", "iPhone 6")
     capabilities.setCapability("platformName", "iOS")
-    capabilities.setCapability("platformVersion", "9.1")
+    capabilities.setCapability("platformVersion", "9.2")
     capabilities.setCapability("autoLaunch", "true")
     capabilities.setCapability("autoAcceptAlerts", "true")
     capabilities.setCapability(MobileCapabilityType.APP, app)
     //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")
     //driver = new XueqiuDriver[WebElement](new URL("http://127.0.0.1:4729/wd/hub"), capabilities)
     driver = new IOSDriver[WebElement](new URL(url), capabilities)
+    return driver
 
 
     //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)

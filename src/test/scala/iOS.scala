@@ -12,6 +12,7 @@ class iOS extends XueqiuTraversal{
     //appium.setupApp("/Users/seveniruby/Downloads/xueqiu_7.3-rc-588.ipa")
     //appium.setupApp("/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphoneos/Snowball.app")
 
+    appium.rule("已有帐号？立即登录", "click")
     appium.rule("请输入手机号或邮箱登录", "15600534760", 1)
     appium.rule("密码", "hys2xueqiu", 1)
     appium.rule("登 录", "click", 1)
@@ -24,6 +25,7 @@ class iOS extends XueqiuTraversal{
     appium.back("//UIAButton[@name='Cancel']")
     appium.back("//UIAButton[@name='关闭']")
     appium.back("//*[@value='首页']")
+    appium.back("//UIAButton[@name='首页']")
     appium.baseUrl=".*SNBHomeView.*"
 
     //把列表挨个点击一遍
@@ -79,9 +81,9 @@ class iOS extends XueqiuTraversal{
     val t=setupAppium()
     subTraversal(t, "首页")
   }
-  test("首页 depth=2"){
+  test("首页 depth=3"){
     val t=setupAppium()
-    t.maxDepth=2
+    t.maxDepth=3
     t.baseUrl=".*SNBHomeView.*"
     subTraversal(t, "首页")
   }
