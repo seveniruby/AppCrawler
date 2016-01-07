@@ -5,6 +5,7 @@ import org.scalatest.ConfigMap
   */
 
 object AppCrawler{
+/*
   def sbt(args: String): Unit = {
     import scala.sys.process._
     //val sbt="/usr/local/Cellar/sbt/0.13.8/libexec/sbt-launch.jar"
@@ -15,6 +16,7 @@ object AppCrawler{
     println(cmd)
     cmd ! ProcessLogger(stdout append _ + "\n", stderr append _ + "\n")
   }
+*/
 
   def main(args: Array[String]) {
     if(args.length==0){

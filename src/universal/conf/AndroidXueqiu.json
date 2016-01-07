@@ -3,7 +3,7 @@
   "appiumUrl":"http://127.0.0.1:4730/wd/hub",
   "defineUrl":"//*[contains(@resource-id, '_title')]",
   "baseUrl":".*Main.*",
-  "maxDepth":4,
+  "maxDepth":3,
   "blackUrlList":[
     "StockMoreInfoActivity",
     "UserProfileActivity"

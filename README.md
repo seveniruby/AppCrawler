@@ -21,26 +21,19 @@
 npm install -g appium
 </pre>
 
-### 配置虚拟机
-执行Android和iOS测试需要你自行配置好自己的各种虚拟机环境
+### 准备设备或者虚拟机
+真机或者模拟器均可. 确保adb devices可以看到就行
 ### 使用默认的遍历规则遍历app.
-
 可以使用打包好的工具, 不需要安装scala和sbt. 
 <pre>
-target/universal/stage/bin/traversal ios
-target/universal/stage/bin/traversal android
+#传递配置文件路径即可
+appcrawler xueqiu.conf
 </pre>
 
-或者可以通过sbt直接运行
+### 配置文件定制化
+通过修改配置文件. 可以实现细节的控制. 
 
-<pre>
-#注意大小写区分
-sbt "test-only iOS"
-sbt "test-only Android"
-#只跑android首页的case
-sbt "test-only Android.首页"
-</pre>
-### 根据自己产品的需要编写定制化脚本
+### 测试用例定制化
 和接口测试一样, 编写scala的测试用例即可. 可以直接按照代码例子编写用例, 不需要安装scala的环境.   
 测试用例演示
 
@@ -66,6 +59,15 @@ test("Android"){
       
     appium.traversal()
   }
+</pre>
+
+执行测试用例用sbt或者appcrawler自己都可以执行
+<pre>
+sbt "test-only TimelineXueqiu"
+</pre>
+或者
+<pre>
+appcrawler "test-only TimelineXueqiu"
 </pre>
 
 # 设计理念
