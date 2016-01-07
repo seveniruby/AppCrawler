@@ -1,0 +1,33 @@
+{
+  "app":"http://build.snowballfinance.com/static/apps/com.xueqiu.droid.test/20160106_163812/xueqiu.apk",
+  "appiumUrl":"http://127.0.0.1:4730/wd/hub",
+  "defineUrl":"",
+  "baseUrl":"",
+  "maxDepth":4,
+  "blackUrlList":[
+    "StockMoreInfoActivity",
+    "UserProfileActivity"
+  ],
+  "backButton":[
+    
+  ],
+  "firstList":[
+
+  ],
+  "selectedList":[
+
+  ],
+  "lastList":[
+    
+  ],
+  "blackList":[
+    
+  ],
+  "elementActions":[
+    {
+      "action":"click",
+      "idOrName":".*seveniruby.*",
+      "times":0
+    }
+  ]
+}
