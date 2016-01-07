@@ -13,13 +13,15 @@ import scala.collection.mutable.{ListBuffer, Map}
   */
 class AndroidTraversal extends Traversal {
 
-  selectedList.insertAll(0, ListBuffer[String](
-    "//*[@enabled='true' and @resource-id!='' and not(contains(name(), 'Layout'))]",
-    "//*[@enabled='true' and @content-desc!='' and not(contains(name(), 'Layout'))]",
-    "//android.widget.TextView[@enabled='true' and @clickable='true']",
-    "//android.widget.ImageView[@clickable='true']",
-    "//android.widget.ImageView[@enabled='true' and @clickable='true']"
-  ))
+  if(conf.selectedList.length==0){
+    conf.selectedList.insertAll(0, ListBuffer[String](
+      "//*[@enabled='true' and @resource-id!='' and not(contains(name(), 'Layout'))]",
+      "//*[@enabled='true' and @content-desc!='' and not(contains(name(), 'Layout'))]",
+      "//android.widget.TextView[@enabled='true' and @clickable='true']",
+      "//android.widget.ImageView[@clickable='true']",
+      "//android.widget.ImageView[@enabled='true' and @clickable='true']"
+    ))
+  }
 
   override def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"): AppiumDriver[WebElement] = {
     platformName = "Android"

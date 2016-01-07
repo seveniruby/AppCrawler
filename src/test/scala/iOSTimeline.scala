@@ -1,9 +1,9 @@
-import org.scalatest.FunSuite
+
 
 /**
   * Created by seveniruby on 15/12/15.
   */
-class iOS extends XueqiuTraversal{
+class iOSTimeline extends XueqiuTraversal{
   override def setupAppium(): Traversal ={
     val appium=new IOSTraversal
     //ipa需要开发者证书签名
@@ -37,50 +37,6 @@ class iOS extends XueqiuTraversal{
   }
 
 
-
-
-  test("自选"){
-    val t=setupAppium()
-    t.black("自定义", "action_sort", "tabhost","tabs", "stock_item_.*", ".*message.*")
-    t.conf.blackUrlList.append("正文页", "个人首页", "动态", "消息")
-    subTraversal(t, "自选")
-  }
-
-
-  test("自选 maxDepth=3"){
-    val t=setupAppium()
-    t.conf.maxDepth=3
-    t.black("自定义", "action_sort", "tabhost","tabs", "stock_item_.*", ".*message.*")
-    t.conf.blackUrlList.append("正文页", "个人首页", "动态", "消息")
-    subTraversal(t, "自选")
-  }
-
-
-  test("动态"){
-    val t=setupAppium()
-    t.black("自定义", "action_sort", "tabhost","tabs", "stock_item_.*", ".*message.*")
-    t.conf.blackUrlList.append("个人首页", "消息")
-    subTraversal(t, "动态")
-  }
-
-  test("组合"){
-    val t=setupAppium()
-    t.black("tabhost","tabs", "stock_item_.*", ".*message.*")
-    t.conf.blackUrlList.append("正文页", "个人首页", "动态", "消息")
-    subTraversal(t, "组合")
-  }
-
-  test("交易"){
-
-    val t=setupAppium()
-    t.black("tabhost","tabs", "stock_item_.*", ".*message.*")
-    t.conf.blackUrlList.append("正文页", "个人首页", "动态", "消息")
-    subTraversal(t, "交易")
-  }
-  test("首页"){
-    val t=setupAppium()
-    subTraversal(t, "首页")
-  }
   test("首页 depth=3"){
     val t=setupAppium()
     t.conf.maxDepth=3

@@ -12,7 +12,7 @@ import scala.collection.mutable.{ListBuffer, Map}
   * Created by seveniruby on 15/12/10.
   */
 class IOSTraversal extends Traversal {
-  selectedList.insertAll(0, Seq(
+  conf.selectedList.insertAll(0, Seq(
     "//UIAWindow[1]//UIATextField[@visible='true' and @enabled='true' and @valid='true']",
     "//UIAWindow[1]//UIASecureTextField[@visible='true' and @enabled='true' and @valid='true']",
     "//UIAWindow[1]//UIATableCell[@visible='true' and @enabled='true' and @valid='true']",
@@ -21,7 +21,7 @@ class IOSTraversal extends Traversal {
     "//UIAWindow[1]//UIACollectionCell[@visible='true' and @enabled='true' and @valid='true']"
   ))
 
-  firstList.insertAll(0, Seq(
+  conf.firstList.insertAll(0, Seq(
     s"//UIAWindow[3]//UIAButton[@visible='true' and @enabled='true' and @valid='true']",
     s"//UIAWindow[2]//UIAButton[@visible='true' and @enabled='true' and @valid='true']"
   ))

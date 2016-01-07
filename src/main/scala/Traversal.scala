@@ -7,10 +7,12 @@ import io.appium.java_client.AppiumDriver
 import org.apache.commons.io.FileUtils
 import org.apache.xml.serialize.{OutputFormat, XMLSerializer}
 import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
+import org.scalatest.ConfigMap
 import org.w3c.dom.{Attr, Document, NodeList}
 
 import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Map}
+import scala.io.Source
 import scala.reflect.io.File
 import scala.util.control.Breaks._
 import scala.util.{Failure, Success, Try}
@@ -24,14 +26,9 @@ import scala.util.{Failure, Success, Try}
   */
 class Traversal {
   implicit var driver: AppiumDriver[WebElement] = _
+  var conf=new TraversalConf()
 
   private val elements: scala.collection.mutable.Map[String, Boolean] = scala.collection.mutable.Map()
-  //包括backButton
-  /**黑名单列表 matches风格*/
-  val blackList = ListBuffer[String]()
-
-  /**引导规则. name, value, times三个元素组成*/
-  val rule = ListBuffer[scala.collection.mutable.Map[String, Any]]()
   private var isSkip = false
   /**点击顺序, 留作画图用*/
   val clickedList = ListBuffer[String]()
@@ -40,20 +37,8 @@ class Traversal {
   var automationName = "appium"
   var platformName = ""
 
-  /**后退按钮标记, 主要用于iOS, xpath*/
-  var backButton = ListBuffer[String]()
   //意义不大. 并不是真正的层次
   var depth=0
-  /**优先遍历元素*/
-  val firstList=ListBuffer[String]()
-  /**默认遍历列表*/
-  val selectedList = ListBuffer[String]()
-  /**最后遍历列表*/
-  val appendList=ListBuffer[String]()
-
-  /**url黑名单.用于排除某些页面 contains风格. 不过最好还是正则比较好*/
-  val blackUrlList = ListBuffer("StockMoreInfoActivity", "UserProfileActivity")
-
   var pageSource=""
   private var pageDom:Document=null
   private var img_index=0
@@ -62,22 +47,15 @@ class Traversal {
 
   /**当前的url路径*/
   var url=""
-  /**用来确定url的元素定位xpath 他的text会被取出当作url因素*/
-  var urlXPath=""
-  /**设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度*/
-  var baseUrl=""
-  /**默认的最大深度10, 结合baseUrl可很好的控制遍历的范围*/
-  var maxDepth=10
-
   val urlStack=mutable.Stack[String]()
 
-  def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"): AppiumDriver[WebElement] ={
+  def setupApp(app: String=conf.app, url: String = conf.appiumUrl): AppiumDriver[WebElement] ={
     return null
   }
 
 
   def black(keys: String*): Unit = {
-    keys.foreach(blackList.append(_))
+    keys.foreach(conf.blackList.append(_))
   }
 
   def md5(format: String) = {
@@ -94,7 +72,7 @@ class Traversal {
 
 
   def rule(loc: String, action: String, times:Int=0): Unit = {
-    rule.append(Map(
+    conf.elementActions.append(Map(
       "idOrName" -> loc,
       "action"->action,
       "times"->times))
@@ -174,8 +152,8 @@ class Traversal {
   }
 
   def getUrl(): String = {
-    if(urlXPath!="") {
-      return getAllElements(urlXPath).map(_("value")).lift(0).getOrElse("")
+    if(conf.defineUrl!="") {
+      return getAllElements(conf.defineUrl).map(_("value")).lift(0).getOrElse("")
     }
     return ""
   }
@@ -185,7 +163,7 @@ class Traversal {
     * @param x
     * @return
     */
-  def getElementId(x: Map[String, String]): Option[ELement] = {
+  def getElementId(x: Map[String, String]): Option[Element] = {
     //控件的类型
     val tag = x.getOrElse("tag", "NoTag")
 
@@ -196,11 +174,7 @@ class Traversal {
     //id表示android的resource-id或者iOS的name属性
     val resourceId = x.getOrElse("name", "")
     val id = resourceId.split('/').last
-    println("id=xx")
-    println(resourceId)
-    println(id)
-
-    val node = ELement(url, tag, id, name)
+    val node = Element(url, tag, id, name)
     return Some(node)
 
     //    if (List("android", "com.xueqiu.android").contains(appName)) {
@@ -216,12 +190,12 @@ class Traversal {
       println(s"maybe back to desktop ${urlStack.reverse.mkString("-")}")
       needExit=true
     }
-    if (blackUrlList.filter(url.contains(_)).length > 0) {
+    if (conf.blackUrlList.filter(url.contains(_)).length > 0) {
       println("should return")
       return true
     }
-    if(urlStack.length>maxDepth){
-      println(s"urlStack.depth=${urlStack.length} > maxDepth=${maxDepth}")
+    if(urlStack.length>conf.maxDepth){
+      println(s"urlStack.depth=${urlStack.length} > maxDepth=${conf.maxDepth}")
       return true
     }
     return false
@@ -234,7 +208,7 @@ class Traversal {
     * @return
     */
   def isBlack(uid: Map[String,String]): Boolean = {
-    blackList.filter(b => {
+    conf.blackList.filter(b => {
       uid("value").matches(b) || uid("name").matches(b)
     }).length>=1
   }
@@ -246,15 +220,16 @@ class Traversal {
     var appendElements=Seq[Map[String, String]]()
     var commonElements=Seq[Map[String, String]]()
 
-    firstList.foreach(xpath => {
+    println(conf)
+    conf.firstList.foreach(xpath => {
       firstElements ++= getAllElements(xpath)
     })
 
-    appendList.foreach(xpath => {
+    conf.lastList.foreach(xpath => {
       appendElements ++= getAllElements(xpath)
     })
 
-    selectedList.foreach(xpath => {
+    conf.selectedList.foreach(xpath => {
       commonElements ++= getAllElements(xpath)
     })
 
@@ -268,14 +243,14 @@ class Traversal {
   }
 
   def first(xpath:String): Unit ={
-    firstList.append(xpath)
+    conf.firstList.append(xpath)
   }
   def last(xpath:String): Unit ={
-    appendList.append(xpath)
+    conf.lastList.append(xpath)
   }
   def back(name: String): Unit = {
-    backButton.append(name)
-    backButton.foreach(black(_))
+    conf.backButton.append(name)
+    conf.backButton.foreach(black(_))
   }
 
   def refreshPage(): Unit ={
@@ -311,7 +286,7 @@ class Traversal {
       urlStack.push(currentUrl)
     }
     //判断新的url堆栈中是否包含baseUrl, 如果有就清空栈记录并从新计数
-    if(urlStack.head.matches(baseUrl)) {
+    if(urlStack.head.matches(conf.baseUrl)) {
       urlStack.clear()
       urlStack.push(currentUrl)
     }
@@ -446,7 +421,7 @@ class Traversal {
   }
 */
 
-  def isClicked(ele: ELement): Boolean ={
+  def isClicked(ele: Element): Boolean ={
     if (elements.contains(ele.toString())) {
       return elements(ele.toString())
     } else {
@@ -455,7 +430,7 @@ class Traversal {
     }
   }
 
-  def clickElement(uid:ELement): Unit ={
+  def clickElement(uid:Element): Unit ={
     println(s"just click ${uid}")
     elements(uid.toString()) = true
     //doDefaultAction(uid)
@@ -470,13 +445,13 @@ class Traversal {
   }
   def goBack(): Unit ={
     println("go back")
-    if (backButton.length == 0) {
+    if (conf.backButton.length == 0) {
       //todo: iOS上的back貌似有问题
       driver.navigate().back()
-      saveScreen(ELement(url, "Back", "Back", "Back"))
+      saveScreen(Element(url, "Back", "Back", "Back"))
     } else {
       //找到可能的关闭按钮, 取第一个可用的关闭按钮
-      backButton.map(getAllElements(_)).flatten.lift(0) match {
+      conf.backButton.map(getAllElements(_)).flatten.lift(0) match {
         case Some(v)=>{
           getElementId(v) match {
             case Some(element)=>{
@@ -553,7 +528,7 @@ class Traversal {
 
   //todo:优化查找方法
   //找到统一的定位方法就在这里定义, 找不到就分别在子类中重载定义
-  def findElementByUid(uid: ELement): Option[WebElement] = {
+  def findElementByUid(uid: Element): Option[WebElement] = {
     println(s"find element by uid ${uid}")
     platformName.toLowerCase() match {
       case "ios"=>{
@@ -608,7 +583,7 @@ class Traversal {
   }
 
   def doAppiumActionByName(name: String, action: String = "click"): Option[Unit] = {
-    val element = ELement("", "*", "", name)
+    val element = Element("", "*", "", name)
     doAppiumAction(element, action)
   }
 
@@ -621,7 +596,7 @@ class Traversal {
     File(s"${platformName}_${timestamp}/ElementList.log").writeAll(elements.mkString("\n"))
   }
 
-  def saveScreen(e: ELement): Unit ={
+  def saveScreen(e: Element): Unit ={
     Thread.sleep(1000)
     img_index+=1
     val path=s"${platformName}_${timestamp}/${img_index}_"+e.toString().replace("\n", "").replaceAll("[ /,]", "").take(200)+".jpg"
@@ -635,7 +610,7 @@ class Traversal {
     }
   }
 
-  def doAppiumAction(e: ELement, action: String = "click"): Option[Unit] = {
+  def doAppiumAction(e: Element, action: String = "click"): Option[Unit] = {
     findElementByUid(e) match {
       case Some(v) => {
         action match {
@@ -685,13 +660,15 @@ class Traversal {
     println("rule match start")
     //先判断是否在期望的界面里. 提升速度
     var isHit=false
-    rule.foreach(r => {
+    conf.elementActions.foreach(r => {
       println("for each rule")
-      val idOrName = r("idOrName").toString.split('.').last
+      val idOrName = r("idOrName").toString
       val action = r("action").toString
       val times=r("times").toString.toInt
       println(s"idOrName=${idOrName} action=${action}")
       val all = getRuleMatchNodes()
+      println("getRuleMatchNodes=")
+      println(all)
       breakable{
         (all.filter(_ ("name").matches(idOrName)) ++ all.filter(_ ("value").matches(idOrName))).distinct.foreach(x => {
         println("hit rule action")
@@ -711,7 +688,7 @@ class Traversal {
                 println("do rule action success")
                 r("times")=times-1
                 if(times==1){
-                  rule-=r
+                  conf.elementActions-=r
                 }
               }
             }
@@ -727,37 +704,4 @@ class Traversal {
     return isHit
 
   }
-
-
-}
-
-object Traversal{
-  def sbt(args: String): Unit = {
-    import scala.sys.process._
-    //val sbt="/usr/local/Cellar/sbt/0.13.8/libexec/sbt-launch.jar"
-    val project_dir=getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath.
-      split("/").dropRight(2).mkString("/")
-    val sbt = s"${project_dir}/lib/sbt-launch.jar"
-    val cmd = Seq("java", "-jar", sbt, args) // You
-    println(cmd)
-    cmd ! ProcessLogger(stdout append _ + "\n", stderr append _ + "\n")
-  }
-
-  def main(args: Array[String]) {
-    args.foreach(arg=>{
-      arg.toLowerCase() match {
-        case "ios"=>{
-          sbt("test-only iOS")
-        }
-        case "android"=>{
-          sbt("test-only Android")
-        }
-        case cmd: String =>{
-          sbt(s"test-only ${cmd}")
-        }
-      }
-    })
-
-  }
-
 }

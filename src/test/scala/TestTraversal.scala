@@ -12,28 +12,28 @@ class TestTraversal extends FunSuite{
   test("test freemind"){
     val appium=new Node[Map[String, String]](Map[String, String]())
     appium.generateFreeMind(ListBuffer(
-      ELement("a","","1",""),
-      ELement("com/a","","2",""),
-      ELement("abc/a","","3",""),
-      ELement("com/b","","11",""),
-      ELement("abc/b","","12",""),
-      ELement("com/b","","13",""),
-      ELement("abc/c","","21","")
+      Element("a","","1",""),
+      Element("com/a","","2",""),
+      Element("abc/a","","3",""),
+      Element("com/b","","11",""),
+      Element("abc/b","","12",""),
+      Element("com/b","","13",""),
+      Element("abc/c","","21","")
     ))
 
-    val click=ListBuffer[ELement]()
+    val click=ListBuffer[Element]()
     Source.fromFile("clicked.log").getLines().foreach(line=>{
       val arr=line.split(',')
       if (arr.length==3) {
         val url = arr(0)
         val id = arr(1)
         val text = arr(2)
-        click.append(ELement(url,"",id,text))
+        click.append(Element(url,"",id,text))
       }else if (arr.length==2) {
         val url = arr(0)
         val id = arr(1)
         val text = null
-        click.append(ELement(url,"",id,text))
+        click.append(Element(url,"",id,text))
       }
     })
 
@@ -347,5 +347,26 @@ class TestTraversal extends FunSuite{
     }
 
   }
+
+  test("save config"){
+    val conf=new TraversalConf
+    conf.save("conf.json")
+  }
+  test("load config"){
+    var conf=new TraversalConf
+    conf.baseUrl="xxx"
+    println(conf.baseUrl)
+    conf=conf.loadByJson4s("conf.json").get
+    println(conf.baseUrl)
+  }
+
+  test("load config by jackson"){
+    var conf=new TraversalConf
+    conf.baseUrl="xxx"
+    println(conf.baseUrl)
+    conf=conf.load("conf.json")
+    println(conf.baseUrl)
+  }
+
 
 }

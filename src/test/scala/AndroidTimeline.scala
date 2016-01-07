@@ -1,9 +1,9 @@
-import org.scalatest.FunSuite
+
 
 /**
   * Created by seveniruby on 15/12/15.
   */
-class Android extends XueqiuTraversal {
+class AndroidTimeline extends XueqiuTraversal {
   override def setupAppium(): Traversal = {
     val appium = new AndroidTraversal
     //    val android=appium.setupApp("http://qaci.snowballfinance.com/view/Snowball-Android/job/snowball-droid-rc/lastSuccessfulBuild/artifact/snowball/build/outputs/apk/xueqiu.apk",
@@ -36,37 +36,10 @@ class Android extends XueqiuTraversal {
   }
 
 
-  test("自选") {
-    val t = setupAppium()
-    subTraversal(t, "自选")
-  }
 
-  test("动态") {
+  test("首页 depth=3") {
     val t = setupAppium()
-    t.conf.blackUrlList.append("个人首页", "消息")
-    subTraversal(t, "动态")
-  }
-
-  test("组合") {
-    val t = setupAppium()
-    t.conf.blackUrlList.append("正文页", "个人首页", "动态", "消息")
-    subTraversal(t, "组合")
-  }
-
-  test("交易") {
-    val t = setupAppium()
-    t.black("tabhost", "tabs", "stock_item_.*", ".*message.*")
-    t.conf.blackUrlList.append("正文页", "个人首页", "动态", "消息")
-    subTraversal(t, "交易")
-  }
-  test("首页") {
-    val t = setupAppium()
-    subTraversal(t, "首页")
-  }
-
-  test("首页 depth=4") {
-    val t = setupAppium()
-    t.conf.maxDepth = 4
+    t.conf.maxDepth = 3
     subTraversal(t, "首页")
   }
 

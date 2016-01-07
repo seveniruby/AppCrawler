@@ -138,7 +138,7 @@ import scala.collection.mutable.{Map, ListBuffer}
       return None
     }
 
-    def generateFreeMind(list: ListBuffer[ELement]): Unit = {
+    def generateFreeMind(list: ListBuffer[Element]): Unit = {
       val freemind = Node(Map("url" -> "Start", "id" -> "Start", "name" -> null))
       // 保留上一个node用来加linktarget箭头
       var lastAddedNodes = ListBuffer[Node[AM]]()

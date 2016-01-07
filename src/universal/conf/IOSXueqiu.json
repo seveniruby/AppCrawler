@@ -1,0 +1,39 @@
+{
+  "app":"http://build.snowballfinance.com/static/apps/com.xueqiu.droid.test/20160106_163812/xueqiu.apk",
+  "appiumUrl":"http://127.0.0.1:4730/wd/hub",
+  "defineUrl":"",
+  "baseUrl":"",
+  "maxDepth":4,
+  "blackUrlList":[
+    "StockMoreInfoActivity",
+    "UserProfileActivity"
+  ],
+  "backButton":[
+    
+  ],
+  "firstList":[
+    "//UIAWindow[3]//UIAButton[@visible='true' and @enabled='true' and @valid='true']",
+    "//UIAWindow[2]//UIAButton[@visible='true' and @enabled='true' and @valid='true']"
+  ],
+  "selectedList":[
+    "//UIAWindow[1]//UIATextField[@visible='true' and @enabled='true' and @valid='true']",
+    "//UIAWindow[1]//UIASecureTextField[@visible='true' and @enabled='true' and @valid='true']",
+    "//UIAWindow[1]//UIATableCell[@visible='true' and @enabled='true' and @valid='true']",
+    "//UIAWindow[1]//UIAButton[@visible='true' and @enabled='true' and @valid='true']",
+    "//UIAWindow[1]//UIAImage[@visible='true' and @enabled='true' and @valid='true']",
+    "//UIAWindow[1]//UIACollectionCell[@visible='true' and @enabled='true' and @valid='true']"
+  ],
+  "lastList":[
+    
+  ],
+  "blackList":[
+    
+  ],
+  "elementActions":[
+    {
+      "action":"click",
+      "idOrName":".*seveniruby.*",
+      "times":0
+    }
+  ]
+}
