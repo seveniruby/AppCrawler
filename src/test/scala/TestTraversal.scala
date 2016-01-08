@@ -44,7 +44,7 @@ class TestTraversal extends FunSuite{
   }
 
   test("isBlack"){
-    val appium=new Traversal
+    val appium=new Crawler
     appium.black("stock_item.*")
     val m1=mutable.Map("name"->"stock_item_1", "value"->"")
     val m2=mutable.Map("value"->"stock_item_1", "name"->"")
@@ -326,7 +326,7 @@ class TestTraversal extends FunSuite{
         |
       """.stripMargin
 
-    val appium=new Traversal
+    val appium=new Crawler
     appium.pageSource=xml
     appium.parseXml(appium.pageSource)
     println(appium.getAllElements("//UIAWindow[1]//*[@visible='true' and @name!='']"))
@@ -349,11 +349,21 @@ class TestTraversal extends FunSuite{
   }
 
   test("save config"){
-    val conf=new TraversalConf
+    val conf=new CrawlerConf
     conf.save("conf.json")
   }
+
+  test("save xueqiu android config"){
+    val conf=new XueqiuAndroidCrawlerConf
+    conf.save("xueqiu_android.json")
+  }
+
+  test("save xueqiu ios config"){
+    val conf=new XueqiuIOSCrawlerConf
+    conf.save("xueqiu_ios.json")
+  }
   test("load config"){
-    var conf=new TraversalConf
+    var conf=new CrawlerConf
     conf.baseUrl="xxx"
     println(conf.baseUrl)
     conf=conf.loadByJson4s("conf.json").get
@@ -361,7 +371,7 @@ class TestTraversal extends FunSuite{
   }
 
   test("load config by jackson"){
-    var conf=new TraversalConf
+    var conf=new CrawlerConf
     conf.baseUrl="xxx"
     println(conf.baseUrl)
     conf=conf.load("conf.json")

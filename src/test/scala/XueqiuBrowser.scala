@@ -7,7 +7,7 @@
 
 import java.lang.reflect.{Modifier, Field}
 
-import org.openqa.selenium.WebDriver
+import org.openqa.selenium.{WebElement, WebDriver}
 import org.scalatest.selenium.WebBrowser
 import scala.reflect.runtime.universe._
 
@@ -73,14 +73,15 @@ class XueqiuDriver[T <:WebElement] {
 }
 */
 
-/*
+
 trait clickimp {
+  var x:Any=_
   object click {
-    def on(query: Query)(implicit driver: WebDriver) {
-      query.webElement.click()
+    def on(args:Any*): Unit ={
+      println(args)
     }
   }
-}*/
+}
 trait XueqiuBrowser extends WebBrowser {
   this.getClass.getDeclaredFields.foreach(m => println(m.getName))
   val clickField = this.getClass.getDeclaredField("click$module")
@@ -117,12 +118,12 @@ trait XueqiuBrowser extends WebBrowser {
     var index = 0
     while (isRetry) {
       try {
-        index+=1
+        index += 1
         println("retry time=" + index)
-        if(index<10){
+        if (index < 10) {
           fun()
         }
-        isRetry=false
+        isRetry = false
       } catch {
         case e: Exception => {
           println(e.getMessage)
@@ -147,12 +148,14 @@ trait XueqiuBrowser extends WebBrowser {
 
   }
 
+  object cc{
+    def on(args:Any*): Unit ={
+      println(args)
 
-  /*
-  def click(): Unit ={
-
+    }
   }
-*/
+  //利用重名覆盖原来的调用. 不过a b这种调用还是回优先调用object和方法
+  def click3:()=>cc.type=()=>{cc}
   /*  def click(x:String="demo"): super.click.type ={
       println("click method")
       super.click
@@ -179,4 +182,3 @@ trait WebBrowser {
 
 }
 */
-

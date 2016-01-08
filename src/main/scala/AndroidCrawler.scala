@@ -11,7 +11,7 @@ import scala.collection.mutable.{ListBuffer, Map}
 /**
   * Created by seveniruby on 15/12/10.
   */
-class AndroidTraversal extends Traversal {
+class AndroidCrawler extends Crawler {
 
   if(conf.selectedList.length==0){
     conf.selectedList.insertAll(0, ListBuffer[String](

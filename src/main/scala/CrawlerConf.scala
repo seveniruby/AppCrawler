@@ -7,11 +7,12 @@ import scala.collection.mutable.ListBuffer
 import scala.io.Source
 import org.json4s.{FieldSerializer, DefaultFormats}
 import org.json4s.native.Serialization._
+import java.nio.charset.Charset
 
 /**
   * Created by seveniruby on 16/1/6.
   */
-class TraversalConf {
+class CrawlerConf {
   var app:String=""
   var appiumUrl="http://127.0.0.1:4723/wd/hub"
   /**用来确定url的元素定位xpath 他的text会被取出当作url因素*/
@@ -56,14 +57,16 @@ class TraversalConf {
     implicit val formats = DefaultFormats+ FieldSerializer[this.type]()
     val file = new java.io.File(path)
     val bw = new BufferedWriter(new FileWriter(file))
+    println(writePretty(this))
+    println(write(this))
     bw.write(writePretty(this))
     bw.close()
   }
 
-  def load(file :String): TraversalConf ={
+  def load(file :String): CrawlerConf ={
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
-    return mapper.readValue(Source.fromFile(file).mkString.getBytes, classOf[TraversalConf])
+    return mapper.readValue(Source.fromFile(file).mkString.getBytes, classOf[CrawlerConf])
   }
 
 }

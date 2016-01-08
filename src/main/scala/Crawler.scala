@@ -24,9 +24,9 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by seveniruby on 15/11/28.
   */
-class Traversal {
+class Crawler {
   implicit var driver: AppiumDriver[WebElement] = _
-  var conf=new TraversalConf()
+  var conf=new CrawlerConf()
 
   private val elements: scala.collection.mutable.Map[String, Boolean] = scala.collection.mutable.Map()
   private var isSkip = false
@@ -134,6 +134,14 @@ class Traversal {
           if(nodeMap.contains("text")){
             nodeMap("value")=nodeMap("text")
           }
+          println(nodeMap)
+          if(nodeMap.contains("bounds")){
+            nodeMap("loc")=nodeMap("bounds")
+          }
+          if(nodeMap.contains("x")){
+            nodeMap("loc")=nodeMap("x")+","+nodeMap("y")
+          }
+
           nodeList.append(nodeMap)
         })
       }
@@ -174,7 +182,8 @@ class Traversal {
     //id表示android的resource-id或者iOS的name属性
     val resourceId = x.getOrElse("name", "")
     val id = resourceId.split('/').last
-    val node = Element(url, tag, id, name)
+    val loc=x.getOrElse("loc", "")
+    val node = Element(url, tag, id, name, loc)
     return Some(node)
 
     //    if (List("android", "com.xueqiu.android").contains(appName)) {
@@ -448,7 +457,7 @@ class Traversal {
     if (conf.backButton.length == 0) {
       //todo: iOS上的back貌似有问题
       driver.navigate().back()
-      saveScreen(Element(url, "Back", "Back", "Back"))
+      saveScreen(Element(url, "Back", "", "", ""))
     } else {
       //找到可能的关闭按钮, 取第一个可用的关闭按钮
       conf.backButton.map(getAllElements(_)).flatten.lift(0) match {
@@ -470,18 +479,18 @@ class Traversal {
     }else{
       println(s"backRetry=${backRetry}")
     }
+
+    depth-=1
   }
 
   /**
     * 优化后的递归方法. 尾递归.
     */
-  def traversal(): Unit = {
+  def start(): Unit = {
     if(needExit){
       return
     }
     println("traversal start")
-    //等待一秒防止太快
-    Thread.sleep(500)
     depth+=1
     println(s"depth=${depth}")
     println("refresh page")
@@ -489,7 +498,7 @@ class Traversal {
     //是否需要退出或者后退
     if (isReturn()) {
       goBack()
-      depth-=1
+      doRuleAction()
     } else {
       //先判断是否命中规则.
       if(doRuleAction()==false){
@@ -518,11 +527,10 @@ class Traversal {
           backRetry=0
         } else {
           goBack()
-          depth -= 1
         }
       }
     }
-    traversal()
+    start()
   }
 
 
@@ -534,7 +542,8 @@ class Traversal {
       case "ios"=>{
         println(s"find by xpath")
         //照顾iOS android会在findByName的时候自动找text属性.
-        doAppium(driver.findElementByXPath(s"//${uid.tag}[@name='${uid.id}' and @value='${uid.name}']")) match {
+        doAppium(driver.findElementByXPath(
+          s"//${uid.tag}[@name='${uid.id}' and @value='${uid.name}' and @x='${uid.loc.split(',').head}' and @y='${uid.loc.split(',').last}']")) match {
           case Some(v) => return Some(v)
           case None => {}
         }
@@ -562,6 +571,14 @@ class Traversal {
             }
           }
         }
+
+        println(s"find by xpath")
+        doAppium(driver.findElementByXPath(s"//*[@bounds='${uid.loc}']")) match {
+          case Some(v) => return Some(v)
+          case None => {
+          }
+        }
+
       }
     }
     return None
@@ -580,11 +597,6 @@ class Traversal {
       }
     }
 
-  }
-
-  def doAppiumActionByName(name: String, action: String = "click"): Option[Unit] = {
-    val element = Element("", "*", "", name)
-    doAppiumAction(element, action)
   }
 
   def saveLog(): Unit ={
@@ -667,8 +679,6 @@ class Traversal {
       val times=r("times").toString.toInt
       println(s"idOrName=${idOrName} action=${action}")
       val all = getRuleMatchNodes()
-      println("getRuleMatchNodes=")
-      println(all)
       breakable{
         (all.filter(_ ("name").matches(idOrName)) ++ all.filter(_ ("value").matches(idOrName))).distinct.foreach(x => {
         println("hit rule action")

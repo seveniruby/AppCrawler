@@ -4,8 +4,8 @@ import org.scalatest.FunSuite
   * Created by seveniruby on 15/12/15.
   */
 class iOS extends XueqiuTraversal{
-  override def setupAppium(): Traversal ={
-    val appium=new IOSTraversal
+  override def setupAppium(): Crawler ={
+    val appium=new IOSCrawler
     //ipa需要开发者证书签名
     //appium.setupApp("http://build.snowballfinance.com/static/apps/com.xueqiu.ios.rc/20151218_124401/xueqiu.ipa")
     appium.setupApp("/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app")

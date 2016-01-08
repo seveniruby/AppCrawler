@@ -10,16 +10,16 @@ class AppTraversal extends FunSuite with BeforeAndAfterAllConfigMap{
     this.cm=cm
   }
   test("App Traversal"){
-    val conf=new TraversalConf().load(this.cm.get("conf").get.toString)
-    var t:Traversal=new Traversal
+    val conf=new CrawlerConf().load(this.cm.get("conf").get.toString)
+    var t:Crawler=new Crawler
 
     if(conf.app.trim.matches(".*\\.apk")){
-      t=new AndroidTraversal
+      t=new AndroidCrawler
     }else{
-      t=new IOSTraversal
+      t=new IOSCrawler
     }
     t.conf=conf
     t.setupApp(conf.app, conf.appiumUrl)
-    t.traversal()
+    t.start()
   }
 }

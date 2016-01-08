@@ -11,20 +11,22 @@ import scala.collection.mutable.{ListBuffer, Map}
 /**
   * Created by seveniruby on 15/12/10.
   */
-class IOSTraversal extends Traversal {
-  conf.selectedList.insertAll(0, Seq(
-    "//UIAWindow[1]//UIATextField[@visible='true' and @enabled='true' and @valid='true']",
-    "//UIAWindow[1]//UIASecureTextField[@visible='true' and @enabled='true' and @valid='true']",
-    "//UIAWindow[1]//UIATableCell[@visible='true' and @enabled='true' and @valid='true']",
-    "//UIAWindow[1]//UIAButton[@visible='true' and @enabled='true' and @valid='true']",
-    "//UIAWindow[1]//UIAImage[@visible='true' and @enabled='true' and @valid='true']",
-    "//UIAWindow[1]//UIACollectionCell[@visible='true' and @enabled='true' and @valid='true']"
-  ))
+class IOSCrawler extends Crawler {
+  if(conf.selectedList.length==0) {
+    conf.selectedList.insertAll(0, Seq(
+      "//UIAWindow[1]//UIATextField[@visible='true' and @enabled='true' and @valid='true']",
+      "//UIAWindow[1]//UIASecureTextField[@visible='true' and @enabled='true' and @valid='true']",
+      "//UIAWindow[1]//UIATableCell[@visible='true' and @enabled='true' and @valid='true']",
+      "//UIAWindow[1]//UIAButton[@visible='true' and @enabled='true' and @valid='true']",
+      "//UIAWindow[1]//UIAImage[@visible='true' and @enabled='true' and @valid='true']",
+      "//UIAWindow[1]//UIACollectionCell[@visible='true' and @enabled='true' and @valid='true']"
+    ))
 
-  conf.firstList.insertAll(0, Seq(
-    s"//UIAWindow[3]//UIAButton[@visible='true' and @enabled='true' and @valid='true']",
-    s"//UIAWindow[2]//UIAButton[@visible='true' and @enabled='true' and @valid='true']"
-  ))
+    conf.firstList.insertAll(0, Seq(
+      "//UIAWindow[3]//UIAButton[@visible='true' and @enabled='true' and @valid='true']",
+      "//UIAWindow[2]//UIAButton[@visible='true' and @enabled='true' and @valid='true']"
+    ))
+  }
 
   override def
   setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"):AppiumDriver[WebElement]={
@@ -52,6 +54,10 @@ class IOSTraversal extends Traversal {
     * @return
     */
   override def getUrl(): String = {
+    val superUrl=super.getUrl()
+    if(superUrl!=""){
+      return superUrl
+    }
     val nav = getAllElements("//UIANavigationBar[1]")
     if (nav.length > 0) {
       return nav(0)("name")

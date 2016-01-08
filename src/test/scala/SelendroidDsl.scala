@@ -11,12 +11,12 @@ import org.openqa.selenium.support.PageFactory
 import org.openqa.selenium.{WebDriver, By, WebElement}
 import org.scalatest.selenium.WebBrowser
 import org.scalatest.time.{Seconds, Span}
-import org.scalatest.{BeforeAndAfterAll, FunSuite, ShouldMatchers}
+import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 /**
   * Created by seveniruby on 15/10/14.
   */
-class SelendroidDsl extends FunSuite with ShouldMatchers with WebBrowser with BeforeAndAfterAll{
+class SelendroidDsl extends FunSuite  with WebBrowser with BeforeAndAfterAll{
   //val capa = new SelendroidCapabilities("io.selendroid.testapp:0.16.0")
   val capa = new SelendroidCapabilities("com.xueqiu.android:6.8.1-rc-473")
 

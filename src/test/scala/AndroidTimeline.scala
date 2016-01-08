@@ -4,8 +4,8 @@
   * Created by seveniruby on 15/12/15.
   */
 class AndroidTimeline extends XueqiuTraversal {
-  override def setupAppium(): Traversal = {
-    val appium = new AndroidTraversal
+  override def setupAppium(): Crawler = {
+    val appium = new AndroidCrawler
     //    val android=appium.setupApp("http://qaci.snowballfinance.com/view/Snowball-Android/job/snowball-droid-rc/lastSuccessfulBuild/artifact/snowball/build/outputs/apk/xueqiu.apk",
     //      "http://127.0.0.1:4730/wd/hub")
     appium.setupApp("http://build.snowballfinance.com/static/apps/com.xueqiu.droid.test/20160106_163812/xueqiu.apk",

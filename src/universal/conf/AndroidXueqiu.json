@@ -1,5 +1,5 @@
 {
-  "app":"http://build.snowballfinance.com/static/apps/com.xueqiu.droid.test/20160106_163812/xueqiu.apk",
+  "app":"http://build.snowballfinance.com/static/apps/com.xueqiu.droid.test/20160108_134204/xueqiu.apk",
   "appiumUrl":"http://127.0.0.1:4730/wd/hub",
   "defineUrl":"//*[contains(@resource-id, '_title')]",
   "baseUrl":".*Main.*",
@@ -107,6 +107,11 @@
     {
       "action":"click",
       "idOrName":"稍后再说",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"这里可以批量实盘买卖\n组合持仓股票",
       "times":0
     },
     {

@@ -51,6 +51,12 @@ class Testin extends FunSuite with XueqiuBrowser with BeforeAndAfterAll with Par
     }
   }
 
+  test("adb local"){
+    setup("http://127.0.0.1:4723/wd/hub")
+    login("demo")
+  }
+
+/*
 
   val raw = Source.fromURL("http://prj.testin.cn:4720/devices").mkString
 
@@ -70,8 +76,34 @@ class Testin extends FunSuite with XueqiuBrowser with BeforeAndAfterAll with Par
       login(mark + "_")
     }
   })
+*/
 
+  /*
 
+    val raw = Source.fromURL("http://prj.testin.cn:4720/devices").mkString
+
+    import rapture.json._
+    import jsonBackends.json4s._
+
+    println(raw)
+    val json = Json.parse(raw)
+    println(json)
+    println(json.\\("url"))
+    0 to json.as[List[Any]].length - 1 foreach (i => {
+      println(json(i).url)
+      println(json(i).brand.as[String])
+      val mark = s"${json(i).brand.as[String]}_${json(i).release.as[String]}_${json(i).model.as[String]}"
+      test(s"${mark} login testcase") {
+        setup(json(i).url.as[String])
+        login(mark + "_")
+      }
+    })
+  */
+
+  def markup(s:String): Unit ={
+    println(s)
+    super.markup(s)
+  }
   def login(mark: String = "") {
     markup("start")
     setCaptureDir("./")

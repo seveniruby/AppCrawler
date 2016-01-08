@@ -63,35 +63,40 @@ class AppiumDsl extends FunSuite with XueqiuBrowser with BeforeAndAfterAll {
     markup("set capture dir")
     setCaptureDir("/Users/seveniruby/projects/LBSRefresh/")
     markup("start.png")
-    capture to "start.png"
+    //capture to "start.png"
     retry {
       markup("account_before.png")
-      capture to "account_before.png"
+      //capture to "account_before.png"
       markup("click on account")
       click on id("account")
     }
     markup("15600534760")
     driver.getKeyboard.sendKeys("15600534760")
     markup("account.png")
-    capture to "account.png"
+    //capture to "account.png"
+    markup("password")
     click on id("password")
     driver.getKeyboard.sendKeys("hys2xueqiu")
-    capture to "password.png"
+    //capture to "password.png"
+    markup("next")
     click on id("button_next")
-    capture to "button_next.png"
+    //capture to "button_next.png"
     retry{
-      capture to "tip_step_one_before.png"
+      //capture to "tip_step_one_before.png"
+      markup("one")
       click on id("tip_step_one")
     }
-    capture to "one.png"
+    //capture to "one.png"
+    markup("two")
     click on id("tip_step_two")
-    capture to "two.png"
+    //capture to "two.png"
+    markup("three")
     click on id("tip_step_three")
-    capture to "three.png"
+    //capture to "three.png"
 
   }
 
-  test("ast traverl"){
+/*  test("ast traverl"){
     import scala.reflect.runtime.universe._
     val tree=reify{
 
@@ -116,6 +121,6 @@ class AppiumDsl extends FunSuite with XueqiuBrowser with BeforeAndAfterAll {
     }
     traverser.traverse(tree.tree)
 
-  }
+  }*/
 
 }
