@@ -299,7 +299,7 @@ class Crawler {
       urlStack.clear()
       urlStack.push(currentUrl)
     }
-    url=urlStack.reverse.takeRight(6).mkString("|").replace("Activity", "")
+    url=urlStack.reverse.takeRight(6).mkString("|")
     println(s"urlStack=${urlStack.reverse}")
     val contexts=doAppium(driver.getContextHandles).getOrElse("")
     //val windows=doAppium(driver.getWindowHandles).getOrElse("")

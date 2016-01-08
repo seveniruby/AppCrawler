@@ -6,6 +6,7 @@
   "maxDepth":3,
   "blackUrlList":[
     "StockMoreInfoActivity",
+    "StockDetailActivity",
     "UserProfileActivity"
   ],
   "backButton":[

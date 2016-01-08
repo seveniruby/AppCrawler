@@ -20,6 +20,7 @@
 <pre>
 npm install -g appium
 </pre>
+直接下载appcrawler解压即可
 
 ### 准备设备或者虚拟机
 真机或者模拟器均可. 确保adb devices可以看到就行
@@ -32,42 +33,131 @@ appcrawler xueqiu.conf
 
 ### 配置文件定制化
 通过修改配置文件. 可以实现细节的控制. 
-
-### 测试用例定制化
-和接口测试一样, 编写scala的测试用例即可. 可以直接按照代码例子编写用例, 不需要安装scala的环境.   
-测试用例演示
-
+Android和iOS的配置可参考conf目录下的配置文件. 如下是Android的定义  
 <pre>
-test("Android"){
-    val appium=new AndroidTraversal
-    val android=appium.setupApp("http://qaci.snowballfinance.com/view/Snowball-Android/job/snowball-droid-rc/lastSuccessfulBuild/artifact/snowball/build/outputs/apk/xueqiu.apk",
-      "http://127.0.0.1:4730/wd/hub")
-
-    appium.rule("account", "15600534760")
-    appium.rule("password", "xxxxx")
-    appium.rule("button_next", "click")
-    appium.rule("不保存", "click")
-    appium.rule("点此进入消息通知中心", "click")
-    appium.rule("点此访问个人主页进行应用设置", "click")
-    appium.rule("持仓盈亏搬到这里，改名模拟盈亏", "click")
-    appium.rule("取消", "click")
-    appium.rule("关闭", "click")
-    appium.rule("好", "click")
-
-    appium.black("seveniruby", "message", "消息", "弹幕", "发射", "Photos","地址", "网址", "发送", "拉黑", "举报",
-      "camera","Camera", "点评")
-      
-    appium.traversal()
-  }
-</pre>
-
-执行测试用例用sbt或者appcrawler自己都可以执行
-<pre>
-sbt "test-only TimelineXueqiu"
-</pre>
-或者
-<pre>
-appcrawler "test-only TimelineXueqiu"
+{
+  "app":"http://build.snowballfinance.com/static/apps/com.xueqiu.droid.test/20160108_134204/xueqiu.apk",
+  "appiumUrl":"http://127.0.0.1:4730/wd/hub",
+  "defineUrl":"//*[contains(@resource-id, '_title')]",
+  "baseUrl":".*Main.*",
+  "maxDepth":3,
+  "blackUrlList":[
+    "StockMoreInfoActivity",
+    "UserProfileActivity"
+  ],
+  "backButton":[
+    
+  ],
+  "firstList":[
+    "//android.widget.ListView//android.widget.TextView",
+    "//android.widget.ListView//android.widget.Button"
+  ],
+  "selectedList":[
+    "//*[@enabled='true' and @resource-id!='' and not(contains(name(), 'Layout'))]",
+    "//*[@enabled='true' and @content-desc!='' and not(contains(name(), 'Layout'))]",
+    "//android.widget.TextView[@enabled='true' and @clickable='true']",
+    "//android.widget.ImageView[@clickable='true']",
+    "//android.widget.ImageView[@enabled='true' and @clickable='true']"
+  ],
+  "lastList":[
+    "//*[contains(@resource-id,'group_header_view')]//android.widget.TextView"
+    
+  ],
+  "blackList":[
+    "seveniruby", "message", "首页", "消息", "弹幕", "发射", "Photos","地址", "网址", "发送", "拉黑", "举报",
+    "camera","Camera", "点评", "nav_icon_home", "评论", "发表讨论", "回复", "咨询", "分享", "转发", "comments", "comment",
+    "stock_item_.*", ".*[0-9]{2}.*", "弹幕", "发送", "保存", "确定",
+    "up", "user_profile_icon", "selectAll", "cut", "copy", "send", "买[0-9]*", "卖[0-9]*",
+    "自选", "动态", "组合", "交易"
+  ],
+  "elementActions":[
+    {
+      "action":"click",
+      "idOrName":"已有帐号？立即登录",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"登录",
+      "times":0
+    },
+    {
+      "action":"15600534760",
+      "idOrName":"account",
+      "times":0
+    },
+    {
+      "action":"hys2xueqiu",
+      "idOrName":"password",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"button_next",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"点此进入消息通知中心",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"点此访问个人主页进行应用设置",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"点此访问个人主页进行应用设置",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"不保存",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"确定",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"关闭",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"取消",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"Cancel",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"好",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"稍后再说",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"这里可以批量实盘买卖\n组合持仓股票",
+      "times":0
+    },
+    {
+      "action":"click",
+      "idOrName":"tip_click_position",
+      "times":0
+    }
+  ]
+}
 </pre>
 
 # 设计理念
@@ -75,14 +165,14 @@ appcrawler "test-only TimelineXueqiu"
 每个screen都有一个唯一的id, 控件的唯一性取决于这个url和控件自身的id name tag text属性.  
 通过如下方法可以自定义这个url. 比如以标题作为url等.  
 <pre>
-    appium.urlXPath = "//*[contains(@resource-id, '_title')]"
+defineUrl
 </pre>
 比如一个输入框id=input, 在多个页面中都出现了.
 如果url为空, 那么它只会被点击一次. 
 如果url设置为当前activiy的名字, 那么有多少页面包含它他就会被点击多少次.
 android的url默认为当前的activity名字.  
 iOS没有activity概念, 默认使用当前页面dom的md5值的后五位作为标记. 如果页面不变. 那么这个md5值也不会变.  
-## 设定规则rule
+## 设定引导规则
 遇到什么控件触发什么操作, 用来做引导输入  
 rule方法有三个参数. 元素的id或者name属性.第二个参数为输入. "click"会执行点击操作. 其他都会被当成文本输入.  
 第三个参数为这个规则被应用多少次. 默认是无限. 比如登录时的输入,可以设置为1次. 大部分情况默认即可.  
@@ -127,12 +217,6 @@ url黑名单可以绕过特定的activity或者window
 
 ## 初始url和最大深度
 <pre>
-  test("首页 depth=2"){
-    val t=setupAppium()
-    t.maxDepth=2
-    t.baseUrl=".*SNBHomeView.*"
-    subTraversal(t, "首页")
-  }
-
+base
 </pre>
 
