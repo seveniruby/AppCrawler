@@ -23,29 +23,22 @@ class AndroidCrawler extends Crawler {
     ))
   }
 
-  override def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"): AppiumDriver[WebElement] = {
+  override def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"): Unit = {
     platformName = "Android"
-    val capabilities = new DesiredCapabilities()
+    super.setupApp(app, url)
     capabilities.setCapability("deviceName", "emulator-5554");
     capabilities.setCapability("platformVersion", "4.4");
     capabilities.setCapability("appPackage", "com.xueqiu.android");
     capabilities.setCapability(MobileCapabilityType.APP_ACTIVITY, "com.xueqiu.android.view.WelcomeActivityAlias")
     //capabilities.setCapability("appActivity", ".ApiDemos");
-    capabilities.setCapability("autoLaunch", "true")
     capabilities.setCapability("unicodeKeyboard", "true")
-    //主要做遍历测试和异常测试. 所以暂不使用selendroid. 兼容性测试需要使用selendroid
+    //todo:主要做遍历测试和异常测试. 所以暂不使用selendroid. 兼容性测试需要使用selendroid
     //capabilities.setCapability("automationName", "Selendroid")
     //todo: Appium模式太慢
     capabilities.setCapability("automationName", "Appium")
 
-    capabilities.setCapability(MobileCapabilityType.APP, app)
-    //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")
-    //driver = new XueqiuDriver[WebElement](new URL("http://127.0.0.1:4729/wd/hub"), capabilities)
     driver = new AndroidDriver[WebElement](new URL(url), capabilities)
-    return driver
-    //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
-    //PageFactory.initElements(new AppiumFieldDecorator(driver, 10, TimeUnit.SECONDS), this)
-    //implicitlyWait(Span(10, Seconds))
+    getDeviceInfo()
   }
 
   override def getUrl(): String = {
@@ -77,4 +70,12 @@ class AndroidCrawler extends Crawler {
   override def getRuleMatchNodes(): ListBuffer[Map[String, String]] = {
     getAllElements("//*")
   }
+
+  override def getSchema(): String = {
+    val nodeList = getAllElements("//UIAWindow[1]//*[not(ancestor-or-self::UIATableView)]")
+    //todo: 未来应该支持黑名单
+    val schemaBlackList = List("UIATableCell", "UIATableView", "UIAScrollView")
+    md5(nodeList.filter(node => schemaBlackList.contains(node("tag")) == false).map(node => node("tag")).mkString(""))
+  }
+
 }

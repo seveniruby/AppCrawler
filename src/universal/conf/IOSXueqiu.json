@@ -3,8 +3,13 @@
   "appiumUrl":"http://127.0.0.1:4723/wd/hub",
   "defineUrl":"//*[contains(@name, '_title')]",
   "baseUrl":".*SNBHomeView.*",
-  "maxDepth":3,
+  "maxDepth":2,
+  "saveScreen": false,
   "blackUrlList":[
+    "消息",
+    "MyselfUser",
+    ".*消息.*",
+    ".*MyselfUser.*"
   ],
   "backButton":[
     "//*[@name='nav_icon_back']",

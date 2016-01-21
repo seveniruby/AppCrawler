@@ -15,6 +15,8 @@ import java.nio.charset.Charset
 class CrawlerConf {
   var app:String=""
   var appiumUrl="http://127.0.0.1:4723/wd/hub"
+  var saveScreen=true
+  var autoLauncher=true
   /**用来确定url的元素定位xpath 他的text会被取出当作url因素*/
   var defineUrl=""
   /**设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度*/
@@ -22,7 +24,7 @@ class CrawlerConf {
   /**默认的最大深度10, 结合baseUrl可很好的控制遍历的范围*/
   var maxDepth=10
   /**url黑名单.用于排除某些页面 contains风格. 不过最好还是正则比较好*/
-  var blackUrlList = ListBuffer("StockMoreInfoActivity", "UserProfileActivity")
+  var blackUrlList = ListBuffer("StockMoreInfo.*", "UserProfileA.*")
 
   /**后退按钮标记, 主要用于iOS, xpath*/
   var backButton = ListBuffer[String]()

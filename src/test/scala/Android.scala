@@ -8,7 +8,8 @@ class Android extends XueqiuTraversal {
     val appium = new AndroidCrawler
     //    val android=appium.setupApp("http://qaci.snowballfinance.com/view/Snowball-Android/job/snowball-droid-rc/lastSuccessfulBuild/artifact/snowball/build/outputs/apk/xueqiu.apk",
     //      "http://127.0.0.1:4730/wd/hub")
-    appium.setupApp("http://build.snowballfinance.com/static/apps/com.xueqiu.droid.test/20160106_163812/xueqiu.apk",
+    appium.setupApp(
+      "/Users/seveniruby/Downloads/xueqiu_7_4_4.apk",
       "http://127.0.0.1:4730/wd/hub")
     Thread.sleep(5000)
 
@@ -22,7 +23,9 @@ class Android extends XueqiuTraversal {
     appium.rule("持仓盈亏搬到这里，改名模拟盈亏", "click")
 
 
+    appium.back("//*[@resource-id='com.xueqiu.android:id/tip_step_one']")
     appium.black("tabhost", "tabs", "stock_item_.*", ".*message.*")
+    appium.conf.blackUrlList++=List("UserProfile.*", "StockMoreInfo.*")
 
     //优先点击列表
     appium.first("//android.widget.ListView//android.widget.TextView")
@@ -30,7 +33,7 @@ class Android extends XueqiuTraversal {
     appium.first("//android.widget.ListView//android.widget.Button")
     //最后是大类
     appium.last("//*[contains(@resource-id,'group_header_view')]//android.widget.TextView")
-    appium.conf.defineUrl = "//*[contains(@resource-id, '_title')]"
+    //appium.conf.defineUrl = "//*[contains(@resource-id, '_title')]"
     appium.conf.baseUrl=".*Main.*"
     return appium
   }
@@ -49,6 +52,7 @@ class Android extends XueqiuTraversal {
 
   test("组合") {
     val t = setupAppium()
+    t.conf.maxDepth=3
     t.conf.blackUrlList.append("正文页", "个人首页", "动态", "消息")
     subTraversal(t, "组合")
   }
@@ -61,6 +65,7 @@ class Android extends XueqiuTraversal {
   }
   test("首页") {
     val t = setupAppium()
+    t.conf.maxDepth=1
     subTraversal(t, "首页")
   }
 

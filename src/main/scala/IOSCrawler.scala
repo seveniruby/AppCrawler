@@ -28,25 +28,17 @@ class IOSCrawler extends Crawler {
     ))
   }
 
-  override def
-  setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"):AppiumDriver[WebElement]={
+  override def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"):Unit={
     platformName = "iOS"
-    val capabilities = new DesiredCapabilities()
+    super.setupApp(app,url)
     capabilities.setCapability("deviceName", "iPhone 6")
     capabilities.setCapability("platformName", "iOS")
     capabilities.setCapability("platformVersion", "9.2")
-    capabilities.setCapability("autoLaunch", "true")
     capabilities.setCapability("autoAcceptAlerts", "true")
-    capabilities.setCapability(MobileCapabilityType.APP, app)
     //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")
     //driver = new XueqiuDriver[WebElement](new URL("http://127.0.0.1:4729/wd/hub"), capabilities)
     driver = new IOSDriver[WebElement](new URL(url), capabilities)
-    return driver
-
-
-    //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
-    //PageFactory.initElements(new AppiumFieldDecorator(driver, 10, TimeUnit.SECONDS), this)
-    //implicitlyWait(Span(10, Seconds))
+    getDeviceInfo()
   }
 
   /**
@@ -56,10 +48,12 @@ class IOSCrawler extends Crawler {
   override def getUrl(): String = {
     val superUrl=super.getUrl()
     if(superUrl!=""){
+      println(s"url=${superUrl}")
       return superUrl
     }
     val nav = getAllElements("//UIANavigationBar[1]")
     if (nav.length > 0) {
+      println(s"url=${nav(0)("name")}")
       return nav(0)("name")
     } else {
       val screenName = getSchema().takeRight(5)

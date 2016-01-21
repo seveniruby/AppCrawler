@@ -3,13 +3,16 @@ import java.nio.charset.StandardCharsets
 import javax.xml.parsers.{DocumentBuilder, DocumentBuilderFactory}
 import javax.xml.xpath.{XPath, XPathFactory, _}
 
-import io.appium.java_client.AppiumDriver
+import io.appium.java_client.remote.MobileCapabilityType
+import io.appium.java_client.{TouchAction, AppiumDriver}
 import org.apache.commons.io.FileUtils
 import org.apache.xml.serialize.{OutputFormat, XMLSerializer}
+import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
 import org.scalatest.ConfigMap
 import org.w3c.dom.{Attr, Document, NodeList}
 
+import scala.collection.immutable.HashMap
 import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Map}
 import scala.io.Source
@@ -18,44 +21,78 @@ import scala.util.control.Breaks._
 import scala.util.{Failure, Success, Try}
 
 
-
-
-
 /**
   * Created by seveniruby on 15/11/28.
   */
 class Crawler {
   implicit var driver: AppiumDriver[WebElement] = _
-  var conf=new CrawlerConf()
+  var conf = new CrawlerConf()
+  val capabilities = new DesiredCapabilities()
+
+  var pluginNames=List[String]("DemoPlugin")
+  var plugins=List[Plugin]()
 
   private val elements: scala.collection.mutable.Map[String, Boolean] = scala.collection.mutable.Map()
   private var isSkip = false
-  /**点击顺序, 留作画图用*/
+  /** 点击顺序, 留作画图用 */
   val clickedList = ListBuffer[String]()
-  val timestamp = new java.text.SimpleDateFormat("YYYYMMddHHmm").format(new java.util.Date())
+
+  var preTimeStamp="0"
+  var nowTimeStamp="0"
+  val timestamp = getTimeStamp()
   var md5Last = ""
   var automationName = "appium"
   var platformName = ""
 
+  var screenWidth = 0
+  var screenHeight = 0
+
   //意义不大. 并不是真正的层次
-  var depth=0
-  var pageSource=""
-  private var pageDom:Document=null
-  private var img_index=0
-  private var backRetry=0
-  private var needExit=false
+  var depth = 0
+  var pageSource = ""
+  private var pageDom: Document = null
+  private var img_index = 0
+  private var backRetry = 0
+  private var swipeRetry=0
+  private var needExit = false
 
-  /**当前的url路径*/
-  var url=""
-  val urlStack=mutable.Stack[String]()
+  /** 当前的url路径 */
+  var url = ""
+  val urlStack = mutable.Stack[String]()
 
-  def setupApp(app: String=conf.app, url: String = conf.appiumUrl): AppiumDriver[WebElement] ={
-    return null
+  def setupApp(app: String = conf.app, url: String = conf.appiumUrl): Unit = {
+    capabilities.setCapability("autoLaunch", "true")
+    capabilities.setCapability(MobileCapabilityType.APP, app)
+
+    //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
+    //PageFactory.initElements(new AppiumFieldDecorator(driver, 10, TimeUnit.SECONDS), this)
+    //implicitlyWait(Span(10, Seconds))
+  }
+
+  def getDeviceInfo(): Unit = {
+    val size = driver.manage().window().getSize
+    screenHeight = size.getHeight
+    screenWidth = size.getWidth
+    println(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
   }
 
 
   def black(keys: String*): Unit = {
     keys.foreach(conf.blackList.append(_))
+  }
+
+  def getTimeStamp(): String = {
+    preTimeStamp=nowTimeStamp
+    nowTimeStamp=new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date())
+    if(preTimeStamp!="0"){
+      Console.println("time consume: "+(nowTimeStamp.toDouble-preTimeStamp.toDouble))
+    }
+    return nowTimeStamp
+  }
+
+  def println(text: Any): Unit = {
+    Console.println(getTimeStamp())
+    Console.println(text)
   }
 
   def md5(format: String) = {
@@ -71,15 +108,15 @@ class Crawler {
   }
 
 
-  def rule(loc: String, action: String, times:Int=0): Unit = {
+  def rule(loc: String, action: String, times: Int = 0): Unit = {
     conf.elementActions.append(Map(
       "idOrName" -> loc,
-      "action"->action,
-      "times"->times))
+      "action" -> action,
+      "times" -> times))
   }
 
 
-  def parseXml(raw:String): Document ={
+  def parseXml(raw: String): Document = {
     val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
     val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
     val document: Document = builder.parse(new ByteArrayInputStream(raw.replaceAll("[\\x00-\\x1F]", "").getBytes(StandardCharsets.UTF_8)))
@@ -118,28 +155,30 @@ class Crawler {
             val attr = nodeAttributes.item(a).asInstanceOf[Attr]
             nodeMap(attr.getName) = attr.getValue
           })
-          if(!nodeMap.contains("name")){
-            nodeMap("name")=""
-            nodeMap("value")=""
+          if (!nodeMap.contains("name")) {
+            nodeMap("name") = ""
+            nodeMap("value") = ""
           }
-          if(nodeMap.contains("resource-id")){
+          if (nodeMap.contains("resource-id")) {
             //todo: /结尾的会被解释为/之前的内容
-            val arr=nodeMap("resource-id").split('/')
-            if(arr.length==1){
+            val arr = nodeMap("resource-id").split('/')
+            if (arr.length == 1) {
               nodeMap("name") = ""
-            }else {
+            } else {
               nodeMap("name") = nodeMap("resource-id").split('/').last
             }
           }
-          if(nodeMap.contains("text")){
-            nodeMap("value")=nodeMap("text")
+          if (nodeMap.contains("text")) {
+            nodeMap("value") = nodeMap("text")
           }
-          println(nodeMap)
-          if(nodeMap.contains("bounds")){
-            nodeMap("loc")=nodeMap("bounds")
+          if (nodeMap.contains("bounds")) {
+            nodeMap("loc") = nodeMap("bounds")
           }
-          if(nodeMap.contains("x")){
-            nodeMap("loc")=nodeMap("x")+","+nodeMap("y")
+          if (nodeMap.contains("x")) {
+            nodeMap("loc") = nodeMap("x") + "," + nodeMap("y")
+          }
+          if (nodeMap.contains("path")) {
+            nodeMap("loc") = nodeMap("path")
           }
 
           nodeList.append(nodeMap)
@@ -155,13 +194,13 @@ class Crawler {
     * 尝试识别当前的页面
     * @return
     */
-  def getSchema(): String ={
+  def getSchema(): String = {
     return ""
   }
 
   def getUrl(): String = {
-    if(conf.defineUrl!="") {
-      return getAllElements(conf.defineUrl).map(_("value")).lift(0).getOrElse("")
+    if (conf.defineUrl != "") {
+      return getAllElements(conf.defineUrl).map(_ ("value")).lift(0).getOrElse("")
     }
     return ""
   }
@@ -182,7 +221,7 @@ class Crawler {
     //id表示android的resource-id或者iOS的name属性
     val resourceId = x.getOrElse("name", "")
     val id = resourceId.split('/').last
-    val loc=x.getOrElse("loc", "")
+    val loc = x.getOrElse("loc", "")
     val node = Element(url, tag, id, name, loc)
     return Some(node)
 
@@ -195,15 +234,24 @@ class Crawler {
   }
 
   def isReturn(): Boolean = {
-    if (url.matches("Launcher.*")) {
+    //回到桌面了
+    if (urlStack.filter(_.matches("Launcher.*")).length > 0) {
       println(s"maybe back to desktop ${urlStack.reverse.mkString("-")}")
-      needExit=true
+      needExit = true
     }
-    if (conf.blackUrlList.filter(url.contains(_)).length > 0) {
+    //url黑名单
+    if (conf.blackUrlList.filter(url.matches(_)).length > 0) {
       println("should return")
       return true
     }
-    if(urlStack.length>conf.maxDepth){
+    //滚动多次没有新元素
+    if(swipeRetry>3){
+      swipeRetry=0
+      return true
+    }
+    //超过遍历深度
+    println(s"urlStack=${urlStack} ${conf.baseUrl} maxDepth=${conf.maxDepth}")
+    if (urlStack.length > conf.maxDepth && urlStack.last.matches(conf.baseUrl)) {
       println(s"urlStack.depth=${urlStack.length} > maxDepth=${conf.maxDepth}")
       return true
     }
@@ -216,18 +264,18 @@ class Crawler {
     * @param uid
     * @return
     */
-  def isBlack(uid: Map[String,String]): Boolean = {
+  def isBlack(uid: Map[String, String]): Boolean = {
     conf.blackList.filter(b => {
       uid("value").matches(b) || uid("name").matches(b)
-    }).length>=1
+    }).length >= 1
   }
 
 
   def getClickableElements(): Option[Seq[Map[String, String]]] = {
     var all = Seq[Map[String, String]]()
-    var firstElements=Seq[Map[String, String]]()
-    var appendElements=Seq[Map[String, String]]()
-    var commonElements=Seq[Map[String, String]]()
+    var firstElements = Seq[Map[String, String]]()
+    var appendElements = Seq[Map[String, String]]()
+    var commonElements = Seq[Map[String, String]]()
 
     println(conf)
     conf.firstList.foreach(xpath => {
@@ -242,37 +290,39 @@ class Crawler {
       commonElements ++= getAllElements(xpath)
     })
 
-    commonElements=commonElements diff firstElements
-    commonElements=commonElements diff appendElements
+    commonElements = commonElements diff firstElements
+    commonElements = commonElements diff appendElements
 
-    all = (firstElements++commonElements++appendElements).distinct
+    all = (firstElements ++ commonElements ++ appendElements).distinct
     println(s"all length=${all.length}")
     return Some(all)
 
   }
 
-  def first(xpath:String): Unit ={
+  def first(xpath: String): Unit = {
     conf.firstList.append(xpath)
   }
-  def last(xpath:String): Unit ={
+
+  def last(xpath: String): Unit = {
     conf.lastList.append(xpath)
   }
+
   def back(name: String): Unit = {
     conf.backButton.append(name)
     conf.backButton.foreach(black(_))
   }
 
-  def refreshPage(): Unit ={
+  def refreshPage(): Unit = {
     //获取页面结构, 最多重试10次.
-    var refreshFinish=false
-    pageSource=""
-    1 to 10 foreach(i=>{
-      if(refreshFinish==false) {
+    var refreshFinish = false
+    pageSource = ""
+    1 to 10 foreach (i => {
+      if (refreshFinish == false) {
         doAppium(driver.getPageSource) match {
           case Some(v) => {
             println("get page source success")
             pageSource = v
-            pageDom=parseXml(pageSource)
+            pageDom = parseXml(pageSource)
             refreshFinish = true
           }
           case None => {
@@ -281,31 +331,32 @@ class Crawler {
         }
       }
     })
-    if(refreshFinish==false){
+    if (refreshFinish == false) {
       print("retry time > 10 exit")
       System.exit(0)
     }
-    val currentUrl=getUrl()
-    //保存url深度
-    if(urlStack.contains(currentUrl)){
-      while(urlStack.head!=currentUrl){
+    val currentUrl = getUrl()
+    println(s"url=${currentUrl}")
+    //如果跳回到某个页面, 就弹栈到特定的页面, 比如回到首页
+    if (urlStack.contains(currentUrl)) {
+      while (urlStack.head != currentUrl) {
         urlStack.pop()
       }
-    }else {
+    } else {
       urlStack.push(currentUrl)
     }
     //判断新的url堆栈中是否包含baseUrl, 如果有就清空栈记录并从新计数
-    if(urlStack.head.matches(conf.baseUrl)) {
+    if (urlStack.head.matches(conf.baseUrl)) {
       urlStack.clear()
       urlStack.push(currentUrl)
     }
-    url=urlStack.reverse.takeRight(6).mkString("|")
+    url = urlStack.reverse.takeRight(6).mkString("|")
     println(s"urlStack=${urlStack.reverse}")
-    val contexts=doAppium(driver.getContextHandles).getOrElse("")
+    val contexts = doAppium(driver.getContextHandles).getOrElse("")
     //val windows=doAppium(driver.getWindowHandles).getOrElse("")
-    val windows=""
+    val windows = ""
     println(s"context=${contexts} windows=${windows}")
-    println("schema="+getSchema())
+    println("schema=" + getSchema())
   }
 
   /*
@@ -430,7 +481,7 @@ class Crawler {
   }
 */
 
-  def isClicked(ele: Element): Boolean ={
+  def isClicked(ele: Element): Boolean = {
     if (elements.contains(ele.toString())) {
       return elements(ele.toString())
     } else {
@@ -439,7 +490,7 @@ class Crawler {
     }
   }
 
-  def clickElement(uid:Element): Unit ={
+  def clickElement(uid: Element): Unit = {
     println(s"just click ${uid}")
     elements(uid.toString()) = true
     //doDefaultAction(uid)
@@ -452,46 +503,52 @@ class Crawler {
       }
     }
   }
-  def goBack(): Unit ={
+
+  def getBackElements(): ListBuffer[Map[String, String]] = {
+    conf.backButton.map(getAllElements(_)).flatten
+  }
+
+  def goBack(): Unit = {
     println("go back")
-    if (conf.backButton.length == 0) {
-      //todo: iOS上的back貌似有问题
-      driver.navigate().back()
-      saveScreen(Element(url, "Back", "", "", ""))
-    } else {
-      //找到可能的关闭按钮, 取第一个可用的关闭按钮
-      conf.backButton.map(getAllElements(_)).flatten.lift(0) match {
-        case Some(v)=>{
-          getElementId(v) match {
-            case Some(element)=>{
-              doAppiumAction(element, "click")
-            }
-            case None=>{println("几乎不会发生这个异常")}
+    //找到可能的关闭按钮, 取第一个可用的关闭按钮
+    getBackElements().lift(0) match {
+      case Some(v) => {
+        getElementId(v) match {
+          case Some(element) => {
+            doAppiumAction(element, "click")
+          }
+          case None => {
+            println("几乎不会发生这个异常")
           }
         }
-        case None=>println("find back button error")
+      }
+      case None => {
+        println("find back button error")
+        driver.navigate().back()
+        saveScreen(Element(url, "Back", "", "", ""))
       }
     }
-    backRetry+=1
+
+    backRetry += 1
     //超过十次连续不停的回退就认为是需要退出
-    if(backRetry>10){
-      needExit=true
-    }else{
+    if (backRetry > 10) {
+      needExit = true
+    } else {
       println(s"backRetry=${backRetry}")
     }
 
-    depth-=1
+    depth -= 1
   }
 
   /**
     * 优化后的递归方法. 尾递归.
     */
   def start(): Unit = {
-    if(needExit){
+    if (needExit) {
       return
     }
     println("traversal start")
-    depth+=1
+    depth += 1
     println(s"depth=${depth}")
     println("refresh page")
     refreshPage()
@@ -501,14 +558,16 @@ class Crawler {
       doRuleAction()
     } else {
       //先判断是否命中规则.
-      if(doRuleAction()==false){
+      if (doRuleAction() == false) {
         //获取可点击元素
         var all = getClickableElements().getOrElse(Seq[Map[String, String]]())
         println(s"all nodes length=${all.length}")
         //去掉黑名单, 这样rule优先级高于黑名单
         all = all.filter(isBlack(_) == false)
-        println(all.length)
         println(s"all non-black nodes length=${all.length}")
+        //去掉back菜单
+        all = all diff getBackElements()
+        println(s"all non-black non-back nodes length=${all.length}")
         //把元素转换为Element对象
         var allElements = all.map(getElementId(_).get)
         //获得所有未点击元素
@@ -517,20 +576,56 @@ class Crawler {
         allElements = allElements.filter(!isClicked(_))
         println(s"fresh elements length=${allElements.length}")
         //记录未被点击的元素
-        allElements.foreach(e=>{
-          if(!elements.contains(e.toString())){
-            elements(e.toString())=false
+        allElements.foreach(e => {
+          if (!elements.contains(e.toString())) {
+            elements(e.toString()) = false
+            println(s"fresh = ${e}")
           }
         })
         if (allElements.length > 0) {
           clickElement(allElements.head)
-          backRetry=0
+          backRetry = 0
+          swipeRetry = 0
         } else {
-          goBack()
+          println("all elements had be clicked")
+          scroll()
         }
       }
     }
     start()
+  }
+
+  def scroll(): Unit = {
+    if(swipeRetry>3) {
+      println("swipe until no fresh elements")
+      return
+    }
+    doAppium(
+      driver.swipe(
+        (screenWidth * 0.8).toInt, (screenHeight * 0.8).toInt,
+        (screenWidth * 0.2).toInt, (screenHeight * 0.2).toInt, 500
+      )
+    ) match {
+      case Some(v) => {
+        println("swipe success")
+        swipeRetry+=1
+        saveScreen(Element(url, "Scroll", "", "", ""))
+      }
+      case None => {
+        println("swipe fail")
+        goBack()
+      }
+    }
+
+
+/*    doAppium((new TouchAction(driver))
+      .press(screenHeight * 0.5.toInt, screenWidth * 0.5.toInt)
+      .moveTo(screenHeight * 0.1.toInt, screenWidth * 0.5.toInt)
+      .release()
+      .perform()
+    )
+    doAppium(driver.executeScript("mobile: scroll", HashMap("direction" -> "up")))*/
+    //doAppium(driver.swipe(screenHeight*0.6.toInt, screenWidth*0.5.toInt, screenHeight*0.1.toInt, screenWidth*0.5.toInt, 400))
   }
 
 
@@ -539,31 +634,34 @@ class Crawler {
   def findElementByUid(uid: Element): Option[WebElement] = {
     println(s"find element by uid ${uid}")
     platformName.toLowerCase() match {
-      case "ios"=>{
+      case "ios" => {
         println(s"find by xpath")
         //照顾iOS android会在findByName的时候自动找text属性.
         doAppium(driver.findElementByXPath(
-          s"//${uid.tag}[@name='${uid.id}' and @value='${uid.name}' and @x='${uid.loc.split(',').head}' and @y='${uid.loc.split(',').last}']")) match {
+          //s"//${uid.tag}[@name='${uid.id}' and @value='${uid.name}' and @x='${uid.loc.split(',').head}' and @y='${uid.loc.split(',').last}']"
+          s"//${uid.tag}[@path='${uid.loc}']"
+        )) match {
           case Some(v) => return Some(v)
           case None => {}
         }
       }
-      case "android"=>{
-        if(uid.id !="") {
+      case "android" => {
+        if (uid.id != "") {
           println(s"find by id=${uid.id}")
           doAppium(driver.findElementsById(uid.id)) match {
             case Some(v) => {
-              if(v.toArray.length==1){
+              if (v.toArray.length == 1) {
                 //公司的首页有4个id一摸一样的控件, 已经通知他们修改. 这是个临时性的方案.
                 return Some(v.toArray().head.asInstanceOf[WebElement])
-              }else{
+              } else {
+                v.toArray().foreach(println)
                 println("find multi, change to find by name")
               }
             }
             case None => {}
           }
         }
-        if(uid.name!=""){
+        if (uid.name != "") {
           println(s"find by name=${uid.name}")
           doAppium(driver.findElementByName(uid.name)) match {
             case Some(v) => return Some(v)
@@ -599,24 +697,27 @@ class Crawler {
 
   }
 
-  def saveLog(): Unit ={
+  def saveLog(): Unit = {
+    println("save log")
     //记录点击log
-    if(new java.io.File(s"${platformName}_${timestamp}").exists()==false){
+    if (new java.io.File(s"${platformName}_${timestamp}").exists() == false) {
       FileUtils.forceMkdir(new java.io.File(s"${platformName}_${timestamp}"))
     }
     File(s"${platformName}_${timestamp}/clickedList.log").writeAll(clickedList.mkString("\n"))
     File(s"${platformName}_${timestamp}/ElementList.log").writeAll(elements.mkString("\n"))
   }
 
-  def saveScreen(e: Element): Unit ={
-    Thread.sleep(1000)
-    img_index+=1
-    val path=s"${platformName}_${timestamp}/${img_index}_"+e.toString().replace("\n", "").replaceAll("[ /,]", "").take(200)+".jpg"
+  def saveScreen(e: Element): Unit = {
+    println("start screenshot")
+    if (conf.saveScreen == false) return
+    Thread.sleep(500)
+    img_index += 1
+    val path = s"${platformName}_${timestamp}/${img_index}_" + e.toString().replace("\n", "").replaceAll("[ /,]", "").take(200) + ".jpg"
     doAppium((driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)) match {
-      case Some(src)=>{
+      case Some(src) => {
         FileUtils.copyFile(src, new java.io.File(path))
       }
-      case None=>{
+      case None => {
         println("get screenshot error")
       }
     }
@@ -663,7 +764,7 @@ class Crawler {
     * 子类重载
     * @return
     */
-  def getRuleMatchNodes(): ListBuffer[Map[String, String]] ={
+  def getRuleMatchNodes(): ListBuffer[Map[String, String]] = {
     return ListBuffer[Map[String, String]]()
   }
 
@@ -671,43 +772,43 @@ class Crawler {
   def doRuleAction(): Boolean = {
     println("rule match start")
     //先判断是否在期望的界面里. 提升速度
-    var isHit=false
+    var isHit = false
     conf.elementActions.foreach(r => {
       println("for each rule")
       val idOrName = r("idOrName").toString
       val action = r("action").toString
-      val times=r("times").toString.toInt
+      val times = r("times").toString.toInt
       println(s"idOrName=${idOrName} action=${action}")
       val all = getRuleMatchNodes()
-      breakable{
+      breakable {
         (all.filter(_ ("name").matches(idOrName)) ++ all.filter(_ ("value").matches(idOrName))).distinct.foreach(x => {
-        println("hit rule action")
-        println(x)
-        //获得正式的定位id
-        getElementId(x) match {
-          case Some(e) => {
-            println(s"element=${e} action=${action}")
-            println("do rule action")
-            isHit=true
-            doAppiumAction(e, action.toString) match {
-              case None=>{
-                println("do rule action fail")
-                break()
-              }
-              case Some(v)=>{
-                println("do rule action success")
-                r("times")=times-1
-                if(times==1){
-                  conf.elementActions-=r
+          println("hit rule action")
+          println(x)
+          //获得正式的定位id
+          getElementId(x) match {
+            case Some(e) => {
+              println(s"element=${e} action=${action}")
+              println("do rule action")
+              isHit = true
+              doAppiumAction(e, action.toString) match {
+                case None => {
+                  println("do rule action fail")
+                  break()
+                }
+                case Some(v) => {
+                  println("do rule action success")
+                  r("times") = times - 1
+                  if (times == 1) {
+                    conf.elementActions -= r
+                  }
                 }
               }
+              //todo: 暂不删除, 允许复用
+              //rule -= r
             }
-            //todo: 暂不删除, 允许复用
-            //rule -= r
+            case None => println("get element id error")
           }
-          case None => println("get element id error")
-        }
-      })
+        })
       }
     })
 
