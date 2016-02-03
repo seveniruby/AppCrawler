@@ -2,7 +2,6 @@
   * Created by seveniruby on 16/1/8.
   */
 class XueqiuAndroidCrawlerConf extends XueqiuCrawlerConf {
-  app = ""
   defineUrl = "//*[contains(@resource-id, '_title')]"
   baseUrl = "MainActivity"
   maxDepth = 3

@@ -13,10 +13,29 @@ import java.nio.charset.Charset
   * Created by seveniruby on 16/1/6.
   */
 class CrawlerConf {
-  var app:String=""
-  var appiumUrl="http://127.0.0.1:4723/wd/hub"
   var saveScreen=true
-  var autoLauncher=true
+  var currentDriver="android"
+  var capability=Map[String, String](
+    "app"->"http://xqfile.imedao.com/android-release/xueqiu_730_01191600.apk",
+    "platformName"->"",
+    "platformVersion"->"",
+    "deviceName"->"",
+    "noReset"->"false",
+    "autoWebview"->"false",
+    "autoLaunch"->"false"
+  )
+  var androidCapability=Map[String, String](
+    "appPackage"->"com.xueqiu.android",
+    "appActivity"->".view.WelcomeActivityAlias",
+    "appium"->"http://127.0.0.1:4730/wd/hub"
+  )
+  var iosCapability=Map[String, String](
+    "bundleId"->"",
+    "autoAcceptAlerts"->"true",
+    "platformVersion"->"9.2",
+    "deviceName"-> "iPhone 6",
+    "appium"->"http://127.0.0.1:4723/wd/hub"
+  )
   /**用来确定url的元素定位xpath 他的text会被取出当作url因素*/
   var defineUrl=""
   /**设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度*/
@@ -56,18 +75,27 @@ class CrawlerConf {
   }
 
   def save(path: String): Unit ={
+
+/*    //这个方法不能正确的存储utf8编码的文字
     implicit val formats = DefaultFormats+ FieldSerializer[this.type]()
     val file = new java.io.File(path)
     val bw = new BufferedWriter(new FileWriter(file))
     println(writePretty(this))
     println(write(this))
     bw.write(writePretty(this))
-    bw.close()
+    bw.close()*/
+
+    val file = new java.io.File(path)
+    val mapper = new ObjectMapper()
+    mapper.registerModule(DefaultScalaModule)
+    mapper.writerWithDefaultPrettyPrinter().writeValue(file, this)
+    println(mapper.writeValueAsString(this))
   }
 
   def load(file :String): CrawlerConf ={
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
+    println(mapper.writeValueAsString(classOf[CrawlerConf]))
     return mapper.readValue(Source.fromFile(file).mkString.getBytes, classOf[CrawlerConf])
   }
 

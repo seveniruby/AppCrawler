@@ -360,7 +360,7 @@ class TestTraversal extends FunSuite{
 
   test("save xueqiu ios config"){
     val conf=new XueqiuIOSCrawlerConf
-    conf.save("xueqiu_ios.json")
+    conf.save("AndroidFutu.json")
   }
   test("load config"){
     var conf=new CrawlerConf

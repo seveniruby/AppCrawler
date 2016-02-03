@@ -60,10 +60,8 @@ class Crawler {
   var url = ""
   val urlStack = mutable.Stack[String]()
 
-  def setupApp(app: String = conf.app, url: String = conf.appiumUrl): Unit = {
-    capabilities.setCapability("autoLaunch", "true")
-    capabilities.setCapability(MobileCapabilityType.APP, app)
-
+  def setupApp(app: String = "", url: String = ""): Unit = {
+    conf.capability.foreach(kv=>capabilities.setCapability(kv._1, kv._2))
     //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
     //PageFactory.initElements(new AppiumFieldDecorator(driver, 10, TimeUnit.SECONDS), this)
     //implicitlyWait(Span(10, Seconds))
@@ -240,8 +238,8 @@ class Crawler {
       needExit = true
     }
     //url黑名单
-    if (conf.blackUrlList.filter(url.matches(_)).length > 0) {
-      println("should return")
+    if (conf.blackUrlList.filter(urlStack.head.matches(_)).length > 0) {
+      println("in blackUrlList should return")
       return true
     }
     //滚动多次没有新元素
@@ -651,7 +649,7 @@ class Crawler {
           doAppium(driver.findElementsById(uid.id)) match {
             case Some(v) => {
               if (v.toArray.length == 1) {
-                //公司的首页有4个id一摸一样的控件, 已经通知他们修改. 这是个临时性的方案.
+                //有些公司可能存在重名id
                 return Some(v.toArray().head.asInstanceOf[WebElement])
               } else {
                 v.toArray().foreach(println)
@@ -664,12 +662,14 @@ class Crawler {
         if (uid.name != "") {
           println(s"find by name=${uid.name}")
           doAppium(driver.findElementByName(uid.name)) match {
-            case Some(v) => return Some(v)
+            case Some(v) => {
+              return Some(v)
+            }
             case None => {
             }
           }
         }
-
+        //xpath会较慢
         println(s"find by xpath")
         doAppium(driver.findElementByXPath(s"//*[@bounds='${uid.loc}']")) match {
           case Some(v) => return Some(v)

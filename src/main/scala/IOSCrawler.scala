@@ -30,14 +30,14 @@ class IOSCrawler extends Crawler {
 
   override def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"):Unit={
     platformName = "iOS"
-    super.setupApp(app,url)
-    capabilities.setCapability("deviceName", "iPhone 6")
+    super.setupApp()
     capabilities.setCapability("platformName", "iOS")
-    capabilities.setCapability("platformVersion", "9.2")
-    capabilities.setCapability("autoAcceptAlerts", "true")
+    conf.iosCapability.foreach(kv=>capabilities.setCapability(kv._1, kv._2))
     //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")
     //driver = new XueqiuDriver[WebElement](new URL("http://127.0.0.1:4729/wd/hub"), capabilities)
+    val url=conf.iosCapability("appium")
     driver = new IOSDriver[WebElement](new URL(url), capabilities)
+    driver.launchApp()
     getDeviceInfo()
   }
 

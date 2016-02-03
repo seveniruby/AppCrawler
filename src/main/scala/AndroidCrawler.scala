@@ -25,19 +25,17 @@ class AndroidCrawler extends Crawler {
 
   override def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"): Unit = {
     platformName = "Android"
-    super.setupApp(app, url)
-    capabilities.setCapability("deviceName", "emulator-5554");
-    capabilities.setCapability("platformVersion", "4.4");
-    capabilities.setCapability("appPackage", "com.xueqiu.android");
-    capabilities.setCapability(MobileCapabilityType.APP_ACTIVITY, "com.xueqiu.android.view.WelcomeActivityAlias")
-    //capabilities.setCapability("appActivity", ".ApiDemos");
-    capabilities.setCapability("unicodeKeyboard", "true")
+    super.setupApp()
     //todo:主要做遍历测试和异常测试. 所以暂不使用selendroid. 兼容性测试需要使用selendroid
     //capabilities.setCapability("automationName", "Selendroid")
     //todo: Appium模式太慢
     capabilities.setCapability("automationName", "Appium")
+    capabilities.setCapability("unicodeKeyboard", "true")
+    conf.androidCapability.foreach(kv=>capabilities.setCapability(kv._1, kv._2))
 
+    val url=conf.androidCapability("appium")
     driver = new AndroidDriver[WebElement](new URL(url), capabilities)
+    driver.launchApp()
     getDeviceInfo()
   }
 
@@ -51,7 +49,10 @@ class AndroidCrawler extends Crawler {
         driver.getCurrentUrl.split('.').last
       }
     }
-    screenName = s"${screenName}_${super.getUrl()}"
+    val baseUrl=super.getUrl()
+    if(baseUrl!=""){
+      screenName = s"${screenName}_${super.getUrl()}"
+    }
     println(s"url=${screenName}")
     return screenName
   }
