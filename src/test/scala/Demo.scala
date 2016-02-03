@@ -5,11 +5,12 @@ import org.scalatest.FunSuite
   */
 class Demo extends FunSuite{
   test("xueqiu"){
-    val futu=new AndroidCrawler
-    futu.conf.capability++=Map("app"->"http://xqfile.imedao.com/android-release/xueqiu_730_01191600.apk")
-    futu.conf.androidCapability++=Map("appPackage"->"com.xueqiu.android")
-    futu.conf.androidCapability++=Map("appActivity"->".view.WelcomeActivityAlias")
-    futu.setupApp()
-    futu.start()
+    val xueqiu=new AndroidCrawler
+    xueqiu.conf.capability++=Map("app"->"http://xqfile.imedao.com/android-release/xueqiu_730_01191600.apk")
+    xueqiu.conf.androidCapability++=Map("appPackage"->"com.xueqiu.android")
+    xueqiu.conf.androidCapability++=Map("appActivity"->".view.WelcomeActivityAlias")
+    xueqiu.conf.androidCapability++=Map("autoLaunch"->"true")
+    xueqiu.setupApp()
+    xueqiu.start()
   }
 }
