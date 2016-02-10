@@ -142,6 +142,7 @@ class Crawler {
     val xPath: XPath = XPathFactory.newInstance().newXPath()
     val compexp = xPath.compile(xpath)
     val node = compexp.evaluate(pageDom, XPathConstants.NODESET)
+    println(s"xpath=${xpath} getAllElements")
     node match {
       case n: NodeList => {
         println(s"xpath=${xpath} length=${n.getLength}")

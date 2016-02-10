@@ -12,7 +12,6 @@ import scala.collection.mutable.{ListBuffer, Map}
   * Created by seveniruby on 15/12/10.
   */
 class AndroidCrawler extends Crawler {
-
   if(conf.selectedList.length==0){
     conf.selectedList.insertAll(0, ListBuffer[String](
       "//*[@enabled='true' and @resource-id!='' and not(contains(name(), 'Layout'))]",
@@ -73,7 +72,7 @@ class AndroidCrawler extends Crawler {
   }
 
   override def getSchema(): String = {
-    val nodeList = getAllElements("//UIAWindow[1]//*[not(ancestor-or-self::UIATableView)]")
+    val nodeList = getAllElements("//*[not(ancestor-or-self::UIATableView)]")
     //todo: 未来应该支持黑名单
     val schemaBlackList = List("UIATableCell", "UIATableView", "UIAScrollView")
     md5(nodeList.filter(node => schemaBlackList.contains(node("tag")) == false).map(node => node("tag")).mkString(""))

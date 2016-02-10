@@ -9,23 +9,27 @@ class AppTraversal extends FunSuite with BeforeAndAfterAllConfigMap{
     println(cm)
     this.cm=cm
   }
-  test("App Traversal"){
-    val conf=new CrawlerConf().load(this.cm.get("conf").get.toString)
-    var t:Crawler=new Crawler
+  test("App Crawler"){
+    val conf=this.cm.get("conf").get.asInstanceOf[CrawlerConf]
+    var crawler:Crawler=new Crawler
 
     conf.currentDriver.toLowerCase match {
       case "android"=>{
-        t=new AndroidCrawler
+        crawler=new AndroidCrawler
       }
       case "ios" => {
-        t=new IOSCrawler
+        crawler=new IOSCrawler
       }
       case _ =>{
         println("请指定currentDriver为Android或者iOS")
       }
     }
-    t.conf=conf
-    t.setupApp()
-    t.start()
+    crawler.conf=conf
+
+    println(crawler)
+    println(crawler.conf)
+
+    crawler.setupApp()
+    crawler.start()
   }
 }

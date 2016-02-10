@@ -41,9 +41,9 @@ class CrawlerConf {
   /**设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度*/
   var baseUrl=""
   /**默认的最大深度10, 结合baseUrl可很好的控制遍历的范围*/
-  var maxDepth=10
-  /**url黑名单.用于排除某些页面 contains风格. 不过最好还是正则比较好*/
-  var blackUrlList = ListBuffer("StockMoreInfo.*", "UserProfileA.*")
+  var maxDepth=6
+  /**url黑名单.用于排除某些页面*/
+  var blackUrlList = ListBuffer("")
 
   /**后退按钮标记, 主要用于iOS, xpath*/
   var backButton = ListBuffer[String]()
@@ -51,7 +51,16 @@ class CrawlerConf {
   /**优先遍历元素*/
   var firstList=ListBuffer[String]()
   /**默认遍历列表*/
-  var selectedList = ListBuffer[String]()
+  var selectedList = ListBuffer[String](
+    "//*[@enabled='true' and @visible='true' and contains(name(), 'Text')]",
+    "//*[@enabled='true' and @visible='true' and contains(name(), 'Image')]",
+    "//*[@enabled='true' and @visible='true' and contains(name(), 'Button')]",
+
+    "//*[@enabled='true' and @clickable='true' and contains(name(), 'Text')]",
+    "//*[@enabled='true' and @clickable='true' and contains(name(), 'Image')]",
+    "//*[@enabled='true' and @resource-id!='']",
+    "//*[@enabled='true' and @content-desc!='']"
+  )
   /**最后遍历列表*/
   var lastList=ListBuffer[String]()
 
@@ -98,5 +107,14 @@ class CrawlerConf {
     println(mapper.writeValueAsString(classOf[CrawlerConf]))
     return mapper.readValue(Source.fromFile(file).mkString.getBytes, classOf[CrawlerConf])
   }
+
+
+  def load(file :File): CrawlerConf ={
+    val mapper = new ObjectMapper()
+    mapper.registerModule(DefaultScalaModule)
+    println(mapper.writeValueAsString(classOf[CrawlerConf]))
+    return mapper.readValue(Source.fromFile(file).mkString.getBytes, classOf[CrawlerConf])
+  }
+
 
 }

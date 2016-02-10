@@ -16,12 +16,15 @@ libraryDependencies ++= Seq(
   "com.propensive" %% "rapture-json" % "2.0.0-M1",
   "com.propensive" %% "rapture-json-json4s" % "2.0.0-M1",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.3",
+  "com.github.scopt" %% "scopt" % "3.3.0",
   "org.pegdown" % "pegdown" % "1.4.2" //html report
 )
 
 enablePlugins(JavaAppPackaging)
 
+
 resolvers += "oschina" at "http://maven.oschina.net/content/groups/public/"
+resolvers += Resolver.sonatypeRepo("public")
 //externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = false)
 resolvers += "snowball_public" at "http://repo.snowballfinance.com/nexus/content/groups/public/"
 resolvers += "snowball_snapshot" at "http://repo.snowballfinance.com/nexus/content/repositories/snapshots/"
