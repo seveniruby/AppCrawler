@@ -3,7 +3,7 @@ import org.scalatest.{ConfigMap, BeforeAndAfterAllConfigMap, FunSuite}
 /**
   * Created by seveniruby on 16/1/7.
   */
-class AppTraversal extends FunSuite with BeforeAndAfterAllConfigMap{
+class AppCrawlerTestCase extends FunSuite with BeforeAndAfterAllConfigMap{
   var cm=ConfigMap()
   override def beforeAll(cm: ConfigMap): Unit ={
     println(cm)

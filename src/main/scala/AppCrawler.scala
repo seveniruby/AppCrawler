@@ -76,7 +76,7 @@ object AppCrawler {
           crawlerConf.capability++=Map("app"->config.app.getAbsolutePath)
           crawlerConf
         }
-        new AppTraversal().execute(configMap = ConfigMap("conf" -> crawlerConf))
+        new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf))
       }
       case None =>{}
     }
