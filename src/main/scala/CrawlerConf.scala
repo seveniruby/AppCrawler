@@ -16,7 +16,7 @@ class CrawlerConf {
   var saveScreen=true
   var currentDriver="android"
   var capability=Map[String, String](
-    "app"->"http://xqfile.imedao.com/android-release/xueqiu_730_01191600.apk",
+    "app"->"",
     "platformName"->"",
     "platformVersion"->"",
     "deviceName"->"",
@@ -25,8 +25,8 @@ class CrawlerConf {
     "autoLaunch"->"false"
   )
   var androidCapability=Map[String, String](
-    "appPackage"->"com.xueqiu.android",
-    "appActivity"->".view.WelcomeActivityAlias",
+    "appPackage"->"",
+    "appActivity"->"",
     "appium"->"http://127.0.0.1:4730/wd/hub"
   )
   var iosCapability=Map[String, String](
@@ -99,6 +99,11 @@ class CrawlerConf {
     mapper.registerModule(DefaultScalaModule)
     mapper.writerWithDefaultPrettyPrinter().writeValue(file, this)
     println(mapper.writeValueAsString(this))
+  }
+  def toJson(): String ={
+    val mapper = new ObjectMapper()
+    mapper.registerModule(DefaultScalaModule)
+    mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)
   }
 
   def load(file :String): CrawlerConf ={

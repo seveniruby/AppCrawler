@@ -63,19 +63,43 @@ object AppCrawler {
     }
     parser.parse(args_new, Config()) match {
       case Some(config) =>{
-        val crawlerConf=if(config.app.isFile==false){
+        val crawlerConf=if(config.conf.isFile==true){
           println(s"Find Conf ${config.conf.getAbsolutePath}")
           new CrawlerConf().load(config.conf)
-        }else{
+        }else if(config.app.isFile==true){
           println(s"Find File ${config.app.getAbsolutePath}")
           val crawlerConf=new CrawlerConf
+
           config.capability.foreach( kv=>{
-            crawlerConf.capability++=Map(kv._1->kv._2)
+            if(crawlerConf.androidCapability.contains(kv._1)){
+              crawlerConf.androidCapability++=Map(kv._1->kv._2)
+            }else if(crawlerConf.iosCapability.contains(kv._1)){
+              crawlerConf.iosCapability++=Map(kv._1->kv._2)
+            }else{
+              crawlerConf.capability++=Map(kv._1->kv._2)
+            }
+
           })
-          println(config.app.getAbsolutePath)
           crawlerConf.capability++=Map("app"->config.app.getAbsolutePath)
           crawlerConf
+        }else{
+          //appium支持纯包名启动
+          val crawlerConf=new CrawlerConf
+          config.capability.foreach( kv=>{
+            if(crawlerConf.androidCapability.contains(kv._1)){
+              crawlerConf.androidCapability++=Map(kv._1->kv._2)
+            }else if(crawlerConf.iosCapability.contains(kv._1)){
+              crawlerConf.iosCapability++=Map(kv._1->kv._2)
+            }else{
+              crawlerConf.capability++=Map(kv._1->kv._2)
+            }
+
+          })
+          println(config.app.getAbsolutePath)
+          crawlerConf.capability++=Map("app"->config.app.getName)
+          crawlerConf
         }
+        println(crawlerConf.toJson)
         new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf))
       }
       case None =>{}

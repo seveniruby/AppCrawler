@@ -53,12 +53,17 @@ class Crawler {
   private var pageDom: Document = null
   private var img_index = 0
   private var backRetry = 0
+  var backMaxRetry=5
   private var swipeRetry=0
+  var swipeMaxRetry=3
   private var needExit = false
 
   /** 当前的url路径 */
   var url = ""
   val urlStack = mutable.Stack[String]()
+
+  val elementTree=TreeNode(Element("Start", "", "","", ""))
+  val elementTreeList=ListBuffer[Element]()
 
   def setupApp(app: String = "", url: String = ""): Unit = {
     conf.capability.foreach(kv=>capabilities.setCapability(kv._1, kv._2))
@@ -244,7 +249,7 @@ class Crawler {
       return true
     }
     //滚动多次没有新元素
-    if(swipeRetry>3){
+    if(swipeRetry>swipeMaxRetry){
       swipeRetry=0
       return true
     }
@@ -530,7 +535,7 @@ class Crawler {
 
     backRetry += 1
     //超过十次连续不停的回退就认为是需要退出
-    if (backRetry > 10) {
+    if (backRetry > backMaxRetry) {
       needExit = true
     } else {
       println(s"backRetry=${backRetry}")
@@ -595,7 +600,7 @@ class Crawler {
   }
 
   def scroll(): Unit = {
-    if(swipeRetry>3) {
+    if(swipeRetry> swipeMaxRetry) {
       println("swipe until no fresh elements")
       return
     }
@@ -724,6 +729,15 @@ class Crawler {
     }
   }
 
+
+  def appendClickedList(e: Element): Unit ={
+    clickedList.append(e.toString())
+    elementTreeList.append(Element(e.url, "url", "", "", ""))
+    elementTreeList.append(e)
+    saveLog()
+    elementTree.generateFreeMind(elementTreeList, "1.mm")
+
+  }
   def doAppiumAction(e: Element, action: String = "click"): Option[Unit] = {
     findElementByUid(e) match {
       case Some(v) => {
@@ -731,8 +745,7 @@ class Crawler {
           case "click" => {
             println(s"click ${v}")
             val res = doAppium(v.click())
-            clickedList.append(e.toString())
-            saveLog()
+            appendClickedList(e)
             saveScreen(e)
             doAppium(driver.hideKeyboard())
             return res
@@ -741,8 +754,7 @@ class Crawler {
             println(s"sendkeys ${v} with ${str}")
             doAppium(v.sendKeys(str)) match {
               case Some(v) => {
-                clickedList.append(e.toString())
-                saveLog()
+                appendClickedList(e)
                 doAppium(driver.hideKeyboard())
                 return Some(v)
               }
