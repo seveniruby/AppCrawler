@@ -6,13 +6,14 @@ import io.appium.java_client.remote.MobileCapabilityType
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.DesiredCapabilities
 
+import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Map}
 
 /**
   * Created by seveniruby on 15/12/10.
   */
 class IOSCrawler extends Crawler {
-  if(conf.selectedList.length==0) {
+  if(conf.selectedList.isEmpty) {
     conf.selectedList.insertAll(0, Seq(
       "//UIAWindow[1]//UIATextField[@visible='true' and @enabled='true' and @valid='true']",
       "//UIAWindow[1]//UIASecureTextField[@visible='true' and @enabled='true' and @valid='true']",
@@ -28,9 +29,9 @@ class IOSCrawler extends Crawler {
     ))
   }
 
-  override def setupApp(app: String, url: String = "http://127.0.0.1:4723/wd/hub"):Unit={
+  override def setupAppium():Unit={
     platformName = "iOS"
-    super.setupApp()
+    super.setupAppium()
     capabilities.setCapability("platformName", "iOS")
     conf.iosCapability.foreach(kv=>capabilities.setCapability(kv._1, kv._2))
     //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")
@@ -43,6 +44,7 @@ class IOSCrawler extends Crawler {
 
   /**
     * 用schema作为url替代
+ *
     * @return
     */
   override def getUrl(): String = {
@@ -52,29 +54,30 @@ class IOSCrawler extends Crawler {
       return superUrl
     }
     val nav = getAllElements("//UIANavigationBar[1]")
-    if (nav.length > 0) {
-      println(s"url=${nav(0)("name")}")
-      return nav(0)("name")
+    if (nav.nonEmpty) {
+      println(s"url=${nav.head("name")}")
+      nav.head("name")
     } else {
       val screenName = getSchema().takeRight(5)
       println(s"url=${screenName}")
-      return screenName
+      screenName
     }
   }
 
 
   /**
     * 尝试识别当前的页面
+ *
     * @return
     */
   override def getSchema(): String = {
     val nodeList = getAllElements("//UIAWindow[1]//*[not(ancestor-or-self::UIATableView)]")
     //todo: 未来应该支持黑名单
     val schemaBlackList = List("UIATableCell", "UIATableView", "UIAScrollView")
-    md5(nodeList.filter(node => schemaBlackList.contains(node("tag")) == false).map(node => node("tag")).mkString(""))
+    md5(nodeList.filter(node => !schemaBlackList.contains(node("tag"))).map(node => node("tag")).mkString(""))
   }
 
-  override def getRuleMatchNodes(): ListBuffer[Map[String, String]] = {
+  override def getRuleMatchNodes(): ListBuffer[mutable.Map[String, String]] = {
     (getAllElements("//UIAWindow[1]//*") ++
       getAllElements("//UIAWindow[3]//*") ++
       getAllElements("//UIAWindow//UIAButton")).distinct

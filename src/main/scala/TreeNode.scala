@@ -19,23 +19,23 @@ case class TreeNode[T](
     if (tree.equals(node)) {
       return Some(tree)
     }
-    tree.children.map(t => {
+    tree.children.foreach(t => {
       find(t, node) match {
         case Some(v) => return Some(v)
         case None => {}
       }
     })
-    return None
+    None
   }
 
   def appendNode(currenTree: TreeNode[T], node: TreeNode[T]): TreeNode[T] = {
     find(currenTree, node) match {
       case Some(v) => {
-        return v
+        v
       }
       case None => {
         this.children.append(node)
-        return node
+        node
       }
     }
   }
@@ -44,7 +44,7 @@ case class TreeNode[T](
   def toXml(tree: TreeNode[T]): String = {
     val s=new StringBuffer()
     val before = (tree: TreeNode[T]) => {
-      s.append(s"""<node TEXT="${tree.value.toString()}">""")
+      s.append(s"""<node TEXT="${tree.value.toString}">""")
     }
     val after = (tree: TreeNode[T]) => {
       s.append("</node>")
@@ -55,7 +55,7 @@ case class TreeNode[T](
     s.append("\n")
     traversal[T](tree, before, after)
     s.append("</map>")
-    return s.toString
+    s.toString
   }
 
   def traversal[T](tree: TreeNode[T],

@@ -6,7 +6,6 @@ import org.scalatest.{ConfigMap, BeforeAndAfterAllConfigMap, FunSuite}
 class AppCrawlerTestCase extends FunSuite with BeforeAndAfterAllConfigMap{
   var cm=ConfigMap()
   override def beforeAll(cm: ConfigMap): Unit ={
-    println(cm)
     this.cm=cm
   }
   test("App Crawler"){
@@ -24,12 +23,7 @@ class AppCrawlerTestCase extends FunSuite with BeforeAndAfterAllConfigMap{
         println("请指定currentDriver为Android或者iOS")
       }
     }
-    crawler.conf=conf
-
-    println(crawler)
-    println(crawler.conf)
-
-    crawler.setupApp()
+    crawler.loadConf(conf)
     crawler.start()
   }
 }

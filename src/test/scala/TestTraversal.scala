@@ -9,39 +9,7 @@ import scala.io.Source
   * Created by seveniruby on 15/11/28.
   */
 class TestTraversal extends FunSuite{
-  test("test freemind"){
-    val appium=new Node[Map[String, String]](Map[String, String]())
-    appium.generateFreeMind(ListBuffer(
-      Element("a","","1",""),
-      Element("com/a","","2",""),
-      Element("abc/a","","3",""),
-      Element("com/b","","11",""),
-      Element("abc/b","","12",""),
-      Element("com/b","","13",""),
-      Element("abc/c","","21","")
-    ))
 
-    val click=ListBuffer[Element]()
-    Source.fromFile("clicked.log").getLines().foreach(line=>{
-      val arr=line.split(',')
-      if (arr.length==3) {
-        val url = arr(0)
-        val id = arr(1)
-        val text = arr(2)
-        click.append(Element(url,"",id,text))
-      }else if (arr.length==2) {
-        val url = arr(0)
-        val id = arr(1)
-        val text = null
-        click.append(Element(url,"",id,text))
-      }
-    })
-
-    appium.generateFreeMind(click)
-
-
-
-  }
 
   test("isBlack"){
     val appium=new Crawler
@@ -341,27 +309,20 @@ class TestTraversal extends FunSuite{
 
   }
 
+/*
   test("assert result"){
     assertResult("1", "expection=1"){
       2
     }
 
   }
+*/
 
   test("save config"){
     val conf=new CrawlerConf
     conf.save("conf.json")
   }
-
-  test("save xueqiu android config"){
-    val conf=new XueqiuAndroidCrawlerConf
-    conf.save("xueqiu_android.json")
-  }
-
-  test("save xueqiu ios config"){
-    val conf=new XueqiuIOSCrawlerConf
-    conf.save("AndroidFutu.json")
-  }
+/*
   test("load config"){
     var conf=new CrawlerConf
     conf.baseUrl="xxx"
@@ -369,6 +330,7 @@ class TestTraversal extends FunSuite{
     conf=conf.loadByJson4s("conf.json").get
     println(conf.baseUrl)
   }
+*/
 
   test("load config by jackson"){
     var conf=new CrawlerConf

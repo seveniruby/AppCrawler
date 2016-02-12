@@ -63,10 +63,10 @@ object AppCrawler {
     }
     parser.parse(args_new, Config()) match {
       case Some(config) =>{
-        val crawlerConf=if(config.conf.isFile==true){
+        val crawlerConf=if(config.conf.isFile){
           println(s"Find Conf ${config.conf.getAbsolutePath}")
           new CrawlerConf().load(config.conf)
-        }else if(config.app.isFile==true){
+        }else if(config.app.isFile){
           println(s"Find File ${config.app.getAbsolutePath}")
           val crawlerConf=new CrawlerConf
 

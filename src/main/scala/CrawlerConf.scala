@@ -76,10 +76,10 @@ class CrawlerConf {
     if (new java.io.File(file).exists()) {
       println(s"load config from ${file}")
       println(Source.fromFile(file).mkString)
-      return Some(read[this.type ](Source.fromFile(file).mkString))
+      Some(read[this.type ](Source.fromFile(file).mkString))
     }else{
       println(s"conf file ${file} no exist ")
-      return None
+      None
     }
   }
 
@@ -110,7 +110,7 @@ class CrawlerConf {
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
     println(mapper.writeValueAsString(classOf[CrawlerConf]))
-    return mapper.readValue(Source.fromFile(file).mkString.getBytes, classOf[CrawlerConf])
+    mapper.readValue(Source.fromFile(file).mkString.getBytes, classOf[CrawlerConf])
   }
 
 
@@ -118,7 +118,7 @@ class CrawlerConf {
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
     println(mapper.writeValueAsString(classOf[CrawlerConf]))
-    return mapper.readValue(Source.fromFile(file).mkString.getBytes, classOf[CrawlerConf])
+    mapper.readValue(Source.fromFile(file).mkString.getBytes, classOf[CrawlerConf])
   }
 
 
