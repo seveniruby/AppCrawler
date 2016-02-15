@@ -11,6 +11,7 @@ case class Config(
                    app: File = new File("."),
                    conf: File = new File("."),
                    verbose: Boolean = false,
+                   platform: String="android",
                    capability: Map[String, String] = Map[String, String]()
                  )
 
@@ -38,6 +39,9 @@ object AppCrawler {
       opt[File]('c', "conf") action { (x, c) =>
         c.copy(conf = x)
       } text ("配置文件地址")
+      opt[String]('p', "platform") action { (x, c) =>
+        c.copy(platform = x)
+      } text ("平台类型android或者ios")
       opt[Map[String, String]]("capability") valueName ("k1=v1,k2=v2...") action { (x, c) =>
         c.copy(capability = x)
       } text ("appium capability选项")
@@ -66,7 +70,7 @@ object AppCrawler {
         val crawlerConf=if(config.conf.isFile){
           println(s"Find Conf ${config.conf.getAbsolutePath}")
           new CrawlerConf().load(config.conf)
-        }else if(config.app.isFile){
+        }else if(config.app.exists()){
           println(s"Find File ${config.app.getAbsolutePath}")
           val crawlerConf=new CrawlerConf
 
@@ -99,6 +103,7 @@ object AppCrawler {
           crawlerConf.capability++=Map("app"->config.app.getName)
           crawlerConf
         }
+        crawlerConf.currentDriver=config.platform
         println(crawlerConf.toJson)
         new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf))
       }

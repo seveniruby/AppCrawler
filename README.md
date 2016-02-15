@@ -1,19 +1,23 @@
 # 自动遍历工具
 
 # 为什么做这个工具
-* 各大云市场上自动遍历功能也都是限制了时长,并且便利并不支持定制
-* 降低边边角角的漏测问题
-* 结合接口测试发现后台问题
-* 发现深层次的布局问题. 通过新老版本的diff可以发现每个版本的变化和变动
-* 解决monkey等工具太弱智不可控的缺点
+* 各大云市场上自动遍历功能都是限制了时长, 企业无法自由定制.
+* 解决monkey等工具可控性差的缺点
+* 发现深层次的布局问题. 通过新老版本的diff可以发现每个版本的UI变动范围
 
 # 设计目标
 * 自动爬取加上规则引导(完成)
 * 支持定制化, 可以自己设定遍历深度(完成)
-* 支持插件化, 允许别人改造和增强(TODO)
-* 支持滑动等更多动作(TODO)
+* 支持插件化, 允许别人改造和增强(完成)
+* 支持滑动等更多动作(完成)
 * 支持自动截获接口请求(Doing)
 * 支持新老版本的界面对比(Doing)
+
+# 可能面临的质疑
+* UI自动化测试无用论
+* 重复造轮子
+* 代码太烂
+* 没什么了不起
 
 # 安装环境
 ### mac下安装appium
@@ -26,12 +30,20 @@ npm install -g appium
 真机或者模拟器均可. 确保adb devices可以看到就行
 ### 下载appcrawler.
 可以使用打包好的工具, 不需要安装scala和sbt.只要有java即可  
-运行示例
+### 快速遍历
 <pre>
-appcrawler conf/xueqiu.conf
+#使用默认规则运行
+appcrawler -a xueqiu.apk
+#查看帮助文档
+appcrawler --help
 </pre>
 
-### 配置文件定制化
+### 配置文件运行方式
+<pre>
+#配置文件的方式运行
+appcrawler -c conf/xueqiu.conf
+</pre>
+
 通过修改配置文件. 可以实现细节的控制.
 <pre>
 {
@@ -171,19 +183,4 @@ last表示最后应该遍历的元素特征
     "StockDetailActivity",
     "UserProfileActivity"
   ],
-</pre>
-
-
-# 测试用例方式
-除了命令行用法外, 也可以使用标准的测试用例方式去指定. 从而跟自动化测试进行结合.  
-<pre>
-class Demo extends FunSuite{
-  test("xueqiu"){
-    val futu=new AndroidCrawler
-    futu.conf.capability++=Map("app"->"http://xqfile.imedao.com/android-release/xueqiu_730_01191600.apk")
-    futu.conf.androidCapability++=Map("appPackage"->"com.xueqiu.android")
-    futu.conf.androidCapability++=Map("appActivity"->".view.WelcomeActivityAlias")
-    futu.setupApp()
-    futu.start()
-  }
 </pre>
