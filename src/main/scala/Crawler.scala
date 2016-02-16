@@ -178,12 +178,11 @@ class Crawler {
     * @return
     */
   def getAllElements(xpath: String): ListBuffer[mutable.Map[String, String]] = {
+    println(s"xpath=${xpath} getAllElements")
     val nodeList = ListBuffer[mutable.Map[String, String]]()
-
     val xPath: XPath = XPathFactory.newInstance().newXPath()
     val compexp = xPath.compile(xpath)
     val node = compexp.evaluate(pageDom, XPathConstants.NODESET)
-    println(s"xpath=${xpath} getAllElements")
     node match {
       case n: NodeList => {
         println(s"xpath=${xpath} length=${n.getLength}")
@@ -231,17 +230,24 @@ class Crawler {
   }
 
   /**
-    * 尝试识别当前的页面
+    * 尝试分析当前的页面的唯一标记
     *
     * @return
     */
   def getSchema(): String = {
-    ""
+    var nodeList = getAllElements("//*[not(ancestor-or-self::UIATableView)]")
+    nodeList=nodeList intersect getAllElements("//*[not(ancestor-or-self::android.widget.ListView)]")
+    //todo: 未来应该支持黑名单
+    val schemaBlackList = List("UIATableCell", "UIATableView", "UIAScrollView")
+    md5(nodeList.filter(node => !schemaBlackList.contains(node("tag"))).map(node => node("tag")).mkString(""))
   }
 
+
   def getUrl(): String = {
-    if (conf.defineUrl != "") {
-      return getAllElements(conf.defineUrl).map(_ ("value")).headOption.getOrElse("")
+    if (conf.defineUrl.nonEmpty) {
+      val urlString=conf.defineUrl.flatMap(getAllElements(_)).map(_ ("value")).headOption.getOrElse("")
+      println(s"urlString=$urlString")
+      return urlString
     }
     ""
   }
@@ -257,7 +263,7 @@ class Crawler {
     val tag = x.getOrElse("tag", "NoTag")
 
     //name为Android的description/text属性, 或者iOS的value属性
-    val name = x.getOrElse("value", "").replace("\n", "\\n")
+    val name = x.getOrElse("value", "").replace("\n", "\\n").take(30)
     //name为id/name属性. 为空的时候为value属性
 
     //id表示android的resource-id或者iOS的name属性
@@ -292,8 +298,9 @@ class Crawler {
       return true
     }
     //超过遍历深度
-    println(s"urlStack=${urlStack} ${conf.baseUrl} maxDepth=${conf.maxDepth}")
-    if (urlStack.length > conf.maxDepth && urlStack.last.matches(conf.baseUrl)) {
+    println(s"urlStack=${urlStack} baseUrl=${conf.baseUrl} maxDepth=${conf.maxDepth}")
+    //大于最大深度并且是在进入过基础Url
+    if (urlStack.length > conf.maxDepth && conf.baseUrl.map(urlStack.last.matches(_)).contains(true)) {
       println(s"urlStack.depth=${urlStack.length} > maxDepth=${conf.maxDepth}")
       return true
     }
@@ -302,7 +309,7 @@ class Crawler {
   }
 
   /**
-    * 黑名单过滤. 通过正则匹配
+    * 黑名单过滤. 通过正则匹配, 判断name和value是否包含黑名单
     *
     * @param uid
     * @return
@@ -310,6 +317,7 @@ class Crawler {
   def isBlack(uid: mutable.Map[String, String]): Boolean = conf.blackList.filter(b => {
     uid("value").matches(b) || uid("name").matches(b)
   }).nonEmpty
+  //todo: 支持xpath表达式
 
 
   def getClickableElements(): Option[Seq[mutable.Map[String, String]]] = {
@@ -319,21 +327,27 @@ class Crawler {
     var commonElements = Seq[mutable.Map[String, String]]()
 
     println(conf)
+    val invalidElements=getAllElements("//*[@visible='false' or @enabled='false' or @valid='false']")
     conf.firstList.foreach(xpath => {
       firstElements ++= getAllElements(xpath)
     })
+    firstElements=firstElements diff invalidElements
 
     conf.lastList.foreach(xpath => {
       appendElements ++= getAllElements(xpath)
     })
+    appendElements = appendElements diff invalidElements
 
     conf.selectedList.foreach(xpath => {
       commonElements ++= getAllElements(xpath)
     })
+    commonElements=commonElements diff invalidElements
+
 
     commonElements = commonElements diff firstElements
     commonElements = commonElements diff appendElements
 
+    //确保不重, 并保证顺序
     all = (firstElements ++ commonElements ++ appendElements).distinct
     println(s"all length=${all.length}")
     Some(all)
@@ -387,7 +401,7 @@ class Crawler {
       urlStack.push(currentUrl)
     }
     //判断新的url堆栈中是否包含baseUrl, 如果有就清空栈记录并从新计数
-    if (urlStack.head.matches(conf.baseUrl)) {
+    if (conf.baseUrl.map(urlStack.head.matches(_)).contains(true)) {
       urlStack.clear()
       urlStack.push(currentUrl)
     }
@@ -693,34 +707,34 @@ class Crawler {
   //找到统一的定位方法就在这里定义, 找不到就分别在子类中重载定义
   def findElementByUrlElement(uid: UrlElement): Option[WebElement] = {
     println(s"find element by uid ${uid}")
+    if (uid.id != "") {
+      println(s"find by id=${uid.id}")
+      doAppium(driver.findElementsById(uid.id)) match {
+        case Some(v) => {
+          if (v.toArray.length == 1) {
+            //有些公司可能存在重名id
+            return Some(v.toArray().head.asInstanceOf[WebElement])
+          } else {
+            v.toArray().foreach(println)
+            println("find multi, change to find by name")
+          }
+        }
+        case None => {}
+      }
+    }
     platformName.toLowerCase() match {
       case "ios" => {
         println(s"find by xpath")
         //照顾iOS android会在findByName的时候自动找text属性.
         doAppium(driver.findElementByXPath(
           //s"//${uid.tag}[@name='${uid.id}' and @value='${uid.name}' and @x='${uid.loc.split(',').head}' and @y='${uid.loc.split(',').last}']"
-          s"//${uid.tag}[@path='${uid.loc}']"
+          s"//${uid.tag}[@name='${uid.id}' and @value='${uid.name}' and @path='${uid.loc}']"
         )) match {
           case Some(v) => return Some(v)
           case None => {}
         }
       }
       case "android" => {
-        if (uid.id != "") {
-          println(s"find by id=${uid.id}")
-          doAppium(driver.findElementsById(uid.id)) match {
-            case Some(v) => {
-              if (v.toArray.length == 1) {
-                //有些公司可能存在重名id
-                return Some(v.toArray().head.asInstanceOf[WebElement])
-              } else {
-                v.toArray().foreach(println)
-                println("find multi, change to find by name")
-              }
-            }
-            case None => {}
-          }
-        }
         if (uid.name != "") {
           println(s"find by name=${uid.name}")
           doAppium(driver.findElementByName(uid.name)) match {

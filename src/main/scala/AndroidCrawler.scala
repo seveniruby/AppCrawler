@@ -72,11 +72,4 @@ class AndroidCrawler extends Crawler {
     getAllElements("//*")
   }
 
-  override def getSchema(): String = {
-    val nodeList = getAllElements("//*[not(ancestor-or-self::UIATableView)]")
-    //todo: 未来应该支持黑名单
-    val schemaBlackList = List("UIATableCell", "UIATableView", "UIAScrollView")
-    md5(nodeList.filter(node => !schemaBlackList.contains(node("tag"))).map(node => node("tag")).mkString(""))
-  }
-
 }

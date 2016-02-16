@@ -64,19 +64,6 @@ class IOSCrawler extends Crawler {
     }
   }
 
-
-  /**
-    * 尝试识别当前的页面
- *
-    * @return
-    */
-  override def getSchema(): String = {
-    val nodeList = getAllElements("//UIAWindow[1]//*[not(ancestor-or-self::UIATableView)]")
-    //todo: 未来应该支持黑名单
-    val schemaBlackList = List("UIATableCell", "UIATableView", "UIAScrollView")
-    md5(nodeList.filter(node => !schemaBlackList.contains(node("tag"))).map(node => node("tag")).mkString(""))
-  }
-
   override def getRuleMatchNodes(): ListBuffer[mutable.Map[String, String]] = {
     (getAllElements("//UIAWindow[1]//*") ++
       getAllElements("//UIAWindow[3]//*") ++

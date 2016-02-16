@@ -8,7 +8,7 @@ import scala.io.Source
 /**
   * Created by seveniruby on 15/11/28.
   */
-class TestTraversal extends FunSuite{
+class TestCrawler extends FunSuite{
 
 
   test("isBlack"){
@@ -322,6 +322,12 @@ class TestTraversal extends FunSuite{
     val conf=new CrawlerConf
     conf.save("conf.json")
   }
+
+
+  test("save xueqiu crawl config"){
+    val conf=new XueqiuCrawlerConf
+    conf.save("xueqiu.json")
+  }
 /*
   test("load config"){
     var conf=new CrawlerConf
@@ -334,10 +340,12 @@ class TestTraversal extends FunSuite{
 
   test("load config by jackson"){
     var conf=new CrawlerConf
-    conf.baseUrl="xxx"
+    conf.baseUrl=List("xxx")
     println(conf.baseUrl)
+    conf.save("conf.json")
     conf=conf.load("conf.json")
     println(conf.baseUrl)
+    assert(conf.baseUrl==List("xxx"))
   }
 
 

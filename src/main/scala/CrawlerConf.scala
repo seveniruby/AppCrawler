@@ -37,9 +37,9 @@ class CrawlerConf {
     "appium"->"http://127.0.0.1:4723/wd/hub"
   )
   /**用来确定url的元素定位xpath 他的text会被取出当作url因素*/
-  var defineUrl=""
+  var defineUrl=List[String]()
   /**设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度*/
-  var baseUrl=""
+  var baseUrl= List[String]()
   /**默认的最大深度10, 结合baseUrl可很好的控制遍历的范围*/
   var maxDepth=6
   /**url黑名单.用于排除某些页面*/
@@ -52,21 +52,24 @@ class CrawlerConf {
   var firstList=ListBuffer[String]()
   /**默认遍历列表*/
   var selectedList = ListBuffer[String](
-    "//*[@enabled='true' and @visible='true' and contains(name(), 'Text')]",
-    "//*[@enabled='true' and @visible='true' and contains(name(), 'Image')]",
-    "//*[@enabled='true' and @visible='true' and contains(name(), 'Button')]",
+    "//*[contains(name(), 'Text')]",
+    "//*[contains(name(), 'Image')]",
+    "//*[contains(name(), 'Button')]",
 
-    "//*[@enabled='true' and @clickable='true' and contains(name(), 'Text')]",
-    "//*[@enabled='true' and @clickable='true' and contains(name(), 'Image')]",
-    "//*[@enabled='true' and @resource-id!='']",
-    "//*[@enabled='true' and @content-desc!='']"
+    "//*[@clickable='true' and contains(name(), 'Text')]",
+    "//*[@clickable='true' and contains(name(), 'Image')]",
+    "//*[@resource-id!='']",
+    "//*[@content-desc!='']"
   )
   /**最后遍历列表*/
   var lastList=ListBuffer[String]()
 
   //包括backButton
-  /**黑名单列表 matches风格*/
-  var blackList = ListBuffer[String]()
+  //todo: 支持正则表达式
+  /**黑名单列表 matches风格, 默认排除内容是2个数字以上的控件.*/
+  var blackList = ListBuffer[String](
+    ".*[0-9]{2}.*"
+  )
   /**引导规则. name, value, times三个元素组成*/
   var elementActions = ListBuffer[scala.collection.mutable.Map[String, Any]]()
   elementActions += scala.collection.mutable.Map("idOrName"->".*seveniruby.*", "action"->"click", "times"->0)
