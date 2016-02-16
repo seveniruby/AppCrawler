@@ -44,50 +44,7 @@ appcrawler --help
 appcrawler -c conf/xueqiu.conf
 </pre>
 
-通过修改配置文件. 可以实现细节的控制.
-<pre>
-{
-  "saveScreen" : true,
-  "currentDriver": "android",
-  "capability" : {
-    "deviceName" : "",
-    "platformVersion" : "",
-    "platformName" : "",
-    "autoWebview" : "false",
-    "autoLaunch" : "false",
-    "noReset" : "true",
-    "app" : "/Users/seveniruby/Downloads/bb38d2a653301fe816de0a3aa7eb6520.apk"
-  },
-  "androidCapability" : {
-    "appPackage" : "com.xxx.xxx",
-    "appActivity" : "LaunchActivity",
-    "appium" : "http://127.0.0.1:4730/wd/hub"
-  },
-  "iosCapability" : {
-    "deviceName" : "iPhone 6",
-    "bundleId" : "",
-    "platformVersion" : "9.2",
-    "appium" : "http://127.0.0.1:4723/wd/hub",
-    "autoAcceptAlerts" : "true"
-  },
-  "defineUrl" : "",
-  "baseUrl" : "",
-  "maxDepth" : 6,
-  "blackUrlList" : [ "RoomList.*", "Chat.*"],
-  "backButton" : [ ],
-  "firstList" : [ ],
-  "selectedList" : [
-    "//*[@enabled='true' and @resource-id!='' and not(contains(name(), 'Layout'))]",
-    "//*[@enabled='true' and @content-desc!='' and not(contains(name(), 'Layout'))]",
-    "//android.widget.TextView[@enabled='true']",
-    "//android.widget.ImageView[@enabled='true' and @clickable='true']"
-  ],
-  "lastList" : [ ],
-  "blackList" : [ "消息", "聊天室" ],
-  "elementActions" : [ ]
-}
-</pre>
-
+通过修改配置文件. 可以实现细节的控制. 具体细节说明可参考conf下的雪球app的自动遍历示例.   
 # 设计理念
 ## 定义url
 界面唯一性:每个screen都有一个唯一的id, 这样可以类比为普通的接口测试中的url.  
