@@ -60,6 +60,8 @@ class Crawler {
   private var swipeRetry = 0
   //滑动最大重试次数
   var swipeMaxRetry = 2
+  private val swipeCountPerUrl = Map[String, Int]()
+  private val swipeMaxCountPerUrl = 10
   private var needExit = false
 
   /** 当前的url路径 */
@@ -77,7 +79,7 @@ class Crawler {
       Class.forName(name).newInstance().asInstanceOf[Plugin]
     })
     println(s"plugins=${pluginClasses.foreach(println)}")
-    pluginClasses.foreach(p=>p.init(this))
+    pluginClasses.foreach(p => p.init(this))
   }
 
   /**
@@ -236,7 +238,7 @@ class Crawler {
     */
   def getSchema(): String = {
     var nodeList = getAllElements("//*[not(ancestor-or-self::UIATableView)]")
-    nodeList=nodeList intersect getAllElements("//*[not(ancestor-or-self::android.widget.ListView)]")
+    nodeList = nodeList intersect getAllElements("//*[not(ancestor-or-self::android.widget.ListView)]")
     //todo: 未来应该支持黑名单
     val schemaBlackList = List("UIATableCell", "UIATableView", "UIAScrollView")
     md5(nodeList.filter(node => !schemaBlackList.contains(node("tag"))).map(node => node("tag")).mkString(""))
@@ -245,7 +247,7 @@ class Crawler {
 
   def getUrl(): String = {
     if (conf.defineUrl.nonEmpty) {
-      val urlString=conf.defineUrl.flatMap(getAllElements(_)).map(_ ("value")).headOption.getOrElse("")
+      val urlString = conf.defineUrl.flatMap(getAllElements(_)).map(_ ("value")).headOption.getOrElse("")
       println(s"urlString=$urlString")
       return urlString
     }
@@ -317,6 +319,7 @@ class Crawler {
   def isBlack(uid: mutable.Map[String, String]): Boolean = conf.blackList.filter(b => {
     uid("value").matches(b) || uid("name").matches(b)
   }).nonEmpty
+
   //todo: 支持xpath表达式
 
 
@@ -327,11 +330,11 @@ class Crawler {
     var commonElements = Seq[mutable.Map[String, String]]()
 
     println(conf)
-    val invalidElements=getAllElements("//*[@visible='false' or @enabled='false' or @valid='false']")
+    val invalidElements = getAllElements("//*[@visible='false' or @enabled='false' or @valid='false']")
     conf.firstList.foreach(xpath => {
       firstElements ++= getAllElements(xpath)
     })
-    firstElements=firstElements diff invalidElements
+    firstElements = firstElements diff invalidElements
 
     conf.lastList.foreach(xpath => {
       appendElements ++= getAllElements(xpath)
@@ -341,7 +344,7 @@ class Crawler {
     conf.selectedList.foreach(xpath => {
       commonElements ++= getAllElements(xpath)
     })
-    commonElements=commonElements diff invalidElements
+    commonElements = commonElements diff invalidElements
 
 
     commonElements = commonElements diff firstElements
@@ -418,131 +421,9 @@ class Crawler {
     println("schema=" + getSchema())
   }
 
-  def afterUrlRefresh(): Unit ={
-    pluginClasses.foreach(p=>p.afterUrlRefresh(url))
+  def afterUrlRefresh(): Unit = {
+    pluginClasses.foreach(p => p.afterUrlRefresh(url))
   }
-
-  /*
-  /**
-    * 最早实现的一个递归算法. 不是尾递归. 代码也很挫, 留作娱乐
-    */
-  def traversal(): Unit = {
-    println("traversal start")
-    //等待一秒防止太快
-    Thread.sleep(500)
-    depth+=1
-    println(s"depth=${depth}")
-    println("refresh page")
-    refreshPage()
-    var needBack = true
-    var needSkip = false
-    needBack = !isReturn()
-    //先判断是否命中规则.
-    doRuleAction()
-    //在selendroid的JsonXmlUtil.java:70有个bug. 导致无法获取当前界面的所有元素. ^_^
-    val all = getClickableElements().getOrElse(Seq[Map[String, String]]())
-    if (all.length == 0) {
-      //获取列表失败就重试
-      println("activity change")
-      needBack = false
-    } else {
-      //获得所有的可点击元素
-      breakable {
-        var index = 0
-        all.foreach(x => {
-          index += 1
-          println(s"index=${index}")
-          //是否需要退出
-          if (isReturn()) {
-            needBack = true
-            println("break")
-            break()
-          } else {
-            println("no need to break")
-          }
-          //是否黑名单
-          needSkip = isBlack(x)
-          if(needSkip==true){
-            println("in black list")
-          }else{
-            println("not in black list")
-          }
-          //如果触发了任意操作, 当前界面会变化. 需要重新刷新, 跳过无谓的循环
-          val uid = getElementId(x) match {
-            case Some(v) => v
-            case None => {
-              //遍历的元素都是有id, 如果出现了没有NoId或者NoText, 表明是获取元素属性的方法失败了. 发生了异常.
-              //获取id异常表示元素出了问题. 说明界面刷新过, 需要重新刷新, 但是不需要后退
-              println("exception")
-              needBack = false
-              break()
-            }
-          }
-          println(s"id=${uid}")
-
-          //是否已经点击过
-          //todo: 新界面入口需要设置为false
-          if(needSkip==false) {
-            if (elements.contains(uid.toString())) {
-              println("skip")
-              needSkip = true
-            } else {
-              needSkip = false
-              println("first show, need click")
-            }
-          }
-          //如果未曾点击
-          if (needSkip == false) {
-            println("just click")
-            elements(uid.toString()) = true
-            //doDefaultAction(uid)
-            doAppiumAction(uid, "click") match {
-              case Some(v) => {
-                println("do appium action success")
-              }
-              case None => {
-                println("do appium action exception, break")
-              }
-            }
-            //说明还不需要back到上一界面, 遍历完所有的元素才表示需要回退
-            needBack = false
-            //任何点击都需要重新刷新元素. 防止其他元素被遮盖
-
-            //任何界面变化都需要进入新的递归. 而不是只到新界面.
-            traversal()
-
-          } else {
-            println("already clicked, so skip")
-          }
-        })
-      }
-    }
-    //子界面遍历返回后继续遍历当前界面中剩下的界面
-    if (needBack == true) {
-      println("back")
-      if (backButton == "") {
-        //todo: iOS上的back貌似有问题
-        driver.navigate().back()
-      } else {
-        getAllElements(backButton).lift(0) match {
-          case Some(v)=>{
-            getElementId(v) match {
-              case Some(element)=>{
-                doAppiumAction(element, "click")
-              }
-            }
-          }
-        }
-      }
-
-      saveScreen(ELement(url, "Back", "Back", "Back"))
-      //任何界面变化都需要进入新的递归. 而不是只到新界面.
-      traversal()
-
-    }
-    depth-=1
-  }
-*/
 
   def isClicked(ele: UrlElement): Boolean = {
     if (elements.contains(ele.toString())) {
@@ -671,7 +552,14 @@ class Crawler {
 
   def scroll(): Unit = {
     if (swipeRetry > swipeMaxRetry) {
-      println("swipe until no fresh elements")
+      println("swipeRetry > swipeMaxRetry")
+      return
+    }
+    if (swipeCountPerUrl.contains(url) == false) {
+      swipeCountPerUrl(url) = 0
+    }
+    if (swipeCountPerUrl(url) > swipeMaxCountPerUrl) {
+      println("swipeRetry of per url > swipeMaxCountPerUrl")
       return
     }
     doAppium(
@@ -683,6 +571,8 @@ class Crawler {
       case Some(v) => {
         println("swipe success")
         swipeRetry += 1
+        swipeCountPerUrl(url) += 1
+
         saveScreen(UrlElement(url, "Scroll", "", "", ""))
       }
       case None => {
