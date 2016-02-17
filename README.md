@@ -13,17 +13,23 @@
 * 支持自动截获接口请求(Doing)
 * 支持新老版本的界面对比(Doing)
 
-# 安装环境
+# 安装依赖
 ### mac下安装appium
 <pre>
 brew install node
 npm install -g appium
 </pre>
-
-### 准备环境
 真机或者模拟器均可. 确保adb devices可以看到就行
+### 启动appium
+启动appium
+<pre>
+#ios测试默认连接4724默认端口
+appium --session-override
+#android测试默认连接4730默认端口
+appium --session-override -p 4730
+</pre>
 ### 下载appcrawler.
-可以使用打包好的工具, 不需要安装scala和sbt.只要有java即可  
+下载appcrawler工具, 解压. 只要有java即可  
 ### 快速遍历
 <pre>
 #使用默认规则运行
@@ -35,7 +41,10 @@ appcrawler --help
 ### 配置文件运行方式
 <pre>
 #配置文件的方式运行
-appcrawler -c conf/xueqiu.conf
+#Android测试
+appcrawler -c conf/xueqiu.conf -p Android
+#iOS测试
+appcrawler -c conf/xueqiu.conf -p iOS
 </pre>
 
 通过修改配置文件. 可以实现细节的控制. 具体细节说明可参考conf下的雪球app的自动遍历示例.   

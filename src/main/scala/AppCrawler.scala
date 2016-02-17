@@ -11,7 +11,7 @@ case class Config(
                    app: File = new File("."),
                    conf: File = new File("."),
                    verbose: Boolean = false,
-                   platform: String="android",
+                   platform: String = "android",
                    capability: Map[String, String] = Map[String, String]()
                  )
 
@@ -35,9 +35,16 @@ object AppCrawler {
       head("appcrawler", "1.0.1")
       opt[File]('a', "app") action { (x, c) =>
         c.copy(app = x)
-      } text ("Android或者iOS的文件地址")
+      } text ("Android或者iOS的文件地址, 可以是网络地址, 赋值给appium的app选项")
       opt[File]('c', "conf") action { (x, c) =>
         c.copy(conf = x)
+      } validate { x => {
+        if (x.isFile) {
+          success
+        } else {
+          failure(s"$x not exist")
+        }
+      }
       } text ("配置文件地址")
       opt[String]('p', "platform") action { (x, c) =>
         c.copy(platform = x)
@@ -60,54 +67,54 @@ object AppCrawler {
     }
     // parser.parse returns Option[C]
 
-    val args_new=if(args.length==0) {
+    val args_new = if (args.length == 0) {
       Array("--help")
-    }else{
+    } else {
       args
     }
     parser.parse(args_new, Config()) match {
-      case Some(config) =>{
-        val crawlerConf=if(config.conf.isFile){
+      case Some(config) => {
+        val crawlerConf = if (config.conf.isFile) {
           println(s"Find Conf ${config.conf.getAbsolutePath}")
           new CrawlerConf().load(config.conf)
-        }else if(config.app.exists()){
+        } else if (config.app.exists()) {
           println(s"Find File ${config.app.getAbsolutePath}")
-          val crawlerConf=new CrawlerConf
+          val crawlerConf = new CrawlerConf
 
-          config.capability.foreach( kv=>{
-            if(crawlerConf.androidCapability.contains(kv._1)){
-              crawlerConf.androidCapability++=Map(kv._1->kv._2)
-            }else if(crawlerConf.iosCapability.contains(kv._1)){
-              crawlerConf.iosCapability++=Map(kv._1->kv._2)
-            }else{
-              crawlerConf.capability++=Map(kv._1->kv._2)
+          config.capability.foreach(kv => {
+            if (crawlerConf.androidCapability.contains(kv._1)) {
+              crawlerConf.androidCapability ++= Map(kv._1 -> kv._2)
+            } else if (crawlerConf.iosCapability.contains(kv._1)) {
+              crawlerConf.iosCapability ++= Map(kv._1 -> kv._2)
+            } else {
+              crawlerConf.capability ++= Map(kv._1 -> kv._2)
             }
 
           })
-          crawlerConf.capability++=Map("app"->config.app.getAbsolutePath)
+          crawlerConf.capability ++= Map("app" -> config.app.getAbsolutePath)
           crawlerConf
-        }else{
+        } else {
           //appium支持纯包名启动
-          val crawlerConf=new CrawlerConf
-          config.capability.foreach( kv=>{
-            if(crawlerConf.androidCapability.contains(kv._1)){
-              crawlerConf.androidCapability++=Map(kv._1->kv._2)
-            }else if(crawlerConf.iosCapability.contains(kv._1)){
-              crawlerConf.iosCapability++=Map(kv._1->kv._2)
-            }else{
-              crawlerConf.capability++=Map(kv._1->kv._2)
+          val crawlerConf = new CrawlerConf
+          config.capability.foreach(kv => {
+            if (crawlerConf.androidCapability.contains(kv._1)) {
+              crawlerConf.androidCapability ++= Map(kv._1 -> kv._2)
+            } else if (crawlerConf.iosCapability.contains(kv._1)) {
+              crawlerConf.iosCapability ++= Map(kv._1 -> kv._2)
+            } else {
+              crawlerConf.capability ++= Map(kv._1 -> kv._2)
             }
 
           })
           println(config.app.getAbsolutePath)
-          crawlerConf.capability++=Map("app"->config.app.getName)
+          crawlerConf.capability ++= Map("app" -> config.app.getName)
           crawlerConf
         }
-        crawlerConf.currentDriver=config.platform
+        crawlerConf.currentDriver = config.platform
         println(crawlerConf.toJson)
         new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf))
       }
-      case None =>{}
+      case None => {}
     }
   }
 }
