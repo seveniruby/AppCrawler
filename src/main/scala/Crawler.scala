@@ -754,11 +754,11 @@ class Crawler {
     //先判断是否在期望的界面里. 提升速度
     var isHit = false
     conf.elementActions.foreach(r => {
-      println("for each rule")
+      println(s"for each rule ${r}")
       val idOrName = r("idOrName").toString
       val action = r("action").toString
       val times = r("times").toString.toInt
-      println(s"idOrName=${idOrName} action=${action}")
+      println(s"idOrName=${idOrName} action=${action} times=${times}")
       val all = getRuleMatchNodes()
 
       (all.filter(_ ("name").matches(idOrName)) ++ all.filter(_ ("value").matches(idOrName))).distinct.foreach(x => {
@@ -766,7 +766,6 @@ class Crawler {
         getUrlElementByMap(x) match {
           case Some(e) => {
             println(s"element=${e} action=${action}")
-            println("do rule action")
             isHit = true
             doAppiumAction(e, action.toString) match {
               case None => {
@@ -776,12 +775,11 @@ class Crawler {
                 println("do rule action success")
                 r("times") = times - 1
                 if (times == 1) {
+                  println(s"remove rule ${r}")
                   conf.elementActions -= r
                 }
               }
             }
-            //todo: 暂不删除, 允许复用
-            //rule -= r
           }
           case None => println("get element id error")
         }

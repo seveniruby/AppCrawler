@@ -74,43 +74,33 @@ object AppCrawler {
     }
     parser.parse(args_new, Config()) match {
       case Some(config) => {
-        val crawlerConf = if (config.conf.isFile) {
+        var crawlerConf = new CrawlerConf
+        //获取配置模板文件
+        if (config.conf.isFile) {
           println(s"Find Conf ${config.conf.getAbsolutePath}")
-          new CrawlerConf().load(config.conf)
-        } else if (config.app.exists()) {
-          println(s"Find File ${config.app.getAbsolutePath}")
-          val crawlerConf = new CrawlerConf
-
-          config.capability.foreach(kv => {
-            if (crawlerConf.androidCapability.contains(kv._1)) {
-              crawlerConf.androidCapability ++= Map(kv._1 -> kv._2)
-            } else if (crawlerConf.iosCapability.contains(kv._1)) {
-              crawlerConf.iosCapability ++= Map(kv._1 -> kv._2)
-            } else {
-              crawlerConf.capability ++= Map(kv._1 -> kv._2)
+          crawlerConf=crawlerConf.load(config.conf)
+        }
+        //合并capability, 特定平台的capability>通用capability
+        config.platform.toLowerCase match {
+          case "android"=> {
+            crawlerConf.androidCapability=crawlerConf.capability++crawlerConf.androidCapability
+            crawlerConf.androidCapability ++= config.capability
+            if (config.app.getName!=".") {
+              crawlerConf.androidCapability ++= Map("app" -> config.app.getPath.replace(":/", "://"))
             }
-
-          })
-          crawlerConf.capability ++= Map("app" -> config.app.getAbsolutePath)
-          crawlerConf
-        } else {
-          //appium支持纯包名启动
-          val crawlerConf = new CrawlerConf
-          config.capability.foreach(kv => {
-            if (crawlerConf.androidCapability.contains(kv._1)) {
-              crawlerConf.androidCapability ++= Map(kv._1 -> kv._2)
-            } else if (crawlerConf.iosCapability.contains(kv._1)) {
-              crawlerConf.iosCapability ++= Map(kv._1 -> kv._2)
-            } else {
-              crawlerConf.capability ++= Map(kv._1 -> kv._2)
+          }
+          case "ios" => {
+            crawlerConf.iosCapability=crawlerConf.capability++crawlerConf.iosCapability
+            crawlerConf.iosCapability ++= config.capability
+            if (config.app.getName!=".") {
+              crawlerConf.iosCapability ++= Map("app" -> config.app.getPath.replace(":/", "://"))
             }
-
-          })
-          println(config.app.getAbsolutePath)
-          crawlerConf.capability ++= Map("app" -> config.app.getName)
-          crawlerConf
+          }
         }
         crawlerConf.currentDriver = config.platform
+
+        //获得app设置
+        //println(s"app path=${config.app.getPath} ${config.app.getName} ${config.app.getAbsolutePath} ${config.app.getCanonicalPath}")
         println(crawlerConf.toJson)
         new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf))
       }
