@@ -42,9 +42,9 @@ appcrawler --help
 <pre>
 #配置文件的方式运行
 #Android测试
-appcrawler -c conf/xueqiu.conf -p Android
+appcrawler -c conf/xueqiu.json -p Android
 #iOS测试
-appcrawler -c conf/xueqiu.conf -p iOS
+appcrawler -c conf/xueqiu.json -p iOS
 </pre>
 
 通过修改配置文件. 可以实现细节的控制. 具体细节说明可参考conf下的雪球app的自动遍历示例.   
