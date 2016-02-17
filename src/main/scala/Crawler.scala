@@ -61,7 +61,7 @@ class Crawler {
   //滑动最大重试次数
   var swipeMaxRetry = 2
   private val swipeCountPerUrl = Map[String, Int]()
-  private val swipeMaxCountPerUrl = 10
+  private val swipeMaxCountPerUrl = 8
   private var needExit = false
 
   /** 当前的url路径 */
@@ -560,6 +560,7 @@ class Crawler {
     }
     if (swipeCountPerUrl(url) > swipeMaxCountPerUrl) {
       println("swipeRetry of per url > swipeMaxCountPerUrl")
+      swipeRetry+=1
       return
     }
     doAppium(
@@ -572,7 +573,7 @@ class Crawler {
         println("swipe success")
         swipeRetry += 1
         swipeCountPerUrl(url) += 1
-
+        println(s"swipeCount of current Url=${swipeCountPerUrl(url)}")
         saveScreen(UrlElement(url, "Scroll", "", "", ""))
       }
       case None => {
