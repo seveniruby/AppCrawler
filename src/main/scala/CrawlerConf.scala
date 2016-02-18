@@ -22,7 +22,7 @@ class CrawlerConf {
     "deviceName"->"",
     "noReset"->"false",
     "autoWebview"->"false",
-    "autoLaunch"->"false"
+    "autoLaunch"->"true"
   )
   var androidCapability=Map[String, String](
     "appPackage"->"",

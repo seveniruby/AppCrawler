@@ -20,7 +20,7 @@ class XueqiuCrawlerConf extends CrawlerConf {
     "deviceName" -> "",
     "noReset" -> "false",
     "autoWebview" -> "false",
-    "autoLaunch" -> "false"
+    "autoLaunch" -> "true"
   )
   androidCapability = Map[String, String](
     "appPackage" -> "com.xueqiu.android",
@@ -34,7 +34,8 @@ class XueqiuCrawlerConf extends CrawlerConf {
     "platformVersion" -> "9.2",
     "deviceName" -> "iPhone 6",
     "appium" -> "http://127.0.0.1:4723/wd/hub",
-    "app" -> "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app"
+    "app" -> "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphoneos/Snowball.app"
+    //"app" -> "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app"
   )
 
   /** 用来确定url的元素定位xpath 他的text会被取出当作url因素 */

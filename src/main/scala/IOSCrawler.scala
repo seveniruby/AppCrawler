@@ -38,7 +38,7 @@ class IOSCrawler extends Crawler {
     //driver = new XueqiuDriver[WebElement](new URL("http://127.0.0.1:4729/wd/hub"), capabilities)
     val url=conf.iosCapability("appium")
     driver = new IOSDriver[WebElement](new URL(url), capabilities)
-    driver.launchApp()
+    //driver.launchApp()
     getDeviceInfo()
   }
 
