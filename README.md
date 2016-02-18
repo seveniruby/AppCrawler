@@ -47,6 +47,13 @@ appcrawler -c conf/xueqiu.json -p Android
 appcrawler -c conf/xueqiu.json -p iOS
 </pre>
 
+### 混合使用
+-c参数表示是配置模板. 其他参数会在模板的基础上应用指定配置, --capability指定的参数会覆盖模板中的capability配置
+<pre>
+target/universal/stage/bin/appcrawler -c xueqiu.json  -p ios --capability udid="4c1bd4ed1cc4089c10a5917959f6ddd804714b2a"  -a /Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphoneos/Snowball.app
+target/universal/stage/bin/appcrawler -c xueqiu.json  -p android  -a http://build.snowballfinance.com/static/apps/com.xueqiu.droid.rc/20160204_165054/xueqiu.apk
+</pre>
+
 通过修改配置文件. 可以实现细节的控制. 具体细节说明可参考conf下的雪球app的自动遍历示例.   
 
 ### 输出结果
@@ -68,7 +75,6 @@ iOS没有activity概念, 默认使用当前页面dom的md5值的后五位作为�
 如果url设置为当前activiy的名字, 那么有多少页面包含它他就会被点击多少次.  
 
 url的定义是一门艺术, 可以决定如何优雅的遍历.  
-
 ## 设定引导规则
 遇到什么控件触发什么操作, 用来做引导输入, 是一种触发机制.    
 rule方法有三个参数. 元素的id或者name属性.第二个参数为输入. "click"会执行点击操作. 其他都会被当成文本输入.  

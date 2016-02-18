@@ -12,6 +12,8 @@ case class Config(
                    conf: File = new File("."),
                    verbose: Boolean = false,
                    platform: String = "android",
+                   resultDir: String = "",
+                   maxTime:Int = 3600*3,
                    capability: Map[String, String] = Map[String, String]()
                  )
 
@@ -49,19 +51,26 @@ object AppCrawler {
       opt[String]('p', "platform") action { (x, c) =>
         c.copy(platform = x)
       } text ("平台类型android或者ios")
+      opt[Int]('t', "maxTime") action { (x, c) =>
+        c.copy(maxTime = x)
+      } text ("最大运行时间. 单位为秒. 超时机会退出. 默认最长运行3个小时")
+      opt[String]('o', "output") action { (x, c) =>
+        c.copy(resultDir = x)
+      } text ("遍历结果的保存目录. 里面会存放遍历生成的截图, 思维导图和日志")
       opt[Map[String, String]]("capability") valueName ("k1=v1,k2=v2...") action { (x, c) =>
         c.copy(capability = x)
-      } text ("appium capability选项")
+      } text ("appium capability选项, 这个参数会覆盖-c指定的配置模板参数, 用于在模板配置之上的参数微调")
       opt[Unit]("verbose") action { (_, c) =>
         c.copy(verbose = true)
       } text ("是否展示更多debug信息")
-      note("appcrawler app爬虫\n")
+      note("appcrawler app爬虫. 遍历app并生成截图和思维导图. 支持Android和iOS, 支持真机和模拟器\n")
       help("help") text (
         """
           |示例
           |appcrawler -a xueqiu.apk
           |appcrawler -a xueqiu.apk --capability noReset=true
-          |appcrawler -c conf/xueqiu_android.conf
+          |appcrawler -c conf/xueqiu.json
+          |appcrawler -c xueqiu.json  -p ios --capability udid=[你的udid] -a Snowball.app
         """.stripMargin)
 
     }
@@ -98,6 +107,8 @@ object AppCrawler {
           }
         }
         crawlerConf.currentDriver = config.platform
+        crawlerConf.maxTime=config.maxTime
+        crawlerConf.resultDir=config.resultDir
 
         //获得app设置
         //println(s"app path=${config.app.getPath} ${config.app.getName} ${config.app.getAbsolutePath} ${config.app.getCanonicalPath}")

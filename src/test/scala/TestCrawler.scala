@@ -348,5 +348,14 @@ class TestCrawler extends FunSuite{
     assert(conf.baseUrl==List("xxx"))
   }
 
+  test("load xueqiu config"){
+    val conf=new XueqiuCrawlerConf
+    conf.elementActions++=List(Map("idOrName"->"demo", "times"->2, "action"->"click"))
+    conf.save("conf.json")
+    val xq=conf.load("conf.json")
+    println(xq.elementActions)
+
+  }
+
 
 }

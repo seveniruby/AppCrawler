@@ -13,8 +13,14 @@ import java.nio.charset.Charset
   * Created by seveniruby on 16/1/6.
   */
 class CrawlerConf {
+  /**是否截图*/
   var saveScreen=true
   var currentDriver="android"
+  /**最大运行时间*/
+  var maxTime = 3600*3
+  /**结果目录*/
+  var resultDir=""
+  /**appium的capability通用配置*/
   var capability=Map[String, String](
     "app"->"",
     "platformName"->"",

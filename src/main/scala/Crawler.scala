@@ -1,23 +1,19 @@
 import java.io.{ByteArrayInputStream, StringWriter}
 import java.nio.charset.StandardCharsets
+import java.util.Date
 import javax.xml.parsers.{DocumentBuilder, DocumentBuilderFactory}
 import javax.xml.xpath.{XPath, XPathFactory, _}
 
-import io.appium.java_client.remote.MobileCapabilityType
-import io.appium.java_client.{TouchAction, AppiumDriver}
+import io.appium.java_client.AppiumDriver
 import org.apache.commons.io.FileUtils
 import org.apache.xml.serialize.{OutputFormat, XMLSerializer}
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
-import org.scalatest.ConfigMap
 import org.w3c.dom.{Attr, Document, NodeList}
 
-import scala.collection.immutable.HashMap
 import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Map}
-import scala.io.Source
 import scala.reflect.io.File
-import scala.util.control.Breaks._
 import scala.util.{Failure, Success, Try}
 
 
@@ -63,6 +59,7 @@ class Crawler {
   private val swipeCountPerUrl = Map[String, Int]()
   private val swipeMaxCountPerUrl = 8
   private var needExit = false
+  private val startTime=new Date().getTime
 
   /** 当前的url路径 */
   var url = ""
@@ -99,6 +96,9 @@ class Crawler {
   def start(): Unit = {
     loadPlugins()
     setupAppium()
+    if(conf.resultDir==""){
+      conf.resultDir=s"${platformName}_${timestamp}"
+    }
     crawl()
   }
 
@@ -499,6 +499,11 @@ class Crawler {
     * 优化后的递归方法. 尾递归.
     */
   def crawl(): Unit = {
+    //超时退出
+    if((new Date().getTime-startTime) > conf.maxTime*1000){
+      println("maxTime out Quit")
+      needExit=true
+    }
     if (needExit) {
       return
     }
@@ -667,12 +672,12 @@ class Crawler {
   def saveLog(): Unit = {
     println("save log")
     //记录点击log
-    if (!new java.io.File(s"${platformName}_${timestamp}").exists()) {
-      FileUtils.forceMkdir(new java.io.File(s"${platformName}_${timestamp}"))
+    if (!new java.io.File(conf.resultDir).exists()) {
+      FileUtils.forceMkdir(new java.io.File(conf.resultDir))
     }
-    File(s"${platformName}_${timestamp}/clickedList.log").writeAll(clickedList.mkString("\n"))
-    File(s"${platformName}_${timestamp}/ElementList.log").writeAll(elements.mkString("\n"))
-    File(s"${platformName}_${timestamp}/freemind.mm").writeAll(
+    File(s"${conf.resultDir}/clickedList.log").writeAll(clickedList.mkString("\n"))
+    File(s"${conf.resultDir}/ElementList.log").writeAll(elements.mkString("\n"))
+    File(s"${conf.resultDir}/freemind.mm").writeAll(
       elementTree.generateFreeMind(elementTreeList)
     )
     println("save log end")
@@ -683,7 +688,7 @@ class Crawler {
     if (!conf.saveScreen) return
     Thread.sleep(500)
     imgIndex += 1
-    val path = s"${platformName}_${timestamp}/${imgIndex}_" + e.toString().replace("\n", "").replaceAll("[ /,]", "").take(200) + ".jpg"
+    val path = s"${conf.resultDir}/${imgIndex}_" + e.toString().replace("\n", "").replaceAll("[ /,]", "").take(200) + ".jpg"
     doAppium((driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)) match {
       case Some(src) => {
         FileUtils.copyFile(src, new java.io.File(path))
