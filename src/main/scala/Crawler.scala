@@ -99,6 +99,9 @@ class Crawler {
     if(conf.resultDir==""){
       conf.resultDir=s"${platformName}_${timestamp}"
     }
+    if (!new java.io.File(conf.resultDir).exists()) {
+      FileUtils.forceMkdir(new java.io.File(conf.resultDir))
+    }
     crawl()
   }
 
@@ -624,7 +627,7 @@ class Crawler {
         //照顾iOS android会在findByName的时候自动找text属性.
         doAppium(driver.findElementByXPath(
           //s"//${uid.tag}[@name='${uid.id}' and @value='${uid.name}' and @x='${uid.loc.split(',').head}' and @y='${uid.loc.split(',').last}']"
-          s"//${uid.tag}[@name='${uid.id}' and @value='${uid.name}' and @path='${uid.loc}']"
+          s"//${uid.tag}[@path='${uid.loc}']"
         )) match {
           case Some(v) => return Some(v)
           case None => {}
@@ -672,9 +675,6 @@ class Crawler {
   def saveLog(): Unit = {
     println("save log")
     //记录点击log
-    if (!new java.io.File(conf.resultDir).exists()) {
-      FileUtils.forceMkdir(new java.io.File(conf.resultDir))
-    }
     File(s"${conf.resultDir}/clickedList.log").writeAll(clickedList.mkString("\n"))
     File(s"${conf.resultDir}/ElementList.log").writeAll(elements.mkString("\n"))
     File(s"${conf.resultDir}/freemind.mm").writeAll(

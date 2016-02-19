@@ -65,8 +65,6 @@ class IOSCrawler extends Crawler {
   }
 
   override def getRuleMatchNodes(): ListBuffer[mutable.Map[String, String]] = {
-    (getAllElements("//UIAWindow[1]//*") ++
-      getAllElements("//UIAWindow[3]//*") ++
-      getAllElements("//UIAWindow//UIAButton")).distinct
+    getAllElements("//*[@visible='true' and @enabled='true' and @valid='true']")
   }
 }

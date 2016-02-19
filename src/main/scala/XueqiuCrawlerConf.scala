@@ -118,7 +118,7 @@ class XueqiuCrawlerConf extends CrawlerConf {
     "camera", "Camera", "点评", "nav_icon_home", "评论", "回复", "咨询", "分享.*", "转发.*", "comments", "comment",
     "stock_item_.*", ".*[0-9]{2}.*", "弹幕", "发送", "保存", "确定",
     "up", "user_profile_icon", "selectAll", "cut", "copy", "send", "买[0-9]*", "卖[0-9]*",
-    "聊天.*", "拍照.*", "发表.*", "回复.*", "加入.*", "赞助.*", "微博.*"
+    "聊天.*", "拍照.*", "发表.*", "回复.*", "加入.*", "赞助.*", "微博.*", "球友.*"
   )
 
   /** 引导规则. name, value, times三个元素组成 */
@@ -126,7 +126,7 @@ class XueqiuCrawlerConf extends CrawlerConf {
   elementActions += scala.collection.mutable.Map("idOrName" -> "登 录", "action" -> "click", "times" -> 2)
   elementActions += scala.collection.mutable.Map("idOrName" -> "登录", "action" -> "click", "times" -> 2)
   elementActions += scala.collection.mutable.Map("idOrName" -> "account", "action" -> "15600534760", "times" -> 1)
-  elementActions += scala.collection.mutable.Map("idOrName" -> "password", "action" -> "hys2xueqiu", "times" -> 1)
+  elementActions += scala.collection.mutable.Map("idOrName" -> "password", "action" -> "password", "times" -> 1)
   elementActions += scala.collection.mutable.Map("idOrName" -> "button_next", "action" -> "click", "times" -> 1)
   elementActions += scala.collection.mutable.Map("idOrName" -> "点此.*", "action" -> "click", "times" -> 0)
   elementActions += scala.collection.mutable.Map("idOrName" -> "不保存", "action" -> "click", "times" -> 0)

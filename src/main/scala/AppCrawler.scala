@@ -7,18 +7,16 @@ import org.scalatest.ConfigMap
 
 import java.io.File
 
-case class Config(
-                   app: File = new File("."),
-                   conf: File = new File("."),
-                   verbose: Boolean = false,
-                   platform: String = "android",
-                   resultDir: String = "",
-                   maxTime:Int = 3600*3,
-                   capability: Map[String, String] = Map[String, String]()
-                 )
-
-
 object AppCrawler {
+  case class Param(
+                           app: File = new File("."),
+                           conf: File = new File("."),
+                           verbose: Boolean = false,
+                           platform: String = "android",
+                           resultDir: String = "",
+                           maxTime:Int = 3600*3,
+                           capability: Map[String, String] = Map[String, String]()
+                         )
   /*
     def sbt(args: String): Unit = {
       import scala.sys.process._
@@ -33,7 +31,7 @@ object AppCrawler {
   */
 
   def main(args: Array[String]) {
-    val parser = new scopt.OptionParser[Config]("appcrawler") {
+    val parser = new scopt.OptionParser[Param]("appcrawler") {
       head("appcrawler", "1.0.1")
       opt[File]('a', "app") action { (x, c) =>
         c.copy(app = x)
@@ -53,7 +51,7 @@ object AppCrawler {
       } text ("平台类型android或者ios")
       opt[Int]('t', "maxTime") action { (x, c) =>
         c.copy(maxTime = x)
-      } text ("最大运行时间. 单位为秒. 超时机会退出. 默认最长运行3个小时")
+      } text ("最大运行时间. 单位为秒. 超过此值会退出. 默认最长运行3个小时")
       opt[String]('o', "output") action { (x, c) =>
         c.copy(resultDir = x)
       } text ("遍历结果的保存目录. 里面会存放遍历生成的截图, 思维导图和日志")
@@ -71,6 +69,7 @@ object AppCrawler {
           |appcrawler -a xueqiu.apk --capability noReset=true
           |appcrawler -c conf/xueqiu.json
           |appcrawler -c xueqiu.json  -p ios --capability udid=[你的udid] -a Snowball.app
+          |
         """.stripMargin)
 
     }
@@ -81,7 +80,7 @@ object AppCrawler {
     } else {
       args
     }
-    parser.parse(args_new, Config()) match {
+    parser.parse(args_new, Param()) match {
       case Some(config) => {
         var crawlerConf = new CrawlerConf
         //获取配置模板文件
