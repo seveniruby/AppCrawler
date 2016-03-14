@@ -36,7 +36,7 @@ class IOSCrawler extends Crawler {
     conf.iosCapability.foreach(kv=>capabilities.setCapability(kv._1, kv._2))
     //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")
     //driver = new XueqiuDriver[WebElement](new URL("http://127.0.0.1:4729/wd/hub"), capabilities)
-    val url=conf.iosCapability("appium")
+    val url=conf.iosCapability("appium").toString
     driver = new IOSDriver[WebElement](new URL(url), capabilities)
     //driver.launchApp()
     getDeviceInfo()

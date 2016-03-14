@@ -13,6 +13,7 @@ object AppCrawler {
                            conf: File = new File("."),
                            verbose: Boolean = false,
                            platform: String = "android",
+                           appium:String = "",
                            resultDir: String = "",
                            maxTime:Int = 3600*3,
                            capability: Map[String, String] = Map[String, String]()
@@ -52,6 +53,9 @@ object AppCrawler {
       opt[Int]('t', "maxTime") action { (x, c) =>
         c.copy(maxTime = x)
       } text ("最大运行时间. 单位为秒. 超过此值会退出. 默认最长运行3个小时")
+      opt[String]('u', "appium") action { (x, c) =>
+        c.copy(appium = x)
+      } text ("appium的url地址")
       opt[String]('o', "output") action { (x, c) =>
         c.copy(resultDir = x)
       } text ("遍历结果的保存目录. 里面会存放遍历生成的截图, 思维导图和日志")
@@ -69,6 +73,7 @@ object AppCrawler {
           |appcrawler -a xueqiu.apk --capability noReset=true
           |appcrawler -c conf/xueqiu.json
           |appcrawler -c xueqiu.json  -p ios --capability udid=[你的udid] -a Snowball.app
+          |appcrawler -c xueqiu.json  -p ios -a Snowball.app -u http://127.0.0.1:4730/wd/hub
           |
         """.stripMargin)
 
@@ -96,12 +101,18 @@ object AppCrawler {
             if (config.app.getName!=".") {
               crawlerConf.androidCapability ++= Map("app" -> config.app.getPath.replace(":/", "://"))
             }
+            if(config.appium!=""){
+              crawlerConf.androidCapability++=Map("appium"->config.appium)
+            }
           }
           case "ios" => {
             crawlerConf.iosCapability=crawlerConf.capability++crawlerConf.iosCapability
             crawlerConf.iosCapability ++= config.capability
             if (config.app.getName!=".") {
               crawlerConf.iosCapability ++= Map("app" -> config.app.getPath.replace(":/", "://"))
+            }
+            if(config.appium!="") {
+              crawlerConf.iosCapability ++= Map("appium" -> config.appium)
             }
           }
         }
@@ -112,7 +123,7 @@ object AppCrawler {
         //获得app设置
         //println(s"app path=${config.app.getPath} ${config.app.getName} ${config.app.getAbsolutePath} ${config.app.getCanonicalPath}")
         println(crawlerConf.toJson)
-        new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf))
+        new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf), fullstacks = true)
       }
       case None => {}
     }

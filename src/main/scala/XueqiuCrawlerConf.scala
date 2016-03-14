@@ -33,6 +33,7 @@ class XueqiuCrawlerConf extends CrawlerConf {
     "autoAcceptAlerts" -> "true",
     "platformVersion" -> "9.2",
     "deviceName" -> "iPhone 6",
+    "launchTimeout" -> "120000",
     "appium" -> "http://127.0.0.1:4723/wd/hub",
     "app" -> "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphoneos/Snowball.app"
     //"app" -> "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app"
@@ -67,7 +68,8 @@ class XueqiuCrawlerConf extends CrawlerConf {
     ".*MyselfUser.*",
     ".*股市直播.*",
     ".*UserVC.*",
-    ".*正文页.*"
+    ".*正文页.*",
+    "SNBTradeSegment"
   )
 
   /** 后退按钮标记, 主要用于iOS, xpath */
@@ -118,7 +120,8 @@ class XueqiuCrawlerConf extends CrawlerConf {
     "camera", "Camera", "点评", "nav_icon_home", "评论", "回复", "咨询", "分享.*", "转发.*", "comments", "comment",
     "stock_item_.*", ".*[0-9]{2}.*", "弹幕", "发送", "保存", "确定",
     "up", "user_profile_icon", "selectAll", "cut", "copy", "send", "买[0-9]*", "卖[0-9]*",
-    "聊天.*", "拍照.*", "发表.*", "回复.*", "加入.*", "赞助.*", "微博.*", "球友.*"
+    "聊天.*", "拍照.*", "发表.*", "回复.*", "加入.*", "赞助.*", "微博.*", "球友.*",
+    ".*开户.*"
   )
 
   /** 引导规则. name, value, times三个元素组成 */

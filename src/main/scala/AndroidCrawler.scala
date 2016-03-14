@@ -33,7 +33,7 @@ class AndroidCrawler extends Crawler {
     capabilities.setCapability("unicodeKeyboard", "true")
     conf.androidCapability.foreach(kv=>capabilities.setCapability(kv._1, kv._2))
 
-    val url=conf.androidCapability("appium")
+    val url=conf.androidCapability("appium").toString
     driver = new AndroidDriver[WebElement](new URL(url), capabilities)
     //driver.launchApp()
     getDeviceInfo()

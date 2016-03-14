@@ -21,7 +21,7 @@ class CrawlerConf {
   /**结果目录*/
   var resultDir=""
   /**appium的capability通用配置*/
-  var capability=Map[String, String](
+  var capability=Map[String, Any](
     "app"->"",
     "platformName"->"",
     "platformVersion"->"",
@@ -30,12 +30,13 @@ class CrawlerConf {
     "autoWebview"->"false",
     "autoLaunch"->"true"
   )
-  var androidCapability=Map[String, String](
+  /**android专属配置 最后会和capability合并*/
+  var androidCapability=Map[String, Any](
     "appPackage"->"",
     "appActivity"->"",
     "appium"->"http://127.0.0.1:4730/wd/hub"
   )
-  var iosCapability=Map[String, String](
+  var iosCapability=Map[String, Any](
     "bundleId"->"",
     "autoAcceptAlerts"->"true",
     "platformVersion"->"9.2",

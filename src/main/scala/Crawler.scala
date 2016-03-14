@@ -1,6 +1,7 @@
 import java.io.{ByteArrayInputStream, StringWriter}
 import java.nio.charset.StandardCharsets
 import java.util.Date
+import java.util.logging.Level
 import javax.xml.parsers.{DocumentBuilder, DocumentBuilderFactory}
 import javax.xml.xpath.{XPath, XPathFactory, _}
 
@@ -11,6 +12,7 @@ import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
 import org.w3c.dom.{Attr, Document, NodeList}
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Map}
 import scala.reflect.io.File
@@ -25,7 +27,7 @@ class Crawler {
   var conf = new CrawlerConf()
   val capabilities = new DesiredCapabilities()
 
-  var pluginNames = List[String]("DemoPlugin")
+  var pluginNames = List[String]()
   var pluginClasses = List[Plugin]()
   var plugins = List[Plugin]()
 
@@ -38,7 +40,8 @@ class Crawler {
   var nowTimeStamp = "0"
   val timestamp = getTimeStamp()
   //todo:留作判断当前界面是否变化
-  var md5Last = ""
+  var currentSchema = ""
+  var lastSchema = ""
   var automationName = "appium"
   var platformName = ""
 
@@ -59,7 +62,7 @@ class Crawler {
   private val swipeCountPerUrl = Map[String, Int]()
   private val swipeMaxCountPerUrl = 8
   private var needExit = false
-  private val startTime=new Date().getTime
+  private val startTime = new Date().getTime
 
   /** 当前的url路径 */
   var url = ""
@@ -73,6 +76,7 @@ class Crawler {
     */
   def loadPlugins(): Unit = {
     pluginClasses = pluginNames.map(name => {
+      println(s"Load $name")
       Class.forName(name).newInstance().asInstanceOf[Plugin]
     })
     println(s"plugins=${pluginClasses.foreach(println)}")
@@ -94,14 +98,19 @@ class Crawler {
     * 启动爬虫
     */
   def start(): Unit = {
+    GA.log("start")
     loadPlugins()
     setupAppium()
-    if(conf.resultDir==""){
-      conf.resultDir=s"${platformName}_${timestamp}"
+
+    println("LogTypes=")
+    driver.manage().logs().getAvailableLogTypes().toArray.foreach(println)
+    if (conf.resultDir == "") {
+      conf.resultDir = s"${platformName}_${timestamp}"
     }
     if (!new java.io.File(conf.resultDir).exists()) {
       FileUtils.forceMkdir(new java.io.File(conf.resultDir))
     }
+    GA.log("crawler")
     crawl()
   }
 
@@ -172,7 +181,9 @@ class Crawler {
     val serializer = new XMLSerializer(out, format)
     serializer.serialize(document)
     val formattedXML = out.toString
-    println(formattedXML)
+    pageSource = formattedXML
+    println("page source=")
+    println(pageSource)
     document
   }
 
@@ -240,10 +251,12 @@ class Crawler {
     * @return
     */
   def getSchema(): String = {
-    var nodeList = getAllElements("//*[not(ancestor-or-self::UIATableView)]")
-    nodeList = nodeList intersect getAllElements("//*[not(ancestor-or-self::android.widget.ListView)]")
-    //todo: 未来应该支持黑名单
-    val schemaBlackList = List("UIATableCell", "UIATableView", "UIAScrollView")
+    //var nodeList = getAllElements("//*[not(ancestor-or-self::UIATableView)]")
+    //nodeList = nodeList intersect getAllElements("//*[not(ancestor-or-self::android.widget.ListView)]")
+
+    //排除iOS状态栏 android不受影响
+    val nodeList = getAllElements("//*[not(ancestor-or-self::UIAStatusBar)]")
+    val schemaBlackList = List()
     md5(nodeList.filter(node => !schemaBlackList.contains(node("tag"))).map(node => node("tag")).mkString(""))
   }
 
@@ -412,16 +425,33 @@ class Crawler {
       urlStack.push(currentUrl)
     }
     println(s"urlStack=${urlStack.reverse}")
-
     url = urlStack.reverse.mkString("|")
     println(s"url=${url}")
+
+    //val contexts = doAppium(driver.getContextHandles).getOrElse("")
+    //val windows=doAppium(driver.getWindowHandles).getOrElse("")
+    //val windows = ""
+    //println(s"windows=${windows}")
+    lastSchema=currentSchema
+    currentSchema=getSchema()
+    println(s"currentSchema=$currentSchema lastSchema=$lastSchema")
+    getLog()
     afterUrlRefresh()
 
-    val contexts = doAppium(driver.getContextHandles).getOrElse("")
-    //val windows=doAppium(driver.getWindowHandles).getOrElse("")
-    val windows = ""
-    println(s"context=${contexts} windows=${windows}")
-    println("schema=" + getSchema())
+  }
+
+  def getLog(): Unit ={
+    println("print logs")
+    driver.manage().logs().getAvailableLogTypes.toArray().foreach(l=>{
+      println(s"read log=${l.toString}")
+      try {
+        val logMessage = driver.manage().logs.get(l.toString).filter(Level.ALL).toArray()
+        println(s"log=${l} size=${logMessage.size}")
+        driver.manage().logs.get(l.toString).filter(Level.INFO).toArray().lift(3).foreach(println)
+      }catch {
+        case ex:Exception => println(s"log=${l.toString} not exist")
+      }
+    })
   }
 
   def afterUrlRefresh(): Unit = {
@@ -501,16 +531,15 @@ class Crawler {
   /**
     * 优化后的递归方法. 尾递归.
     */
-  def crawl(): Unit = {
+  @tailrec private def crawl(): Unit = {
     //超时退出
-    if((new Date().getTime-startTime) > conf.maxTime*1000){
+    if ((new Date().getTime - startTime) > conf.maxTime * 1000) {
       println("maxTime out Quit")
-      needExit=true
+      needExit = true
     }
     if (needExit) {
       return
     }
-    println("traversal start")
     depth += 1
     println(s"depth=${depth}")
     println("refresh page")
@@ -568,7 +597,7 @@ class Crawler {
     }
     if (swipeCountPerUrl(url) > swipeMaxCountPerUrl) {
       println("swipeRetry of per url > swipeMaxCountPerUrl")
-      swipeRetry+=1
+      swipeRetry += 1
       return
     }
     doAppium(
@@ -685,18 +714,24 @@ class Crawler {
 
   def saveScreen(e: UrlElement): Unit = {
     println("start screenshot")
-    if (!conf.saveScreen) return
-    Thread.sleep(500)
     imgIndex += 1
-    val path = s"${conf.resultDir}/${imgIndex}_" + e.toString().replace("\n", "").replaceAll("[ /,]", "").take(200) + ".jpg"
-    doAppium((driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)) match {
-      case Some(src) => {
-        FileUtils.copyFile(src, new java.io.File(path))
-      }
-      case None => {
-        println("get screenshot error")
+    //刷新页面. 让schema更新
+    refreshPage()
+    //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
+    if (conf.saveScreen && lastSchema!=currentSchema) {
+      Thread.sleep(100)
+      val path = s"${conf.resultDir}/${imgIndex}_${currentSchema}_" + e.toString().replace("\n", "").replaceAll("[ /,]", "").take(200) + ".jpg"
+      doAppium((driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)) match {
+        case Some(src) => {
+          FileUtils.copyFile(src, new java.io.File(path))
+        }
+        case None => {
+          println("get screenshot error")
+        }
       }
     }
+    val domPath = s"${conf.resultDir}/${imgIndex}_${currentSchema}_" + e.toString().replace("\n", "").replaceAll("[ /,]", "").take(200) + ".dom"
+    File(domPath).writeAll(pageSource)
     println("save screenshot end")
   }
 

@@ -1,5 +1,5 @@
 name := "AppCrawler"
-version := "1.1.2"
+version := "1.1.3"
 scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
@@ -17,7 +17,12 @@ libraryDependencies ++= Seq(
   "com.propensive" %% "rapture-json-json4s" % "2.0.0-M1",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.3",
   "com.github.scopt" %% "scopt" % "3.3.0",
-  "org.pegdown" % "pegdown" % "1.4.2" //html report
+  "com.brsanthu" % "google-analytics-java" % "1.1.2",
+  "org.slf4j" % "slf4j-api" % "1.7.18",
+  "org.slf4j" % "slf4j-log4j12" % "1.7.18",
+  "org.apache.logging.log4j" % "log4j" % "2.5",
+  "com.android.tools.ddms" % "ddmlib" % "24.5.0",
+  "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 
 enablePlugins(JavaAppPackaging)
