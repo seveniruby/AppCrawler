@@ -12,30 +12,39 @@ object AppCrawler {
                            app: File = new File("."),
                            conf: File = new File("."),
                            verbose: Boolean = false,
+                           mode:String="",
+                           sbt_params: Seq[String]=Seq(),
                            platform: String = "android",
                            appium:String = "",
                            resultDir: String = "",
                            maxTime:Int = 3600*3,
                            capability: Map[String, String] = Map[String, String]()
                          )
-  /*
-    def sbt(args: String): Unit = {
+    def sbt(args: Seq[String]): Unit = {
       import scala.sys.process._
-      //val sbt="/usr/local/Cellar/sbt/0.13.8/libexec/sbt-launch.jar"
+      //val sbt="/usr/local/Cellar/sbt/0.13.11/libexec/sbt-launch.jar"
       val project_dir=getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath.
         split("/").dropRight(2).mkString("/")
-      val sbt = s"${project_dir}/lib/sbt-launch.jar"
-      val cmd = Seq("java", "-jar", sbt, args) // You
+      val launcherJar = s"${project_dir}/lib/sbt-launch.jar"
+      val cmd = Seq("java", "-jar", launcherJar)++args // You
       println(cmd)
       cmd ! ProcessLogger(stdout append _ + "\n", stderr append _ + "\n")
     }
-  */
+
 
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[Param]("appcrawler") {
       head("appcrawler", "1.0.1")
-      opt[File]('a', "app") action { (x, c) =>
+      note("appcrawler app爬虫. 遍历app并生成截图和思维导图. 支持Android和iOS, 支持真机和模拟器\n")
+      opt[File]('a', "app") action { (x, c) =>{
+        if(x.getName.matches("*.apk$")){
+          c.copy(platform = "android")
+        }
+        if(x.getName.matches("*.ipa$") || x.getName.matches("*.app$") ){
+          c.copy(platform = "android")
+        }
         c.copy(app = x)
+      }
       } text ("Android或者iOS的文件地址, 可以是网络地址, 赋值给appium的app选项")
       opt[File]('c', "conf") action { (x, c) =>
         c.copy(conf = x)
@@ -65,7 +74,6 @@ object AppCrawler {
       opt[Unit]("verbose") action { (_, c) =>
         c.copy(verbose = true)
       } text ("是否展示更多debug信息")
-      note("appcrawler app爬虫. 遍历app并生成截图和思维导图. 支持Android和iOS, 支持真机和模拟器\n")
       help("help") text (
         """
           |示例
@@ -76,6 +84,12 @@ object AppCrawler {
           |appcrawler -c xueqiu.json  -p ios -a Snowball.app -u http://127.0.0.1:4730/wd/hub
           |
         """.stripMargin)
+      cmd("sbt") action { (_, c) => {
+        c.copy(mode = "sbt")
+      } } text("sbt是一个调用sbt命令运行测试的开关. 可以传递sbt的参数\n") children(
+        arg[String]("<sbt params>...") unbounded() optional() action { (x, c) =>
+          c.copy(sbt_params = c.sbt_params :+ x) } text("sbt的参数列表")
+        )
 
     }
     // parser.parse returns Option[C]
@@ -87,6 +101,10 @@ object AppCrawler {
     }
     parser.parse(args_new, Param()) match {
       case Some(config) => {
+        if(config.sbt_params.nonEmpty){
+          sbt(config.sbt_params)
+          return()
+        }
         var crawlerConf = new CrawlerConf
         //获取配置模板文件
         if (config.conf.isFile) {

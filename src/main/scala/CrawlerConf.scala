@@ -95,14 +95,16 @@ class CrawlerConf {
 
   def save(path: String): Unit ={
 
-/*    //这个方法不能正确的存储utf8编码的文字
+/*
+    //这个方法不能正确的存储utf8编码的文字
     implicit val formats = DefaultFormats+ FieldSerializer[this.type]()
     val file = new java.io.File(path)
     val bw = new BufferedWriter(new FileWriter(file))
     println(writePretty(this))
     println(write(this))
     bw.write(writePretty(this))
-    bw.close()*/
+    bw.close()
+    */
 
     val file = new java.io.File(path)
     val mapper = new ObjectMapper()
@@ -122,8 +124,6 @@ class CrawlerConf {
     println(mapper.writeValueAsString(classOf[CrawlerConf]))
     mapper.readValue(Source.fromFile(file).mkString.getBytes, classOf[CrawlerConf])
   }
-
-
   def load(file :File): CrawlerConf ={
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
