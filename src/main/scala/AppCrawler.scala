@@ -32,6 +32,7 @@ object AppCrawler {
 
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[Config]("appcrawler") {
+
       head("appcrawler", "1.0.1")
       opt[File]('a', "app") action { (x, c) =>
         c.copy(app = x)

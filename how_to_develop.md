@@ -49,6 +49,10 @@ resolvers += "spring-snapshots" at "http://repo.spring.io/snapshot"
 
 Configure-plugins中安装sbt插件和scala,然后重启Idea,导入项目的时候选择sbt项目就可以了。
 
+# 调试
+
+`sbt stage`在`target/universal/stage/bin/appcrawler`下有可执行的脚本
+
 
 
 

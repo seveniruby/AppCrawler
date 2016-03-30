@@ -13,7 +13,7 @@ import scala.collection.mutable.{ListBuffer, Map}
   * Created by seveniruby on 15/12/10.
   */
 class AndroidCrawler extends Crawler {
-  if(conf.selectedList.isEmpty){
+  if (conf.selectedList.isEmpty) {
     conf.selectedList.insertAll(0, ListBuffer[String](
       "//*[@enabled='true' and @resource-id!='' and not(contains(name(), 'Layout'))]",
       "//*[@enabled='true' and @content-desc!='' and not(contains(name(), 'Layout'))]",
@@ -31,9 +31,9 @@ class AndroidCrawler extends Crawler {
     //todo: Appium模式太慢
     capabilities.setCapability("automationName", "Appium")
     capabilities.setCapability("unicodeKeyboard", "true")
-    conf.androidCapability.foreach(kv=>capabilities.setCapability(kv._1, kv._2))
+    conf.androidCapability.foreach(kv => capabilities.setCapability(kv._1, kv._2))
 
-    val url=conf.androidCapability("appium")
+    val url = conf.androidCapability("appium")
     driver = new AndroidDriver[WebElement](new URL(url), capabilities)
     //driver.launchApp()
     getDeviceInfo()
@@ -49,8 +49,8 @@ class AndroidCrawler extends Crawler {
         driver.getCurrentUrl.split('.').last
       }
     }
-    val baseUrl=super.getUrl()
-    if(baseUrl!=""){
+    val baseUrl = super.getUrl()
+    if (baseUrl != "") {
       screenName = s"${screenName}_${super.getUrl()}"
     }
     println(s"url=${screenName}")
