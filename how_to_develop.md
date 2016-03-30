@@ -28,10 +28,7 @@ resolvers += "spring-snapshots" at "http://repo.spring.io/snapshot"
 ```
 
 
-先执行`sbt`进入`sbt console`,然后执行`compile`来编译项目。
-执行效果如下：
-
-
+在项目的根目录下执行`sbt clean compile`来编译项目。(mac下所有的jar包都在`~/.ivy2/cache`下)
 
 可以通过下面的连接来查看不同的task的作用:
 
@@ -44,6 +41,13 @@ resolvers += "spring-snapshots" at "http://repo.spring.io/snapshot"
 
 
 下载`Community`版本就可以了。
+
+# 导入到IDEA
+
+
+## 下载sbt插件
+
+Configure-plugins中安装sbt插件和scala,然后重启Idea,导入项目的时候选择sbt项目就可以了。
 
 
 
