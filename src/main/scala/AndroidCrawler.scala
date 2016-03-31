@@ -1,14 +1,10 @@
 import java.net.URL
 
-import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
-import io.appium.java_client.remote.MobileCapabilityType
 import org.openqa.selenium.WebElement
-import org.openqa.selenium.remote.DesiredCapabilities
 
-import scala.collection.mutable
-import scala.collection.mutable.{ListBuffer, Map}
 import scala.collection.immutable
+import scala.collection.mutable.ListBuffer
 
 /**
   * Created by seveniruby on 15/12/10.
@@ -54,7 +50,7 @@ class AndroidCrawler extends Crawler {
     if(baseUrl!=""){
       screenName = s"${screenName}_${super.getUrl()}"
     }
-    println(s"url=${screenName}")
+    log.trace(s"url=${screenName}")
     screenName
   }
 

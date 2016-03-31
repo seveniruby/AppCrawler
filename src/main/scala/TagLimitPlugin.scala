@@ -16,13 +16,14 @@ class TagLimitPlugin extends Plugin{
     }
     if(tagLimit(key)<=0){
       getCrawler().setElementAction("skip")
+      log.info(s"$element need skip")
     }
   }
 
   override def afterElementAction(element: UrlElement): Unit ={
     val key=getUniqueKey(element)
     tagLimit(key)-=1
-    println(s"tagLimit[${key}]=${tagLimit(key)}")
+    log.trace(s"tagLimit[${key}]=${tagLimit(key)}")
   }
 
 

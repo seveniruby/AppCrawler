@@ -51,16 +51,16 @@ class IOSCrawler extends Crawler {
   override def getUrl(): String = {
     val superUrl=super.getUrl()
     if(superUrl!=""){
-      println(s"url=${superUrl}")
+      log.trace(s"url=${superUrl}")
       return superUrl
     }
     val nav = getAllElements("//UIANavigationBar[1]")
     if (nav.nonEmpty) {
-      println(s"url=${nav.head("name")}")
+      log.trace(s"url=${nav.head("name")}")
       nav.head("name").toString
     } else {
       val screenName = getSchema().takeRight(5)
-      println(s"url=${screenName}")
+      log.trace(s"url=${screenName}")
       screenName
     }
   }

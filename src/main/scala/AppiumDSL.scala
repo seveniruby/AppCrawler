@@ -10,11 +10,7 @@ import org.scalatest.selenium.WebBrowser.XPathQuery
 /**
   * Created by seveniruby on 16/3/26.
   */
-class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with BeforeAndAfterAll{
-
-  BasicConfigurator.configure()
-  Logger.getRootLogger().setLevel(Level.WARN)
-
+class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with BeforeAndAfterAll with CommonLog{
   val capabilities = new DesiredCapabilities()
   var appiumUrl="http://127.0.0.1:4723/wd/hub"
   implicit lazy val driver = new AndroidDriver(new URL(appiumUrl), capabilities)
@@ -42,10 +38,10 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
 
   def printTree(key: String=""): Unit ={
     if(key.isEmpty){
-      println(RichData.toPrettyXML(pageSource))
+      log.trace(RichData.toPrettyXML(pageSource))
     }else{
       RichData.parseXPath(keyToXPath(key), RichData.toXML(pageSource)).foreach(node=>{
-        println(node)
+        log.trace(node)
       })
 
     }

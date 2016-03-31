@@ -8,7 +8,7 @@ import org.apache.log4j.{Level, Logger, BasicConfigurator}
 
 object GA {
   BasicConfigurator.configure()
-  Logger.getRootLogger().setLevel(Level.OFF)
+  Logger.getRootLogger.setLevel(Level.OFF)
   val ga = new GoogleAnalytics("UA-74406102-1")
   var appName="default"
   def setAppName(app:String): Unit ={

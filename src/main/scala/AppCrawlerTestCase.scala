@@ -3,7 +3,7 @@ import org.scalatest.{ConfigMap, BeforeAndAfterAllConfigMap, FunSuite}
 /**
   * Created by seveniruby on 16/1/7.
   */
-class AppCrawlerTestCase extends FunSuite with BeforeAndAfterAllConfigMap{
+class AppCrawlerTestCase extends FunSuite with BeforeAndAfterAllConfigMap with CommonLog{
   var cm=ConfigMap()
   override def beforeAll(cm: ConfigMap): Unit ={
     this.cm=cm
@@ -20,7 +20,7 @@ class AppCrawlerTestCase extends FunSuite with BeforeAndAfterAllConfigMap{
         crawler=new IOSCrawler
       }
       case _ =>{
-        println("请指定currentDriver为Android或者iOS")
+        log.trace("请指定currentDriver为Android或者iOS")
       }
     }
     crawler.loadConf(conf)

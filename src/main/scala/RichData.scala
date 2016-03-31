@@ -12,7 +12,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by seveniruby on 16/3/26.
   */
-object RichData {
+object RichData extends CommonLog{
   def toXML(raw: String): Document = {
     val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
     val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
@@ -49,11 +49,9 @@ object RichData {
       case nodeList:NodeList=>{
         0 until nodeList.getLength foreach (i => {
           val node=nodeList.item(i)
-          println(node)
           val path=ListBuffer[String]()
           //递归获取路径
           def getParent(node: Node): Unit ={
-            println(node.getNodeName)
             path+=node.getNodeName.split('.').lastOption.getOrElse("_")
             if(node.getParentNode!=null){
               getParent(node.getParentNode)
@@ -109,8 +107,8 @@ object RichData {
         })
       }
       case _ => {
-        println("not node list")
-        println(node)
+        log.trace("not node list")
+        log.trace(node)
       }
     }
     nodesMap.toList

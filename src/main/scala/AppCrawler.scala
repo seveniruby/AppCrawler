@@ -1,3 +1,4 @@
+import org.apache.log4j.{Level, Logger, BasicConfigurator}
 import org.scalatest.ConfigMap
 
 /**
@@ -7,7 +8,7 @@ import org.scalatest.ConfigMap
 
 import java.io.File
 
-object AppCrawler {
+object AppCrawler extends CommonLog{
   case class Param(
                            app: File = new File("."),
                            conf: File = new File("."),
@@ -27,7 +28,7 @@ object AppCrawler {
         split("/").dropRight(2).mkString("/")
       val launcherJar = s"${project_dir}/lib/sbt-launch.jar"
       val cmd = Seq("java", "-jar", launcherJar)++args // You
-      println(cmd)
+      log.trace(cmd)
       cmd ! ProcessLogger(stdout append _ + "\n", stderr append _ + "\n")
     }
 
@@ -39,12 +40,12 @@ object AppCrawler {
       note("appcrawler app爬虫. 遍历app并生成截图和思维导图. 支持Android和iOS, 支持真机和模拟器\n")
       opt[File]('a', "app") action { (x, c) =>{
         if(x.getName.matches(".*\\.apk$")){
-          println("Set Platform=Android")
+          log.info("Set Platform=Android")
           platform="Android"
           c.copy(platform = "Android")
         }
         if(x.getName.matches(".*\\.ipa$") || x.getName.matches(".*\\.app$") ){
-          println("Set Platform=iOS")
+          log.info("Set Platform=iOS")
           platform="iOS"
           c.copy(platform = "iOS")
         }
@@ -106,8 +107,8 @@ object AppCrawler {
     }
     parser.parse(args_new, Param()) match {
       case Some(config) => {
-        println("config=")
-        println(config)
+        log.trace("config=")
+        log.trace(config)
         if(config.sbt_params.nonEmpty){
           sbt(config.sbt_params)
           return()
@@ -115,7 +116,7 @@ object AppCrawler {
         var crawlerConf = new CrawlerConf
         //获取配置模板文件
         if (config.conf.isFile) {
-          println(s"Find Conf ${config.conf.getAbsolutePath}")
+          log.info(s"Find Conf ${config.conf.getAbsolutePath}")
           crawlerConf=crawlerConf.load(config.conf)
         }
         //合并capability, 特定平台的capability>通用capability
@@ -146,8 +147,8 @@ object AppCrawler {
         crawlerConf.resultDir=config.resultDir
 
         //获得app设置
-        //println(s"app path=${config.app.getPath} ${config.app.getName} ${config.app.getAbsolutePath} ${config.app.getCanonicalPath}")
-        println(crawlerConf.toJson)
+        //log.trace(s"app path=${config.app.getPath} ${config.app.getName} ${config.app.getAbsolutePath} ${config.app.getCanonicalPath}")
+        log.trace(crawlerConf.toJson)
         new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf), fullstacks = true)
       }
       case None => {}

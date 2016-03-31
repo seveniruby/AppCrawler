@@ -59,7 +59,6 @@ class TestThread extends FunSuite{
     log.fatal("fatal")
 
     log=Logger.getLogger("demo")
-    log.setAdditivity(true)
     log.trace("trace")
     log.debug("debug")
     log.info("info")

@@ -64,13 +64,7 @@
     "action" : "scroll left",
     "idOrName" : "专题",
     "times" : 1
-  },
-    {
-      "action" : "scroll down",
-      "idOrName" : "专题",
-      "times" : 1
-    },
-    {
+  },{
     "action" : "hys2xueqiu",
     "idOrName" : "password",
     "times" : 1

@@ -16,6 +16,7 @@ import java.nio.charset.Charset
 class CrawlerConf {
   /**插件列表*/
   var pluginList=List("TagLimitPlugin")
+  var logLevel="TRACE"
   /**是否截图*/
   var saveScreen=true
   var currentDriver="android"
@@ -103,8 +104,8 @@ class CrawlerConf {
     implicit val formats = DefaultFormats+ FieldSerializer[this.type]()
     val file = new java.io.File(path)
     val bw = new BufferedWriter(new FileWriter(file))
-    println(writePretty(this))
-    println(write(this))
+    log.trace(writePretty(this))
+    log.trace(write(this))
     bw.write(writePretty(this))
     bw.close()
     */
