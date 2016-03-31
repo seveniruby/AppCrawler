@@ -7,7 +7,6 @@ import javax.xml.xpath.{XPath, XPathFactory, _}
 import io.appium.java_client.AppiumDriver
 import org.apache.commons.io.FileUtils
 import org.apache.log4j._
-import org.apache.xml.serialize.{OutputFormat, XMLSerializer}
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
 import org.w3c.dom.{Attr, Document, NodeList}
@@ -593,10 +592,12 @@ class Crawler extends CommonLog{
           } else {
             //有些公司可能存在重名id
             arr.foreach(log.info)
-            log.info("find multi, change to find by name")
+            log.info(s"find count ${arr.size}, change to find by xpath")
           }
         }
-        case None => {}
+        case None => {
+          log.warn("find by id error")
+        }
       }
     }
     platformName.toLowerCase() match {
@@ -611,7 +612,9 @@ class Crawler extends CommonLog{
             log.info("find by xpath success")
             return Some(v)
           }
-          case None => {}
+          case None => {
+            log.warn("find by xpath error")
+          }
         }
       }
       case "android" => {
@@ -648,9 +651,14 @@ class Crawler extends CommonLog{
               //有些公司可能存在重名id
               arr.foreach(log.info)
               log.warn(s"find count ${v.size()}, you should check your dom file")
+              if(arr.size>0){
+                log.info("just use the first one")
+                return Some(arr.head.asInstanceOf[WebElement])
+              }
             }
           }
           case None => {
+            log.warn("find by xpath error")
           }
         }
 
@@ -662,6 +670,7 @@ class Crawler extends CommonLog{
   def doAppium[T](r: => T): Option[T] = {
     Try(r) match {
       case Success(v) => {
+        log.info("success")
         Some(v)
       }
       case Failure(e) => {

@@ -22,6 +22,7 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-log4j12" % "1.7.18",
   "org.apache.logging.log4j" % "log4j" % "2.5",
   "com.android.tools.ddms" % "ddmlib" % "24.5.0",
+  "org.lucee" % "xml-xerces" % "2.11.0",
   "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 
