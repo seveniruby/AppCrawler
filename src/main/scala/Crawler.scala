@@ -6,7 +6,7 @@ import javax.xml.xpath.{XPath, XPathFactory, _}
 
 import io.appium.java_client.AppiumDriver
 import org.apache.commons.io.FileUtils
-import org.apache.log4j.{Level, Logger, BasicConfigurator}
+import org.apache.log4j._
 import org.apache.xml.serialize.{OutputFormat, XMLSerializer}
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
@@ -18,7 +18,6 @@ import scala.collection.mutable.{ListBuffer, Map}
 import scala.collection.immutable
 import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}
-import org.apache.log4j.{Level, Logger, BasicConfigurator}
 
 
 /**
@@ -101,6 +100,7 @@ class Crawler extends CommonLog{
     * 启动爬虫
     */
   def start(): Unit = {
+    add(conf.resultDir+"/appcrawler.log")
     log.trace("start")
     GA.log("start")
     loadPlugins()
@@ -378,7 +378,7 @@ class Crawler extends CommonLog{
     if (elements.contains(ele.toString())) {
       elements(ele.toString())
     } else {
-      log.info(s"element=${ele} first show, need click")
+      log.trace(s"element=${ele} first show, need click")
       false
     }
   }
@@ -586,11 +586,13 @@ class Crawler extends CommonLog{
       log.info(s"find by id=${uid.id}")
       doAppium(driver.findElementsById(uid.id)) match {
         case Some(v) => {
-          if (v.toArray.length == 1) {
-            //有些公司可能存在重名id
-            return Some(v.toArray().head.asInstanceOf[WebElement])
+          val arr=v.toArray().distinct
+          if (arr.length == 1) {
+            log.info("find by id success")
+            return Some(arr.head.asInstanceOf[WebElement])
           } else {
-            v.toArray().foreach(log.info)
+            //有些公司可能存在重名id
+            arr.foreach(log.info)
             log.info("find multi, change to find by name")
           }
         }
@@ -599,31 +601,55 @@ class Crawler extends CommonLog{
     }
     platformName.toLowerCase() match {
       case "ios" => {
-        log.info(s"find by xpath")
+        log.info(s"find by xpath=//${uid.tag}[@path='${uid.loc}']")
         //照顾iOS android会在findByName的时候自动找text属性.
         doAppium(driver.findElementByXPath(
           //s"//${uid.tag}[@name='${uid.id}' and @value='${uid.name}' and @x='${uid.loc.split(',').head}' and @y='${uid.loc.split(',').last}']"
           s"//${uid.tag}[@path='${uid.loc}']"
         )) match {
-          case Some(v) => return Some(v)
+          case Some(v) => {
+            log.info("find by xpath success")
+            return Some(v)
+          }
           case None => {}
         }
       }
       case "android" => {
+        //findElementByName在appium1.5中被废弃 https://github.com/appium/appium/issues/6186
+        /*
         if (uid.name != "") {
           log.info(s"find by name=${uid.name}")
-          doAppium(driver.findElementByName(uid.name)) match {
+          doAppium(driver.findElementsByName(uid.name)) match {
             case Some(v) => {
-              return Some(v)
+              val arr=v.toArray().distinct
+              if (arr.length == 1) {
+                log.info("find by name success")
+                return Some(arr.head.asInstanceOf[WebElement])
+              } else {
+                //有些公司可能存在重名name
+                arr.foreach(log.info)
+                log.info(s"find count ${arr.size}, change to find by xpath")
+              }
             }
             case None => {
             }
           }
         }
+        */
         //xpath会较慢
-        log.info(s"find by xpath")
-        doAppium(driver.findElementByXPath(s"//*[@bounds='${uid.loc}']")) match {
-          case Some(v) => return Some(v)
+        log.info(s"find by xpath=${uid.loc}")
+        doAppium(driver.findElementsByXPath(uid.loc)) match {
+          case Some(v) => {
+            val arr=v.toArray().distinct
+            if (arr.length == 1) {
+              log.info("find by xpath success")
+              return Some(arr.head.asInstanceOf[WebElement])
+            } else {
+              //有些公司可能存在重名id
+              arr.foreach(log.info)
+              log.warn(s"find count ${v.size()}, you should check your dom file")
+            }
+          }
           case None => {
           }
         }
@@ -663,10 +689,13 @@ class Crawler extends CommonLog{
     imgIndex += 1
     //刷新页面. 让schema更新
     refreshPage()
+
+    //保存dom结构
     log.info("save dom")
     val domPath = s"${conf.resultDir}/${imgIndex}_" + e.toString().replace("\n", "").replaceAll("[ /,]", "").take(200) + ".dom"
     File(domPath).writeAll(pageSource)
     log.info("save dom end")
+
     //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
     if (conf.saveScreen && lastSchema != currentSchema) {
       Thread.sleep(100)

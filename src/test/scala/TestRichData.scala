@@ -329,10 +329,10 @@ class TestRichData extends FunSuite with Matchers{
     val ancestor=RichData.parseXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor-or-self::*", dom)
     ancestor.foreach(x=>if(x.contains("tag")) println(x("tag")))
     println(ancestor)
+    ancestor.foreach(println)
 
     val ancestorName=RichData.parseXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor::name", dom)
     ancestorName.foreach(println)
-    println(ancestorName)
   }
 
 }

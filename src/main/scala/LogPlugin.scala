@@ -17,7 +17,7 @@ class LogPlugin extends Plugin {
         try {
           val logMessage = driver.manage().logs.get(l.toString).filter(Level.ALL).toArray()
           log.info(s"log=${l} size=${logMessage.size}")
-          logMessage.lift(20).foreach(log.info)
+          //logMessage.lift(20).foreach(log.info)
           log.info(s"log=${l} end")
           logs+=l.toString
         } catch {
@@ -31,11 +31,30 @@ class LogPlugin extends Plugin {
       try {
         val logMessage = driver.manage().logs.get(l.toString).filter(Level.ALL).toArray()
         log.info(s"log=${l} size=${logMessage.size}")
-        log.info(
-          s"""
+        if(logMessage.size>0) {
+          log.info(
+            s"""
+            |
+            |>>>>>>
             |${logMessage.mkString("\n")}
+            |<<<<<<
             |
           """.stripMargin)
+          }
+
+/*
+        val infoMessage = driver.manage().logs.get(l.toString).filter(Level.INFO).toArray()
+        log.info(s"log=${l} size=${infoMessage.size}")
+        log.info(
+          s"""
+             |
+            |>>>>>>
+             |${infoMessage.mkString("\n")}
+             |<<<<<<
+             |
+          """.stripMargin)
+*/
+
         log.info(s"log=${l} end")
       } catch {
         case ex: Exception => log.warn(s"log=${l.toString} not exist")

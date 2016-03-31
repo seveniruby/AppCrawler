@@ -125,13 +125,11 @@ class CrawlerConf {
   def load(file :String): CrawlerConf ={
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
-    println(mapper.writeValueAsString(classOf[CrawlerConf]))
     mapper.readValue(Source.fromFile(file).mkString.getBytes, classOf[CrawlerConf])
   }
   def load(file :File): CrawlerConf ={
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
-    println(mapper.writeValueAsString(classOf[CrawlerConf]))
     mapper.readValue(Source.fromFile(file).mkString.getBytes, classOf[CrawlerConf])
   }
 
