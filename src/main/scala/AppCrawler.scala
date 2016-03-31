@@ -33,15 +33,20 @@ object AppCrawler {
 
 
   def main(args: Array[String]) {
+    var platform=""
     val parser = new scopt.OptionParser[Param]("appcrawler") {
       head("appcrawler", "1.0.1")
       note("appcrawler app爬虫. 遍历app并生成截图和思维导图. 支持Android和iOS, 支持真机和模拟器\n")
       opt[File]('a', "app") action { (x, c) =>{
-        if(x.getName.matches("*.apk$")){
-          c.copy(platform = "android")
+        if(x.getName.matches(".*\\.apk$")){
+          println("Set Platform=Android")
+          platform="Android"
+          c.copy(platform = "Android")
         }
-        if(x.getName.matches("*.ipa$") || x.getName.matches("*.app$") ){
-          c.copy(platform = "android")
+        if(x.getName.matches(".*\\.ipa$") || x.getName.matches(".*\\.app$") ){
+          println("Set Platform=iOS")
+          platform="iOS"
+          c.copy(platform = "iOS")
         }
         c.copy(app = x)
       }
@@ -101,6 +106,8 @@ object AppCrawler {
     }
     parser.parse(args_new, Param()) match {
       case Some(config) => {
+        println("config=")
+        println(config)
         if(config.sbt_params.nonEmpty){
           sbt(config.sbt_params)
           return()

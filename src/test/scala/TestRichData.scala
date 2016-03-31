@@ -302,12 +302,37 @@ class TestRichData extends FunSuite with Matchers{
       |</hierarchy>
       |
     """.stripMargin
+
+  val dom=RichData.toXML(xml)
   test("parse xpath"){
-    val dom=RichData.toXML(xml)
     val node=RichData.parseXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", dom)(0)
     println(node)
     node("resource-id") should be equals("com.xueqiu.android:id/action_search")
     node("content-desc") should be equals("输入股票名称/代码")
+  }
+  test("extra attribute from xpath"){
+    val node=RichData.parseXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id", dom)(0)
+    println(node)
+    node.values.toList(0) should be equals("com.xueqiu.android:id/action_search")
+
+    //todo:暂不支持
+    val value=RichData.parseXPath("string(//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id)", dom)
+    println(value)
+
+  }
+
+  test("get parent path"){
+    val value=RichData.parseXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/parent::*", dom)
+    value.foreach(println)
+    println(value)
+
+    val ancestor=RichData.parseXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor-or-self::*", dom)
+    ancestor.foreach(x=>if(x.contains("tag")) println(x("tag")))
+    println(ancestor)
+
+    val ancestorName=RichData.parseXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor::name", dom)
+    ancestorName.foreach(println)
+    println(ancestorName)
   }
 
 }

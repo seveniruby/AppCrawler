@@ -19,4 +19,8 @@ abstract class Plugin {
 
   }
 
+  def println(str:Any): Unit ={
+    getCrawler().println(str)
+  }
+
 }

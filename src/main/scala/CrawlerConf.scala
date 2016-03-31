@@ -13,6 +13,8 @@ import java.nio.charset.Charset
   * Created by seveniruby on 16/1/6.
   */
 class CrawlerConf {
+  /**插件列表*/
+  var pluginList=List("TagLimitPlugin")
   /**是否截图*/
   var saveScreen=true
   var currentDriver="android"

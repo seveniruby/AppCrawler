@@ -27,12 +27,13 @@ class Crawler {
   var conf = new CrawlerConf()
   val capabilities = new DesiredCapabilities()
 
-  var pluginNames = List[String]()
   var pluginClasses = List[Plugin]()
   var plugins = List[Plugin]()
 
   private val elements: scala.collection.mutable.Map[String, Boolean] = scala.collection.mutable.Map()
   private var isSkip = false
+  /** 元素的默认操作 */
+  var currentElementAction = "click"
   /** 点击顺序, 留作画图用 */
   val clickedList = ListBuffer[String]()
 
@@ -75,7 +76,7 @@ class Crawler {
     * 根据类名初始化插件. 插件可以使用java编写. 继承自Plugin即可
     */
   def loadPlugins(): Unit = {
-    pluginClasses = pluginNames.map(name => {
+    pluginClasses = conf.pluginList.map(name => {
       println(s"Load $name")
       Class.forName(name).newInstance().asInstanceOf[Plugin]
     })
@@ -136,8 +137,9 @@ class Crawler {
   def getTimeStamp(): String = {
     preTimeStamp = nowTimeStamp
     nowTimeStamp = new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date())
-    if (preTimeStamp != "0") {
-      Console.println("time consume: " + (nowTimeStamp.toDouble - preTimeStamp.toDouble))
+    val distance = nowTimeStamp.toDouble - preTimeStamp.toDouble
+    if (preTimeStamp != "0" && distance > 0) {
+      Console.println(s"time consume: $distance")
     }
     nowTimeStamp
   }
@@ -165,26 +167,6 @@ class Crawler {
       "idOrName" -> loc,
       "action" -> action,
       "times" -> times))
-  }
-
-
-  def parseXml(raw: String): Document = {
-    val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
-    val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
-    val document: Document = builder.parse(new ByteArrayInputStream(raw.replaceAll("[\\x00-\\x1F]", "").getBytes(StandardCharsets.UTF_8)))
-
-    val format = new OutputFormat(document); //document is an instance of org.w3c.dom.Document
-    format.setLineWidth(65)
-    format.setIndenting(true)
-    format.setIndent(2)
-    val out = new StringWriter()
-    val serializer = new XMLSerializer(out, format)
-    serializer.serialize(document)
-    val formattedXML = out.toString
-    pageSource = formattedXML
-    println("page source=")
-    println(pageSource)
-    document
   }
 
   /**
@@ -285,8 +267,7 @@ class Crawler {
     //name为id/name属性. 为空的时候为value属性
 
     //id表示android的resource-id或者iOS的name属性
-    val resourceId = x.getOrElse("name", "")
-    val id = resourceId.split('/').last
+    val id = x.getOrElse("name", "").split('/').last
     val loc = x.getOrElse("loc", "")
     val node = UrlElement(url, tag, id, name, loc)
     Some(node)
@@ -396,7 +377,7 @@ class Crawler {
           case Some(v) => {
             println("get page source success")
             pageSource = v
-            pageDom = parseXml(pageSource)
+            pageDom = RichData.toXML(pageSource)
             refreshFinish = true
           }
           case None => {
@@ -432,26 +413,11 @@ class Crawler {
     //val windows=doAppium(driver.getWindowHandles).getOrElse("")
     //val windows = ""
     //println(s"windows=${windows}")
-    lastSchema=currentSchema
-    currentSchema=getSchema()
+    lastSchema = currentSchema
+    currentSchema = getSchema()
     println(s"currentSchema=$currentSchema lastSchema=$lastSchema")
-    getLog()
     afterUrlRefresh()
 
-  }
-
-  def getLog(): Unit ={
-    println("print logs")
-    driver.manage().logs().getAvailableLogTypes.toArray().foreach(l=>{
-      println(s"read log=${l.toString}")
-      try {
-        val logMessage = driver.manage().logs.get(l.toString).filter(Level.ALL).toArray()
-        println(s"log=${l} size=${logMessage.size}")
-        driver.manage().logs.get(l.toString).filter(Level.INFO).toArray().lift(3).foreach(println)
-      }catch {
-        case ex:Exception => println(s"log=${l.toString} not exist")
-      }
-    })
   }
 
   def afterUrlRefresh(): Unit = {
@@ -476,19 +442,19 @@ class Crawler {
     pluginClasses.foreach(p => p.afterElementAction(element))
   }
 
-  def clickElement(uid: UrlElement): Unit = {
+  def getElementAction(): String = {
+    currentElementAction
+  }
+
+  def setElementAction(action: String): Unit = {
+    currentElementAction = action
+  }
+
+  def doElementAction(uid: UrlElement): Unit = {
     beforeElementAction(uid)
     println(s"just click ${uid}")
     elements(uid.toString()) = true
-    //doDefaultAction(uid)
-    doAppiumAction(uid, "click") match {
-      case Some(v) => {
-        println("do appium action success")
-      }
-      case None => {
-        println("do appium action exception, break")
-      }
-    }
+    doAppiumAction(uid, getElementAction())
     afterElementAction(uid)
   }
 
@@ -575,7 +541,7 @@ class Crawler {
           }
         })
         if (allElements.nonEmpty) {
-          clickElement(allElements.head)
+          doElementAction(allElements.head)
           backRetry = 0
           swipeRetry = 0
         } else {
@@ -587,7 +553,7 @@ class Crawler {
     crawl()
   }
 
-  def scroll(): Unit = {
+  def scroll(direction: String = ""): Unit = {
     if (swipeRetry > swipeMaxRetry) {
       println("swipeRetry > swipeMaxRetry")
       return
@@ -600,10 +566,41 @@ class Crawler {
       swipeRetry += 1
       return
     }
+
+    var startX = 0.8
+    var startY = 0.8
+    var endX = 0.2
+    var endY = 0.2
+    direction match {
+      case "left" => {
+        startX = 0.9
+        startY = 0.5
+        endX = 0.1
+        endY = 0.5
+      }
+      case "up" => {
+        startX = 0.5
+        startY = 0.8
+        endX = 0.5
+        endY = 0.2
+      }
+      case "down" => {
+        startX = 0.5
+        startY = 0.2
+        endX = 0.5
+        endY = 0.8
+      }
+      case _ => {
+        startX = 0.9
+        startY = 0.9
+        endX = 0.1
+        endY = 0.1
+      }
+    }
     doAppium(
       driver.swipe(
-        (screenWidth * 0.8).toInt, (screenHeight * 0.8).toInt,
-        (screenWidth * 0.2).toInt, (screenHeight * 0.2).toInt, 500
+        (screenWidth * startX).toInt, (screenHeight * startY).toInt,
+        (screenWidth * endX).toInt, (screenHeight * endY).toInt, 500
       )
     ) match {
       case Some(v) => {
@@ -713,26 +710,39 @@ class Crawler {
   }
 
   def saveScreen(e: UrlElement): Unit = {
-    println("start screenshot")
     imgIndex += 1
     //刷新页面. 让schema更新
     refreshPage()
-    //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
-    if (conf.saveScreen && lastSchema!=currentSchema) {
-      Thread.sleep(100)
-      val path = s"${conf.resultDir}/${imgIndex}_${currentSchema}_" + e.toString().replace("\n", "").replaceAll("[ /,]", "").take(200) + ".jpg"
-      doAppium((driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)) match {
-        case Some(src) => {
-          FileUtils.copyFile(src, new java.io.File(path))
-        }
-        case None => {
-          println("get screenshot error")
-        }
-      }
-    }
-    val domPath = s"${conf.resultDir}/${imgIndex}_${currentSchema}_" + e.toString().replace("\n", "").replaceAll("[ /,]", "").take(200) + ".dom"
+    println("save dom")
+    val domPath = s"${conf.resultDir}/${imgIndex}_" + e.toString().replace("\n", "").replaceAll("[ /,]", "").take(200) + ".dom"
     File(domPath).writeAll(pageSource)
-    println("save screenshot end")
+    println("save dom end")
+    //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
+    if (conf.saveScreen && lastSchema != currentSchema) {
+      Thread.sleep(100)
+      println("start screenshot")
+      val path = s"${conf.resultDir}/${imgIndex}_" + e.toString().replace("\n", "").replaceAll("[ /,]", "").take(200) + ".jpg"
+
+      val getScreen = new Thread(new Runnable {
+        override def run(): Unit = {
+          Console.println("new thread")
+          doAppium((driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)) match {
+            case Some(src) => {
+              FileUtils.copyFile(src, new java.io.File(path))
+              Console.println("save screenshot end")
+            }
+            case None => {
+              Console.println("get screenshot error")
+            }
+          }
+        }
+      })
+      getScreen.start()
+
+      //最多等待5s
+      Thread.sleep(5000)
+      getScreen.stop()
+    }
   }
 
 
@@ -756,6 +766,21 @@ class Crawler {
             doAppium(driver.hideKeyboard())
             res
           }
+          case "skip" => {
+            println("skip")
+          }
+          case "scroll left" => {
+            scroll("left")
+          }
+          case "scroll up" => {
+            scroll("up")
+          }
+          case "scroll down" => {
+            scroll("down")
+          }
+          case "scroll" => {
+            scroll()
+          }
           case str: String => {
             println(s"sendkeys ${v} with ${str}")
             doAppium(v.sendKeys(str)) match {
@@ -768,6 +793,7 @@ class Crawler {
             }
           }
         }
+        Some()
 
       }
       case None => {

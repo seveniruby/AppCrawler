@@ -37,19 +37,31 @@ object RichData {
     val nodesMap=ListBuffer[Map[String, Any]]()
     val xPath: XPath = XPathFactory.newInstance().newXPath()
     val compexp = xPath.compile(xpath)
-    val node = compexp.evaluate(pageDom, XPathConstants.NODESET)
+    //val node=compexp.evaluate(pageDom)
+
+    val node=if(xpath.matches("string(.*)")){
+      compexp.evaluate(pageDom, XPathConstants.STRING)
+    }else{
+      compexp.evaluate(pageDom, XPathConstants.NODESET)
+    }
+
     node match {
       case nodeList:NodeList=>{
-        println("length=")
-        println(nodeList.getLength)
-
         0 until nodeList.getLength foreach (i => {
-          nodeMap("tag") = nodeList.item(i).getNodeName
-          val nodeAttributes = nodeList.item(i).getAttributes
-          0 until nodeAttributes.getLength foreach (a => {
-            val attr = nodeAttributes.item(a).asInstanceOf[Attr]
-            nodeMap(attr.getName) = attr.getValue
-          })
+          println(nodeList.item(i))
+
+          val node=nodeList.item(i)
+          println(node.getNodeValue)
+          nodeMap(node.getNodeName)=node.getNodeValue
+          val nodeAttributes = node.getAttributes
+          println(nodeAttributes)
+          if(nodeAttributes!=null) {
+            nodeMap("tag") = nodeList.item(i).getNodeName
+            0 until nodeAttributes.getLength foreach (a => {
+              val attr = nodeAttributes.item(a).asInstanceOf[Attr]
+              nodeMap(attr.getName) = attr.getValue
+            })
+          }
           nodesMap+=(nodeMap.toMap)
         })
       }

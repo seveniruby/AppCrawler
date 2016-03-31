@@ -1,4 +1,5 @@
 {
+  "pluginList" : [ "TagLimitPlugin" , "LogPlugin"],
   "saveScreen" : true,
   "currentDriver" : "android",
   "maxTime" : 10800,
@@ -28,7 +29,7 @@
     "autoAcceptAlerts" : "true",
     "app" : "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphoneos/Snowball.app"
   },
-  "defineUrl" : [ "//*[contains(@resource-id, '_title')]", "//*[contains(@name, '_title')]" ],
+  "defineUrl" : [ "//*[contains(@name, '_title')]" ],
   "baseUrl" : [ ".*MainActivity", ".*SNBHomeView.*" ],
   "maxDepth" : 6,
   "blackUrlList" : [ "StockMoreInfo.*", "StockDetail.*", "UserProfile.*", "消息", "MyselfUser", ".*消息.*", ".*MyselfUser.*", ".*股市直播.*", ".*UserVC.*", ".*正文页.*", "SNBTradeSegment" ],
@@ -59,7 +60,17 @@
     "action" : "15600534760",
     "idOrName" : "account",
     "times" : 1
-  }, {
+  },{
+    "action" : "scroll left",
+    "idOrName" : "专题",
+    "times" : 1
+  },
+    {
+      "action" : "scroll down",
+      "idOrName" : "专题",
+      "times" : 1
+    },
+    {
     "action" : "hys2xueqiu",
     "idOrName" : "password",
     "times" : 1
