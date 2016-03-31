@@ -32,8 +32,7 @@ object AppCrawler {
 
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[Config]("appcrawler") {
-
-      head("appcrawler", "1.0.1")
+      head("appcrawler", "1.0.2")
       opt[File]('a', "app") action { (x, c) =>
         c.copy(app = x)
       } text ("Android或者iOS的文件地址, 可以是网络地址, 赋值给appium的app选项")

@@ -4,3 +4,4 @@ project/project/
 target/
 conf.json
 xueqiu.json
+*.apk
