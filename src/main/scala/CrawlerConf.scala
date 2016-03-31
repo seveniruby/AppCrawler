@@ -3,6 +3,7 @@ import java.io.{FileWriter, BufferedWriter, File}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 import org.json4s.{FieldSerializer, DefaultFormats}
@@ -81,7 +82,7 @@ class CrawlerConf {
   )
   /**引导规则. name, value, times三个元素组成*/
   var elementActions = ListBuffer[scala.collection.mutable.Map[String, Any]]()
-  elementActions += scala.collection.mutable.Map("idOrName"->".*seveniruby.*", "action"->"click", "times"->0)
+  elementActions += mutable.Map("idOrName"->".*seveniruby.*", "action"->"click", "times"->0)
 
   def loadByJson4s(file: String): Option[this.type] ={
     implicit val formats = DefaultFormats+ FieldSerializer[this.type]()

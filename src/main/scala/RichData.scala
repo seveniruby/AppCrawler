@@ -4,7 +4,7 @@ import javax.xml.parsers.{DocumentBuilder, DocumentBuilderFactory}
 import javax.xml.xpath.{XPathConstants, XPathFactory, XPath}
 
 import org.apache.xml.serialize.{XMLSerializer, OutputFormat}
-import org.w3c.dom.{Attr, NodeList, Document}
+import org.w3c.dom.{Node, Attr, NodeList, Document}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -48,20 +48,63 @@ object RichData {
     node match {
       case nodeList:NodeList=>{
         0 until nodeList.getLength foreach (i => {
-          println(nodeList.item(i))
-
           val node=nodeList.item(i)
-          println(node.getNodeValue)
+          println(node)
+          val path=ListBuffer[String]()
+          //递归获取路径
+          def getParent(node: Node): Unit ={
+            println(node.getNodeName)
+            path+=node.getNodeName.split('.').lastOption.getOrElse("_")
+            if(node.getParentNode!=null){
+              getParent(node.getParentNode)
+            }
+          }
+          getParent(node)
+
+          //支持导出单个字段
           nodeMap(node.getNodeName)=node.getNodeValue
+
           val nodeAttributes = node.getAttributes
-          println(nodeAttributes)
           if(nodeAttributes!=null) {
-            nodeMap("tag") = nodeList.item(i).getNodeName
             0 until nodeAttributes.getLength foreach (a => {
               val attr = nodeAttributes.item(a).asInstanceOf[Attr]
               nodeMap(attr.getName) = attr.getValue
             })
           }
+
+          nodeMap("tag") = node.getNodeName
+          nodeMap("uri") = path.reverse.mkString(".")
+
+          //如果是android 转化为和iOS相同的结构
+          if (!nodeMap.contains("name")) {
+            nodeMap("name") = ""
+            nodeMap("value") = ""
+          }
+          //name属性为android的resource-id
+          if (nodeMap.contains("resource-id")) {
+            //todo: /结尾的会被解释为/之前的内容
+            val arr = nodeMap("resource-id").toString.split('/')
+            if (arr.length == 1) {
+              nodeMap("name") = ""
+            } else {
+              nodeMap("name") = nodeMap("resource-id").toString.split('/').last
+            }
+          }
+          //value为android的text或者iOS的value
+          if (nodeMap.contains("text")) {
+            nodeMap("value") = nodeMap("text")
+          }
+          //loc为android坐标或者iOS路径
+          if (nodeMap.contains("bounds")) {
+            nodeMap("loc") = nodeMap("bounds")
+          }
+          if (nodeMap.contains("x")) {
+            nodeMap("loc") = nodeMap("x") + "," + nodeMap("y")
+          }
+          if (nodeMap.contains("path")) {
+            nodeMap("loc") = nodeMap("path")
+          }
+
           nodesMap+=(nodeMap.toMap)
         })
       }

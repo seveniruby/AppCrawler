@@ -57,7 +57,7 @@ class IOSCrawler extends Crawler {
     val nav = getAllElements("//UIANavigationBar[1]")
     if (nav.nonEmpty) {
       println(s"url=${nav.head("name")}")
-      nav.head("name")
+      nav.head("name").toString
     } else {
       val screenName = getSchema().takeRight(5)
       println(s"url=${screenName}")
@@ -65,7 +65,7 @@ class IOSCrawler extends Crawler {
     }
   }
 
-  override def getRuleMatchNodes(): ListBuffer[mutable.Map[String, String]] = {
+  override def getRuleMatchNodes(): List[scala.collection.immutable.Map[String, Any]] = {
     getAllElements("//*[@visible='true' and @enabled='true' and @valid='true']")
   }
 }

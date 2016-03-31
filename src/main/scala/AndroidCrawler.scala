@@ -8,6 +8,7 @@ import org.openqa.selenium.remote.DesiredCapabilities
 
 import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Map}
+import scala.collection.immutable
 
 /**
   * Created by seveniruby on 15/12/10.
@@ -68,7 +69,7 @@ class AndroidCrawler extends Crawler {
   //    md5(nodeList.filter(node=>node("tag")!="UIATableCell").map(node=>node("tag")).mkString(""))
   //  }
 
-  override def getRuleMatchNodes(): ListBuffer[mutable.Map[String, String]] = {
+  override def getRuleMatchNodes(): List[immutable.Map[String, Any]] = {
     getAllElements("//*")
   }
 

@@ -15,6 +15,7 @@ import org.w3c.dom.{Attr, Document, NodeList}
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Map}
+import scala.collection.immutable
 import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}
 
@@ -175,56 +176,9 @@ class Crawler {
     * @param xpath
     * @return
     */
-  def getAllElements(xpath: String): ListBuffer[mutable.Map[String, String]] = {
+  def getAllElements(xpath: String): List[immutable.Map[String, Any]] = {
     println(s"xpath=${xpath} getAllElements")
-    val nodeList = ListBuffer[mutable.Map[String, String]]()
-    val xPath: XPath = XPathFactory.newInstance().newXPath()
-    val compexp = xPath.compile(xpath)
-    val node = compexp.evaluate(pageDom, XPathConstants.NODESET)
-    node match {
-      case n: NodeList => {
-        println(s"xpath=${xpath} length=${n.getLength}")
-        0 until n.getLength foreach (i => {
-          val nodeMap = mutable.Map[String, String]()
-          nodeMap("tag") = n.item(i).getNodeName
-          val nodeAttributes = n.item(i).getAttributes
-          0 until nodeAttributes.getLength foreach (a => {
-            val attr = nodeAttributes.item(a).asInstanceOf[Attr]
-            nodeMap(attr.getName) = attr.getValue
-          })
-          if (!nodeMap.contains("name")) {
-            nodeMap("name") = ""
-            nodeMap("value") = ""
-          }
-          if (nodeMap.contains("resource-id")) {
-            //todo: /结尾的会被解释为/之前的内容
-            val arr = nodeMap("resource-id").split('/')
-            if (arr.length == 1) {
-              nodeMap("name") = ""
-            } else {
-              nodeMap("name") = nodeMap("resource-id").split('/').last
-            }
-          }
-          if (nodeMap.contains("text")) {
-            nodeMap("value") = nodeMap("text")
-          }
-          if (nodeMap.contains("bounds")) {
-            nodeMap("loc") = nodeMap("bounds")
-          }
-          if (nodeMap.contains("x")) {
-            nodeMap("loc") = nodeMap("x") + "," + nodeMap("y")
-          }
-          if (nodeMap.contains("path")) {
-            nodeMap("loc") = nodeMap("path")
-          }
-
-          nodeList.append(nodeMap)
-        })
-      }
-      case _ => println("typecast to NodeList failed")
-    }
-    nodeList
-
+    RichData.parseXPath(xpath, pageDom)
   }
 
   /**
@@ -245,7 +199,7 @@ class Crawler {
 
   def getUrl(): String = {
     if (conf.defineUrl.nonEmpty) {
-      val urlString = conf.defineUrl.flatMap(getAllElements(_)).map(_ ("value")).headOption.getOrElse("")
+      val urlString = conf.defineUrl.flatMap(getAllElements(_)).map(_ ("value")).headOption.getOrElse("").toString
       println(s"urlString=$urlString")
       return urlString
     }
@@ -258,17 +212,17 @@ class Crawler {
     * @param x
     * @return
     */
-  def getUrlElementByMap(x: mutable.Map[String, String]): Option[UrlElement] = {
+  def getUrlElementByMap(x: immutable.Map[String, Any]): Option[UrlElement] = {
     //控件的类型
-    val tag = x.getOrElse("tag", "NoTag")
+    val tag = x.getOrElse("tag", "NoTag").toString
 
     //name为Android的description/text属性, 或者iOS的value属性
-    val name = x.getOrElse("value", "").replace("\n", "\\n").take(30)
+    val name = x.getOrElse("value", "").toString.replace("\n", "\\n").take(30)
     //name为id/name属性. 为空的时候为value属性
 
     //id表示android的resource-id或者iOS的name属性
-    val id = x.getOrElse("name", "").split('/').last
-    val loc = x.getOrElse("loc", "")
+    val id = x.getOrElse("name", "").toString.split('/').last
+    val loc = x.getOrElse("loc", "").toString
     val node = UrlElement(url, tag, id, name, loc)
     Some(node)
 
@@ -313,18 +267,18 @@ class Crawler {
     * @param uid
     * @return
     */
-  def isBlack(uid: mutable.Map[String, String]): Boolean = conf.blackList.filter(b => {
-    uid("value").matches(b) || uid("name").matches(b)
+  def isBlack(uid: immutable.Map[String, Any]): Boolean = conf.blackList.filter(b => {
+    uid("value").toString.matches(b) || uid("name").toString.matches(b)
   }).nonEmpty
 
   //todo: 支持xpath表达式
 
 
-  def getClickableElements(): Option[Seq[mutable.Map[String, String]]] = {
-    var all = Seq[mutable.Map[String, String]]()
-    var firstElements = Seq[mutable.Map[String, String]]()
-    var appendElements = Seq[mutable.Map[String, String]]()
-    var commonElements = Seq[mutable.Map[String, String]]()
+  def getClickableElements(): Option[Seq[immutable.Map[String, Any]]] = {
+    var all = Seq[immutable.Map[String, Any]]()
+    var firstElements = Seq[immutable.Map[String, Any]]()
+    var appendElements = Seq[immutable.Map[String, Any]]()
+    var commonElements = Seq[immutable.Map[String, Any]]()
 
     println(conf)
     val invalidElements = getAllElements("//*[@visible='false' or @enabled='false' or @valid='false']")
@@ -458,7 +412,7 @@ class Crawler {
     afterElementAction(uid)
   }
 
-  def getBackElements(): ListBuffer[mutable.Map[String, String]] = {
+  def getBackElements(): ListBuffer[immutable.Map[String, Any]] = {
     conf.backButton.flatMap(getAllElements(_))
   }
 
@@ -518,7 +472,7 @@ class Crawler {
       //先判断是否命中规则.
       if (!doRuleAction()) {
         //获取可点击元素
-        var all = getClickableElements().getOrElse(Seq[mutable.Map[String, String]]())
+        var all = getClickableElements().getOrElse(Seq[immutable.Map[String, String]]())
         println(s"all nodes length=${all.length}")
         //去掉黑名单, 这样rule优先级高于黑名单
         all = all.filter(isBlack(_) == false)
@@ -738,9 +692,12 @@ class Crawler {
         }
       })
       getScreen.start()
-
       //最多等待5s
-      Thread.sleep(5000)
+      for(i<- 1 to 10){
+        if(getScreen.getState!=Thread.State.TERMINATED){
+          Thread.sleep(500)
+        }
+      }
       getScreen.stop()
     }
   }
@@ -810,8 +767,8 @@ class Crawler {
     *
     * @return
     */
-  def getRuleMatchNodes(): ListBuffer[mutable.Map[String, String]] = {
-    ListBuffer[mutable.Map[String, String]]()
+  def getRuleMatchNodes(): List[immutable.Map[String, Any]] = {
+    List[immutable.Map[String, Any]]()
   }
 
   //通过规则实现操作. 不管元素是否被点击过
@@ -827,7 +784,7 @@ class Crawler {
       println(s"idOrName=${idOrName} action=${action} times=${times}")
       val all = getRuleMatchNodes()
 
-      (all.filter(_ ("name").matches(idOrName)) ++ all.filter(_ ("value").matches(idOrName))).distinct.foreach(x => {
+      (all.filter(_ ("name").toString.matches(idOrName)) ++ all.filter(_ ("value").toString.matches(idOrName))).distinct.foreach(x => {
         //获得正式的定位id
         getUrlElementByMap(x) match {
           case Some(e) => {

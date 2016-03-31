@@ -2,8 +2,7 @@
 import org.scalatest.FunSuite
 
 import scala.collection.mutable
-import scala.collection.mutable.{Map, ListBuffer}
-import scala.io.Source
+
 
 /**
   * Created by seveniruby on 15/11/28.
@@ -14,11 +13,11 @@ class TestCrawler extends FunSuite{
   test("isBlack"){
     val appium=new Crawler
     appium.black("stock_item.*")
-    val m1=mutable.Map("name"->"stock_item_1", "value"->"")
-    val m2=mutable.Map("value"->"stock_item_1", "name"->"")
-    val m3=mutable.Map("name"->"stock_item_1", "value"->"stock_item_1")
-    val m4=mutable.Map("name"->"", "value"->"")
-    val m5=mutable.Map("name"->"ss", "value"->"dd")
+    val m1=Map("name"->"stock_item_1", "value"->"")
+    val m2=Map("value"->"stock_item_1", "name"->"")
+    val m3=Map("name"->"stock_item_1", "value"->"stock_item_1")
+    val m4=Map("name"->"", "value"->"")
+    val m5=Map("name"->"ss", "value"->"dd")
     assert(true==appium.isBlack(m1))
     assert(true==appium.isBlack(m2))
     assert(true==appium.isBlack(m3))
@@ -350,7 +349,7 @@ class TestCrawler extends FunSuite{
 
   test("load xueqiu config"){
     val conf=new XueqiuCrawlerConf
-    conf.elementActions++=List(Map("idOrName"->"demo", "times"->2, "action"->"click"))
+    conf.elementActions++=List(mutable.Map("idOrName"->"demo", "times"->2, "action"->"click"))
     conf.save("conf.json")
     val xq=conf.load("conf.json")
     println(xq.elementActions)
