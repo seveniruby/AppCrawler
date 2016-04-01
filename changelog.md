@@ -1,3 +1,6 @@
+# 1.2.0
+兼容appium1.5去掉了不支持的findElementByName方法
+对xpath元素查找进行了优化 解析dom结构时生成合适的xpath表达式
 # 1.1.4
 增加log和tagLimit两个插件
 截图时间超过5s自动跳过
