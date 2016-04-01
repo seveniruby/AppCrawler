@@ -32,9 +32,9 @@ enablePlugins(JavaAppPackaging)
 resolvers += "oschina" at "http://maven.oschina.net/content/groups/public/"
 resolvers += Resolver.sonatypeRepo("public")
 //externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = false)
-resolvers += "snowball_public" at "http://repo.snowballfinance.com/nexus/content/groups/public/"
-resolvers += "snowball_snapshot" at "http://repo.snowballfinance.com/nexus/content/repositories/snapshots/"
-resolvers += "snowball_release" at "http://repo.snowballfinance.com/nexus/content/repositories/releases/"
+resolvers += "snowball_public" at "http://repository.sonatype.org/content/groups/public/"
+resolvers += "snowball_snapshot" at "http://repository.sonatype.org/content/repositories/snapshots/"
+resolvers += "snowball_release" at "http://repository.sonatype.org/content/repositories/releases/"
 //resolvers += "artifactory" at "http://repo.snowballfinance.com/artifactory/repo/"
 resolvers += "spring-snapshots" at "http://repo.spring.io/snapshot"
 
@@ -49,4 +49,3 @@ testOptions in Test += Tests.Cleanup(() => {
   println("Cleanup")
 }
 )
-

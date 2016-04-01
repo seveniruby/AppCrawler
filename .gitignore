@@ -1,1 +1,7 @@
-# Created by .ignore support plugin (hsz.mobi)
+.idea/
+project/target/
+project/project/
+target/
+conf.json
+xueqiu.json
+*.apk
