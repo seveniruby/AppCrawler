@@ -1,5 +1,5 @@
 name := "AppCrawler"
-version := "1.1.4"
+version := "1.2.0"
 scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
@@ -31,21 +31,17 @@ enablePlugins(JavaAppPackaging)
 
 resolvers += "oschina" at "http://maven.oschina.net/content/groups/public/"
 resolvers += Resolver.sonatypeRepo("public")
-//externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = false)
-resolvers += "snowball_public" at "http://repository.sonatype.org/content/groups/public/"
-resolvers += "snowball_snapshot" at "http://repository.sonatype.org/content/repositories/snapshots/"
-resolvers += "snowball_release" at "http://repository.sonatype.org/content/repositories/releases/"
-//resolvers += "artifactory" at "http://repo.snowballfinance.com/artifactory/repo/"
 resolvers += "spring-snapshots" at "http://repo.spring.io/snapshot"
+externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = false)
 
 
 parallelExecution in Test := false
 (testOptions in Test) += Tests.Argument(TestFrameworks.ScalaTest, "-o", "-u", "target/test-reports", "-h", "target/test-reports")
 testOptions in Test += Tests.Setup(() => {
-  println("Setup")
+  println("List All TestCases")
   (definedTests in Test).value.map(println(_))
 })
 testOptions in Test += Tests.Cleanup(() => {
-  println("Cleanup")
+  println("Finish")
 }
 )

@@ -36,7 +36,7 @@ object AppCrawler extends CommonLog{
   def main(args: Array[String]) {
     var platform=""
     val parser = new scopt.OptionParser[Param]("appcrawler") {
-      head("appcrawler", "1.0.1")
+      head("appcrawler", "1.2.0")
       note("appcrawler app爬虫. 遍历app并生成截图和思维导图. 支持Android和iOS, 支持真机和模拟器\n")
       opt[File]('a', "app") action { (x, c) =>{
         if(x.getName.matches(".*\\.apk$")){
