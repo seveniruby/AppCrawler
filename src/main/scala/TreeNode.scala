@@ -70,6 +70,9 @@ case class TreeNode[T](
   }
 
   def generateFreeMind(list: ListBuffer[T], path:String=null): String = {
+    if(list.isEmpty){
+      return ""
+    }
     val root=TreeNode(list.head)
     var currentNode=root
     list.slice(1, list.size).foreach(e=>{

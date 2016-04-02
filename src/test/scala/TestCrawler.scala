@@ -356,5 +356,10 @@ class TestCrawler extends FunSuite{
 
   }
 
+  test("dump yaml"){
+    val conf=new XueqiuCrawlerConf
+    println(conf.toYaml())
+  }
+
 
 }

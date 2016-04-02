@@ -1,6 +1,7 @@
 import java.io.{FileWriter, BufferedWriter, File}
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
 import scala.collection.mutable
@@ -84,6 +85,8 @@ class CrawlerConf {
   /**引导规则. name, value, times三个元素组成*/
   var elementActions = ListBuffer[scala.collection.mutable.Map[String, Any]]()
   elementActions += mutable.Map("idOrName"->".*seveniruby.*", "action"->"click", "times"->0)
+  var startupActions=ListBuffer[String]()
+  startupActions++=List("scroll left", "scroll left", "scroll left", "scroll left", "scroll left")
 
   def loadByJson4s(file: String): Option[this.type] ={
     implicit val formats = DefaultFormats+ FieldSerializer[this.type]()
@@ -120,7 +123,19 @@ class CrawlerConf {
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)
+
   }
+  def toYaml(): String ={
+    val mapper = new ObjectMapper(new YAMLFactory())
+    mapper.registerModule(DefaultScalaModule)
+    mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)
+  }
+  def loadYaml(fileName:String): CrawlerConf ={
+    val mapper = new ObjectMapper(new YAMLFactory())
+    mapper.registerModule(DefaultScalaModule)
+    mapper.readValue(fileName, classOf[CrawlerConf])
+  }
+
 
   def load(file :String): CrawlerConf ={
     val mapper = new ObjectMapper()

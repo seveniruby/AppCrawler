@@ -8,6 +8,8 @@ abstract class Plugin extends CommonLog{
   }
   def init(crawler: Crawler): Unit ={
     this.crawler=crawler
+    log.addAppender(crawler.fileAppender)
+    log.info(this.getClass.getName+" init")
   }
   def afterUrlRefresh(url:String): Unit ={
 

@@ -9,6 +9,7 @@ import org.scalatest.ConfigMap
 import java.io.File
 
 object AppCrawler extends CommonLog{
+  var logPath=""
   case class Param(
                            app: File = new File("."),
                            conf: File = new File("."),

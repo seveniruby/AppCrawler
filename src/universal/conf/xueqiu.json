@@ -19,7 +19,7 @@
     "appPackage" : "com.xueqiu.android",
     "appActivity" : ".view.WelcomeActivityAlias",
     "appium" : "http://127.0.0.1:4730/wd/hub",
-    "app" : "http://build.snowballfinance.com/static/apps/com.xueqiu.droid.rc/20160204_165054/xueqiu.apk"
+    "app" : ""
   },
   "iosCapability" : {
     "deviceName" : "iPhone 6",
@@ -27,7 +27,7 @@
     "platformVersion" : "9.2",
     "appium" : "http://127.0.0.1:4723/wd/hub",
     "autoAcceptAlerts" : "true",
-    "app" : "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphoneos/Snowball.app"
+    "app" : ""
   },
   "defineUrl" : [ "//*[contains(@name, '_title')]" ],
   "baseUrl" : [ ".*MainActivity", ".*SNBHomeView.*" ],
@@ -120,5 +120,6 @@
     "action" : "click",
     "idOrName" : "common guide icon ok",
     "times" : 0
-  } ]
+  } ],
+  "startupActions" : [ "scroll left", "scroll left", "scroll left", "scroll left", "scroll left", "scroll down" ]
 }

@@ -18,6 +18,8 @@ class TestSelenium extends AppiumDSL {
   }
 
   def login(): Unit ={
+    Thread.sleep(5000)
+    click on text("account")
     click on id("account")
     send("15600534760")
     save()
