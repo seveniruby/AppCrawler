@@ -5,10 +5,10 @@
   */
 class TagLimitPlugin extends Plugin{
   private val tagLimit: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.Map()
-  private val tagLimitMax=10
+  private val tagLimitMax=6
   def getUniqueKey(element: UrlElement): String ={
     //相同url下的相同元素类型控制点击额度
-    s"${element.url}_${element.tag}_${element.loc}"
+    s"${element.url}_${element.tag}_${element.loc}".replaceAll("@index=[^ ]*", "") //replaceAll("\\[[^\\[]*$", "")
   }
   override def beforeElementAction(element: UrlElement): Unit ={
     val key=getUniqueKey(element)

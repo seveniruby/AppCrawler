@@ -11,6 +11,9 @@ abstract class Plugin extends CommonLog{
     log.addAppender(crawler.fileAppender)
     log.info(this.getClass.getName+" init")
   }
+  def start(): Unit ={
+
+  }
   def afterUrlRefresh(url:String): Unit ={
 
   }
@@ -18,6 +21,9 @@ abstract class Plugin extends CommonLog{
 
   }
   def afterElementAction(element: UrlElement): Unit ={
+
+  }
+  def stop(): Unit ={
 
   }
 }

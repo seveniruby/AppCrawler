@@ -3,13 +3,13 @@ version := "1.2.0"
 scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
-  "org.scala-lang" % "scala-compiler" % "2.11.7",
+  //"org.scala-lang" % "scala-compiler" % "2.11.7",
   "org.scala-lang" % "scala-library" % "2.11.7",
-  "org.scala-lang" % "scala-reflect" % "2.11.7",
+  //"org.scala-lang" % "scala-reflect" % "2.11.7",
   "org.scalatest" %% "scalatest" % "2.2.5",
   "io.appium" % "java-client" % "3.2.0",
   "org.seleniumhq.selenium" % "selenium-java" % "2.35.0" % "test",
-  "io.selendroid" % "selendroid" % "0.16.0",
+  //"io.selendroid" % "selendroid" % "0.16.0",
   "io.selendroid" % "selendroid-client" % "0.16.0",
   "org.scala-lang" % "scala-compiler" % scalaVersion.value,
   //"com.propensive" %% "rapture" % "2.0.0-M1",
@@ -30,6 +30,15 @@ libraryDependencies ++= Seq(
 )
 
 enablePlugins(JavaAppPackaging)
+
+assemblyJarName in assembly := "appcrawler-"+version.value+".jar"
+test in assembly := {}
+mainClass in assembly := Some("AppCrawler")
+assemblyMergeStrategy in assembly := {
+    case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
+    case x =>  MergeStrategy.first
+}
+
 
 
 resolvers += "oschina" at "http://maven.oschina.net/content/groups/public/"

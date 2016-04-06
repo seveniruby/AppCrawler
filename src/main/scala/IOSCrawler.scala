@@ -13,6 +13,7 @@ import scala.collection.mutable.{ListBuffer, Map}
   * Created by seveniruby on 15/12/10.
   */
 class IOSCrawler extends Crawler {
+  platformName = "iOS"
   if(conf.selectedList.isEmpty) {
     conf.selectedList.insertAll(0, Seq(
       "//UIAWindow[1]//UIATextField[@visible='true' and @enabled='true' and @valid='true']",
@@ -30,7 +31,6 @@ class IOSCrawler extends Crawler {
   }
 
   override def setupAppium():Unit={
-    platformName = "iOS"
     super.setupAppium()
     capabilities.setCapability("platformName", "iOS")
     conf.iosCapability.foreach{ case (k,v)=>{

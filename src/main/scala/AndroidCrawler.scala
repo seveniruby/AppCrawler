@@ -10,6 +10,7 @@ import scala.collection.mutable.ListBuffer
   * Created by seveniruby on 15/12/10.
   */
 class AndroidCrawler extends Crawler {
+  platformName = "Android"
   if(conf.selectedList.isEmpty){
     conf.selectedList.insertAll(0, ListBuffer[String](
       "//*[@enabled='true' and @resource-id!='' and not(contains(name(), 'Layout'))]",
@@ -21,7 +22,6 @@ class AndroidCrawler extends Crawler {
   }
 
   override def setupAppium(): Unit = {
-    platformName = "Android"
     super.setupAppium()
     //todo:主要做遍历测试和异常测试. 所以暂不使用selendroid. 兼容性测试需要使用selendroid
     //capabilities.setCapability("automationName", "Selendroid")
@@ -50,7 +50,7 @@ class AndroidCrawler extends Crawler {
     if(baseUrl!=""){
       screenName = s"${screenName}_${super.getUrl()}"
     }
-    log.trace(s"url=${screenName}")
+    log.info(s"url=${screenName}")
     screenName
   }
 

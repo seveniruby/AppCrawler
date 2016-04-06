@@ -1,7 +1,10 @@
 import java.net.URL
 
+import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
+import io.appium.java_client.ios.IOSDriver
 import org.apache.log4j.{Level, Logger, BasicConfigurator}
+import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.scalatest._
 import org.scalatest.selenium.WebBrowser
@@ -13,7 +16,8 @@ import org.scalatest.selenium.WebBrowser.XPathQuery
 class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with BeforeAndAfterAll with CommonLog{
   val capabilities = new DesiredCapabilities()
   var appiumUrl="http://127.0.0.1:4723/wd/hub"
-  implicit lazy val driver = new AndroidDriver(new URL(appiumUrl), capabilities)
+
+  implicit var driver : AppiumDriver[WebElement] = _
 
 
   def config(key:String, value:Any): Unit ={
@@ -34,6 +38,14 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
 
   def appium(url:String): Unit ={
     appiumUrl=url
+    //todo: 无法通过url来确定是否是android, 需要改进
+    println(capabilities)
+    if(capabilities.getCapability("app").toString.matches(".*\\.apk$") ||
+      capabilities.getCapability("appActivity").toString.nonEmpty){
+      driver=new AndroidDriver[WebElement](new URL(appiumUrl), capabilities)
+    }else{
+      driver=new IOSDriver[WebElement](new URL(appiumUrl), capabilities)
+    }
   }
 
   def printTree(key: String=""): Unit ={
@@ -64,11 +76,38 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
 
   /**
     * 解析给定的xpath表达式或者text的定位标记 把节点的信息转换为map
+    *
     * @param key
     * @return
     */
   def tree(key:String): Map[String, Any] ={
     RichData.parseXPath(keyToXPath(key), RichData.toXML(pageSource))(0)
+  }
+
+  //todo: not test
+  def crawl(conf:String = "",  resultDir:String=""): Unit ={
+    var crawler:Crawler=new Crawler
+    if(conf.nonEmpty) {
+      crawler.loadConf(conf)
+    }
+    crawler.conf.currentDriver.toLowerCase match {
+      case "android"=>{
+        crawler=new AndroidCrawler
+      }
+      case "ios" => {
+        crawler=new IOSCrawler
+      }
+      case _ =>{
+        log.trace("请指定currentDriver为Android或者iOS")
+      }
+    }
+    if(resultDir.nonEmpty){
+      crawler.conf.resultDir=resultDir
+    }
+    crawler.conf.startupActions.clear()
+
+    crawler.start(driver)
+
   }
 
 }

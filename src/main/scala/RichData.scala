@@ -58,7 +58,7 @@ object RichData extends CommonLog{
               val xpath=ListBuffer[String]()
               0 until attributes.getLength foreach(i=>{
                 val kv=attributes.item(i).asInstanceOf[Attr]
-                if(List("name", "label", "path", "resource-id", "content-desc").contains(kv.getName) &&
+                if(List("name", "label", "path", "resource-id", "content-desc", "index").contains(kv.getName) &&
                   kv.getValue.nonEmpty){
                   xpath+=s"@${kv.getName}="+"\""+kv.getValue.replace("\"", "\\\"")+"\""
                 }
@@ -91,12 +91,9 @@ object RichData extends CommonLog{
           nodeMap("tag") = node.getNodeName
           nodeMap("xpath") = "//"+path.reverse.takeRight(path.length-2).mkString("/")
 
+          //todo: 支持selendroid
           //如果是android 转化为和iOS相同的结构
-          if (!nodeMap.contains("name")) {
-            nodeMap("name") = ""
-            nodeMap("value") = ""
-          }
-          //name属性为android的resource-id
+          //name=resource-id label=content-desc value=text
           if (nodeMap.contains("resource-id")) {
             //todo: /结尾的会被解释为/之前的内容
             val arr = nodeMap("resource-id").toString.split('/')
@@ -105,12 +102,19 @@ object RichData extends CommonLog{
             } else {
               nodeMap("name") = nodeMap("resource-id").toString.split('/').last
             }
+          }else{
+            nodeMap("name")=""
+            nodeMap("value")=""
+            nodeMap("label")=""
           }
-          //value为android的text或者iOS的value
           if (nodeMap.contains("text")) {
             nodeMap("value") = nodeMap("text")
           }
-          //loc为android坐标或者iOS路径
+          if (nodeMap.contains("content-desc")) {
+            nodeMap("label") = nodeMap("content-desc")
+          }
+
+          //记录定位方式
           if (nodeMap.contains("bounds")) {
             nodeMap("loc") = nodeMap("xpath")
           }

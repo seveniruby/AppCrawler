@@ -126,6 +126,9 @@ class TestSelenium extends AppiumDSL {
     click on text("大港股份")
     printTree()
     tree("action_bar_title")("text") should be equals("大港股份")
+    log.warn("Start Crawler")
+    crawl("/Users/seveniruby/projects/LBSRefresh/src/universal/conf/xueqiu.json", "/Users/seveniruby/temp/crawl")
+
   }
 
   override def afterAll(): Unit ={
