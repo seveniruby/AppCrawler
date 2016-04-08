@@ -35,21 +35,10 @@ object AppCrawler extends CommonLog{
 
 
   def main(args: Array[String]) {
-    var platform=""
     val parser = new scopt.OptionParser[Param]("appcrawler") {
       head("appcrawler", "1.2.0")
       note("appcrawler app爬虫. 遍历app并生成截图和思维导图. 支持Android和iOS, 支持真机和模拟器\n")
       opt[File]('a', "app") action { (x, c) =>{
-        if(x.getName.matches(".*\\.apk$")){
-          log.info("Set Platform=Android")
-          platform="Android"
-          c.copy(platform = "Android")
-        }
-        if(x.getName.matches(".*\\.ipa$") || x.getName.matches(".*\\.app$") ){
-          log.info("Set Platform=iOS")
-          platform="iOS"
-          c.copy(platform = "iOS")
-        }
         c.copy(app = x)
       }
       } text ("Android或者iOS的文件地址, 可以是网络地址, 赋值给appium的app选项")
@@ -78,7 +67,7 @@ object AppCrawler extends CommonLog{
       opt[Map[String, String]]("capability") valueName ("k1=v1,k2=v2...") action { (x, c) =>
         c.copy(capability = x)
       } text ("appium capability选项, 这个参数会覆盖-c指定的配置模板参数, 用于在模板配置之上的参数微调")
-      opt[Unit]("verbose") action { (_, c) =>
+      opt[Unit]('v', "verbose") action { (_, c) =>
         c.copy(verbose = true)
       } text ("是否展示更多debug信息")
       help("help") text (
@@ -108,6 +97,9 @@ object AppCrawler extends CommonLog{
     }
     parser.parse(args_new, Param()) match {
       case Some(config) => {
+        if(config.verbose){
+          logLevel=Level.TRACE
+        }
         log.trace("config=")
         log.trace(config)
         if(config.sbt_params.nonEmpty){
@@ -120,8 +112,20 @@ object AppCrawler extends CommonLog{
           log.info(s"Find Conf ${config.conf.getAbsolutePath}")
           crawlerConf=crawlerConf.load(config.conf)
         }
+        //判断平台
+        crawlerConf.currentDriver = config.platform
+        val fileName=config.app.getName
+        if(fileName.matches(".*\\.apk$")){
+          log.info("Set Platform=Android")
+          crawlerConf.currentDriver = "Android"
+        }
+        if(fileName.matches(".*\\.ipa$") || fileName.matches(".*\\.app$") ){
+          log.info("Set Platform=iOS")
+          crawlerConf.currentDriver = "iOS"
+        }
+
         //合并capability, 特定平台的capability>通用capability
-        config.platform.toLowerCase match {
+        crawlerConf.currentDriver.toLowerCase match {
           case "android"=> {
             crawlerConf.androidCapability=crawlerConf.capability++crawlerConf.androidCapability
             crawlerConf.androidCapability ++= config.capability
@@ -143,13 +147,12 @@ object AppCrawler extends CommonLog{
             }
           }
         }
-        crawlerConf.currentDriver = config.platform
         crawlerConf.maxTime=config.maxTime
         crawlerConf.resultDir=config.resultDir
 
         //获得app设置
         //log.trace(s"app path=${config.app.getPath} ${config.app.getName} ${config.app.getAbsolutePath} ${config.app.getCanonicalPath}")
-        log.trace(crawlerConf.toJson)
+        log.info(crawlerConf.toJson)
         new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf), fullstacks = true)
       }
       case None => {}

@@ -115,6 +115,7 @@ class Crawler extends CommonLog {
     * 启动爬虫
     */
   def start(existDriver : AppiumDriver[WebElement]= null ): Unit = {
+    log.setLevel(logLevel)
     addLogFile()
     log.trace("start")
     GA.log("start")
@@ -483,6 +484,7 @@ class Crawler extends CommonLog {
     //超过十次连续不停的回退就认为是需要退出
     backRetry += 1
     if (backRetry > backMaxRetry) {
+      log.info(s"${backRetry} > ${backMaxRetry}")
       needExit = true
     } else {
       log.info(s"backRetry=${backRetry}")
@@ -494,6 +496,7 @@ class Crawler extends CommonLog {
 
   def getAvailableElement(): Seq[UrlElement] = {
     var all = getSelectedElements().getOrElse(List[immutable.Map[String, Any]]())
+    all.foreach(log.trace)
     allElementsRecord++=all.map(m=>s"${url}->${m("loc")}->${m("value").toString.take(20)}")
     allElementsRecord=allElementsRecord.distinct
     log.info(s"all nodes length=${all.length}")
@@ -509,12 +512,13 @@ class Crawler extends CommonLog {
     log.info(s"all elements length=${allElements.length}")
     //过滤已经被点击过的元素
     allElements = allElements.filter(!isClicked(_))
+    allElements.foreach(log.trace)
     log.info(s"fresh elements length=${allElements.length}")
     //记录未被点击的元素
     allElements.foreach(e => {
       if (!elements.contains(e.toString())) {
         elements(e.toString()) = false
-        log.info(s"fresh = ${e}")
+        log.info(s"first found ${e}")
       }
     })
     allElements
@@ -936,9 +940,16 @@ class Crawler extends CommonLog {
       val action = r("action").toString
       val times = r("times").toString.toInt
       log.trace(s"idOrName=${idOrName} action=${action} times=${times}")
-      val all = getRuleMatchNodes()
 
-      (all.filter(_ ("name").toString.matches(idOrName)) ++ all.filter(_ ("value").toString.matches(idOrName))).distinct.foreach(x => {
+      val allMap=if(action.matches("/.*")){
+        getAllElements(action)
+      }else{
+        val all=getRuleMatchNodes()
+        (all.filter(_ ("name").toString.matches(idOrName)) ++ all.filter(_ ("value").toString.matches(idOrName))).distinct
+      }
+
+
+      allMap.foreach(x => {
         //获得正式的定位id
         val e = getUrlElementByMap(x)
         log.info(s"element=${e} action=${action}")

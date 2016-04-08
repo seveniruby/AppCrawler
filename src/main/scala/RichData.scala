@@ -91,6 +91,12 @@ object RichData extends CommonLog{
           nodeMap("tag") = node.getNodeName
           nodeMap("xpath") = "//"+path.reverse.takeRight(path.length-2).mkString("/")
 
+          //保持根元素兼容
+          if(nodeMap.contains("resource-id")==false && nodeMap.contains("name")==false){
+            nodeMap("name")=""
+            nodeMap("value")=""
+            nodeMap("label")=""
+          }
           //todo: 支持selendroid
           //如果是android 转化为和iOS相同的结构
           //name=resource-id label=content-desc value=text
@@ -102,10 +108,6 @@ object RichData extends CommonLog{
             } else {
               nodeMap("name") = nodeMap("resource-id").toString.split('/').last
             }
-          }else{
-            nodeMap("name")=""
-            nodeMap("value")=""
-            nodeMap("label")=""
           }
           if (nodeMap.contains("text")) {
             nodeMap("value") = nodeMap("text")
