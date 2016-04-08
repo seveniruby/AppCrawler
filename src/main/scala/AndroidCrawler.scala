@@ -32,7 +32,8 @@ class AndroidCrawler extends Crawler {
 
     val url=conf.androidCapability("appium").toString
     driver = new AndroidDriver[WebElement](new URL(url), capabilities)
-    //driver.launchApp()
+    //driver.launchAp
+    log.info(s"driver=${driver}")
     getDeviceInfo()
   }
 

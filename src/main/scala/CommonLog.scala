@@ -8,6 +8,7 @@ import org.apache.log4j._
   */
 trait CommonLog {
   BasicConfigurator.configure()
+  Logger.getRootLogger.setLevel(Level.INFO)
   val layout=new PatternLayout("%d{yyyy-MM-dd HH:mm:ss} %p [%.20c.%M] %m%n")
   val log = initLog()
 

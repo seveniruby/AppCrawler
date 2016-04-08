@@ -27,8 +27,12 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
     driver.getKeyboard.sendKeys(keys)
   }
 
-  def text(key:String): XPathQuery ={
-    xpath(s"//*[contains(@text, '$key') or contains(@resource-id, '$key') or contains(name, '$key')]")
+  def see(key:String): XPathQuery ={
+    if(key.matches("/.*")){
+      xpath(key)
+    }else {
+      xpath(keyToXPath(key))
+    }
   }
   var index=0
   def save(): Unit ={
@@ -45,17 +49,6 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
       driver=new AndroidDriver[WebElement](new URL(appiumUrl), capabilities)
     }else{
       driver=new IOSDriver[WebElement](new URL(appiumUrl), capabilities)
-    }
-  }
-
-  def printTree(key: String=""): Unit ={
-    if(key.isEmpty){
-      log.trace(RichData.toPrettyXML(pageSource))
-    }else{
-      RichData.parseXPath(keyToXPath(key), RichData.toXML(pageSource)).foreach(node=>{
-        log.trace(node)
-      })
-
     }
   }
 
@@ -80,8 +73,18 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
     * @param key
     * @return
     */
-  def tree(key:String): Map[String, Any] ={
-    RichData.parseXPath(keyToXPath(key), RichData.toXML(pageSource))(0)
+  def tree(key:String=""): Map[String, Any] ={
+    if(key.isEmpty){
+      log.info(RichData.toPrettyXML(pageSource))
+      Map[String, Any]()
+    }else{
+      val nodes=RichData.parseXPath(keyToXPath(key), RichData.toXML(pageSource))
+      nodes.foreach(node=>{
+        log.info(node)
+      })
+      log.info("return first")
+      nodes(0)
+    }
   }
 
   //todo: not test

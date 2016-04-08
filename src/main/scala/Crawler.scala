@@ -114,18 +114,18 @@ class Crawler extends CommonLog {
   /**
     * 启动爬虫
     */
-  def start(driver : AppiumDriver[WebElement]= null ): Unit = {
+  def start(existDriver : AppiumDriver[WebElement]= null ): Unit = {
     addLogFile()
     log.trace("start")
     GA.log("start")
-    if(driver==null) {
+    log.info(s"driver=${existDriver}")
+    if(existDriver==null) {
       setupAppium()
     }else{
-      this.driver=driver
+      this.driver=existDriver
     }
-
-    log.trace("LogTypes=")
-    driver.manage().logs().getAvailableLogTypes().toArray.foreach(log.trace)
+    log.info(s"driver=${existDriver}")
+    driver.manage().logs().getAvailableLogTypes().toArray.foreach(log.info)
     //设定结果目录
 
     GA.log("crawler")
@@ -164,7 +164,6 @@ class Crawler extends CommonLog {
     screenHeight = size.getHeight
     screenWidth = size.getWidth
     log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
-    println(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
   }
 
 

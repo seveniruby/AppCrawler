@@ -82,4 +82,15 @@ class TestThread extends FunSuite{
   }
 
 
+  test("test console"){
+    import scala.tools.nsc.interpreter.ILoop
+    import scala.tools.nsc.Settings
+
+    val settings=new Settings()
+    val loop = new ILoop
+    settings.usejavacp.value=true
+    loop.process(settings)
+  }
+
+
 }
