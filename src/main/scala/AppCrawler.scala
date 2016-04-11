@@ -36,8 +36,13 @@ object AppCrawler extends CommonLog{
 
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[Param]("appcrawler") {
-      head("appcrawler", "1.2.0")
-      note("appcrawler app爬虫. 遍历app并生成截图和思维导图. 支持Android和iOS, 支持真机和模拟器\n")
+      head(
+        """
+          |AppCrawler 1.2.0
+          |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
+          |灵感来源: 晓光 泉龙 杨榕 雪球测试团队出品
+          |移动测试技术交流 https://testerhome.com
+        """.stripMargin)
       opt[File]('a', "app") action { (x, c) =>{
         c.copy(app = x)
       }
@@ -78,7 +83,6 @@ object AppCrawler extends CommonLog{
           |appcrawler -c conf/xueqiu.json
           |appcrawler -c xueqiu.json  -p ios --capability udid=[你的udid] -a Snowball.app
           |appcrawler -c xueqiu.json  -p ios -a Snowball.app -u http://127.0.0.1:4730/wd/hub
-          |
         """.stripMargin)
       cmd("sbt") action { (_, c) => {
         c.copy(mode = "sbt")

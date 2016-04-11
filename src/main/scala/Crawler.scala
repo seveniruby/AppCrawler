@@ -115,14 +115,14 @@ class Crawler extends CommonLog {
     * 启动爬虫
     */
   def start(existDriver : AppiumDriver[WebElement]= null ): Unit = {
-    log.setLevel(logLevel)
+    log.setLevel(AppCrawler.logLevel)
     addLogFile()
-    log.trace("start")
     GA.log("start")
-    log.info(s"driver=${existDriver}")
     if(existDriver==null) {
+      log.info("prepare setup Appium")
       setupAppium()
     }else{
+      log.info("use existed driver")
       this.driver=existDriver
     }
     log.info(s"driver=${existDriver}")
@@ -661,11 +661,12 @@ class Crawler extends CommonLog {
 
   //todo:优化查找方法
   //找到统一的定位方法就在这里定义, 找不到就分别在子类中重载定义
-  def findElementByUrlElement(uid: UrlElement): Option[WebElement] = {
-    log.info(s"find element by uid ${uid}")
-    if (uid.id != "") {
-      log.info(s"find by id=${uid.id}")
-      doAppium(driver.findElementsById(uid.id)) match {
+  def findElementByUrlElement(element: UrlElement): Option[WebElement] = {
+    /*
+    log.info(s"find element by uid ${element}")
+    if (element.id != "") {
+      log.info(s"find by id=${element.id}")
+      doAppium(driver.findElementsById(element.id)) match {
         case Some(v) => {
           val arr = v.toArray().distinct
           if (arr.length == 1) {
@@ -682,13 +683,37 @@ class Crawler extends CommonLog {
         }
       }
     }
+    */
+    log.info(s"find by xpath= ${element.loc}")
+    doAppium(driver.findElementsByXPath(element.loc)) match {
+      case Some(v) => {
+        val arr = v.toArray().distinct
+        if (arr.length == 1) {
+          log.trace("find by xpath success")
+          return Some(arr.head.asInstanceOf[WebElement])
+        } else {
+          //有些公司可能存在重名id
+          arr.foreach(log.info)
+          log.warn(s"find count ${v.size()}, you should check your dom file")
+          if (arr.size > 0) {
+            log.info("just use the first one")
+            return Some(arr.head.asInstanceOf[WebElement])
+          }
+        }
+      }
+      case None => {
+        log.warn("find by xpath error")
+      }
+    }
+
+
+    /*
     platformName.toLowerCase() match {
       case "ios" => {
-        log.info(s"find by xpath=//${uid.tag}[@path='${uid.loc}']")
         //照顾iOS android会在findByName的时候自动找text属性.
         doAppium(driver.findElementByXPath(
           //s"//${uid.tag}[@name='${uid.id}' and @value='${uid.name}' and @x='${uid.loc.split(',').head}' and @y='${uid.loc.split(',').last}']"
-          s"//${uid.tag}[@path='${uid.loc}']"
+          s"//${element.tag}[@path='${element.loc}']"
         )) match {
           case Some(v) => {
             log.trace("find by xpath success")
@@ -722,8 +747,7 @@ class Crawler extends CommonLog {
         }
         */
         //xpath会较慢
-        log.info(s"find by xpath=${uid.loc}")
-        doAppium(driver.findElementsByXPath(uid.loc)) match {
+        doAppium(driver.findElementsByXPath(element.loc)) match {
           case Some(v) => {
             val arr = v.toArray().distinct
             if (arr.length == 1) {
@@ -746,6 +770,7 @@ class Crawler extends CommonLog {
 
       }
     }
+    */
     None
   }
 
@@ -941,22 +966,25 @@ class Crawler extends CommonLog {
       val times = r("times").toString.toInt
       log.trace(s"idOrName=${idOrName} action=${action} times=${times}")
 
-      val allMap=if(action.matches("/.*")){
-        getAllElements(action)
+      val allMap=if(idOrName.matches("/.*")){
+        log.trace("xpath find")
+        getAllElements(idOrName)
       }else{
+        log.trace("idOrName")
         val all=getRuleMatchNodes()
         (all.filter(_ ("name").toString.matches(idOrName)) ++ all.filter(_ ("value").toString.matches(idOrName))).distinct
       }
+      log.trace(s"rule match size = ${allMap.size}")
 
 
       allMap.foreach(x => {
         //获得正式的定位id
         val e = getUrlElementByMap(x)
-        log.info(s"element=${e} action=${action}")
+        log.trace(s"element=${e} action=${action}")
         isHit = true
         doAppiumAction(e, action.toString) match {
           case None => {
-            log.info("do rule action fail")
+            log.warn("do rule action fail")
           }
           case Some(v) => {
             log.trace("do rule action success")

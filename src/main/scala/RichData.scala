@@ -58,7 +58,7 @@ object RichData extends CommonLog{
               val xpath=ListBuffer[String]()
               0 until attributes.getLength foreach(i=>{
                 val kv=attributes.item(i).asInstanceOf[Attr]
-                if(List("name", "label", "path", "resource-id", "content-desc", "index").contains(kv.getName) &&
+                if(List("name", "path", "resource-id", "content-desc", "index").contains(kv.getName) &&
                   kv.getValue.nonEmpty){
                   xpath+=s"@${kv.getName}="+"\""+kv.getValue.replace("\"", "\\\"")+"\""
                 }
@@ -121,7 +121,8 @@ object RichData extends CommonLog{
             nodeMap("loc") = nodeMap("xpath")
           }
           if (nodeMap.contains("path")) {
-            nodeMap("loc") = nodeMap("path")
+            //nodeMap("loc") = nodeMap("path")
+            nodeMap("loc") = nodeMap("xpath")
           }
 
           nodesMap+=(nodeMap.toMap)

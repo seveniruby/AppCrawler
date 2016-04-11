@@ -1,6 +1,6 @@
 {
   "pluginList" : [ "TagLimitPlugin" , "LogPlugin"],
-  "saveScreen" : true,
+  "saveScreen" : false,
   "currentDriver" : "android",
   "maxTime" : 10800,
   "resultDir" : "",
@@ -131,6 +131,10 @@
     "action" : "click",
     "idOrName" : "common guide icon ok",
     "times" : 0
+  }, {
+    "action" : "click",
+    "idOrName" : "//*[ contains(@resource-id, 'hq_center_image') ]",
+    "times" : 1
   } ],
   "startupActions" : [ "scroll left", "scroll left", "scroll left", "scroll left", "scroll left", "scroll down" ]
 }
