@@ -59,8 +59,15 @@ object RichData extends CommonLog{
               0 until attributes.getLength foreach(i=>{
                 val kv=attributes.item(i).asInstanceOf[Attr]
                 if(List("name", "path", "resource-id", "content-desc", "index").contains(kv.getName) &&
-                  kv.getValue.nonEmpty){
-                  xpath+=s"@${kv.getName}="+"\""+kv.getValue.replace("\"", "\\\"")+"\""
+                  kv.getValue.nonEmpty
+                ){
+                  //appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
+                  //todo: 帮appium打补丁
+                  if(kv.getName=="name" && kv.getValue.size>6){
+                    log.trace(s"${kv.getName}=${kv.getValue} name size too long")
+                  }else {
+                    xpath += s"@${kv.getName}=" + "\"" + kv.getValue.replace("\"", "\\\"") + "\""
+                  }
                 }
               })
               if(xpath.isEmpty){

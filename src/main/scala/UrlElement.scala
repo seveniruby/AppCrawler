@@ -7,10 +7,16 @@ case class UrlElement(url: String, tag: String, id: String, name: String, loc:St
   //如果url修改为url=xueqiu/xxxActivity id=input 就可以被点击多次
   //定义url是遍历的关键. 这是一门艺术
   override def toString: String = {
-    if (tag.toLowerCase().contains("edit")) {
-      s"${url.replace("Activity", "").replace("View", "")}-$tag-${id}-"
-    } else {
-      s"${url.replace("Activity", "").replace("View", "")}-${tag}-${id}-${name}"
-    }
+    //url_[parent id]-tag-id
+    s"${url}_${"\"([^\"/]*)\"".r.findAllMatchIn(loc).map(_.subgroups).toList.flatten.mkString("-")}-${id}"
+  }
+  def toFileName(): String ={
+    toString
+  }
+
+  def toTagPath(): String ={
+    //相同url下的相同元素类型控制点击额度
+    //s"${element.url}_${element.tag}_${element.loc}".replaceAll("@index=[^ ]*", "") //replaceAll("\\[[^\\[]*$", "")
+    s"${url}-${"(/[a-zA-Z][a-zA-Z]*)".r.findAllMatchIn(loc).map(_.subgroups).toList.flatten.mkString("")}"
   }
 }

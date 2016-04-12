@@ -6,15 +6,37 @@ import org.scalatest.time.{Seconds, Span}
 class TestSelenium extends AppiumDSL {
 
   override def beforeAll(): Unit ={
-    config("app", "/Users/seveniruby/Downloads/xueqiu.apk")
+    //config("app", "/Users/seveniruby/Downloads/xueqiu.apk")
+    iOS()
+    setCaptureDir(".")
+    implicitlyWait(Span(10, Seconds))
+    //login()
 
+    if(tree("稍后再说").nonEmpty){
+      click on see("稍后再说")
+    }
+  }
+
+  def Android(): Unit ={
     config("appPackage", "com.xueqiu.android")
     config("appActivity", "com.xueqiu.android.view.WelcomeActivityAlias")
     config("deviceName", "demo")
     appium("http://127.0.0.1:4730/wd/hub")
-    setCaptureDir(".")
-    implicitlyWait(Span(10, Seconds))
-    login()
+
+  }
+
+  def iOS(): Unit ={
+    config(
+      "app",
+      "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
+        "Build/Products/Debug-iphoneos/Snowball.app"
+    )
+
+    config("bundleId", "com.xueqiu")
+    config("fullReset", true)
+    config("noReset", false)
+    config("deviceName", "demo")
+    appium("http://127.0.0.1:4723/wd/hub")
   }
 
   def login(): Unit ={
@@ -133,8 +155,28 @@ class TestSelenium extends AppiumDSL {
     crawl("/Users/seveniruby/projects/LBSRefresh/src/universal/conf/xueqiu.json", "/Users/seveniruby/temp/crawl")
   }
 
+  test("组合"){
+    tree("组合")
+    click on see("//UIATabBar/UIAButton[@name=\"组合\"]")
+    click on see("组合风云榜")
+    click on see("持仓")
+    Thread.sleep(2000)
+    tree("股票")
+    crawl("/Users/seveniruby/projects/LBSRefresh/src/universal/conf/xueqiu.json", "/Users/seveniruby/temp/crawl")
+  }
+
+  test("7.6.1股票"){
+    click on see("自选")
+    click on see("雪球100")
+    tree()
+    crawl("/Users/seveniruby/projects/LBSRefresh/src/universal/conf/xueqiu.json", "/Users/seveniruby/temp/crawl4")
+
+
+  }
+
   override def afterAll(): Unit ={
     println("afterall")
+    //driver.removeApp(capabilities.getCapability("bundleId").toString)
     quit()
   }
 

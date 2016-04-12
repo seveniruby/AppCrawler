@@ -156,7 +156,7 @@ object AppCrawler extends CommonLog{
 
         //获得app设置
         //log.trace(s"app path=${config.app.getPath} ${config.app.getName} ${config.app.getAbsolutePath} ${config.app.getCanonicalPath}")
-        log.info(crawlerConf.toJson)
+        log.trace(crawlerConf.toJson)
         new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf), fullstacks = true)
       }
       case None => {}

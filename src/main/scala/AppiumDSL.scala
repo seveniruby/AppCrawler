@@ -44,8 +44,11 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
     appiumUrl=url
     //todo: 无法通过url来确定是否是android, 需要改进
     println(capabilities)
-    if(capabilities.getCapability("app").toString.matches(".*\\.apk$") ||
-      capabilities.getCapability("appActivity").toString.nonEmpty){
+    if(
+      capabilities.getCapability("app").toString.matches(".*\\.apk$") ||
+      capabilities.is("appActivity") == true ||
+      capabilities.is("appPackage")
+    ){
       driver=new AndroidDriver[WebElement](new URL(appiumUrl), capabilities)
     }else{
       driver=new IOSDriver[WebElement](new URL(appiumUrl), capabilities)
@@ -53,17 +56,30 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
   }
 
   def keyToXPath(key:String): String ={
-    if(key.matches("/.*")) {
-      key
-    }else{
-      s"//*[" +
-        s"contains(@text, '$key') " +
-        s"or contains(@resource-id, '$key') " +
-        s"or contains(@content-desc, '$key') " +
-        s"or contains(@name, '$key') " +
-        s"or contains(@label, '$key') " +
-        s"or contains(name(), '$key') " +
-        s"]"
+    key.charAt(0) match {
+      case '/' => {
+        key
+      }
+      case '^' => {
+        s"//*[" +
+          s"matches(@text, '$key') " +
+          s"or matches(@resource-id, '$key') " +
+          s"or matches(@content-desc, '$key') " +
+          s"or matches(@name, '$key') " +
+          s"or matches(@label, '$key') " +
+          s"or matches(name(), '$key') " +
+          s"]"
+      }
+      case _ => {
+        s"//*[" +
+          s"contains(@text, '$key') " +
+          s"or contains(@resource-id, '$key') " +
+          s"or contains(@content-desc, '$key') " +
+          s"or contains(@name, '$key') " +
+          s"or contains(@label, '$key') " +
+          s"or contains(name(), '$key') " +
+          s"]"
+      }
     }
   }
 
@@ -73,42 +89,40 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
     * @param key
     * @return
     */
-  def tree(key:String=""): Map[String, Any] ={
-    if(key.isEmpty){
-      log.info(RichData.toPrettyXML(pageSource))
-      Map[String, Any]()
-    }else{
+  def tree(key:String="//*"): Map[String, Any] ={
       val nodes=RichData.parseXPath(keyToXPath(key), RichData.toXML(pageSource))
       nodes.foreach(node=>{
+        log.info("xpath="+node.get("loc"))
         log.info(node)
+        log.info("")
       })
       log.info("return first")
-      nodes(0)
-    }
+      nodes.headOption.getOrElse(Map[String, Any]())
   }
 
   //todo: not test
   def crawl(conf:String = "",  resultDir:String=""): Unit ={
     var crawler:Crawler=new Crawler
-    if(conf.nonEmpty) {
-      crawler.loadConf(conf)
-    }
-    crawler.conf.currentDriver.toLowerCase match {
-      case "android"=>{
+    driver.getClass.getSimpleName match {
+      case "AndroidDriver"=>{
         crawler=new AndroidCrawler
       }
-      case "ios" => {
+      case "IOSDriver" => {
         crawler=new IOSCrawler
       }
       case _ =>{
-        log.trace("请指定currentDriver为Android或者iOS")
+        log.warn("never heard this driver before")
       }
+    }
+    if(conf.nonEmpty) {
+      crawler.loadConf(conf)
     }
     if(resultDir.nonEmpty){
       crawler.conf.resultDir=resultDir
     }
     crawler.conf.startupActions.clear()
-
+    crawler.log.setLevel(Level.TRACE)
+    crawler.conf.maxDepth=3
     crawler.start(driver)
 
   }

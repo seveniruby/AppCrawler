@@ -38,7 +38,7 @@ class AndroidCrawler extends Crawler {
   }
 
   override def getUrl(): String = {
-    //selendroid和appium在这块上不一致. api不一样.  appium不遵从标准. 需要改进
+    //todo:selendroid和appium在这块上不一致. api不一样.  appium不遵从标准. 需要改进
     var screenName = automationName.toLowerCase() match {
       case "appium" => {
         doAppium(driver.asInstanceOf[AndroidDriver[WebElement]].currentActivity()).getOrElse("").split('.').last
@@ -49,7 +49,7 @@ class AndroidCrawler extends Crawler {
     }
     val baseUrl=super.getUrl()
     if(baseUrl!=""){
-      screenName = s"${screenName}_${super.getUrl()}"
+      screenName = s"${screenName}-${baseUrl}"
     }
     log.info(s"url=${screenName}")
     screenName

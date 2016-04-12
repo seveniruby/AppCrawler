@@ -1,6 +1,6 @@
 {
   "pluginList" : [ "TagLimitPlugin" , "LogPlugin"],
-  "saveScreen" : false,
+  "saveScreen" : true,
   "currentDriver" : "android",
   "maxTime" : 10800,
   "resultDir" : "",
@@ -32,6 +32,7 @@
   "defineUrl" : [
     "//*[@resource-id='com.xueqiu.android:id/indicator']//*[@selected='true']",
     "//*[@resource-id='com.xueqiu.android:id/tab_name' and @selected='true']",
+    "//UIANavigationBar[1]",
     "//*[contains(@name, '_title')]",
     "//*[contains(@resource-id, 'action_bar_title')]"
   ],
@@ -45,7 +46,14 @@
     "//*[@resource-id='android:id/action_bar_title']",
     "//*[@name='nav_icon_back']",
     "//UIAButton[@name='取消']", "//UIAButton[@name='关闭']", "//UIAButton[@name='首页']" ],
-  "firstList" : [ "//android.widget.ListView//android.widget.TextView", "//android.widget.ListView//android.widget.Button", "//UIAWindow[3]//UIAButton", "//UIAWindow[2]//UIAButton", "//UIAWindow[1]//UIATableView//UIATableCell[@name!='']", "//UIAWindow[1]//UIAStaticText//UIATableCell[@dom!='' and @name!='']" ],
+  "firstList" : [
+    "//UIAWindow[3]//*[not(ancestor-or-self::UIAStatusBar)]",
+    "//UIAWindow[2]//*[not(ancestor-or-self::UIAStatusBar)]",
+    "//android.widget.ListView//android.widget.TextView",
+    "//android.widget.ListView//android.widget.Button",
+    "//UIAWindow[1]//UIATableView//UIATableCell[@name!='']",
+    "//UIAWindow[1]//UIAStaticText//UIATableCell[@dom!='' and @name!='']"
+  ],
   "selectedList" : [
     "//*[@resource-id!='' and not(contains(name(), 'Layout'))]",
     "//*[@content-desc!='' and not(contains(name(), 'Layout'))]",
@@ -136,5 +144,5 @@
     "idOrName" : "//*[ contains(@resource-id, 'hq_center_image') ]",
     "times" : 1
   } ],
-  "startupActions" : [ "scroll left", "scroll left", "scroll left", "scroll left", "scroll left", "scroll down" ]
+  "startupActions" : [ "scroll left", "scroll left", "scroll left", "scroll left", "scroll down" ]
 }

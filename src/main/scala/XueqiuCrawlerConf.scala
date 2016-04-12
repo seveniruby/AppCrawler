@@ -58,10 +58,11 @@ class XueqiuCrawlerConf extends CrawlerConf {
 
   /** url黑名单.用于排除某些页面 */
   blackUrlList = ListBuffer(
+    "WriteStatus.*",
+    "Browser.*",
     "StockMoreInfo.*",
     "StockDetail.*",
     "UserProfile.*",
-
     "消息",
     "MyselfUser",
     ".*消息.*",
@@ -132,14 +133,15 @@ class XueqiuCrawlerConf extends CrawlerConf {
   elementActions += scala.collection.mutable.Map("idOrName" -> "password", "action" -> "password", "times" -> 1)
   elementActions += scala.collection.mutable.Map("idOrName" -> "button_next", "action" -> "click", "times" -> 1)
   elementActions += scala.collection.mutable.Map("idOrName" -> "点此.*", "action" -> "click", "times" -> 0)
-  elementActions += scala.collection.mutable.Map("idOrName" -> "不保存", "action" -> "click", "times" -> 0)
-  elementActions += scala.collection.mutable.Map("idOrName" -> "确定", "action" -> "click", "times" -> 0)
-  elementActions += scala.collection.mutable.Map("idOrName" -> "关闭", "action" -> "click", "times" -> 0)
-  elementActions += scala.collection.mutable.Map("idOrName" -> "取消", "action" -> "click", "times" -> 0)
   elementActions += scala.collection.mutable.Map("idOrName" -> "稍后再说", "action" -> "click", "times" -> 0)
   elementActions += scala.collection.mutable.Map("idOrName" -> "这里可以.*", "action" -> "click", "times" -> 0)
   elementActions += scala.collection.mutable.Map("idOrName" -> ".*搬到这里.*", "action" -> "click", "times" -> 0)
   elementActions += scala.collection.mutable.Map("idOrName" -> "tip_click_position", "action" -> "click", "times" -> 0)
+  elementActions += scala.collection.mutable.Map("idOrName" -> "//*[contains(@resource-id, 'com.xueqiu.android:id/hq_center_image')]", "action" -> "click", "times" -> 1)
+  elementActions += scala.collection.mutable.Map("idOrName" -> "不保存", "action" -> "click", "times" -> 0)
+  elementActions += scala.collection.mutable.Map("idOrName" -> "确定", "action" -> "click", "times" -> 0)
+  elementActions += scala.collection.mutable.Map("idOrName" -> "关闭", "action" -> "click", "times" -> 0)
+  elementActions += scala.collection.mutable.Map("idOrName" -> "取消", "action" -> "click", "times" -> 0)
 
 
   elementActions += scala.collection.mutable.Map("idOrName" -> "请输入手机号或邮箱登录", "action" -> "15600534760", "times" -> 1)
