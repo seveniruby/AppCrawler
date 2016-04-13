@@ -8,7 +8,7 @@ case class UrlElement(url: String, tag: String, id: String, name: String, loc:St
   //定义url是遍历的关键. 这是一门艺术
   override def toString: String = {
     //url_[parent id]-tag-id
-    s"${url}_${"\"([^\"/]*)\"".r.findAllMatchIn(loc).map(_.subgroups).toList.flatten.mkString("-")}-${id}"
+    s"${url}_${"\"([^\"/]*)\"".r.findAllMatchIn(loc).map(_.subgroups).toList.flatten.mkString("-")}"
   }
   def toFileName(): String ={
     toString

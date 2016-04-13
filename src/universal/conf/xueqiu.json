@@ -1,5 +1,5 @@
 {
-  "pluginList" : [ "TagLimitPlugin" , "LogPlugin"],
+  "pluginList" : [ "TagLimitPlugin"],
   "saveScreen" : true,
   "currentDriver" : "android",
   "maxTime" : 10800,
@@ -47,6 +47,8 @@
     "//*[@name='nav_icon_back']",
     "//UIAButton[@name='取消']", "//UIAButton[@name='关闭']", "//UIAButton[@name='首页']" ],
   "firstList" : [
+    "//UIACollectionView//*",
+    "//UIAPopover//*",
     "//UIAWindow[3]//*[not(ancestor-or-self::UIAStatusBar)]",
     "//UIAWindow[2]//*[not(ancestor-or-self::UIAStatusBar)]",
     "//android.widget.ListView//android.widget.TextView",
@@ -117,6 +119,10 @@
     "times" : 0
   }, {
     "action" : "click",
+    "idOrName" : "Cancel",
+    "times" : 0
+  }, {
+    "action" : "click",
     "idOrName" : "这里可以.*",
     "times" : 0
   }, {
@@ -143,6 +149,18 @@
     "action" : "click",
     "idOrName" : "//*[ contains(@resource-id, 'hq_center_image') ]",
     "times" : 1
-  } ],
+  }, {
+    "action" : "click",
+    "idOrName" : "icon quotationinformation day",
+    "times" : 1
+  }, {
+    "action" : "click",
+    "idOrName" : "icon stock close",
+    "times" : 0
+  }, {
+    "action" : "click",
+    "idOrName" : "//UIAStaticText[@name='行情数据']",
+    "times" : 2
+  }],
   "startupActions" : [ "scroll left", "scroll left", "scroll left", "scroll left", "scroll down" ]
 }

@@ -33,7 +33,6 @@ object RichData extends CommonLog{
   }
 
   def parseXPath(xpath:String, pageDom:Document): List[Map[String, Any]] ={
-    val nodeMap=mutable.Map[String, Any]()
     val nodesMap=ListBuffer[Map[String, Any]]()
     val xPath: XPath = XPathFactory.newInstance().newXPath()
     val compexp = xPath.compile(xpath)
@@ -48,6 +47,7 @@ object RichData extends CommonLog{
     node match {
       case nodeList:NodeList=>{
         0 until nodeList.getLength foreach (i => {
+          val nodeMap=mutable.Map[String, Any]()
           val node=nodeList.item(i)
           val path=ListBuffer[String]()
           //递归获取路径,生成可定位的xpath表达式
@@ -63,7 +63,7 @@ object RichData extends CommonLog{
                 ){
                   //appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
                   //todo: 帮appium打补丁
-                  if(kv.getName=="name" && kv.getValue.size>6){
+                  if(kv.getName=="name" && kv.getValue.size>20){
                     log.trace(s"${kv.getName}=${kv.getValue} name size too long")
                   }else {
                     xpath += s"@${kv.getName}=" + "\"" + kv.getValue.replace("\"", "\\\"") + "\""
