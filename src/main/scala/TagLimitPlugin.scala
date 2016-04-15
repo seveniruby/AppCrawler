@@ -5,7 +5,7 @@
   */
 class TagLimitPlugin extends Plugin{
   private val tagLimit: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.Map()
-  private val tagLimitMax=3
+  private val tagLimitMax=5
   override def beforeElementAction(element: UrlElement): Unit ={
     val key=element.toTagPath()
     log.trace(s"tag path = ${key}")

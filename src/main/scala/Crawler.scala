@@ -46,6 +46,8 @@ class Crawler extends CommonLog {
   private var screenWidth = 0
   private var screenHeight = 0
 
+  var appName=""
+  var lastAppName=""
   var pageSource = ""
   private var pageDom: Document = null
   private var backRetry = 0
@@ -283,6 +285,11 @@ class Crawler extends CommonLog {
     if (urlStack.filter(_.matches("Launcher.*")).nonEmpty) {
       log.info(s"maybe back to desktop ${urlStack.reverse.mkString("-")}")
       needExit = true
+    }
+    //跳到了其他app
+    if(appName!=lastAppName && lastAppName.nonEmpty){
+      log.info(s"jump to other app appName=${appName} lastAppName=${lastAppName}")
+      return true
     }
     //url黑名单
     if (conf.blackUrlList.filter(urlStack.head.matches(_)).nonEmpty) {
@@ -846,7 +853,11 @@ class Crawler extends CommonLog {
   def saveLog(): Unit = {
     log.trace("save log")
     //记录点击log
-    File(s"${conf.resultDir}/clickedList.log").writeAll(clickedElementsList.reverse.map(_.toLoc()).mkString("\n"))
+    var index=0
+    File(s"${conf.resultDir}/clickedList.log").writeAll(clickedElementsList.reverse.map(n=>{
+      index+=1
+      List(index, n.toFileName, n.toLoc, n.toTagPath).mkString("\n")
+    }).mkString("\n"))
     File(s"${conf.resultDir}/elementList.log").writeAll(elements.mkString("\n"))
     File(s"${conf.resultDir}/allElements.log").writeAll(allElementsRecord.map(_.toLoc()).mkString("\n"))
 

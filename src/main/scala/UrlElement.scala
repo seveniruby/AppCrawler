@@ -6,16 +6,28 @@ case class UrlElement(url: String, tag: String, id: String, name: String, loc:St
   //比如某个输入框被命名为url=xueqiu id=input, 那么就只能被点击一次
   //如果url修改为url=xueqiu/xxxActivity id=input 就可以被点击多次
   //定义url是遍历的关键. 这是一门艺术
+  /**
+    * 可被当作文件名的唯一标记
+    * @return
+    */
   def toFileName(): String ={
     //url_[parent id]-tag-id
     s"${url}_${"\"([^/0-9][^\" =]*)\"".r.findAllMatchIn(loc).map(_.subgroups).toList.flatten.
       map(_.split("/").lastOption.getOrElse("")).mkString("-")}".take(200)
   }
 
+  /**
+    * 唯一的定位标记
+    * @return
+    */
   def toLoc(): String ={
     s"${url}\t${loc}\t${tag}\t${id}\t${name}"
   }
 
+  /**
+    * 提取元素的tag组成的路径
+    * @return
+    */
   def toTagPath(): String ={
     //相同url下的相同元素类型控制点击额度
     //s"${element.url}_${element.tag}_${element.loc}".replaceAll("@index=[^ ]*", "") //replaceAll("\\[[^\\[]*$", "")
