@@ -9,15 +9,59 @@ import org.openqa.selenium.remote.DesiredCapabilities
 import org.scalatest._
 import org.scalatest.selenium.WebBrowser
 import org.scalatest.selenium.WebBrowser.XPathQuery
+import org.scalatest.time.{Seconds, Span}
 
 /**
   * Created by seveniruby on 16/3/26.
   */
-class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with BeforeAndAfterAll with CommonLog{
+class AppiumDSL extends FunSuite
+  with ShouldMatchers
+  with WebBrowser
+  with BeforeAndAfterAll
+  with BeforeAndAfterEach with CommonLog{
+  import org.scalatest.prop.TableDrivenPropertyChecks._
+
   val capabilities = new DesiredCapabilities()
   var appiumUrl="http://127.0.0.1:4723/wd/hub"
 
   implicit var driver : AppiumDriver[WebElement] = _
+
+
+  private def initAppium(): Unit ={
+    setCaptureDir(".")
+    implicitlyWait(Span(10, Seconds))
+    //login()
+
+    if(tree("稍后再说").nonEmpty){
+      click on see("稍后再说")
+    }
+  }
+
+
+  def Android(): Unit = {
+    config("appPackage", "com.xueqiu.android")
+    config("appActivity", "com.xueqiu.android.view.WelcomeActivityAlias")
+    config("deviceName", "demo")
+    appium("http://127.0.0.1:4730/wd/hub")
+
+  }
+
+  def iOS(sim: Boolean = false): Unit = {
+    val app = if (sim) {
+      "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
+        "Build/Products/Debug-iphonesimulator/Snowball.app"
+    } else {
+      "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
+        "Build/Products/Debug-iphoneos/Snowball.app"
+    }
+    config("app", app)
+    config("bundleId", "com.xueqiu")
+    config("fullReset", true)
+    config("noReset", false)
+    config("deviceName", "iPhone 6")
+    config("platformVersion", "9.2")
+    config("autoAcceptAlerts", "true")
+  }
 
 
   def config(key:String, value:Any): Unit ={
@@ -25,6 +69,10 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
   }
   def send(keys:String): Unit ={
     driver.getKeyboard.sendKeys(keys)
+  }
+
+  def sleep(seconds: Int=1): Unit ={
+    Thread.sleep(seconds*1000)
   }
 
   def see(key:String): XPathQuery ={
@@ -40,7 +88,7 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
     captureTo(s"${index}.jpg")
   }
 
-  def appium(url:String): Unit ={
+  def appium(url:String="http://127.0.0.1:4723/wd/hub"): Unit ={
     appiumUrl=url
     //todo: 无法通过url来确定是否是android, 需要改进
     println(capabilities)
@@ -53,6 +101,7 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
     }else{
       driver=new IOSDriver[WebElement](new URL(appiumUrl), capabilities)
     }
+
   }
 
   def keyToXPath(key:String): String ={
@@ -67,6 +116,7 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
           s"or matches(@content-desc, '$key') " +
           s"or matches(@name, '$key') " +
           s"or matches(@label, '$key') " +
+          s"or matches(@value, '$key') " +
           s"or matches(name(), '$key') " +
           s"]"
       }
@@ -77,6 +127,7 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
           s"or contains(@content-desc, '$key') " +
           s"or contains(@name, '$key') " +
           s"or contains(@label, '$key') " +
+          s"or contains(@value, '$key') " +
           s"or contains(name(), '$key') " +
           s"]"
       }
@@ -90,6 +141,7 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
     * @return
     */
   def tree(key:String="//*"): Map[String, Any] ={
+    log.info(s"find by key = ${key}")
       val nodes=RichData.parseXPath(keyToXPath(key), RichData.toXML(pageSource))
       nodes.foreach(node=>{
         log.info("xpath="+node.get("loc"))
@@ -122,7 +174,7 @@ class AppiumDSL extends FunSuite with ShouldMatchers with WebBrowser with Before
     }
     crawler.conf.startupActions.clear()
     crawler.log.setLevel(Level.TRACE)
-    crawler.conf.maxDepth=3
+    crawler.conf.maxDepth=1
     crawler.start(driver)
 
   }

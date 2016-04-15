@@ -1,3 +1,4 @@
+import org.scalatest.Tag
 import org.scalatest.time.{Seconds, Span}
 
 /**
@@ -5,41 +6,12 @@ import org.scalatest.time.{Seconds, Span}
   */
 class TestSelenium extends AppiumDSL {
 
-  override def beforeAll(): Unit ={
+  override def beforeAll(): Unit = {
     //config("app", "/Users/seveniruby/Downloads/xueqiu.apk")
-    iOS()
-    setCaptureDir(".")
-    implicitlyWait(Span(10, Seconds))
-    //login()
-
-    if(tree("稍后再说").nonEmpty){
-      click on see("稍后再说")
-    }
-  }
-
-  def Android(): Unit ={
-    config("appPackage", "com.xueqiu.android")
-    config("appActivity", "com.xueqiu.android.view.WelcomeActivityAlias")
-    config("deviceName", "demo")
-    appium("http://127.0.0.1:4730/wd/hub")
 
   }
 
-  def iOS(): Unit ={
-    config(
-      "app",
-      "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
-        "Build/Products/Debug-iphoneos/Snowball.app"
-    )
-
-    config("bundleId", "com.xueqiu")
-    config("fullReset", true)
-    config("noReset", false)
-    config("deviceName", "demo")
-    appium("http://127.0.0.1:4723/wd/hub")
-  }
-
-  def login(): Unit ={
+  def login(): Unit = {
     Thread.sleep(5000)
     click on see("account")
     click on id("account")
@@ -55,7 +27,8 @@ class TestSelenium extends AppiumDSL {
     click on id("tip_step_three")
     save
   }
-  test("搜索"){
+
+  test("搜索") {
     println(pageSource)
     click on id("home_search")
     save
@@ -70,7 +43,7 @@ class TestSelenium extends AppiumDSL {
     save
   }
 
-  test("股票行情"){
+  test("股票行情") {
     click on see("自选")
     save
     click on see("股票")
@@ -90,7 +63,7 @@ class TestSelenium extends AppiumDSL {
     click on see("球友")
   }
 
-  test("添加组合"){
+  test("添加组合") {
     tree()
     tree("自选")
     click on see("自选")
@@ -143,19 +116,19 @@ class TestSelenium extends AppiumDSL {
 
   }
 
-  test("股票"){
+  test("股票") {
     click on see("自选")
     tree("//android.widget.ImageView")
     click on see("股票")
     tree("//android.widget.ImageView")
     click on see("大港股份")
     tree()
-    tree("action_bar_title")("text") should be equals("大港股份")
+    tree("action_bar_title")("text") should be equals ("大港股份")
     log.warn("Start Crawler")
     crawl("/Users/seveniruby/projects/LBSRefresh/src/universal/conf/xueqiu.json", "/Users/seveniruby/temp/crawl")
   }
 
-  test("组合"){
+  test("组合") {
     tree("组合")
     click on see("//UIATabBar/UIAButton[@name=\"组合\"]")
     click on see("组合风云榜")
@@ -165,7 +138,7 @@ class TestSelenium extends AppiumDSL {
     crawl("/Users/seveniruby/projects/LBSRefresh/src/universal/conf/xueqiu.json", "/Users/seveniruby/temp/crawl")
   }
 
-  test("7.6.1股票"){
+  test("7.6.1股票") {
     click on see("自选")
     click on see("雪球100")
     tree()
@@ -174,7 +147,65 @@ class TestSelenium extends AppiumDSL {
 
   }
 
-  override def afterAll(): Unit ={
+  test("登录", Tag("7.7"), Tag("iOS")) {
+    click on see("手机号")
+    send("15600534760")
+    click on see("//UIASecureTextField")
+    send("hys2xueqiu")
+    click on see("登 录")
+    click on see("//UIAButton[@path=\"/0/0/3/5\"]")
+    tree("seveniruby")("name") should be equals "seveniruby"
+    log.info("tree first")
+    tree()
+    log.info("crawl")
+    crawl("/Users/seveniruby/projects/LBSRefresh/src/universal/conf/xueqiu.json", "/Users/seveniruby/temp/crawl4")
+    log.info("tree sxx")
+    tree()
+  }
+
+  test("登录driver版本", Tag("7.7"), Tag("iOS")) {
+    click on see("手机号")
+    send("15600534760")
+    click on see("//UIASecureTextField")
+    send("hys2xueqiu")
+    click on see("登 录")
+    driver.findElementByXPath("//UIAButton[@path=\"/0/0/3/5\"]").click()
+    tree("seveniruby")("name") should be equals "seveniruby"
+    log.info("tree first")
+    tree()
+    log.info("crawl")
+    crawl("/Users/seveniruby/projects/LBSRefresh/src/universal/conf/xueqiu.json", "/Users/seveniruby/temp/crawl4")
+    log.info("tree sxx")
+    tree()
+  }
+
+  test("登录验证ipad", Tag("7.7"), Tag("iOS")) {
+    iOS()
+    click on see("手机号")
+    send("15600534760")
+    click on see("//UIASecureTextField")
+    send("hys2xueqiu")
+    click on see("登 录")
+    tree()
+    tree("//UIAButton")
+    //ipad和iphone的path并不一致
+    click on see("//UIAButton[@path=\"/0/0/0/5\"]")
+    tree("seveniruby")("name") should be equals "seveniruby"
+  }
+
+
+  test("登录验证iphone", Tag("7.7"), Tag("iOS")) {
+    iOS(true)
+    click on see("手机号")
+    send("15600534760")
+    click on see("//UIASecureTextField")
+    send("hys2xueqiu")
+    click on see("登 录")
+    click on see("//UIAButton[@path=\"/0/0/3/5\"]")
+    tree("seveniruby")("name") should be equals "seveniruby"
+  }
+
+  override def afterAll(): Unit = {
     println("afterall")
     //driver.removeApp(capabilities.getCapability("bundleId").toString)
     quit()

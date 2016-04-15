@@ -8,6 +8,7 @@ class TagLimitPlugin extends Plugin{
   private val tagLimitMax=3
   override def beforeElementAction(element: UrlElement): Unit ={
     val key=element.toTagPath()
+    log.trace(s"tag path = ${key}")
     if(!tagLimit.contains(key)){
       tagLimit(key)=tagLimitMax
     }

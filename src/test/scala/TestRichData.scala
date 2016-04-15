@@ -677,7 +677,35 @@ class TestRichData extends FunSuite with Matchers{
     value.foreach(println)
     println(value)
 
+    val appName=RichData.parseXPath("//UIAApplication", dom)
+    appName.foreach(println)
+    println(appName.head.getOrElse("name", ""))
+    appName.head.getOrElse("name", "") should be equals("雪球")
+
+
 
   }
 
+  test("android to tag path"){
+    val str=
+      """
+        |//android.widget.FrameLayout[@index="0"]/android.view.View[@index="0" and @resource-id="android:id/decor_content_parent"]/android.widget.FrameLayout[@index="0" and @resource-id="android:id/content"]/android.widget.LinearLayout[@index="0"]/android.widget.TabHost[@index="2" and @resource-id="android:id/tabhost"]/android.widget.LinearLayout[@index="0"]/android.widget.TabWidget[@index="0" and @resource-id="android:id/tabs"]/android.widget.RelativeLayout[@index="0"]/android.widget.TextView[@index="1" and @resource-id="com.xueqiu.android:id/tab_name"]
+        |
+      """.stripMargin
+
+    val ele=UrlElement("", "", "", "", str)
+    println(ele.toTagPath())
+    println(ele.toFileName())
+
+  }
+  test("ios to tag path"){
+    val str=
+      """
+        |//UIAApplication[@name="雪球" and @path="/0"]/UIAWindow[@path="/0/0"]/UIATableView[@path="/0/0/1"]/UIATableCell[@name="恒瑞医药业绩会，高管说了啥？" and @path="/0/0/1/10"]/UIAStaticText[@name="恒瑞医药业绩会，高管说了啥？" and @path="/0/0/1/10/0"]
+      """.stripMargin
+    val ele=UrlElement("", "", "", "", str)
+    println(ele.toTagPath())
+    println(ele.toFileName())
+
+  }
 }

@@ -50,11 +50,12 @@ class IOSCrawler extends Crawler {
     */
   override def getUrl(): String = {
     val superUrl=super.getUrl()
-    if(superUrl.nonEmpty){
-      superUrl
-    }else{
-      getSchema().takeRight(5)
-    }
+    val appName=getAllElements("//UIAApplication").head.getOrElse("name", "").toString
+    log.trace(s"appName = ${appName}")
+    log.trace(pageSource)
+    log.trace(getAllElements("//UIAApplication").head)
+    val title=getAllElements("//UIANavigationBar").map(_.getOrElse("name", "").toString).mkString("")
+    List(appName, title, superUrl).filter(_.nonEmpty).mkString("-")
   }
 
   override def getRuleMatchNodes(): List[scala.collection.immutable.Map[String, Any]] = {

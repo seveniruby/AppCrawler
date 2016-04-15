@@ -27,7 +27,7 @@ class Crawler extends CommonLog {
   var fileAppender: FileAppender = _
 
   private val elements: scala.collection.mutable.Map[String, Boolean] = scala.collection.mutable.Map()
-  private var allElementsRecord = ListBuffer[String]()
+  private var allElementsRecord = ListBuffer[UrlElement]()
   private var isSkip = false
   /** 元素的默认操作 */
   var currentElementAction = "click"
@@ -38,8 +38,8 @@ class Crawler extends CommonLog {
   private var nowTimeStamp = 0L
   val strtTimestamp = getTimeStamp()
   //todo:留作判断当前界面是否变化
-  private var currentSchema = ""
-  private var lastSchema = ""
+  private var currentContentHash = ""
+  private var lastContentHash = ""
   protected var automationName = "appium"
   protected var platformName = ""
 
@@ -136,13 +136,13 @@ class Crawler extends CommonLog {
     log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
     refreshPage()
     saveLog()
+    saveDom()
     saveScreen(true)
     pluginClasses.foreach(p => p.stop())
   }
 
   def runStartupScript(): Unit = {
     log.info("run startup script")
-    refreshPage()
     conf.startupActions.foreach(action => {
       scrollAction(action.split(" ").last)
       refreshPage()
@@ -153,8 +153,6 @@ class Crawler extends CommonLog {
       Thread.sleep(1000)
     })
     swipeRetry = 0
-
-
   }
 
   def setupAppium(): Unit = {
@@ -217,11 +215,11 @@ class Crawler extends CommonLog {
   }
 
   /**
-    * 尝试分析当前的页面的唯一标记
+    * 判断内容是否变化
     *
     * @return
     */
-  def getSchema(): String = {
+  def getContentHash(): String = {
     //var nodeList = getAllElements("//*[not(ancestor-or-self::UIATableView)]")
     //nodeList = nodeList intersect getAllElements("//*[not(ancestor-or-self::android.widget.ListView)]")
 
@@ -234,14 +232,23 @@ class Crawler extends CommonLog {
     //>             label="" name="分时" path="/0/0/6/0/0" valid="true" value="0"
     md5(nodeList.filter(node => !schemaBlackList.contains(node("tag"))).
       map(node => node.getOrElse("loc", "noloc")+node.getOrElse("value", "").toString ).
-      mkString(""))
+      mkString("\n"))
+  }
+
+  /**
+    * 获得布局Hash
+    */
+  def getSchema(): String ={
+    val nodeList = getAllElements("//*[not(ancestor-or-self::UIAStatusBar)]")
+    nodeList.foreach(log.trace)
+    md5(nodeList.map(getUrlElementByMap(_).toTagPath()).distinct.mkString("\n"))
   }
 
 
   def getUrl(): String = {
     if (conf.defineUrl.nonEmpty) {
       val urlString = conf.defineUrl.flatMap(getAllElements(_)).distinct.map(x => {
-        log.trace(x); x("name")
+        x("name")
       }).mkString("-")
       log.info(s"defineUrl=$urlString")
       return urlString
@@ -279,7 +286,7 @@ class Crawler extends CommonLog {
     }
     //url黑名单
     if (conf.blackUrlList.filter(urlStack.head.matches(_)).nonEmpty) {
-      log.info("in blackUrlList should return")
+      log.info(s"${urlStack.head} in blackUrlList should return")
       return true
     }
     //滚动多次没有新元素
@@ -291,7 +298,7 @@ class Crawler extends CommonLog {
     //超过遍历深度
     log.info(s"urlStack=${urlStack} baseUrl=${conf.baseUrl} maxDepth=${conf.maxDepth}")
     //大于最大深度并且是在进入过基础Url
-    if (urlStack.length > conf.maxDepth && conf.baseUrl.map(urlStack.last.matches(_)).contains(true)) {
+    if (urlStack.length > conf.maxDepth) {
       log.info(s"urlStack.depth=${urlStack.length} > maxDepth=${conf.maxDepth}")
       return true
     }
@@ -328,6 +335,8 @@ class Crawler extends CommonLog {
     var appendElements = List[immutable.Map[String, Any]]()
     var commonElements = List[immutable.Map[String, Any]]()
 
+    val allElements=getAllElements("//*")
+    log.trace(s"all elements = ${allElements.size}")
     conf.firstList.foreach(xpath => {
       firstElements ++= getAllElements(xpath)
     })
@@ -372,6 +381,7 @@ class Crawler extends CommonLog {
           case Some(v) => {
             log.trace("get page source success")
             pageSource = v
+            log.trace(s"page source \n${pageSource}")
             pageSource = RichData.toPrettyXML(pageSource)
             pageDom = RichData.toXML(pageSource)
             refreshFinish = true
@@ -413,10 +423,10 @@ class Crawler extends CommonLog {
     //val windows=doAppium(driver.getWindowHandles).getOrElse("")
     //val windows = ""
     //log.trace(s"windows=${windows}")
-    lastSchema = currentSchema
-    currentSchema = getSchema()
-    log.info(s"currentSchema=$currentSchema lastSchema=$lastSchema")
-    if (currentSchema != lastSchema) {
+    lastContentHash = currentContentHash
+    currentContentHash = getContentHash()
+    log.info(s"currentContentHash=$currentContentHash lastContentHash=$lastContentHash")
+    if (currentContentHash != lastContentHash) {
       saveLog()
     }
     afterUrlRefresh()
@@ -428,10 +438,11 @@ class Crawler extends CommonLog {
   }
 
   def isClicked(ele: UrlElement): Boolean = {
-    if (elements.contains(ele.toString())) {
-      elements(ele.toString())
+    log.trace(ele.toString)
+    if (elements.contains(ele.toLoc())) {
+      elements(ele.toLoc())
     } else {
-      log.trace(s"element=${ele} first show, need click")
+      log.trace(s"element=${ele.toLoc()} first show, need click")
       false
     }
   }
@@ -457,12 +468,14 @@ class Crawler extends CommonLog {
   }
 
   def doElementAction(element: UrlElement = clickedElementsList.head): Unit = {
-    log.info(s"clickedElementsList last 5 = \n${clickedElementsList.slice(0, 5).map(_.loc).mkString("\n")}")
-    beforeElementAction(element)
     log.info(s"current element = ${element}")
     log.info(s"current element url = ${element.url}")
     log.info(s"current element xpath = ${element.loc}")
-    elements(element.toString()) = true
+    log.info(s"current element tag path = ${element.toTagPath()}")
+    log.info(s"current element file name = ${element.toFileName()}")
+    log.info(s"current element uri = ${element.toLoc()}")
+    beforeElementAction(element)
+    elements(element.toLoc()) = true
     //保存截屏和log
     if (getElementAction() != "skip") {
       doAppiumAction(element, getElementAction())
@@ -526,8 +539,6 @@ class Crawler extends CommonLog {
 
   def getAvailableElement(): Seq[UrlElement] = {
     var all = getSelectedElements().getOrElse(List[immutable.Map[String, Any]]())
-    allElementsRecord ++= all.map(m => s"${url}->${m("loc")}->${m("value").toString.take(20)}")
-    allElementsRecord = allElementsRecord.distinct
     log.info(s"all nodes length=${all.length}")
     //去掉黑名单, 这样rule优先级高于黑名单
     all = all.filter(isBlack(_) == false)
@@ -539,13 +550,16 @@ class Crawler extends CommonLog {
     var allElements = all.map(getUrlElementByMap(_))
     //获得所有未点击元素
     log.info(s"all elements length=${allElements.length}")
+
+    allElements.foreach(allElementsRecord.append(_))
+    allElementsRecord = allElementsRecord.distinct
     //过滤已经被点击过的元素
     allElements = allElements.filter(!isClicked(_))
     log.info(s"fresh elements length=${allElements.length}")
     //记录未被点击的元素
     allElements.foreach(e => {
-      if (!elements.contains(e.toString())) {
-        elements(e.toString()) = false
+      if (!elements.contains(e.toLoc())) {
+        elements(e.toLoc()) = false
         log.info(s"first found ${e}")
       }
     })
@@ -565,6 +579,7 @@ class Crawler extends CommonLog {
       log.info("maxTime out Quit")
       needExit = true
     }
+    //是否应该退出
     if (needExit) {
       log.warn("need exit")
       return
@@ -639,17 +654,17 @@ class Crawler extends CommonLog {
         endY = 0.8
       }
       case _ => {
-        startX = 0.9
-        startY = 0.9
-        endX = 0.1
-        endY = 0.1
+        startX = 0.8
+        startY = 0.8
+        endX = 0.2
+        endY = 0.2
       }
     }
 
     doAppium(
       driver.swipe(
         (screenWidth * startX).toInt, (screenHeight * startY).toInt,
-        (screenWidth * endX).toInt, (screenHeight * endY).toInt, 500
+        (screenWidth * endX).toInt, (screenHeight * endY).toInt, 1000
       )
     )
 
@@ -673,7 +688,7 @@ class Crawler extends CommonLog {
         swipeRetry += 1
         swipeCountPerUrl(url) += 1
         log.info(s"swipeCount of current Url=${swipeCountPerUrl(url)}")
-        clickedElementsList.push(UrlElement(s"${url}-Scroll", "", "", "", ""))
+        clickedElementsList.push(UrlElement(s"${url}-Scroll${direction}", "", "", "", ""))
         log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
         refreshPage()
         saveDom()
@@ -831,11 +846,9 @@ class Crawler extends CommonLog {
   def saveLog(): Unit = {
     log.trace("save log")
     //记录点击log
-    File(s"${conf.resultDir}/clickedList.log").writeAll(clickedElementsList.reverse.map(e => s"${e} -> ${e.loc}").mkString("\n"))
+    File(s"${conf.resultDir}/clickedList.log").writeAll(clickedElementsList.reverse.map(_.toLoc()).mkString("\n"))
     File(s"${conf.resultDir}/elementList.log").writeAll(elements.mkString("\n"))
-    File(s"${conf.resultDir}/allElements.log").writeAll(allElementsRecord.mkString("\n"))
-    log.trace(s"write ${conf.resultDir}/allElementsSorted.log done")
-    File(s"${conf.resultDir}/allElementsSorted.log").writeAll(allElementsRecord.sorted.mkString("\n"))
+    File(s"${conf.resultDir}/allElements.log").writeAll(allElementsRecord.map(_.toLoc()).mkString("\n"))
 
     File(s"${conf.resultDir}/freemind.mm").writeAll(
       elementTree.generateFreeMind(elementTreeList)
@@ -846,7 +859,7 @@ class Crawler extends CommonLog {
 
   def getLogFileName(): String = {
     s"${conf.resultDir}/${clickedElementsList.length}_" +
-      clickedElementsList.head.toString.replace("\n", "").replaceAll("[ /,]", "").take(200)
+      clickedElementsList.head.toFileName()
   }
 
   def saveDom(): Unit = {
@@ -859,7 +872,7 @@ class Crawler extends CommonLog {
 
   def saveScreen(force:Boolean = false): Unit = {
     //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
-    if (conf.saveScreen && lastSchema != currentSchema || force) {
+    if (conf.saveScreen && lastContentHash != currentContentHash || force) {
       Thread.sleep(100)
       log.info("start screenshot")
       val path = getLogFileName() + ".jpg"
@@ -1025,6 +1038,7 @@ class Crawler extends CommonLog {
         log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
         refreshPage()
         saveLog()
+        saveDom()
         saveScreen(true)
         doAppiumAction(e, action.toString) match {
           case None => {
