@@ -17,7 +17,7 @@ object AppCrawler extends CommonLog{
                            mode:String="",
                            sbt_params: Seq[String]=Seq(),
                            platform: String = "android",
-                           appium:String = "",
+                           appium:String = "http://127.0.0.1:4723/wd/hub/",
                            resultDir: String = "",
                            maxTime:Int = 3600*3,
                            capability: Map[String, String] = Map[String, String]()
@@ -131,22 +131,22 @@ object AppCrawler extends CommonLog{
           crawlerConf.capability ++= Map("app" -> config.app.getAbsoluteFile.getAbsolutePath)
           log.info(s"app path = ${crawlerConf.capability("app")}")
         }
+        if(config.appium.matches("[0-9]+")){
+          crawlerConf.capability++=Map("appium" -> s"http://127.0.0.1:${config.appium}/wd/hub")
+        }else{
+          crawlerConf.capability++=Map("appium" -> config.appium)
+        }
+        log.info(s"appium address = ${crawlerConf.capability.get("appium")}")
 
         //合并capability, 特定平台的capability>通用capability
         crawlerConf.currentDriver.toLowerCase match {
           case "android"=> {
             crawlerConf.androidCapability=crawlerConf.capability++crawlerConf.androidCapability
             crawlerConf.androidCapability ++= config.capability
-            if(config.appium!=""){
-              crawlerConf.androidCapability++=Map("appium"->config.appium)
-            }
           }
           case "ios" => {
             crawlerConf.iosCapability=crawlerConf.capability++crawlerConf.iosCapability
             crawlerConf.iosCapability ++= config.capability
-            if(config.appium!="") {
-              crawlerConf.iosCapability ++= Map("appium" -> config.appium)
-            }
           }
         }
         crawlerConf.maxTime=config.maxTime

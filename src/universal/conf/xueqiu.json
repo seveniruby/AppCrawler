@@ -18,14 +18,12 @@
     "deviceName" : "demo",
     "appPackage" : "com.xueqiu.android",
     "appActivity" : ".view.WelcomeActivityAlias",
-    "appium" : "http://127.0.0.1:4730/wd/hub",
     "app" : ""
   },
   "iosCapability" : {
     "deviceName" : "iPhone 6",
     "bundleId" : "",
     "platformVersion" : "9.2",
-    "appium" : "http://127.0.0.1:4723/wd/hub",
     "autoAcceptAlerts" : "true",
     "app" : ""
   },
@@ -45,7 +43,10 @@
     "//*[@resource-id='android:id/home']",
     "//*[@resource-id='android:id/action_bar_title']",
     "//*[@name='nav_icon_back']",
-    "//UIAButton[@name='取消']", "//UIAButton[@name='关闭']", "//UIAButton[@name='首页']" ],
+    "//*[@name='Back']",
+    "//UIAButton[@name='取消']",
+    "//UIAButton[@name='关闭']",
+    "//UIAButton[@name='首页']" ],
   "firstList" : [
     "//UIACollectionView//*",
     "//UIAPopover//*",

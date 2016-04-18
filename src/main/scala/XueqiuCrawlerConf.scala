@@ -25,7 +25,6 @@ class XueqiuCrawlerConf extends CrawlerConf {
   androidCapability = Map[String, String](
     "appPackage" -> "com.xueqiu.android",
     "appActivity" -> ".view.WelcomeActivityAlias",
-    "appium" -> "http://127.0.0.1:4730/wd/hub",
     "app" -> "http://build.snowballfinance.com/static/apps/com.xueqiu.droid.rc/20160204_165054/xueqiu.apk"
   )
   iosCapability = Map[String, String](
@@ -34,7 +33,6 @@ class XueqiuCrawlerConf extends CrawlerConf {
     "platformVersion" -> "9.2",
     "deviceName" -> "iPhone 6",
     "launchTimeout" -> "120000",
-    "appium" -> "http://127.0.0.1:4723/wd/hub",
     "app" -> "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphoneos/Snowball.app"
     //"app" -> "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app"
   )

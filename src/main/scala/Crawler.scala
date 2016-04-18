@@ -288,7 +288,7 @@ class Crawler extends CommonLog {
     }
     //跳到了其他app
     if(appName!=lastAppName && lastAppName.nonEmpty){
-      log.info(s"jump to other app appName=${appName} lastAppName=${lastAppName}")
+      log.warn(s"jump to other app appName=${appName} lastAppName=${lastAppName}")
       return true
     }
     //url黑名单
@@ -388,7 +388,6 @@ class Crawler extends CommonLog {
           case Some(v) => {
             log.trace("get page source success")
             pageSource = v
-            log.trace(s"page source \n${pageSource}")
             pageSource = RichData.toPrettyXML(pageSource)
             pageDom = RichData.toXML(pageSource)
             refreshFinish = true
@@ -501,7 +500,7 @@ class Crawler extends CommonLog {
   }
 
   def getBackElements(): ListBuffer[immutable.Map[String, Any]] = {
-    conf.backButton.flatMap(getAllElements(_))
+    conf.backButton.flatMap(getAllElements(_).filter(isValid))
   }
 
   def goBack(): Unit = {

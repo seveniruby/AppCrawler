@@ -30,7 +30,7 @@ class CrawlerConf {
     "app"->"",
     "platformName"->"",
     "platformVersion"->"",
-    "deviceName"->"",
+    "deviceName"->"demo",
     "noReset"->"false",
     "autoWebview"->"false",
     "autoLaunch"->"true"
@@ -38,15 +38,13 @@ class CrawlerConf {
   /**android专属配置 最后会和capability合并*/
   var androidCapability=Map[String, Any](
     "appPackage"->"",
-    "appActivity"->"",
-    "appium"->"http://127.0.0.1:4730/wd/hub"
+    "appActivity"->""
   )
   var iosCapability=Map[String, Any](
     "bundleId"->"",
     "autoAcceptAlerts"->"true",
     "platformVersion"->"9.2",
-    "deviceName"-> "iPhone 6",
-    "appium"->"http://127.0.0.1:4723/wd/hub"
+    "deviceName"-> "iPhone 6"
   )
   /**用来确定url的元素定位xpath 他的text会被取出当作url因素*/
   var defineUrl=List[String]()

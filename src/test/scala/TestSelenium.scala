@@ -196,6 +196,9 @@ class TestSelenium extends AppiumDSL {
 
   test("登录验证iphone", Tag("7.7"), Tag("iOS")) {
     iOS(true)
+    appium()
+    tree()
+    tree("//UIAButton")
     click on see("手机号")
     send("15600534760")
     click on see("//UIASecureTextField")

@@ -50,6 +50,7 @@ class IOSCrawler extends Crawler {
     */
   override def getUrl(): String = {
     val superUrl=super.getUrl()
+    lastAppName=appName
     appName=getAllElements("//UIAApplication").head.getOrElse("name", "").toString
     log.trace(s"appName = ${appName}")
     log.trace(getAllElements("//UIAApplication").head)

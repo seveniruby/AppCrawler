@@ -5,10 +5,7 @@ import org.scalatest.selenium.WebBrowser.click
   * Created by seveniruby on 16/4/15.
   */
 class TestAppiumDSL extends AppiumDSL {
-
-
   import org.scalatest.prop.TableDrivenPropertyChecks._
-
   val table = Table(
     ("iPhone 4s", "9.1"),
     ("iPhone 5", "8.1"),
@@ -55,5 +52,4 @@ class TestAppiumDSL extends AppiumDSL {
     log.info("quit")
     quit()
   }
-
 }
