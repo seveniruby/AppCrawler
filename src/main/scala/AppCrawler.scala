@@ -127,15 +127,16 @@ object AppCrawler extends CommonLog{
           log.info("Set Platform=iOS")
           crawlerConf.currentDriver = "iOS"
         }
+        if(config.app.getName.nonEmpty) {
+          crawlerConf.capability ++= Map("app" -> config.app.getAbsoluteFile.getAbsolutePath)
+          log.info(s"app path = ${crawlerConf.capability("app")}")
+        }
 
         //合并capability, 特定平台的capability>通用capability
         crawlerConf.currentDriver.toLowerCase match {
           case "android"=> {
             crawlerConf.androidCapability=crawlerConf.capability++crawlerConf.androidCapability
             crawlerConf.androidCapability ++= config.capability
-            if (config.app.getName!=".") {
-              crawlerConf.androidCapability ++= Map("app" -> config.app.getPath.replace(":/", "://"))
-            }
             if(config.appium!=""){
               crawlerConf.androidCapability++=Map("appium"->config.appium)
             }
@@ -143,9 +144,6 @@ object AppCrawler extends CommonLog{
           case "ios" => {
             crawlerConf.iosCapability=crawlerConf.capability++crawlerConf.iosCapability
             crawlerConf.iosCapability ++= config.capability
-            if (config.app.getName!=".") {
-              crawlerConf.iosCapability ++= Map("app" -> config.app.getPath.replace(":/", "://"))
-            }
             if(config.appium!="") {
               crawlerConf.iosCapability ++= Map("appium" -> config.appium)
             }
