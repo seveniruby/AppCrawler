@@ -28,9 +28,9 @@ class AndroidCrawler extends Crawler {
     //todo: Appium模式太慢
     capabilities.setCapability("automationName", "Appium")
     capabilities.setCapability("unicodeKeyboard", "true")
-    conf.androidCapability.foreach(kv=>capabilities.setCapability(kv._1, kv._2))
+    conf.capability.foreach(kv=>capabilities.setCapability(kv._1, kv._2))
 
-    val url=conf.androidCapability("appium").toString
+    val url=conf.capability("appium").toString
     driver = new AndroidDriver[WebElement](new URL(url), capabilities)
     //driver.launchAp
     log.info(s"driver=${driver}")

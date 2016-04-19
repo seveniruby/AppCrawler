@@ -233,7 +233,7 @@ class Crawler extends CommonLog {
     //---
     //>             label="" name="分时" path="/0/0/6/0/0" valid="true" value="0"
     md5(nodeList.filter(node => !schemaBlackList.contains(node("tag"))).
-      map(node => node.getOrElse("loc", "noloc")+node.getOrElse("value", "").toString ).
+      map(node => node.getOrElse("xpath", "")+node.getOrElse("value", "").toString ).
       mkString("\n"))
   }
 
@@ -275,7 +275,7 @@ class Crawler extends CommonLog {
 
     //id表示android的resource-id或者iOS的name属性
     val id = x.getOrElse("name", "").toString.split('/').last
-    val loc = x.getOrElse("loc", "").toString
+    val loc = x.getOrElse("xpath", "").toString
     UrlElement(url, tag, id, name, loc)
 
   }

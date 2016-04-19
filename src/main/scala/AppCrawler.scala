@@ -118,6 +118,8 @@ object AppCrawler extends CommonLog{
         }
         //判断平台
         crawlerConf.currentDriver = config.platform
+
+
         val fileName=config.app.getName
         if(fileName.matches(".*\\.apk$")){
           log.info("Set Platform=Android")
@@ -127,8 +129,24 @@ object AppCrawler extends CommonLog{
           log.info("Set Platform=iOS")
           crawlerConf.currentDriver = "iOS"
         }
+
+        //合并capability, 命令行>特定平台的capability>通用capability
+        crawlerConf.currentDriver.toLowerCase match {
+          case "android"=> {
+            crawlerConf.capability=crawlerConf.capability++crawlerConf.androidCapability
+          }
+          case "ios" => {
+            crawlerConf.capability=crawlerConf.capability++crawlerConf.iosCapability
+          }
+        }
+        crawlerConf.capability ++= config.capability
+
         if(config.app.getName.nonEmpty) {
-          crawlerConf.capability ++= Map("app" -> config.app.getAbsoluteFile.getAbsolutePath)
+          if(config.app.getPath.matches(".*:/.*")){
+            crawlerConf.capability ++= Map("app" -> config.app.getPath.replace(":/", "://"))
+          }else{
+            crawlerConf.capability ++= Map("app" -> config.app.getAbsolutePath)
+          }
           log.info(s"app path = ${crawlerConf.capability("app")}")
         }
         if(config.appium.matches("[0-9]+")){
@@ -138,17 +156,6 @@ object AppCrawler extends CommonLog{
         }
         log.info(s"appium address = ${crawlerConf.capability.get("appium")}")
 
-        //合并capability, 特定平台的capability>通用capability
-        crawlerConf.currentDriver.toLowerCase match {
-          case "android"=> {
-            crawlerConf.androidCapability=crawlerConf.capability++crawlerConf.androidCapability
-            crawlerConf.androidCapability ++= config.capability
-          }
-          case "ios" => {
-            crawlerConf.iosCapability=crawlerConf.capability++crawlerConf.iosCapability
-            crawlerConf.iosCapability ++= config.capability
-          }
-        }
         crawlerConf.maxTime=config.maxTime
         crawlerConf.resultDir=config.resultDir
 

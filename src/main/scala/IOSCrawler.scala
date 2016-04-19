@@ -33,12 +33,12 @@ class IOSCrawler extends Crawler {
   override def setupAppium():Unit={
     super.setupAppium()
     capabilities.setCapability("platformName", "iOS")
-    conf.iosCapability.foreach{ case (k,v)=>{
+    conf.capability.foreach{ case (k,v)=>{
       capabilities.setCapability(k, v)
     }}
     //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")
     //driver = new XueqiuDriver[WebElement](new URL("http://127.0.0.1:4729/wd/hub"), capabilities)
-    val url=conf.iosCapability("appium").toString
+    val url=conf.capability("appium").toString
     driver = new IOSDriver[WebElement](new URL(url), capabilities)
     //driver.launchApp()
     getDeviceInfo()

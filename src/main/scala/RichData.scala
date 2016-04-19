@@ -123,15 +123,6 @@ object RichData extends CommonLog{
             nodeMap("label") = nodeMap("content-desc")
           }
 
-          //记录定位方式
-          if (nodeMap.contains("bounds")) {
-            nodeMap("loc") = nodeMap("xpath")
-          }
-          if (nodeMap.contains("path")) {
-            //nodeMap("loc") = nodeMap("path")
-            nodeMap("loc") = nodeMap("xpath")
-          }
-
           nodesMap+=(nodeMap.toMap)
         })
       }
