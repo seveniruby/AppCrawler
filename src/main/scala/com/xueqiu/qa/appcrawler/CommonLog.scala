@@ -1,6 +1,7 @@
-import java.io.{File, OutputStreamWriter}
+package com.xueqiu.qa.appcrawler
 
-import org.apache.log4j.spi.LoggerFactory
+import java.io.OutputStreamWriter
+
 import org.apache.log4j._
 
 /**

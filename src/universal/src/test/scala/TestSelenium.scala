@@ -1,3 +1,4 @@
+import com.xueqiu.qa.appcrawler.AppiumDSL
 import org.scalatest.time.{Seconds, Span}
 
 /**

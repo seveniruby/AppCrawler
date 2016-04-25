@@ -1,3 +1,4 @@
+import com.xueqiu.qa.appcrawler.TreeNode
 import org.scalatest.FunSuite
 
 import scala.collection.mutable.ListBuffer

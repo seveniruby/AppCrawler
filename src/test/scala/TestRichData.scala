@@ -1,3 +1,4 @@
+import com.xueqiu.qa.appcrawler.{RichData, UrlElement}
 import org.scalatest.{Matchers, FunSuite}
 
 /**

@@ -1,12 +1,6 @@
-import java.io.File
-
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import org.json4s.native.Serialization._
-import org.json4s.{DefaultFormats, FieldSerializer}
+package com.xueqiu.qa.appcrawler
 
 import scala.collection.mutable.ListBuffer
-import scala.io.Source
 
 /**
   * Created by seveniruby on 16/1/6.

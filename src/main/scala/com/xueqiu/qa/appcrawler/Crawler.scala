@@ -1,3 +1,5 @@
+package com.xueqiu.qa.appcrawler
+
 import java.util.Date
 
 import io.appium.java_client.AppiumDriver
@@ -8,8 +10,8 @@ import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
 import org.w3c.dom.Document
 
 import scala.annotation.tailrec
-import scala.collection.{immutable, mutable}
 import scala.collection.mutable.{ListBuffer, Map}
+import scala.collection.{immutable, mutable}
 import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}
 
@@ -74,7 +76,7 @@ class Crawler extends CommonLog {
     */
   def loadPlugins(): Unit = {
     pluginClasses = conf.pluginList.map(name => {
-      log.info(s"load plugin $name")
+      log.info(s"load com.xueqiu.qa.appcrawler.plugin $name")
       Class.forName(name).newInstance().asInstanceOf[Plugin]
     })
     pluginClasses.foreach(log.info)
@@ -321,7 +323,9 @@ class Crawler extends CommonLog {
     */
   def isBlack(uid: immutable.Map[String, Any]): Boolean = {
     conf.blackList.foreach(b => {
-      if (List(uid("name"), uid("label"), uid("value")).map(_.toString.matches(b)).contains(true)) {
+      if (List(uid("name"), uid("label"), uid("value")).map(x=>{
+        x.toString.matches(b)
+      }).contains(true)) {
         return true
       }
     })

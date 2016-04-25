@@ -1,13 +1,9 @@
+package com.xueqiu.qa.appcrawler
+
 import java.net.URL
 
-import io.appium.java_client.AppiumDriver
 import io.appium.java_client.ios.IOSDriver
-import io.appium.java_client.remote.MobileCapabilityType
 import org.openqa.selenium.WebElement
-import org.openqa.selenium.remote.DesiredCapabilities
-
-import scala.collection.mutable
-import scala.collection.mutable.{ListBuffer, Map}
 
 /**
   * Created by seveniruby on 15/12/10.
@@ -55,7 +51,7 @@ class IOSCrawler extends Crawler {
     log.trace(s"appName = ${appName}")
     log.trace(getAllElements("//UIAApplication").head)
     val title=getAllElements("//UIANavigationBar").map(_.getOrElse("name", "").toString).mkString("")
-    List(appName, title, superUrl).filter(_.nonEmpty).mkString("-")
+    List(appName, title, superUrl).distinct.filter(_.nonEmpty).mkString("-")
   }
 
   override def getRuleMatchNodes(): List[scala.collection.immutable.Map[String, Any]] = {

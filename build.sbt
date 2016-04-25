@@ -1,5 +1,5 @@
 name := "AppCrawler"
-version := "1.2.2"
+version := "1.3.0"
 scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
@@ -33,7 +33,7 @@ enablePlugins(JavaAppPackaging)
 
 assemblyJarName in assembly := "appcrawler-"+version.value+".jar"
 test in assembly := {}
-mainClass in assembly := Some("AppCrawler")
+mainClass in assembly := Some("com.xueqiu.qa.appcrawler.AppCrawler")
 assemblyMergeStrategy in assembly := {
     case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
     case x =>  MergeStrategy.first

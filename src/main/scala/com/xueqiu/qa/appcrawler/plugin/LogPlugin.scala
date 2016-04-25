@@ -1,4 +1,8 @@
+package com.xueqiu.qa.appcrawler.plugin
+
 import java.util.logging.Level
+
+import com.xueqiu.qa.appcrawler.{Plugin, UrlElement}
 
 import scala.collection.mutable.ListBuffer
 import scala.reflect.io.File

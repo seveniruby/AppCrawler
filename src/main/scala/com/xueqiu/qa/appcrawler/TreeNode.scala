@@ -1,6 +1,8 @@
+package com.xueqiu.qa.appcrawler
+
 import java.io.{BufferedWriter, FileWriter}
 
-import scala.collection.mutable.{Map, ListBuffer}
+import scala.collection.mutable.ListBuffer
 
 /**
   * Created by seveniruby on 15/12/18.
@@ -89,5 +91,3 @@ case class TreeNode[T](
   }
 
 }
-
-

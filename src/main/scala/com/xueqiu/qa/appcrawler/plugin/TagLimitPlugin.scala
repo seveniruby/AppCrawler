@@ -1,3 +1,7 @@
+package com.xueqiu.qa.appcrawler.plugin
+
+import com.xueqiu.qa.appcrawler.{Plugin, UrlElement}
+
 /**
   * Created by seveniruby on 16/1/21.
   *

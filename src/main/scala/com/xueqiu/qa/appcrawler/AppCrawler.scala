@@ -1,13 +1,13 @@
-import org.apache.log4j.{Level, Logger, BasicConfigurator}
-import org.scalatest.ConfigMap
-
-/**
-  * Created by seveniruby on 16/1/7.
-  */
-
+package com.xueqiu.qa.appcrawler
 
 import java.io.File
 
+import org.apache.log4j.Level
+import org.scalatest.ConfigMap
+
+/**
+  * Created by seveniruby on 16/4/24.
+  */
 object AppCrawler extends CommonLog{
   var logPath=""
   case class Param(

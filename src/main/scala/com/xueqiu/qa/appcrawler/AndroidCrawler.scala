@@ -1,3 +1,5 @@
+package com.xueqiu.qa.appcrawler
+
 import java.net.URL
 
 import io.appium.java_client.android.AndroidDriver
@@ -50,7 +52,7 @@ class AndroidCrawler extends Crawler {
     lastAppName=appName
     appName=getAllElements("/*/*[1]").head.getOrElse("package", "").toString
     val baseUrl=super.getUrl()
-    List(screenName, baseUrl).filter(_.nonEmpty).mkString("-")
+    List(screenName, baseUrl).distinct.filter(_.nonEmpty).mkString("-")
   }
 
   //

@@ -1,14 +1,15 @@
+package com.xueqiu.qa.appcrawler
+
 import java.net.URL
 
 import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
-import org.apache.log4j.{Level, Logger, BasicConfigurator}
+import org.apache.log4j.Level
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.scalatest._
 import org.scalatest.selenium.WebBrowser
-import org.scalatest.selenium.WebBrowser.XPathQuery
 import org.scalatest.time.{Seconds, Span}
 
 import scala.util.{Failure, Success, Try}
@@ -21,8 +22,6 @@ class AppiumDSL extends FunSuite
   with WebBrowser
   with BeforeAndAfterAll
   with BeforeAndAfterEach with CommonLog {
-
-  import org.scalatest.prop.TableDrivenPropertyChecks._
 
   val capabilities = new DesiredCapabilities()
   var appiumUrl = "http://127.0.0.1:4723/wd/hub"

@@ -1,4 +1,5 @@
 
+import com.xueqiu.qa.appcrawler.{RichData, Crawler, CrawlerConf, XueqiuCrawlerConf}
 import org.scalatest.FunSuite
 
 import scala.collection.mutable
@@ -329,7 +330,7 @@ class TestCrawler extends FunSuite{
   }
 /*
   test("load config"){
-    var conf=new CrawlerConf
+    var conf=new com.xueqiu.qa.appcrawler.CrawlerConf
     conf.baseUrl="xxx"
     println(conf.baseUrl)
     conf=conf.loadByJson4s("conf.json").get

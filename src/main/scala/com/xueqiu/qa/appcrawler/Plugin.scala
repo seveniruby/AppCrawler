@@ -1,3 +1,5 @@
+package com.xueqiu.qa.appcrawler
+
 /**
   * Created by seveniruby on 16/1/7.
   */

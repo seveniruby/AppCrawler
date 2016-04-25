@@ -1,3 +1,4 @@
+import com.xueqiu.qa.appcrawler.AppiumDSL
 import org.scalatest.Tag
 import org.scalatest.time.{Seconds, Span}
 
@@ -124,7 +125,7 @@ class TestSelenium extends AppiumDSL {
     click on see("大港股份")
     tree()
     tree("action_bar_title")("text") should be equals ("大港股份")
-    log.warn("Start Crawler")
+    log.warn("Start com.xueqiu.qa.appcrawler.Crawler")
     crawl("/Users/seveniruby/projects/LBSRefresh/src/universal/conf/xueqiu.json", "/Users/seveniruby/temp/crawl")
   }
 

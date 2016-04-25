@@ -1,10 +1,12 @@
-import java.io.{StringWriter, ByteArrayInputStream}
+package com.xueqiu.qa.appcrawler
+
+import java.io.{ByteArrayInputStream, StringWriter}
 import java.nio.charset.StandardCharsets
 import javax.xml.parsers.{DocumentBuilder, DocumentBuilderFactory}
-import javax.xml.xpath.{XPathConstants, XPathFactory, XPath}
+import javax.xml.xpath.{XPath, XPathConstants, XPathFactory}
 
-import org.apache.xml.serialize.{XMLSerializer, OutputFormat}
-import org.w3c.dom.{Node, Attr, NodeList, Document}
+import org.apache.xml.serialize.{OutputFormat, XMLSerializer}
+import org.w3c.dom.{Attr, Document, Node, NodeList}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer

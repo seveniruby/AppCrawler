@@ -1,3 +1,4 @@
+import com.xueqiu.qa.appcrawler.AppiumDSL
 import org.scalatest.Tag
 import org.scalatest.selenium.WebBrowser.click
 

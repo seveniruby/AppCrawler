@@ -1,4 +1,6 @@
-import org.scalatest.{ConfigMap, BeforeAndAfterAllConfigMap, FunSuite}
+package com.xueqiu.qa.appcrawler
+
+import org.scalatest.{BeforeAndAfterAllConfigMap, ConfigMap, FunSuite}
 
 /**
   * Created by seveniruby on 16/1/7.
@@ -8,7 +10,7 @@ class AppCrawlerTestCase extends FunSuite with BeforeAndAfterAllConfigMap with C
   override def beforeAll(cm: ConfigMap): Unit ={
     this.cm=cm
   }
-  test("App Crawler"){
+  test("App com.xueqiu.qa.appcrawler.Crawler"){
     val conf=this.cm.get("conf").get.asInstanceOf[CrawlerConf]
     var crawler:Crawler=new Crawler
 
