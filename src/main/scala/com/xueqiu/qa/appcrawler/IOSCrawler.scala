@@ -53,8 +53,4 @@ class IOSCrawler extends Crawler {
     val title=getAllElements("//UIANavigationBar").map(_.getOrElse("name", "").toString).mkString("")
     List(appName, title, superUrl).distinct.filter(_.nonEmpty).mkString("-")
   }
-
-  override def getRuleMatchNodes(): List[scala.collection.immutable.Map[String, Any]] = {
-    getAllElements("//*[@visible='true' and @enabled='true' and @valid='true']")
-  }
 }

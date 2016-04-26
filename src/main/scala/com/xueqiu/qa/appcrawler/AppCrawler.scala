@@ -38,7 +38,7 @@ object AppCrawler extends CommonLog{
     val parser = new scopt.OptionParser[Param]("appcrawler") {
       head(
         """
-          |AppCrawler 1.2.0
+          |AppCrawler 1.3.0
           |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
           |灵感来源: 晓光 泉龙 杨榕 雪球测试团队出品
           |移动测试技术交流 https://testerhome.com
@@ -59,7 +59,7 @@ object AppCrawler extends CommonLog{
       } text ("配置文件地址")
       opt[String]('p', "platform") action { (x, c) =>
         c.copy(platform = x)
-      } text ("平台类型android或者ios")
+      } text ("平台类型android或者ios, 默认会根据app后缀名自动判断")
       opt[Int]('t', "maxTime") action { (x, c) =>
         c.copy(maxTime = x)
       } text ("最大运行时间. 单位为秒. 超过此值会退出. 默认最长运行3个小时")
@@ -81,8 +81,9 @@ object AppCrawler extends CommonLog{
           |appcrawler -a xueqiu.apk
           |appcrawler -a xueqiu.apk --capability noReset=true
           |appcrawler -c conf/xueqiu.json
-          |appcrawler -c xueqiu.json  -p ios --capability udid=[你的udid] -a Snowball.app
-          |appcrawler -c xueqiu.json  -p ios -a Snowball.app -u http://127.0.0.1:4730/wd/hub
+          |appcrawler -c xueqiu.json --capability udid=[你的udid] -a Snowball.app
+          |appcrawler -c xueqiu.json -a Snowball.app -u 4730
+          |appcrawler -c xueqiu.json -a Snowball.app -u http://127.0.0.1:4730/wd/hub
         """.stripMargin)
       cmd("sbt") action { (_, c) => {
         c.copy(mode = "sbt")

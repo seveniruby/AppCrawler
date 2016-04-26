@@ -2,7 +2,7 @@ package com.xueqiu.qa.appcrawler
 
 import java.util.Date
 
-import io.appium.java_client.AppiumDriver
+import io.appium.java_client.{TouchAction, AppiumDriver}
 import org.apache.commons.io.FileUtils
 import org.apache.log4j._
 import org.openqa.selenium.remote.DesiredCapabilities
@@ -48,8 +48,8 @@ class Crawler extends CommonLog {
   private var screenWidth = 0
   private var screenHeight = 0
 
-  var appName=""
-  var lastAppName=""
+  var appName = ""
+  var lastAppName = ""
   var pageSource = ""
   private var pageDom: Document = null
   private var backRetry = 0
@@ -235,14 +235,14 @@ class Crawler extends CommonLog {
     //---
     //>             label="" name="分时" path="/0/0/6/0/0" valid="true" value="0"
     md5(nodeList.filter(node => !schemaBlackList.contains(node("tag"))).
-      map(node => node.getOrElse("xpath", "")+node.getOrElse("value", "").toString ).
+      map(node => node.getOrElse("xpath", "") + node.getOrElse("value", "").toString).
       mkString("\n"))
   }
 
   /**
     * 获得布局Hash
     */
-  def getSchema(): String ={
+  def getSchema(): String = {
     val nodeList = getAllElements("//*[not(ancestor-or-self::UIAStatusBar)]")
     nodeList.foreach(log.trace)
     md5(nodeList.map(getUrlElementByMap(_).toTagPath()).distinct.mkString("\n"))
@@ -283,13 +283,20 @@ class Crawler extends CommonLog {
   }
 
   def isReturn(): Boolean = {
+    //超时退出
+    if ((new Date().getTime - startTime) > conf.maxTime * 1000) {
+      log.info("maxTime out Quit")
+      needExit = true
+      return true
+    }
     //回到桌面了
     if (urlStack.filter(_.matches("Launcher.*")).nonEmpty) {
       log.info(s"maybe back to desktop ${urlStack.reverse.mkString("-")}")
       needExit = true
+      return true
     }
     //跳到了其他app
-    if(appName!=lastAppName && lastAppName.nonEmpty){
+    if (appName != lastAppName && lastAppName.nonEmpty) {
       log.warn(s"jump to other app appName=${appName} lastAppName=${lastAppName}")
       return true
     }
@@ -323,7 +330,7 @@ class Crawler extends CommonLog {
     */
   def isBlack(uid: immutable.Map[String, Any]): Boolean = {
     conf.blackList.foreach(b => {
-      if (List(uid("name"), uid("label"), uid("value")).map(x=>{
+      if (List(uid("name"), uid("label"), uid("value")).map(x => {
         x.toString.matches(b)
       }).contains(true)) {
         return true
@@ -346,33 +353,18 @@ class Crawler extends CommonLog {
     var appendElements = List[immutable.Map[String, Any]]()
     var commonElements = List[immutable.Map[String, Any]]()
 
-    val allElements=getAllElements("//*")
+    val allElements = getAllElements("//*")
     log.trace(s"all elements = ${allElements.size}")
-    conf.firstList.foreach(xpath => {
-      firstElements ++= getAllElements(xpath)
-    })
-    log.trace(s"first elements ${firstElements.size}")
-    firstElements = firstElements.filter(isValid)
-    log.trace(s"first -invalid elements  ${firstElements.size}")
-
-    conf.lastList.foreach(xpath => {
-      appendElements ++= getAllElements(xpath)
-    })
-    log.trace(s"last elements ${appendElements.size}")
-    appendElements=appendElements.filter(isValid)
-    log.trace(s"last - invalid elements ${appendElements.size}")
 
     conf.selectedList.foreach(xpath => {
-      commonElements ++= getAllElements(xpath)
+      commonElements ++= getAllElements(xpath).filter(isValid)
     })
-    log.trace(s"common elements ${commonElements.size}")
-    commonElements = commonElements.filter(isValid)
-    log.trace(s"common - invalid elements ${commonElements.size}")
-
-    commonElements = commonElements diff firstElements
-    log.trace(s"common - first elements ${commonElements.size}")
-    commonElements = commonElements diff appendElements
-    log.trace(s"common -last elements ${commonElements.size}")
+    conf.firstList.foreach(xpath => {
+      firstElements ++= getAllElements(xpath).filter(isValid).intersect(commonElements)
+    })
+    conf.lastList.foreach(xpath => {
+      appendElements ++= getAllElements(xpath).filter(isValid).intersect(commonElements)
+    })
 
     //确保不重, 并保证顺序
     all = (firstElements ++ commonElements ++ appendElements).distinct
@@ -381,8 +373,16 @@ class Crawler extends CommonLog {
 
   }
 
+
+  def hideKeyBoard(): Unit ={
+    //iOS键盘隐藏
+    if (getAllElements("//UIAKeyboard").size >= 1) {
+      doAppium(driver.hideKeyboard())
+    }
+  }
   def refreshPage(): Unit = {
     log.info("refresh page")
+    hideKeyBoard()
     //获取页面结构, 最多重试10次.
     var refreshFinish = false
     pageSource = ""
@@ -484,23 +484,7 @@ class Crawler extends CommonLog {
     log.info(s"current element tag path = ${element.toTagPath()}")
     log.info(s"current element file name = ${element.toFileName()}")
     log.info(s"current element uri = ${element.toLoc()}")
-    beforeElementAction(element)
-    elements(element.toLoc()) = true
-    //保存截屏和log
-    if (getElementAction() != "skip") {
-      doAppiumAction(element, getElementAction())
-      //刷新页面. 让schema更新
-      refreshPage()
-      saveDom()
-      saveScreen()
-      needRefresh = true
-    } else {
-      clickedElementsList.pop()
-      setElementAction("click")
-      needRefresh = false
-    }
-
-    afterElementAction(element)
+    doAppiumAction(element, getElementAction())
   }
 
   def getBackElements(): ListBuffer[immutable.Map[String, Any]] = {
@@ -584,48 +568,53 @@ class Crawler extends CommonLog {
     * 刷新->找元素->点击第一个未被点击的元素->刷新
     */
   @tailrec final def crawl(): Unit = {
-    //超时退出
-    if ((new Date().getTime - startTime) > conf.maxTime * 1000) {
-      log.info("maxTime out Quit")
-      needExit = true
-    }
     //是否应该退出
     if (needExit) {
       log.warn("need exit")
       return
     }
-    //如果之前刷新过就跳过,但是下一次要求重新刷新
-    needRefresh=true
-    if (needRefresh) {
-      refreshPage()
-    } else {
-      log.info("already refresh skip for speed")
-    }
-    needRefresh = true
-
     //是否需要退出或者后退
     if (isReturn()) {
       log.info("need return")
       goBack()
-      doRuleAction()
-    } else {
-      //先判断是否命中规则.
-      if (!doRuleAction()) {
-        val allElements = getAvailableElement()
-        if (allElements.nonEmpty) {
-          clickedElementsList.push(allElements.head)
-          log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
-          doElementAction(clickedElementsList.head)
-          backRetry = 0
-          swipeRetry = 0
+    }
+    //优先匹配规则, 匹配到的时候会自动刷新
+    val isHit = doRuleAction()
+    //没有匹配到表示可以进行正常的遍历了
+    if (isHit==false) {
+      val allElements = getAvailableElement()
+      if (allElements.nonEmpty) {
+        //保存第一个元素到要点击元素的堆栈里, 这里可以决定是后向遍历, 还是前向遍历
+        val element = allElements.head
+        clickedElementsList.push(element)
+        //加载插件分析
+        beforeElementAction(element)
+        elements(element.toLoc()) = true
+
+        if (getElementAction() != "skip") {
+          doElementAction(element)
+          //刷新页面. 让schema更新
+          refreshPage()
+          saveDom()
+          saveScreen()
+          needRefresh = false
         } else {
-          log.info("all elements had be clicked")
-          if (swipeRetry > swipeMaxRetry) {
-            log.info("swipeRetry > swipeMaxRetry")
-            return
-          }
-          scroll()
+          clickedElementsList.pop()
+          setElementAction("click")
+          needRefresh = false
         }
+
+        //插件处理
+        afterElementAction(element)
+
+        backRetry = 0
+        swipeRetry = 0
+      } else {
+        log.warn("all elements had be clicked")
+        if(conf.needSwipe) {
+          swipe()
+        }
+        goBack()
       }
     }
     crawl()
@@ -681,7 +670,17 @@ class Crawler extends CommonLog {
 
   }
 
-  def scroll(direction: String = "default"): Unit = {
+  def tap(x:Int=screenWidth/2, y:Int=screenHeight/2): Unit ={
+    log.info("tap")
+    driver.findElementByXPath("//UIAWindow[@path='/0/2']").click()
+    //new TouchAction(driver).tap(x, y).perform()
+  }
+  def swipe(direction: String = "default"): Unit = {
+    if (swipeRetry > swipeMaxRetry) {
+      log.info("swipeRetry > swipeMaxRetry")
+      return
+    }
+
     if (swipeCountPerUrl.contains(url) == false) {
       swipeCountPerUrl(url) = 0
     }
@@ -841,6 +840,7 @@ class Crawler extends CommonLog {
   def doAppium[T](r: => T): Option[T] = {
     Try(r) match {
       case Success(v) => {
+        log.info("success")
         Some(v)
       }
       case Failure(e) => {
@@ -856,9 +856,9 @@ class Crawler extends CommonLog {
   def saveLog(): Unit = {
     log.trace("save log")
     //记录点击log
-    var index=0
-    File(s"${conf.resultDir}/clickedList.log").writeAll(clickedElementsList.reverse.map(n=>{
-      index+=1
+    var index = 0
+    File(s"${conf.resultDir}/clickedList.log").writeAll(clickedElementsList.reverse.map(n => {
+      index += 1
       List(index, n.toFileName, n.toLoc, n.toTagPath).mkString("\n")
     }).mkString("\n"))
     File(s"${conf.resultDir}/elementList.log").writeAll(elements.mkString("\n"))
@@ -884,7 +884,7 @@ class Crawler extends CommonLog {
     log.trace("save dom end")
   }
 
-  def saveScreen(force:Boolean = false): Unit = {
+  def saveScreen(force: Boolean = false): Unit = {
     //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
     if (conf.saveScreen && lastContentHash != currentContentHash || force) {
       Thread.sleep(100)
@@ -936,37 +936,37 @@ class Crawler extends CommonLog {
   }
 
   def doAppiumAction(e: UrlElement, action: String): Option[Unit] = {
+    log.info(s"element=${e} action=${action}")
     findElementByUrlElement(e) match {
       case Some(v) => {
+        log.info(v)
         action match {
           case "click" => {
-            log.info(s"click ${v}")
             val res = doAppium(v.click())
             appendClickedList(e)
+            refreshPage()
             if (List("UIATextField", "EditText").map(e.tag.contains(_)).contains(true)) {
               doAppium(driver.hideKeyboard())
             }
-            //iOS键盘隐藏
-            if (getAllElements("//UIAKey").size >= 1) {
-              doAppium(driver.hideKeyboard())
-            }
-
             res
           }
           case "skip" => {
             log.info("skip")
           }
           case "scroll left" => {
-            scroll("left")
+            swipe("left")
           }
           case "scroll up" => {
-            scroll("up")
+            swipe("up")
           }
           case "scroll down" => {
-            scroll("down")
+            swipe("down")
+          }
+          case "tap" => {
+            tap()
           }
           case "scroll" => {
-            scroll()
+            swipe()
           }
           case str: String => {
             log.info(s"sendkeys ${v} with ${str}")
@@ -996,16 +996,16 @@ class Crawler extends CommonLog {
         log.info("skip")
       }
       case "scroll left" => {
-        scroll("left")
+        swipe("left")
       }
       case "scroll up" => {
-        scroll("up")
+        swipe("up")
       }
       case "scroll down" => {
-        scroll("down")
+        swipe("down")
       }
       case "scroll" => {
-        scroll()
+        swipe()
       }
       case str: String => {
 
@@ -1022,7 +1022,7 @@ class Crawler extends CommonLog {
     * @return
     */
   def getRuleMatchNodes(): List[immutable.Map[String, Any]] = {
-    List[immutable.Map[String, Any]]()
+    getAllElements("//*").filter(isValid)
   }
 
   //通过规则实现操作. 不管元素是否被点击过

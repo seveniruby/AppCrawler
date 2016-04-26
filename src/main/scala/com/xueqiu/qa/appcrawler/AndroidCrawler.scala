@@ -66,8 +66,4 @@ class AndroidCrawler extends Crawler {
   //    md5(nodeList.filter(node=>node("tag")!="UIATableCell").map(node=>node("tag")).mkString(""))
   //  }
 
-  override def getRuleMatchNodes(): List[immutable.Map[String, Any]] = {
-    getAllElements("//*")
-  }
-
 }

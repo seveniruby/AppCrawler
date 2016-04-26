@@ -53,6 +53,12 @@ class CrawlerConf {
   var baseUrl= List[String]()
   /**默认的最大深度10, 结合baseUrl可很好的控制遍历的范围*/
   var maxDepth=6
+  /**是否需要滑动来发现新的元素 会在每个页面都执行. 可能会拖慢速度*/
+  var needSwipe=false
+  /**是否是前向遍历或者后向遍历*/
+  var headFirst=true
+  /**是否遍历WebView控件*/
+  var enterWebView=true
   /**url黑名单.用于排除某些页面*/
   var blackUrlList = ListBuffer("")
 
