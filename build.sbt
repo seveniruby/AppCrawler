@@ -7,7 +7,7 @@ libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-library" % "2.11.7",
   "org.scala-lang" % "scala-reflect" % "2.11.7",
   "org.scalatest" %% "scalatest" % "2.2.6",
-  "io.appium" % "java-client" % "3.2.0",
+  "io.appium" % "java-client" % "3.4.1",
   "org.seleniumhq.selenium" % "selenium-java" % "2.35.0" % "test",
   //"io.selendroid" % "selendroid" % "0.16.0",
   "io.selendroid" % "selendroid-client" % "0.16.0",

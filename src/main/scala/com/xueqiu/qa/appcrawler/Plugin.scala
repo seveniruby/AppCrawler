@@ -25,6 +25,15 @@ abstract class Plugin extends CommonLog{
   def afterElementAction(element: UrlElement): Unit ={
 
   }
+
+  /**
+    * 如果实现了请设置返回值为true
+    * @param path
+    * @return
+    */
+  def screenshot(path:String): Boolean ={
+    false
+  }
   def stop(): Unit ={
 
   }

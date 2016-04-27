@@ -377,12 +377,17 @@ class Crawler extends CommonLog {
   def hideKeyBoard(): Unit ={
     //iOS键盘隐藏
     if (getAllElements("//UIAKeyboard").size >= 1) {
+      log.info("find keyboard , just hide")
       doAppium(driver.hideKeyboard())
     }
   }
   def refreshPage(): Unit = {
     log.info("refresh page")
-    hideKeyBoard()
+
+    if(pageSource.nonEmpty){
+      hideKeyBoard()
+    }
+
     //获取页面结构, 最多重试10次.
     var refreshFinish = false
     pageSource = ""
@@ -392,6 +397,7 @@ class Crawler extends CommonLog {
           case Some(v) => {
             log.trace("get page source success")
             pageSource = v
+            log.trace(v)
             pageSource = RichData.toPrettyXML(pageSource)
             pageDom = RichData.toXML(pageSource)
             refreshFinish = true
@@ -672,8 +678,11 @@ class Crawler extends CommonLog {
 
   def tap(x:Int=screenWidth/2, y:Int=screenHeight/2): Unit ={
     log.info("tap")
-    driver.findElementByXPath("//UIAWindow[@path='/0/2']").click()
+    //driver.findElementByXPath("//UIAWindow[@path='/0/2']").click()
     //new TouchAction(driver).tap(x, y).perform()
+  }
+  def tap(element:WebElement): Unit ={
+    driver.tap(1, element, 100)
   }
   def swipe(direction: String = "default"): Unit = {
     if (swipeRetry > swipeMaxRetry) {
@@ -884,6 +893,20 @@ class Crawler extends CommonLog {
     log.trace("save dom end")
   }
 
+  def screenshot(path:String): Unit ={
+    if(pluginClasses.map(p => p.screenshot(path)).contains(true)){
+      return
+    }
+    doAppium((driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)) match {
+      case Some(src) => {
+        FileUtils.copyFile(src, new java.io.File(path))
+        log.info("save screenshot end")
+      }
+      case None => {
+        log.warn("get screenshot error")
+      }
+    }
+  }
   def saveScreen(force: Boolean = false): Unit = {
     //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
     if (conf.saveScreen && lastContentHash != currentContentHash || force) {
@@ -893,15 +916,7 @@ class Crawler extends CommonLog {
 
       val getScreen = new Thread(new Runnable {
         override def run(): Unit = {
-          doAppium((driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)) match {
-            case Some(src) => {
-              FileUtils.copyFile(src, new java.io.File(path))
-              log.info("save screenshot end")
-            }
-            case None => {
-              log.warn("get screenshot error")
-            }
-          }
+          screenshot(path)
         }
       })
       getScreen.start()
@@ -942,10 +957,10 @@ class Crawler extends CommonLog {
         log.info(v)
         action match {
           case "click" => {
-            val res = doAppium(v.click())
+            val res = doAppium(tap(v))
             appendClickedList(e)
             refreshPage()
-            if (List("UIATextField", "EditText").map(e.tag.contains(_)).contains(true)) {
+            if (List("UIATextField", "UIATextView", "EditText").map(e.tag.contains(_)).contains(true)) {
               doAppium(driver.hideKeyboard())
             }
             res

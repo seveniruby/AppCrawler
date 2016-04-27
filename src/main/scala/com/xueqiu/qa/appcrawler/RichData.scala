@@ -5,7 +5,8 @@ import java.nio.charset.StandardCharsets
 import javax.xml.parsers.{DocumentBuilder, DocumentBuilderFactory}
 import javax.xml.xpath.{XPath, XPathConstants, XPathFactory}
 
-import org.apache.xml.serialize.{OutputFormat, XMLSerializer}
+import com.sun.org.apache.xml.internal.serialize.{XMLSerializer, OutputFormat}
+//import org.apache.xml.serialize.{OutputFormat, XMLSerializer}
 import org.w3c.dom.{Attr, Document, Node, NodeList}
 
 import scala.collection.mutable
@@ -137,3 +138,5 @@ object RichData extends CommonLog{
   }
 
 }
+
+

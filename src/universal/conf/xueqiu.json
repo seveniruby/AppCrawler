@@ -1,5 +1,8 @@
 {
-  "pluginList" : [ "com.xueqiu.qa.appcrawler.plugin.TagLimitPlugin"],
+  "pluginList" : [
+    "com.xueqiu.qa.appcrawler.plugin.TagLimitPlugin",
+    "com.xueqiu.qa.appcrawler.plugin.IDeviceScreenshot"
+  ],
   "saveScreen" : true,
   "currentDriver" : "android",
   "maxTime" : 10800,
@@ -166,16 +169,16 @@
     "idOrName" : "common guide icon ok",
     "times" : 0
   }, {
-    "action" : "tap",
-    "idOrName" : "//UIAApplication/UIAWindow/UIAStaticText[@name='行情数据']",
-    "times" : 10
-  }, {
     "action" : "click",
     "idOrName" : "icon quotationinformation day",
     "times" : 1
   }, {
     "action" : "click",
     "idOrName" : "icon stock close",
+    "times" : 0
+  }, {
+    "action" : "click",
+    "idOrName" : "隐藏键盘",
     "times" : 0
   }],
   "startupActions" : [ "scroll left" ]
