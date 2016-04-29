@@ -11,7 +11,7 @@ trait CommonLog {
   BasicConfigurator.configure()
   Logger.getRootLogger.setLevel(Level.INFO)
   var logLevel=Level.INFO
-  val layout=new PatternLayout("%d{yyyy-MM-dd HH:mm:ss} %p [%.20c.%M] %m%n")
+  val layout=new PatternLayout("%d{yyyy-MM-dd HH:mm:ss} %p [%c{1}.%M.%L] %m%n")
   val log = initLog()
 
   def initLog(): Logger ={

@@ -81,6 +81,7 @@ class Crawler extends CommonLog {
     })
     pluginClasses.foreach(log.info)
     pluginClasses.foreach(p => p.init(this))
+    pluginClasses.foreach(p => p.start())
   }
 
   /**
@@ -123,6 +124,7 @@ class Crawler extends CommonLog {
     if (existDriver == null) {
       log.info("prepare setup Appium")
       setupAppium()
+      driver.getAppStringMap
     } else {
       log.info("use existed driver")
       this.driver = existDriver

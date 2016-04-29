@@ -17,7 +17,7 @@ libraryDependencies ++= Seq(
   //"com.propensive" %% "rapture-json-json4s" % "2.0.0-M1",
   //"org.json4s" %% "json4s-jackson" % "3.3.0",
   "org.json4s" %% "json4s-native" % "3.3.0",
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.3",
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.7.3",
   "com.github.scopt" %% "scopt" % "3.3.0",
   "com.brsanthu" % "google-analytics-java" % "1.1.2",
   "org.slf4j" % "slf4j-api" % "1.7.18",
@@ -26,6 +26,8 @@ libraryDependencies ++= Seq(
   //"com.android.tools.ddms" % "ddmlib" % "24.5.0",
   //"org.lucee" % "xml-xerces" % "2.11.0",
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.5.4",
+  "net.lightbody.bmp" % "browsermob-core-littleproxy" % "2.1.0-beta-6",
+  "net.lightbody.bmp" % "browsermob-core" % "2.1.0-beta-6",
   "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 
@@ -36,6 +38,13 @@ test in assembly := {}
 mainClass in assembly := Some("com.xueqiu.qa.appcrawler.AppCrawler")
 assemblyMergeStrategy in assembly := {
     case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
+
+    case PathList("META-INF", xs @ _*)=>{
+      (xs map {_.toLowerCase}) match {
+        case ps @ (x :: xs) if ps.last.endsWith(".sf") || ps.last.endsWith(".dsa") => MergeStrategy.discard
+        case _ => MergeStrategy.first
+      }
+    }
     case x =>  MergeStrategy.first
 }
 
