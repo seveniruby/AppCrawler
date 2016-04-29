@@ -65,6 +65,11 @@ class TestSelenium extends AppiumDSL {
   }
 
   test("添加组合") {
+    Android()
+    config("app", "/Users/seveniruby/Downloads/xueqiu.apk")
+    appium()
+    sleep(5)
+    login()
     tree()
     tree("自选")
     click on see("自选")
@@ -79,6 +84,7 @@ class TestSelenium extends AppiumDSL {
     click on see("马上")
     click on see("输入")
     send("alibaba")
+    sleep(5)
     click on see("BABA")
     tree("Image")
     tree("Button")
@@ -95,9 +101,9 @@ class TestSelenium extends AppiumDSL {
     tree("Button")
     tree("TextView")
     tree()
-    Thread.sleep(1000)
     click on see("done")
-    Thread.sleep(1000)
+    sleep(3)
+    tree("icon")
     click on see("(//*[@resource-id='com.xueqiu.android:id/icon_adjust'])[1]")
     click on see("100")
     click on see("99")

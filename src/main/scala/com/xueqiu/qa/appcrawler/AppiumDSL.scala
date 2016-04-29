@@ -116,6 +116,9 @@ class AppiumDSL extends FunSuite
       case '/' => {
         key
       }
+      case '(' => {
+        key
+      }
       case '^' => {
         s"//*[" +
           s"matches(@text, '$key') " +
