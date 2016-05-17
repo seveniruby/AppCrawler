@@ -311,6 +311,11 @@ class TestRichData extends FunSuite with Matchers{
     node("resource-id") should be equals("com.xueqiu.android:id/action_search")
     node("content-desc") should be equals("输入股票名称/代码")
   }
+
+  test("getPackage"){
+    val node=RichData.parseXPath("(//*[@package!=''])[1]", dom)(0)
+    println(node)
+  }
   test("extra attribute from xpath"){
     val node=RichData.parseXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id", dom)(0)
     println(node)

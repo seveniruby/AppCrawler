@@ -1,4 +1,10 @@
+import java.net.URL
+
 import com.xueqiu.qa.appcrawler.AppiumDSL
+import io.appium.java_client.android.AndroidDriver
+import io.appium.java_client.{MobileElement, MobileDriver}
+import org.openqa.selenium.Capabilities
+import org.openqa.selenium.remote.{RemoteWebDriver, DesiredCapabilities}
 import org.scalatest.Tag
 import org.scalatest.time.{Seconds, Span}
 
@@ -213,6 +219,55 @@ class TestSelenium extends AppiumDSL {
     click on see("登 录")
     click on see("//UIAButton[@path=\"/0/0/3/5\"]")
     tree("seveniruby")("name") should be equals "seveniruby"
+  }
+
+  test("selenium demo"){
+    val capability=new DesiredCapabilities()
+    capability.setCapability("app", "/Users/seveniruby/Downloads/xueqiu.apk")
+    capability.setCapability("appPackage", "com.xueqiu.android")
+    capability.setCapability("appActivity", "com.xueqiu.android.view.WelcomeActivityAlias")
+    capability.setCapability("deviceName", "demo")
+    val url="http://127.0.0.1:4723/wd/hub"
+    val driver=new AndroidDriver[MobileElement](new URL(url), capability)
+    driver.findElementById("button_next").click()
+  }
+
+  test("appcrawler android demo "){
+    config("app", "/Users/seveniruby/Downloads/xueqiu.apk")
+    config("appPackage", "com.xueqiu.android")
+    config("appActivity", "com.xueqiu.android.view.WelcomeActivityAlias")
+    config("deviceName", "demo")
+    appium("http://127.0.0.1:4723/wd/hub")
+    sleep(5)
+    click on see("account")
+    send("15600534760")
+    click on see("password")
+    send("hys2xueqiu")
+    click on see("button_next")
+    click on see("tip")
+    click on see("tip")
+    click on see("tip")
+    tree("Image")
+    tree("seveniruby")("name") should be equals "seveniruby"
+
+  }
+
+  test("appcrawler ios demo "){
+    config("app", "/Users/seveniruby/Downloads/xueqiu.apk")
+    config("appPackage", "com.xueqiu.android")
+    config("appActivity", "com.xueqiu.android.view.WelcomeActivityAlias")
+    config("deviceName", "demo")
+    appium("http://127.0.0.1:4723/wd/hub")
+    sleep(10)
+    click on see("手机号")
+    sleep(10000)
+    send("15600534760")
+    click on see("//UIASecureTextField")
+    send("hys2xueqiu")
+    click on see("登 录")
+    click on see("//UIAButton[@path=\"/0/0/3/5\"]")
+    tree("seveniruby")("name") should be equals "seveniruby"
+
   }
 
   override def afterAll(): Unit = {

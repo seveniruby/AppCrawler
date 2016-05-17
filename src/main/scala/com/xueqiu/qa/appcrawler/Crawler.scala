@@ -54,7 +54,7 @@ class Crawler extends CommonLog {
   private var pageDom: Document = null
   private var backRetry = 0
   //最大重试次数
-  var backMaxRetry = 5
+  var backMaxRetry = 10
   private var swipeRetry = 0
   //滑动最大重试次数
   var swipeMaxRetry = 2
@@ -250,6 +250,10 @@ class Crawler extends CommonLog {
     md5(nodeList.map(getUrlElementByMap(_).toTagPath()).distinct.mkString("\n"))
   }
 
+  def getAppName(): String ={
+    return ""
+  }
+
 
   def getUrl(): String = {
     if (conf.defineUrl.nonEmpty) {
@@ -305,6 +309,12 @@ class Crawler extends CommonLog {
     //url黑名单
     if (conf.blackUrlList.filter(urlStack.head.matches(_)).nonEmpty) {
       log.info(s"${urlStack.head} in blackUrlList should return")
+      return true
+    }
+
+    //app黑名单
+    if (appName.matches(".*browser")) {
+      log.info(s"current app is browser, back")
       return true
     }
     //滚动多次没有新元素

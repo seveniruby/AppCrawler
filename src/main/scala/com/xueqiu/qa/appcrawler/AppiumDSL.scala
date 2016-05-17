@@ -108,7 +108,9 @@ class AppiumDSL extends FunSuite
       driver = new IOSDriver[WebElement](new URL(appiumUrl), capabilities)
     }
 
-    getDeviceInfo()
+    getDeviceInfo
+    setCaptureDir(".")
+    implicitlyWait(Span(10, Seconds))
   }
 
   def keyToXPath(key: String): String = {
@@ -154,7 +156,10 @@ class AppiumDSL extends FunSuite
     log.info(s"find by key = ${key} index=${index}")
     val nodes = RichData.parseXPath(keyToXPath(key), RichData.toXML(pageSource))
     nodes.foreach(node => {
-      log.info(s"index=${nodes.indexOf(node)} node=${node}")
+      log.info(s"index=${nodes.indexOf(node)}")
+      node.foreach(kv=>{
+        log.info(kv)
+      })
     })
     val ret = nodes.lift(index).getOrElse(Map[String, Any]())
     log.info(s"ret = ${ret}")

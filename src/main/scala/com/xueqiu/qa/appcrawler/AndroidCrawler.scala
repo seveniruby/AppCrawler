@@ -50,9 +50,13 @@ class AndroidCrawler extends Crawler {
       }
     }
     lastAppName=appName
-    appName=getAllElements("/*/*[1]").head.getOrElse("package", "").toString
+    appName=getAppName()
     val baseUrl=super.getUrl()
     List(screenName, baseUrl).distinct.filter(_.nonEmpty).mkString("-")
+  }
+
+  override def getAppName(): String ={
+    getAllElements("(//*[@package!=''])[1]").head.getOrElse("package", "").toString
   }
 
   //

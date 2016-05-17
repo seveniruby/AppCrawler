@@ -1,7 +1,7 @@
 {
   "pluginList" : [
     "com.xueqiu.qa.appcrawler.plugin.TagLimitPlugin",
-    "com.xueqiu.qa.appcrawler.plugin.ProxyPlugin"
+    "com.xueqiu.qa.appcrawler.plugin.LogPlugin"
   ],
   "saveScreen" : true,
   "currentDriver" : "android",
@@ -81,11 +81,11 @@
     "idOrName" : "//*[@resource-id='com.xueqiu.android:id/button_login']",
     "times" : 1
   }, {
-    "action" : "15600534760",
+    "action" : "13067754297",
     "idOrName" : "//*[@resource-id='com.xueqiu.android:id/login_account']",
     "times" : 1
   },{
-    "action" : "hys2xueqiu",
+    "action" : "xueqiu4297",
     "idOrName" : "//*[@resource-id='com.xueqiu.android:id/login_password']",
     "times" : 1
   }, {
@@ -93,15 +93,15 @@
     "idOrName" : "button_next",
     "times" : 1
   },{
-    "action" : "15600534760",
+    "action" : "13067754297",
     "idOrName" : "//UIAStaticText[contains(@name, '登录')]",
     "times" : 1
   },{
-    "action" : "15600534760",
+    "action" : "13067754297",
     "idOrName" : "//UIATextField[contains(@value, '手机')]",
     "times" : 1
   }, {
-    "action" : "hys2xueqiu",
+    "action" : "xueqiu4297",
     "idOrName" : "//UIASecureTextField",
     "times" : 1
   },{
