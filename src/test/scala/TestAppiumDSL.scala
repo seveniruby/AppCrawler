@@ -1,11 +1,11 @@
-import com.xueqiu.qa.appcrawler.AppiumDSL
+import com.xueqiu.qa.appcrawler.MiniAppium
 import org.scalatest.Tag
 import org.scalatest.selenium.WebBrowser.click
 
 /**
   * Created by seveniruby on 16/4/15.
   */
-class TestAppiumDSL extends AppiumDSL {
+class TestAppiumDSL extends MiniAppium {
   import org.scalatest.prop.TableDrivenPropertyChecks._
   val table = Table(
     ("iPhone 4s", "9.1"),

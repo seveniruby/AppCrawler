@@ -1,10 +1,10 @@
-import com.xueqiu.qa.appcrawler.AppiumDSL
+import com.xueqiu.qa.appcrawler.MiniAppium
 import org.scalatest.time.{Seconds, Span}
 
 /**
   * Created by seveniruby on 16/3/26.
   */
-class TestSelenium extends AppiumDSL {
+class TestSelenium extends MiniAppium {
 
   override def beforeAll(): Unit ={
     config("app", "/Users/seveniruby/Downloads/xueqiu.apk")

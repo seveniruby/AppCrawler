@@ -35,6 +35,28 @@ object RichData extends CommonLog{
     out.toString
   }
 
+  def getXPathFromAttributes(attributes: ListBuffer[Map[String, String]]): String ={
+    log.info(attributes)
+    var xpath=attributes.reverse.takeRight(attributes.size-2).map(attribute=> {
+      var xpathSingle = attribute.map(kv => {
+        //todo: appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
+        //todo: 帮appium打补丁
+
+        if (kv._1 != "tag") {
+          if(kv._1=="name" & kv._2.size>20) {
+
+          }
+          else{
+            s"@${kv._1}=" + "\"" + kv._2.replace("\"", "\\\"") + "\""
+          }
+        }
+      }).filter(_!= ()).mkString(" and ")
+      xpathSingle = s"/${attribute("tag")}[${xpathSingle}]"
+      xpathSingle
+    }).mkString("")
+    xpath=s"/${xpath}"
+    return xpath
+  }
   def parseXPath(xpath:String, pageDom:Document): List[Map[String, Any]] ={
     val nodesMap=ListBuffer[Map[String, Any]]()
     val xPath: XPath = XPathFactory.newInstance().newXPath()
@@ -52,44 +74,35 @@ object RichData extends CommonLog{
         0 until nodeList.getLength foreach (i => {
           val nodeMap=mutable.Map[String, Any]()
           val node=nodeList.item(i)
-          val path=ListBuffer[String]()
+          nodeMap("tag") = node.getNodeName
+          val path=ListBuffer[Map[String, String]]()
           //递归获取路径,生成可定位的xpath表达式
           def getParent(node: Node): Unit ={
-
             if(node.hasAttributes){
               val attributes=node.getAttributes
-              val xpath=ListBuffer[String]()
+              var attributeMap=Map[String, String]()
+
               0 until attributes.getLength foreach(i=>{
                 val kv=attributes.item(i).asInstanceOf[Attr]
                 if(List("name", "path", "resource-id", "content-desc", "index").contains(kv.getName) &&
                   kv.getValue.nonEmpty
                 ){
-                  //appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
-                  //todo: 帮appium打补丁
-                  if(kv.getName=="name" && kv.getValue.size>20){
-                    log.trace(s"${kv.getName}=${kv.getValue} name size too long")
-                  }else {
-                    xpath += s"@${kv.getName}=" + "\"" + kv.getValue.replace("\"", "\\\"") + "\""
-                  }
+                  attributeMap++=Map(kv.getName->kv.getValue)
                 }
               })
-              if(xpath.isEmpty){
-                path+=node.getNodeName
-              }else{
-                path+=s"${node.getNodeName}[${xpath.mkString(" and ")}]"
-              }
-            }else{
-              path+=node.getNodeName
+              attributeMap++=Map("tag"->node.getNodeName)
+              path+=attributeMap
             }
             if(node.getParentNode!=null){
               getParent(node.getParentNode)
             }
           }
           getParent(node)
+          nodeMap("xpath") = getXPathFromAttributes(path)
 
           //支持导出单个字段
           nodeMap(node.getNodeName)=node.getNodeValue
-
+          //获得所有节点属性
           val nodeAttributes = node.getAttributes
           if(nodeAttributes!=null) {
             0 until nodeAttributes.getLength foreach (a => {
@@ -97,9 +110,6 @@ object RichData extends CommonLog{
               nodeMap(attr.getName) = attr.getValue
             })
           }
-
-          nodeMap("tag") = node.getNodeName
-          nodeMap("xpath") = "//"+path.reverse.takeRight(path.length-2).mkString("/")
 
           //保持根元素兼容
           if(nodeMap.contains("resource-id")==false && nodeMap.contains("name")==false){

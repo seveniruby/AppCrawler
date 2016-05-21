@@ -1,9 +1,9 @@
-import com.xueqiu.qa.appcrawler.AppiumDSL
+import com.xueqiu.qa.appcrawler.MiniAppium
 
 /**
   * Created by seveniruby on 16/4/18.
   */
-class TestRss extends AppiumDSL{
+class TestRss extends MiniAppium{
   val userName="15600534760"
   val password="hys2xueqiu"
   override  def beforeAll(): Unit ={

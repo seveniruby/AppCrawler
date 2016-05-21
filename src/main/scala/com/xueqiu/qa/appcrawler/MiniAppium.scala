@@ -12,12 +12,14 @@ import org.scalatest._
 import org.scalatest.selenium.WebBrowser
 import org.scalatest.time.{Seconds, Span}
 
+import scala.sys.process.ProcessLogger
 import scala.util.{Failure, Success, Try}
 
+import scala.sys.process._
 /**
   * Created by seveniruby on 16/3/26.
   */
-class AppiumDSL extends FunSuite
+class MiniAppium extends FunSuite
   with ShouldMatchers
   with WebBrowser
   with BeforeAndAfterAll
@@ -27,6 +29,7 @@ class AppiumDSL extends FunSuite
   var appiumUrl = "http://127.0.0.1:4723/wd/hub"
 
   implicit var driver: AppiumDriver[WebElement] = _
+  var appiumProcess: Process = null
 
   var screenWidth = 0
   var screenHeight = 0
@@ -67,6 +70,23 @@ class AppiumDSL extends FunSuite
     config("autoAcceptAlerts", "true")
   }
 
+  def start(): Unit ={
+    val buffer=new StringBuffer()
+    val daemonLogger=ProcessLogger(line=>buffer.append(line), line=>buffer.append(line))
+    appiumProcess=Process("appium").run(daemonLogger)
+    def waitForStarted(): Unit ={
+      sleep(0.5)
+      if(buffer.toString.contains("started")){
+        log.info(buffer)
+      }else{
+        waitForStarted()
+      }
+    }
+    waitForStarted()
+  }
+  def stop(): Unit ={
+    appiumProcess.destroy()
+  }
 
   def config(key: String, value: Any): Unit = {
     capabilities.setCapability(key, value)
@@ -76,11 +96,24 @@ class AppiumDSL extends FunSuite
     driver.getKeyboard.sendKeys(keys)
   }
 
-  def sleep(seconds: Int = 1): Unit = {
-    Thread.sleep(seconds * 1000)
+  def sleep(seconds: Double = 1.0F): Unit = {
+    Thread.sleep((seconds * 1000).toInt)
   }
 
-  def see(key: String, index: Int = 0): XPathQuery = {
+  def see(key: String="//*", index: Int = 0): XPathQuery = {
+    var isFound=false
+    1 to 10 foreach (i=>{
+      if(isFound==false) {
+        log.info(s"find by xpath ${keyToXPath(key)}")
+        if (driver.findElementsByXPath(keyToXPath(key)).size() > 0) {
+          log.info("found")
+          isFound = true
+        } else {
+          sleep(0.5)
+        }
+      }
+    })
+
     XPathQuery(tree(key, index)("xpath").toString)
   }
 
