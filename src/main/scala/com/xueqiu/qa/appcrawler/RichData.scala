@@ -36,7 +36,6 @@ object RichData extends CommonLog{
   }
 
   def getXPathFromAttributes(attributes: ListBuffer[Map[String, String]]): String ={
-    log.info(attributes)
     var xpath=attributes.reverse.takeRight(attributes.size-2).map(attribute=> {
       var xpathSingle = attribute.map(kv => {
         //todo: appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
@@ -148,5 +147,3 @@ object RichData extends CommonLog{
   }
 
 }
-
-

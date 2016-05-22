@@ -6,9 +6,10 @@ import com.xueqiu.qa.appcrawler.MiniAppium
   * Created by seveniruby on 16/5/21.
   */
 class TestAndroidSimulator extends MiniAppium {
+
   override def beforeAll(): Unit = {
     start()
-    config("app", "/Users/seveniruby/Downloads/xueqiu.apk")
+    config("app",  "/Users/seveniruby/Downloads/xueqiu.apk")
     config("appPackage", "com.xueqiu.android")
     config("appActivity", ".view.WelcomeActivityAlias")
     config("fullReset", "false")
@@ -34,7 +35,7 @@ class TestAndroidSimulator extends MiniAppium {
     appium()
   }
 
-  test("test android simulator") {
+  test("验证登陆用户名") {
     see("user_profile_icon").tap()
     see("screen_name").nodes.head("text") should equal("huangyansheng")
     log.info(nodes().head)

@@ -1,5 +1,6 @@
 package com.xueqiu.qa.appcrawler
 
+import java.io.File
 import java.net.URL
 
 import io.appium.java_client.AppiumDriver
@@ -73,16 +74,21 @@ class MiniAppium extends FunSuite
       lineBuffer=line
     })
     appiumProcess=Process("appium").run(daemonLogger)
+    var waitTime=0
     def waitForStarted(): Unit ={
+      waitTime+=1
+      if(waitTime>10){
+        return
+      }
       sleep(0.5)
       if(buffer.toString.contains("started")){
         log.info(buffer)
       }else{
-        log.info(lineBuffer)
         waitForStarted()
       }
     }
     waitForStarted()
+    log.info(buffer)
   }
   def stop(): Unit ={
     appiumProcess.destroy()
@@ -96,13 +102,27 @@ class MiniAppium extends FunSuite
     Thread.sleep((seconds * 1000).toInt)
   }
 
+  /**
+    * 在5s的时间内确定元素存在并且位置是固定的
+    * @param key
+    */
   def wait(key:String): Unit ={
     var isFound=false
+    var preLocation:org.openqa.selenium.Point=null
     1 to 10 foreach (i=>{
       if(isFound==false) {
         log.info(s"find by xpath ${keyToXPath(key)}")
-        if (driver.findElementsByXPath(keyToXPath(key)).size() > 0) {
+        val elements=driver.findElementsByXPath(keyToXPath(key))
+        if (elements.size() > 0) {
           log.info("found")
+          val curLocation=elements.get(0).getLocation
+          if(preLocation==curLocation){
+            log.info("ui ready")
+            isFound=true
+          }else{
+            log.info("ui not ready")
+          }
+          preLocation=curLocation
           isFound = true
         } else {
           sleep(0.5)
@@ -151,6 +171,12 @@ class MiniAppium extends FunSuite
     println(capabilities.getCapability("app"))
     println(capabilities.getCapability("appActivity"))
     println(capabilities.getCapability("appPackage"))
+    if(capabilities.getCapability("app")==null){
+      config("app", "")
+    }
+    if(capabilities.getCapability("deviceName")==null || capabilities.getCapability("deviceName").toString.isEmpty){
+      config("deviceName", "demo")
+    }
     if (
       capabilities.getCapability("app").toString.matches(".*\\.apk$") ||
         capabilities.getCapability("appActivity") !=null ||
@@ -162,6 +188,7 @@ class MiniAppium extends FunSuite
     }
 
     getDeviceInfo
+    log.info(s"capture dir = ${new File(".").getAbsolutePath}")
     setCaptureDir(".")
     implicitlyWait(Span(10, Seconds))
   }

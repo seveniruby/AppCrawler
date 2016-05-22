@@ -1,6 +1,7 @@
 {
   "pluginList" : [
     "com.xueqiu.qa.appcrawler.plugin.TagLimitPlugin",
+    "com.xueqiu.qa.appcrawler.plugin.IDeviceScreenshot",
     "com.xueqiu.qa.appcrawler.plugin.LogPlugin"
   ],
   "saveScreen" : true,

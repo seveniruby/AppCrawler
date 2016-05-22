@@ -10,7 +10,7 @@ externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral
 
 
 parallelExecution in Test := false
-(testOptions in Test) += Tests.Argument(TestFrameworks.ScalaTest, "-o", "-u", "target/test-reports", "-h", "target/test-reports")
+(testOptions in Test) += Tests.Argument(TestFrameworks.ScalaTest, "-o", "-u", "target/reports", "-h", "target/reports")
 testOptions in Test += Tests.Setup(() => {
   println("Setup")
   (definedTests in Test).value.map(println(_))

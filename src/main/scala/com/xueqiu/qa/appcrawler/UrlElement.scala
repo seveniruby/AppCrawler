@@ -15,7 +15,7 @@ case class UrlElement(url: String, tag: String, id: String, name: String, loc:St
   def toFileName(): String ={
     //url_[parent id]-tag-id
     s"${url}_${"\"([^/0-9][^\" =]*)\"".r.findAllMatchIn(loc).map(_.subgroups).toList.flatten.
-      map(_.split("/").lastOption.getOrElse("")).mkString("-")}".take(200)
+      map(_.split("/").lastOption.getOrElse("")).mkString("-").replaceAll("[\\\\/ ]", "")}".take(200)
   }
 
   /**
