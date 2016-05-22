@@ -5,6 +5,7 @@ import java.net.URL
 import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
+import io.appium.java_client.remote.{IOSMobileCapabilityType, AndroidMobileCapabilityType, MobileCapabilityType}
 import org.apache.log4j.Level
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.DesiredCapabilities
@@ -30,20 +31,11 @@ class MiniAppium extends FunSuite
 
   implicit var driver: AppiumDriver[WebElement] = _
   var appiumProcess: Process = null
+  var loc=""
+  var index=0
 
   var screenWidth = 0
   var screenHeight = 0
-
-  private def initAppium(): Unit = {
-    getDeviceInfo
-    setCaptureDir(".")
-    implicitlyWait(Span(10, Seconds))
-    //login()
-
-    if (tree("稍后再说").nonEmpty) {
-      click on see("稍后再说")
-    }
-  }
 
 
   def Android(): Unit = {
@@ -71,14 +63,22 @@ class MiniAppium extends FunSuite
   }
 
   def start(): Unit ={
-    val buffer=new StringBuffer()
-    val daemonLogger=ProcessLogger(line=>buffer.append(line), line=>buffer.append(line))
+    val buffer=new StringBuffer("\n")
+    var lineBuffer=""
+    val daemonLogger=ProcessLogger(line=>{
+      buffer.append(line).append("\n")
+      lineBuffer=line
+    }, line=>{
+      buffer.append(line).append("\n")
+      lineBuffer=line
+    })
     appiumProcess=Process("appium").run(daemonLogger)
     def waitForStarted(): Unit ={
       sleep(0.5)
       if(buffer.toString.contains("started")){
         log.info(buffer)
       }else{
+        log.info(lineBuffer)
         waitForStarted()
       }
     }
@@ -92,15 +92,11 @@ class MiniAppium extends FunSuite
     capabilities.setCapability(key, value)
   }
 
-  def send(keys: String): Unit = {
-    driver.getKeyboard.sendKeys(keys)
-  }
-
   def sleep(seconds: Double = 1.0F): Unit = {
     Thread.sleep((seconds * 1000).toInt)
   }
 
-  def see(key: String="//*", index: Int = 0): XPathQuery = {
+  def wait(key:String): Unit ={
     var isFound=false
     1 to 10 foreach (i=>{
       if(isFound==false) {
@@ -114,10 +110,34 @@ class MiniAppium extends FunSuite
       }
     })
 
-    XPathQuery(tree(key, index)("xpath").toString)
   }
 
-  var index = 0
+  def see(key: String="//*", index: Int = 0): this.type = {
+    loc=key
+    this.index=index
+    wait(key)
+    this
+  }
+
+  def tap(): this.type ={
+    click on (XPathQuery(tree(loc, index)("xpath").toString))
+    this
+  }
+  def send(keys: String): this.type = {
+    tap()
+    driver.getKeyboard.sendKeys(keys)
+    this
+  }
+  def attribute(key:String): String ={
+    nodes().head.get(key).get.toString
+  }
+  def apply(key:String): String ={
+    attribute(key)
+  }
+  def nodes(): List[Map[String, Any]] ={
+    RichData.parseXPath(keyToXPath(loc), RichData.toXML(pageSource))
+  }
+
 
   def save(): Unit = {
     index += 1
@@ -189,9 +209,9 @@ class MiniAppium extends FunSuite
     log.info(s"find by key = ${key} index=${index}")
     val nodes = RichData.parseXPath(keyToXPath(key), RichData.toXML(pageSource))
     nodes.foreach(node => {
-      log.info(s"index=${nodes.indexOf(node)}")
+      log.debug(s"index=${nodes.indexOf(node)}")
       node.foreach(kv=>{
-        log.info(kv)
+        log.debug(kv)
       })
     })
     val ret = nodes.lift(index).getOrElse(Map[String, Any]())

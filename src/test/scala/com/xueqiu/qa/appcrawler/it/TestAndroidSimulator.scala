@@ -1,24 +1,36 @@
 package com.xueqiu.qa.appcrawler.it
 
 import com.xueqiu.qa.appcrawler.MiniAppium
-import org.scalatest.FunSuite
-import scala.sys.process._
+
 /**
   * Created by seveniruby on 16/5/21.
   */
 class TestAndroidSimulator extends MiniAppium{
-  test("test android simulator"){
+  override def beforeAll(): Unit ={
     start()
     config("app", "/Users/seveniruby/Downloads/xueqiu.apk")
     config("appPackage", "com.xueqiu.android")
     config("appActivity", ".view.WelcomeActivityAlias")
     config("deviceName", "demo")
     appium()
-    click on see("输入手机号")
-    send("15600534760")
-    click on see("password")
-    send("hys2xueqiu")
-    click on see("button_next")
+
+  }
+  test("test android simulator"){
+    swipe("left")
+    swipe("down")
+    see("输入手机号").send("13067754297")
+    see("password").send("xueqiu4297")
+    see("button_next").tap()
+    see("tip").tap().tap().tap()
+    swipe("down")
+    see("user_profile_icon").tap()
+    see("screen_name").nodes.head("text") should equal ("huangyansheng")
+    log.info(nodes().head)
+    see("screen_name").nodes.last("text") should be ("huangyansheng")
+    see("screen_name").attribute("text") shouldBe "huangyansheng"
+    see("screen_name")("text") shouldEqual "huangyansheng"
+  }
+  override def afterAll(): Unit ={
     stop()
   }
 

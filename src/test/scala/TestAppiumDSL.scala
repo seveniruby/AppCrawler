@@ -31,17 +31,17 @@ class TestAppiumDSL extends MiniAppium {
       setCaptureDir("/Users/seveniruby/temp/crawl4")
       appium()
       captureTo(s"${device}-${version}_init.png")
-      click on see("手机号")
+      see("手机号").tap()
       send("15600534760")
-      click on see("//UIASecureTextField")
+      see("//UIASecureTextField").tap()
       send("hys2xueqiu")
       captureTo(s"${device}-${version}_login.png")
-      click on see("登 录")
+      see("登 录").tap()
       captureTo(s"${device}-${version}_main.png")
       if(device.matches(".*iPad.*")){
-        click on see("//UIAButton[@path=\"/0/0/0/5\"]")
+        see("//UIAButton[@path=\"/0/0/0/5\"]").tap()
       }else {
-        click on see("//UIAButton[@path=\"/0/0/3/5\"]")
+        see("//UIAButton[@path=\"/0/0/3/5\"]").tap
       }
       tree("seveniruby")("name") should be equals "seveniruby"
       captureTo(s"${device}-${version}_profile.png")

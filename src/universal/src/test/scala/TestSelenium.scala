@@ -62,9 +62,7 @@ class TestSelenium extends MiniAppium {
 
   test("添加组合"){
     click on see("自选")
-    printTree()
     click on see("组合")
-    printTree
     click on see("create")
     click on see("好名字")
     send("seveniruby")
@@ -81,7 +79,6 @@ class TestSelenium extends MiniAppium {
     send("dangdang")
     click on see("DANG")
     println("dang ddddddd")
-    printTree()
     click on see("done")
 
     click on xpath("(//*[@resource-id='com.xueqiu.android:id/icon_adjust'])[1]")
@@ -92,7 +89,6 @@ class TestSelenium extends MiniAppium {
     click on see("96")
     click on see("确定")
 
-    printTree()
     click on xpath("(//*[@resource-id='com.xueqiu.android:id/icon_adjust'])[2]")
     click on see("1")
     click on see("2")
@@ -108,7 +104,6 @@ class TestSelenium extends MiniAppium {
     click on see("股票")
     Thread.sleep(1000)
     click on see("大港股份")
-    printTree()
     tree("//*[@resource-id='android:id/action_bar_title']")("text") should be  equals("大港股份")
 
 

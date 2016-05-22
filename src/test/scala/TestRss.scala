@@ -21,12 +21,12 @@ class TestRss extends MiniAppium{
     if(tree("登录").isEmpty){
       return
     }
-    click on see("登录")
-    click on see("手机号")
+    see("登录").tap()
+    see("手机号").tap()
     send(userName)
-    click on see("密码", 1)
+    see("密码", 1).tap()
     send(password)
-    click on see("登 录")
+    see("登 录").tap()
   }
   test("测试swipe"){
     sleep(3)
@@ -42,11 +42,11 @@ class TestRss extends MiniAppium{
   }
   test("未开未绑"){
     see("Image")
-    click on see("选股策略")
+    see("选股策略").tap()
     swipe()
     swipe()
     swipe()
-    click on see("情绪宝")
+    see("情绪宝").tap()
     tree()
   }
   override def afterAll(): Unit ={

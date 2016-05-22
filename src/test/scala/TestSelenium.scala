@@ -20,7 +20,7 @@ class TestSelenium extends MiniAppium {
 
   def login(): Unit = {
     Thread.sleep(5000)
-    click on see("account")
+    see("account").tap()
     click on id("account")
     send("15600534760")
     save()
@@ -40,34 +40,34 @@ class TestSelenium extends MiniAppium {
     click on id("home_search")
     save
     println(pageSource)
-    click on see("//android.widget.EditText")
+    see("//android.widget.EditText").tap()
     send("zxzq")
     save
     Thread.sleep(2000)
     println(pageSource)
     save
-    click on see("SH600030")
+    see("SH600030").tap
     save
   }
 
   test("股票行情") {
-    click on see("自选")
+    see("自选").tap()
     save
-    click on see("股票")
+    see("股票").tap
     Thread.sleep(1000)
     save
-    click on see("大港股份")
-    click on see("分时")
-    click on see("5日")
-    click on see("日K")
-    click on see("周K")
-    click on see("月K")
+    see("大港股份").tap
+    see("分时").tap
+    see("5日").tap
+    see("日K").tap
+    see("周K").tap
+    see("月K").tap
 
-    click on see("新贴")
-    click on see("热贴")
-    click on see("新闻")
-    click on see("公告")
-    click on see("球友")
+    see("新贴").tap
+    see("热贴").tap
+    see("新闻").tap
+    see("公告").tap
+    see("球友").tap
   }
 
   test("添加组合") {
@@ -78,63 +78,63 @@ class TestSelenium extends MiniAppium {
     login()
     tree()
     tree("自选")
-    click on see("自选")
+    see("自选").tap
     tree()
-    click on see("组合")
+    see("组合").tap
     tree("Image")
-    click on see("create")
-    click on see("好名字")
+    see("create").tap
+    see("好名字").tap
     send("seveniruby")
-    click on see("下一")
-    click on see("美")
-    click on see("马上")
-    click on see("输入")
+    see("下一").tap
+    see("美").tap
+    see("马上").tap
+    see("输入").tap
     send("alibaba")
     sleep(5)
-    click on see("BABA")
+    see("BABA").tap
     tree("Image")
     tree("Button")
     tree("TextView")
     tree()
-    click on see("done")
+    see("done").tap
 
-    click on see("马上")
-    click on see("输入")
+    see("马上").tap
+    see("输入").tap
     send("dangdang")
-    click on see("DANG")
+    see("DANG").tap
 
     tree("Image")
     tree("Button")
     tree("TextView")
     tree()
-    click on see("done")
+    see("done").tap
     sleep(3)
     tree("icon")
-    click on see("(//*[@resource-id='com.xueqiu.android:id/icon_adjust'])[1]")
-    click on see("100")
-    click on see("99")
-    click on see("98")
-    click on see("97")
-    click on see("96")
-    click on see("确定")
+    see("(//*[@resource-id='com.xueqiu.android:id/icon_adjust'])[1]").tap
+    see("100").tap
+    see("99").tap
+    see("98").tap
+    see("97").tap
+    see("96").tap
+    see("确定").tap
 
     tree()
-    click on see("(//*[@resource-id='com.xueqiu.android:id/icon_adjust'])[2]")
-    click on see("1")
-    click on see("2")
-    click on see("确定")
+    see("(//*[@resource-id='com.xueqiu.android:id/icon_adjust'])[2]").tap
+    see("1").tap
+    see("2").tap
+    see("确定").tap
 
-    click on see("创建")
-    click on see("不了")
+    see("创建").tap
+    see("不了").tap
 
   }
 
   test("股票") {
-    click on see("自选")
+    see("自选").tap
     tree("//android.widget.ImageView")
-    click on see("股票")
+    see("股票").tap
     tree("//android.widget.ImageView")
-    click on see("大港股份")
+    see("大港股份").tap
     tree()
     tree("action_bar_title")("text") should be equals ("大港股份")
     log.warn("Start com.xueqiu.qa.appcrawler.Crawler")
@@ -143,17 +143,17 @@ class TestSelenium extends MiniAppium {
 
   test("组合") {
     tree("组合")
-    click on see("//UIATabBar/UIAButton[@name=\"组合\"]")
-    click on see("组合风云榜")
-    click on see("持仓")
+    see("//UIATabBar/UIAButton[@name=\"组合\"]").tap
+    see("组合风云榜").tap
+    see("持仓").tap
     Thread.sleep(2000)
     tree("股票")
     crawl("/Users/seveniruby/projects/LBSRefresh/src/universal/conf/xueqiu.json", "/Users/seveniruby/temp/crawl")
   }
 
   test("7.6.1股票") {
-    click on see("自选")
-    click on see("雪球100")
+    see("自选").tap
+    see("雪球100").tap
     tree()
     crawl("/Users/seveniruby/projects/LBSRefresh/src/universal/conf/xueqiu.json", "/Users/seveniruby/temp/crawl4")
 
@@ -161,12 +161,12 @@ class TestSelenium extends MiniAppium {
   }
 
   test("登录", Tag("7.7"), Tag("iOS")) {
-    click on see("手机号")
+    see("手机号").tap
     send("15600534760")
-    click on see("//UIASecureTextField")
+    see("//UIASecureTextField").tap
     send("hys2xueqiu")
-    click on see("登 录")
-    click on see("//UIAButton[@path=\"/0/0/3/5\"]")
+    see("登 录").tap
+    see("//UIAButton[@path=\"/0/0/3/5\"]").tap
     tree("seveniruby")("name") should be equals "seveniruby"
     log.info("tree first")
     tree()
@@ -177,11 +177,11 @@ class TestSelenium extends MiniAppium {
   }
 
   test("登录driver版本", Tag("7.7"), Tag("iOS")) {
-    click on see("手机号")
+    see("手机号").tap
     send("15600534760")
-    click on see("//UIASecureTextField")
+    see("//UIASecureTextField").tap
     send("hys2xueqiu")
-    click on see("登 录")
+    see("登 录").tap
     driver.findElementByXPath("//UIAButton[@path=\"/0/0/3/5\"]").click()
     tree("seveniruby")("name") should be equals "seveniruby"
     log.info("tree first")
@@ -194,15 +194,15 @@ class TestSelenium extends MiniAppium {
 
   test("登录验证ipad", Tag("7.7"), Tag("iOS")) {
     iOS()
-    click on see("手机号")
+    see("手机号").tap
     send("15600534760")
-    click on see("//UIASecureTextField")
+    see("//UIASecureTextField").tap
     send("hys2xueqiu")
-    click on see("登 录")
+    see("登 录").tap
     tree()
     tree("//UIAButton")
     //ipad和iphone的path并不一致
-    click on see("//UIAButton[@path=\"/0/0/0/5\"]")
+    see("//UIAButton[@path=\"/0/0/0/5\"]").tap
     tree("seveniruby")("name") should be equals "seveniruby"
   }
 
@@ -212,12 +212,12 @@ class TestSelenium extends MiniAppium {
     appium()
     tree()
     tree("//UIAButton")
-    click on see("手机号")
+    see("手机号").tap
     send("15600534760")
-    click on see("//UIASecureTextField")
+    see("//UIASecureTextField").tap
     send("hys2xueqiu")
-    click on see("登 录")
-    click on see("//UIAButton[@path=\"/0/0/3/5\"]")
+    see("登 录").tap
+    see("//UIAButton[@path=\"/0/0/3/5\"]").tap
     tree("seveniruby")("name") should be equals "seveniruby"
   }
 
@@ -239,14 +239,14 @@ class TestSelenium extends MiniAppium {
     config("deviceName", "demo")
     appium("http://127.0.0.1:4723/wd/hub")
     sleep(5)
-    click on see("account")
+    see("account").tap
     send("15600534760")
-    click on see("password")
+    see("password").tap
     send("hys2xueqiu")
-    click on see("button_next")
-    click on see("tip")
-    click on see("tip")
-    click on see("tip")
+    see("button_next").tap
+    see("tip").tap
+    see("tip").tap
+    see("tip").tap
     tree("Image")
     tree("seveniruby")("name") should be equals "seveniruby"
 
@@ -259,13 +259,10 @@ class TestSelenium extends MiniAppium {
     config("deviceName", "demo")
     appium("http://127.0.0.1:4723/wd/hub")
     sleep(10)
-    click on see("手机号")
-    sleep(10000)
-    send("15600534760")
-    click on see("//UIASecureTextField")
-    send("hys2xueqiu")
-    click on see("登 录")
-    click on see("//UIAButton[@path=\"/0/0/3/5\"]")
+    see("手机号").send("15600534760")
+    see("//UIASecureTextField").send("hys2xueqiu")
+    see("登 录").tap
+    see("//UIAButton[@path=\"/0/0/3/5\"]").tap
     tree("seveniruby")("name") should be equals "seveniruby"
 
   }
