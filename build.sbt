@@ -28,6 +28,7 @@ libraryDependencies ++= Seq(
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.5.4",
   "net.lightbody.bmp" % "browsermob-core-littleproxy" % "2.1.0-beta-6",
   "net.lightbody.bmp" % "browsermob-core" % "2.1.0-beta-6",
+  "org.lucee" % "commons-codec" % "1.10.L001",
   "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 
@@ -50,10 +51,10 @@ assemblyMergeStrategy in assembly := {
 
 
 
-//resolvers += "oschina" at "http://maven.oschina.net/content/groups/public/"
+resolvers += "oschina" at "http://maven.oschina.net/content/groups/public/"
 resolvers += Resolver.sonatypeRepo("public")
 resolvers += "spring-snapshots" at "http://repo.spring.io/snapshot"
-externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = false)
+externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = true)
 
 
 parallelExecution in Test := false
