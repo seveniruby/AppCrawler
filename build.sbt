@@ -50,7 +50,7 @@ assemblyMergeStrategy in assembly := {
 
 
 
-resolvers += "oschina" at "http://maven.oschina.net/content/groups/public/"
+//resolvers += "oschina" at "http://maven.oschina.net/content/groups/public/"
 resolvers += Resolver.sonatypeRepo("public")
 resolvers += "spring-snapshots" at "http://repo.spring.io/snapshot"
 externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = false)
