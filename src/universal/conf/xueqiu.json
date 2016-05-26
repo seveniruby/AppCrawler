@@ -39,7 +39,7 @@
     "//*[contains(@resource-id, 'action_bar_title')]"
   ],
   "baseUrl" : [ ".*MainActivity", ".*SNBHomeView.*" ],
-  "maxDepth" : 6,
+  "maxDepth" : 20,
   "blackUrlList" : [ ".*球友.*", ".*png.*", ".*Talk.*", ".*Chat.*", ".*Safari.*", "WriteStatus.*", "Browser.*", "UserProfile.*", ".*消息.*", "MyselfUser", ".*消息.*", ".*MyselfUser.*", ".*股市直播.*", ".*UserVC.*", ".*正文页.*", "SNBTradeSegment" ],
   "backButton" : [
     "//*[@resource-id='action_back']",
@@ -160,6 +160,10 @@
   }, {
     "action" : "click",
     "idOrName" : ".*搬到这里.*",
+    "times" : 0
+  }, {
+    "action" : "click",
+    "idOrName" : "我要退出",
     "times" : 0
   }, {
     "action" : "click",
