@@ -63,7 +63,7 @@ class MiniAppium extends FunSuite
     config("autoAcceptAlerts", "true")
   }
 
-  def start(): Unit ={
+  def start(port: Int=4723): Unit ={
     val buffer=new StringBuffer("\n")
     var lineBuffer=""
     val daemonLogger=ProcessLogger(line=>{
@@ -73,7 +73,7 @@ class MiniAppium extends FunSuite
       buffer.append(line).append("\n")
       lineBuffer=line
     })
-    appiumProcess=Process("appium").run(daemonLogger)
+    appiumProcess=Process(s"appium -p ${port}").run(daemonLogger)
     var waitTime=0
     def waitForStarted(): Unit ={
       waitTime+=1

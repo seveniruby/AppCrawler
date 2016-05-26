@@ -971,7 +971,6 @@ class Crawler extends CommonLog {
           case "click" => {
             val res = doAppium(tap(v))
             appendClickedList(e)
-            refreshPage()
             if (List("UIATextField", "UIATextView", "EditText").map(e.tag.contains(_)).contains(true)) {
               doAppium(driver.hideKeyboard())
             }
@@ -1008,7 +1007,6 @@ class Crawler extends CommonLog {
           }
         }
         Some()
-
       }
       case None => {
         log.warn("find error")
@@ -1077,10 +1075,6 @@ class Crawler extends CommonLog {
         isHit = true
         clickedElementsList.push(e)
         log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
-        refreshPage()
-        saveLog()
-        saveDom()
-        saveScreen(true)
         doAppiumAction(e, action.toString) match {
           case None => {
             log.warn("do rule action fail")
@@ -1094,6 +1088,11 @@ class Crawler extends CommonLog {
             }
           }
         }
+
+        refreshPage()
+        saveLog()
+        saveDom()
+        saveScreen(true)
 
       })
 
