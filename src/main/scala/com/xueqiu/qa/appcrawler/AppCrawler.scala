@@ -38,9 +38,9 @@ object AppCrawler extends CommonLog{
     val parser = new scopt.OptionParser[Param]("appcrawler") {
       head(
         """
-          |AppCrawler 1.3.0
+          |AppCrawler 1.3.2
           |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
-          |灵感来源: 晓光 泉龙 杨榕 雪球测试团队出品
+          |灵感来源: 晓光 泉龙 杨榕 恒温
           |移动测试技术交流 https://testerhome.com
         """.stripMargin)
       opt[File]('a', "app") action { (x, c) =>{

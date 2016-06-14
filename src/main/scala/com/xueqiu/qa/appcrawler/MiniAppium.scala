@@ -247,7 +247,7 @@ class MiniAppium extends FunSuite
   }
 
   //todo: not test
-  def crawl(conf: String = "", resultDir: String = ""): Unit = {
+  def crawl(conf: String = "", resultDir: String = "", maxDepth:Int=1): Unit = {
     var crawler: Crawler = new Crawler
     driver.getClass.getSimpleName match {
       case "AndroidDriver" => {
@@ -268,7 +268,7 @@ class MiniAppium extends FunSuite
     }
     crawler.conf.startupActions.clear()
     crawler.log.setLevel(Level.TRACE)
-    crawler.conf.maxDepth = 1
+    crawler.conf.maxDepth = maxDepth
     crawler.start(driver)
 
   }

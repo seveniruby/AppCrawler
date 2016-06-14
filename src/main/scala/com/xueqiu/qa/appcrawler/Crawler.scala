@@ -136,6 +136,7 @@ class Crawler extends CommonLog {
     GA.log("crawler")
     loadPlugins()
     runStartupScript()
+    refreshPage()
     crawl()
     //爬虫结束
     clickedElementsList.push(UrlElement(s"${url}-CrawlStop", "", "", "", ""))
@@ -364,13 +365,19 @@ class Crawler extends CommonLog {
     var firstElements = List[immutable.Map[String, Any]]()
     var appendElements = List[immutable.Map[String, Any]]()
     var commonElements = List[immutable.Map[String, Any]]()
+    var blackElements = List[immutable.Map[String, Any]]()
 
     val allElements = getAllElements("//*")
     log.trace(s"all elements = ${allElements.size}")
 
+    conf.blackList.filter(_.head=='/').foreach(xpath => {
+      blackElements ++= getAllElements(xpath).filter(isValid)
+    })
     conf.selectedList.foreach(xpath => {
       commonElements ++= getAllElements(xpath).filter(isValid)
     })
+    commonElements=commonElements diff blackElements
+
     conf.firstList.foreach(xpath => {
       firstElements ++= getAllElements(xpath).filter(isValid).intersect(commonElements)
     })
@@ -690,6 +697,7 @@ class Crawler extends CommonLog {
 
   def tap(x:Int=screenWidth/2, y:Int=screenHeight/2): Unit ={
     log.info("tap")
+    driver.tap(1, x, y, 100)
     //driver.findElementByXPath("//UIAWindow[@path='/0/2']").click()
     //new TouchAction(driver).tap(x, y).perform()
   }

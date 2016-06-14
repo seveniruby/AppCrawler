@@ -5,16 +5,15 @@ import com.xueqiu.qa.appcrawler.MiniAppium
 /**
   * Created by seveniruby on 16/5/21.
   */
-class TestAndroidSimulator extends MiniAppium {
+class TestIOS extends MiniAppium {
   override def beforeAll(): Unit = {
     start()
-    config("app", "/Users/seveniruby/Downloads/xueqiu.apk")
-    config("appPackage", "com.xueqiu.android")
-    config("appActivity", ".view.WelcomeActivityAlias")
-    config("fullReset", "false")
+    config("app", "/Users/seveniruby/projects/snowball-ios/DerivedData/Snowball/Build/Products/Debug-iphoneos/Snowball.app")
+    config("udid", "4c1bd4ed1cc4089c10a5917959f6ddd804714b2a")
+    config("bundleId", "com.xueqiu")
+    config("fullReset", "true")
     config("noReset", "true")
     appium()
-    login()
     quit()
   }
 
@@ -29,14 +28,17 @@ class TestAndroidSimulator extends MiniAppium {
   }
 
   override def beforeEach(): Unit = {
-    config("appPackage", "com.xueqiu.android")
-    config("appActivity", ".view.WelcomeActivityAlias")
+    config("app", "")
+    config("fullReset", "false")
     appium()
   }
 
   test("test android simulator") {
     see("user_profile_icon").tap()
-    see("screen_name").nodes.head("text") should be("huangyansheng")
+    see("screen_name").nodes.head("text") should equal("huangyansheng")
+    log.info(nodes().head)
+    see("screen_name").nodes.last("text") should be("huangyansheng")
+    see("screen_name").attribute("text") shouldBe "huangyansheng"
     see("screen_name")("text") shouldEqual "huangyansheng"
   }
 
@@ -50,7 +52,7 @@ class TestAndroidSimulator extends MiniAppium {
   test("自选遍历"){
     swipe("down")
     see("自选").tap
-    crawl("src/universal/conf/xueqiu.conf", "~/temp/ipad_7.8.1-5_1", 6)
+    crawl("/Users/seveniruby/projects/LBSRefresh/src/universal/conf/xueqiu.json", "/Users/seveniruby/temp/ipad_7.8.1-5_2", 2)
   }
 
   override def afterEach: Unit = {

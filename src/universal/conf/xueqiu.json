@@ -4,7 +4,7 @@
     "com.xueqiu.qa.appcrawler.plugin.IDeviceScreenshot",
     "com.xueqiu.qa.appcrawler.plugin.LogPlugin"
   ],
-  "saveScreen" : true,
+  "saveScreen" : false,
   "currentDriver" : "android",
   "maxTime" : 10800,
   "resultDir" : "",
@@ -50,6 +50,7 @@
     "//*[@name='Back']",
     "//*[@name='返回']",
     "//UIAButton[@name='取消']",
+    "//UIAButton[@label='返回']",
     "//UIAButton[@name='关闭']",
     "//UIAButton[@name='首页']" ],
   "firstList" : [
@@ -76,7 +77,11 @@
     "//*[contains(@resource-id,'group_header_view')]//android.widget.TextView",
     "//*[contains(@resource-id,'indicator')]//android.widget.TextView"
   ],
-  "blackList" : [ ".*Safari", "我要退出", ".*电话.*", ".*Safari.*", "发布", "action_bar_title", ".*浏览器.*", "message", ".*home", "首页", "消息", "弹幕", "发射", "Photos", "地址", "网址", "发送", "拉黑", "举报", "camera", "Camera", "点评", "nav_icon_home", "评论", "回复", "咨询", "分享.*", "转发.*", "comments", "comment", "stock_item_.*", ".*[0-9]{2}.*", "弹幕", "发送", "保存", "确定", "up", "user_profile_icon", "selectAll", "cut", "copy", "send", "买[0-9]*", "卖[0-9]*", "聊天.*", "拍照.*", "发表.*", "回复.*", "加入.*", "赞助.*", "微博.*", "球友.*", ".*开户.*" ],
+  "blackList" : [
+    "//*[name()='UIATextField']",
+    "//*[contains(name(), 'EditText')]",
+    "//UIAStatusBar//*",
+    ".*Safari", ".*电话.*", ".*Safari.*", "发布", "action_bar_title", ".*浏览器.*", "message", ".*home", "首页", "消息", "弹幕", "发射", "Photos", "地址", "网址", "发送", "拉黑", "举报", "camera", "Camera", "点评", "nav_icon_home", "评论", "回复", "咨询", "分享.*", "转发.*", "comments", "comment", "stock_item_.*", ".*[0-9]{2}.*", "弹幕", "发送", "保存", "确定", "up", "user_profile_icon", "selectAll", "cut", "copy", "send", "买[0-9]*", "卖[0-9]*", "聊天.*", "拍照.*", "发表.*", "回复.*", "加入.*", "赞助.*", "微博.*", "球友.*", ".*开户.*" ],
   "elementActions" : [ {
     "action" : "click",
     "idOrName" : "//*[@resource-id='com.xueqiu.android:id/button_login']",
@@ -186,5 +191,5 @@
     "idOrName" : "隐藏键盘",
     "times" : 0
   }],
-  "startupActions" : [ "scroll left" ]
+  "startupActions" : [ ]
 }
