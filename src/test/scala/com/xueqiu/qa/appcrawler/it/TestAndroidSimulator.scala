@@ -12,7 +12,7 @@ class TestAndroidSimulator extends MiniAppium {
     config("appPackage", "com.xueqiu.android")
     config("appActivity", ".view.WelcomeActivityAlias")
     config("fullReset", "false")
-    config("noReset", "true")
+    config("noReset", "false")
     appium()
     login()
     quit()
@@ -31,6 +31,7 @@ class TestAndroidSimulator extends MiniAppium {
   override def beforeEach(): Unit = {
     config("appPackage", "com.xueqiu.android")
     config("appActivity", ".view.WelcomeActivityAlias")
+    config("noReset", "true")
     appium()
   }
 

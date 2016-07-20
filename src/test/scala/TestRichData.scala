@@ -1,10 +1,10 @@
-import com.xueqiu.qa.appcrawler.{RichData, UrlElement}
+import com.xueqiu.qa.appcrawler.{CommonLog, RichData, UrlElement}
 import org.scalatest.{Matchers, FunSuite}
 
 /**
   * Created by seveniruby on 16/3/26.
   */
-class TestRichData extends FunSuite with Matchers{
+class TestRichData extends FunSuite with Matchers with CommonLog{
 
 
   val xml=
@@ -710,8 +710,8 @@ class TestRichData extends FunSuite with Matchers{
         |//UIAApplication[@name="雪球" and @path="/0"]/UIAWindow[@path="/0/0"]/UIATableView[@path="/0/0/1"]/UIATableCell[@name="恒瑞医药业绩会，高管说了啥？" and @path="/0/0/1/10"]/UIAStaticText[@name="恒瑞医药业绩会，高管说了啥？" and @path="/0/0/1/10/0"]
       """.stripMargin
     val ele=UrlElement("", "", "", "", str)
-    println(ele.toTagPath())
-    println(ele.toFileName())
+    log.info(ele.toTagPath())
+    log.info(ele.toFileName())
 
   }
 }

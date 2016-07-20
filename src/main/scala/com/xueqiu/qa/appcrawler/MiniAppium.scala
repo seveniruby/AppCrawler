@@ -325,8 +325,7 @@ class MiniAppium extends FunSuite
       (screenWidth * endX).toInt, (screenHeight * endY).toInt, 1000
     )
     )
-
-
+    sleep(1)
   }
 
 

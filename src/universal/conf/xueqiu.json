@@ -1,10 +1,9 @@
 {
   "pluginList" : [
     "com.xueqiu.qa.appcrawler.plugin.TagLimitPlugin",
-    "com.xueqiu.qa.appcrawler.plugin.IDeviceScreenshot",
-    "com.xueqiu.qa.appcrawler.plugin.LogPlugin"
+    "com.xueqiu.qa.appcrawler.plugin.IDeviceScreenshot"
   ],
-  "saveScreen" : false,
+  "saveScreen" : true,
   "currentDriver" : "android",
   "maxTime" : 10800,
   "resultDir" : "",
