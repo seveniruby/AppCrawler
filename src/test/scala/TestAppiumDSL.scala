@@ -25,7 +25,21 @@ class TestAppiumDSL extends MiniAppium {
   )
   forAll(table) { (device: String, version: String) => {
     test(s"兼容性测试-${device}-${version}_登录验证iphone", Tag("7.7"), Tag("iOS"), Tag("兼容性测试")) {
-      iOS(true)
+      val app = if (true) {
+        "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
+          "Build/Products/Debug-iphonesimulator/Snowball.app"
+      } else {
+        "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
+          "Build/Products/Debug-iphoneos/Snowball.app"
+      }
+      config("app", app)
+      config("bundleId", "com.xueqiu")
+      config("fullReset", true)
+      config("noReset", false)
+      config("deviceName", "iPhone 6")
+      config("platformVersion", "9.2")
+      config("autoAcceptAlerts", "true")
+
       config("deviceName", device)
       config("platformVersion", version)
       setCaptureDir("/Users/seveniruby/temp/crawl4")

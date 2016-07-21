@@ -6,39 +6,20 @@ import com.xueqiu.qa.appcrawler.MiniAppium
   * Created by seveniruby on 16/5/21.
   */
 class TestAndroidSimulator extends MiniAppium {
-  override def beforeAll(): Unit = {
-    start()
-    config("app", "/Users/seveniruby/Downloads/xueqiu.apk")
-    config("appPackage", "com.xueqiu.android")
-    config("appActivity", ".view.WelcomeActivityAlias")
-    config("fullReset", "false")
-    config("noReset", "false")
-    appium()
-    login()
-    quit()
-  }
-
-  def login(): Unit = {
-    swipe("left")
-    swipe("down")
-    see("输入手机号").send("13067754297")
-    see("password").send("xueqiu4297")
-    see("button_next").tap()
-    see("tip").tap().tap().tap()
-    swipe("down")
-  }
-
   override def beforeEach(): Unit = {
     config("appPackage", "com.xueqiu.android")
     config("appActivity", ".view.WelcomeActivityAlias")
-    config("noReset", "true")
+    config("noReset", "false")
+    //config("autoWebview", "true")
     appium()
   }
 
   test("test android simulator") {
-    see("user_profile_icon").tap()
-    see("screen_name").nodes.head("text") should be("huangyansheng")
-    see("screen_name")("text") shouldEqual "huangyansheng"
+    see("选股策略").tap()
+    see("短线黑马").tap()
+    see("最新价").shot("最新价.png")
+    see("累计涨跌幅").shot("累计涨跌幅.png")
+
   }
 
   test("自选") {
@@ -59,7 +40,7 @@ class TestAndroidSimulator extends MiniAppium {
   }
 
   override def afterAll(): Unit = {
-    stop()
+    //stop()
   }
 
 }

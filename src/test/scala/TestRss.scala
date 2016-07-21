@@ -7,7 +7,21 @@ class TestRss extends MiniAppium{
   val userName="15600534760"
   val password="hys2xueqiu"
   override  def beforeAll(): Unit ={
-    iOS(true)
+
+    val app = if (true) {
+      "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
+        "Build/Products/Debug-iphonesimulator/Snowball.app"
+    } else {
+      "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
+        "Build/Products/Debug-iphoneos/Snowball.app"
+    }
+    config("app", app)
+    config("bundleId", "com.xueqiu")
+    config("fullReset", true)
+    config("noReset", false)
+    config("deviceName", "iPhone 6")
+    config("platformVersion", "9.2")
+    config("autoAcceptAlerts", "true")
     config("bundleId", "com.xueqiu")
     //config("udid", "4c1bd4ed1cc4089c10a5917959f6ddd804714b2a")
 

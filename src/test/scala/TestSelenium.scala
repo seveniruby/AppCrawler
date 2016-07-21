@@ -71,7 +71,10 @@ class TestSelenium extends MiniAppium {
   }
 
   test("添加组合") {
-    Android()
+    config("app", "")
+    config("appPackage", "com.xueqiu.android")
+    config("appActivity", "com.xueqiu.android.view.WelcomeActivityAlias")
+    config("deviceName", "demo")
     config("app", "/Users/seveniruby/Downloads/xueqiu.apk")
     appium()
     sleep(5)
@@ -193,7 +196,21 @@ class TestSelenium extends MiniAppium {
   }
 
   test("登录验证ipad", Tag("7.7"), Tag("iOS")) {
-    iOS()
+    val app = if (false) {
+      "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
+        "Build/Products/Debug-iphonesimulator/Snowball.app"
+    } else {
+      "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
+        "Build/Products/Debug-iphoneos/Snowball.app"
+    }
+    config("app", app)
+    config("bundleId", "com.xueqiu")
+    config("fullReset", true)
+    config("noReset", false)
+    config("deviceName", "iPhone 6")
+    config("platformVersion", "9.2")
+    config("autoAcceptAlerts", "true")
+
     see("手机号").tap
     send("15600534760")
     see("//UIASecureTextField").tap
@@ -208,7 +225,21 @@ class TestSelenium extends MiniAppium {
 
 
   test("登录验证iphone", Tag("7.7"), Tag("iOS")) {
-    iOS(true)
+    val app = if (true) {
+      "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
+        "Build/Products/Debug-iphonesimulator/Snowball.app"
+    } else {
+      "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
+        "Build/Products/Debug-iphoneos/Snowball.app"
+    }
+    config("app", app)
+    config("bundleId", "com.xueqiu")
+    config("fullReset", true)
+    config("noReset", false)
+    config("deviceName", "iPhone 6")
+    config("platformVersion", "9.2")
+    config("autoAcceptAlerts", "true")
+
     appium()
     tree()
     tree("//UIAButton")

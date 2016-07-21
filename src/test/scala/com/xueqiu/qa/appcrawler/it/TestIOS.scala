@@ -7,24 +7,19 @@ import com.xueqiu.qa.appcrawler.MiniAppium
   */
 class TestIOS extends MiniAppium {
   override def beforeAll(): Unit = {
-    start()
-    config("app", "/Users/seveniruby/projects/snowball-ios/DerivedData/Snowball/Build/Products/Debug-iphoneos/Snowball.app")
-    config("udid", "4c1bd4ed1cc4089c10a5917959f6ddd804714b2a")
+    //start()
+    config("app", "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
+      "Build/Products/Debug-iphonesimulator/Snowball.app")
+    config("udid", "")
+    config("deviceName", "iPhone 6 Plus")
+    config("platformVersion", "9.3")
     config("bundleId", "com.xueqiu")
-    config("fullReset", "true")
+    config("fullReset", "false")
     config("noReset", "true")
+    config("autoAcceptAlerts", "true")
     appium()
+    //todo: do something like login
     quit()
-  }
-
-  def login(): Unit = {
-    swipe("left")
-    swipe("down")
-    see("输入手机号").send("13067754297")
-    see("password").send("xueqiu4297")
-    see("button_next").tap()
-    see("tip").tap().tap().tap()
-    swipe("down")
   }
 
   override def beforeEach(): Unit = {
@@ -45,14 +40,18 @@ class TestIOS extends MiniAppium {
   test("自选") {
     swipe("down")
     see("自选").tap
+    see("自选").shot("自选.element.png")
+    see("港股").shot("港股.element.png")
+    see("沪深").shot("沪深.element.png")
+    see("交易").shot("交易.element.png")
     see("雪球100").tap
     swipe("down")
     see("stock_current_price")("text").toDouble should be > 1000.0
   }
   test("自选遍历"){
     swipe("down")
-    see("自选").tap
-    crawl("/Users/seveniruby/projects/LBSRefresh/src/universal/conf/xueqiu.json", "/Users/seveniruby/temp/ipad_7.8.1-5_2", 2)
+    see("自选").tap.shot()
+    crawl(conf="src/universal/conf/xueqiu.json", maxDepth = 2)
   }
 
   override def afterEach: Unit = {
@@ -60,7 +59,7 @@ class TestIOS extends MiniAppium {
   }
 
   override def afterAll(): Unit = {
-    stop()
+    //stop()
   }
 
 }

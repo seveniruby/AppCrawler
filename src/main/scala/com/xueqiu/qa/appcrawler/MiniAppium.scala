@@ -2,13 +2,15 @@ package com.xueqiu.qa.appcrawler
 
 import java.io.File
 import java.net.URL
+import javax.imageio.ImageIO
 
 import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
 import io.appium.java_client.remote.{IOSMobileCapabilityType, AndroidMobileCapabilityType, MobileCapabilityType}
+import org.apache.commons.io.FileUtils
 import org.apache.log4j.Level
-import org.openqa.selenium.WebElement
+import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.scalatest._
 import org.scalatest.selenium.WebBrowser
@@ -37,31 +39,6 @@ class MiniAppium extends FunSuite
 
   var screenWidth = 0
   var screenHeight = 0
-
-
-  def Android(): Unit = {
-    config("app", "")
-    config("appPackage", "com.xueqiu.android")
-    config("appActivity", "com.xueqiu.android.view.WelcomeActivityAlias")
-    config("deviceName", "demo")
-  }
-
-  def iOS(sim: Boolean = false): Unit = {
-    val app = if (sim) {
-      "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
-        "Build/Products/Debug-iphonesimulator/Snowball.app"
-    } else {
-      "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +
-        "Build/Products/Debug-iphoneos/Snowball.app"
-    }
-    config("app", app)
-    config("bundleId", "com.xueqiu")
-    config("fullReset", true)
-    config("noReset", false)
-    config("deviceName", "iPhone 6")
-    config("platformVersion", "9.2")
-    config("autoAcceptAlerts", "true")
-  }
 
   def start(port: Int=4723): Unit ={
     val buffer=new StringBuffer("\n")
@@ -104,6 +81,7 @@ class MiniAppium extends FunSuite
 
   /**
     * 在5s的时间内确定元素存在并且位置是固定的
+    *
     * @param key
     */
   def wait(key:String): Unit ={
@@ -344,6 +322,21 @@ class MiniAppium extends FunSuite
 
   }
 
+  def shot(fileName:String=""): Unit ={
+    sleep(1)
+    val xpath=tree(loc, index)("xpath").toString
+    val location=driver.findElementByXPath(xpath).getLocation
+    val size=driver.findElementByXPath(xpath).getSize
+    val x=location.getX
+    val y=location.getY
+    val w=size.getWidth
+    val h=size.getHeight
 
-
+    log.info(s"x=${location.getX} y=${location.getY} w=${size.getWidth} h=${size.getHeight}")
+    val file=(driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)
+    FileUtils.copyFile(file, new File(fileName+".png"))
+    val subImg = ImageIO.read(file).getSubimage(x, y, w, h)
+    ImageIO.write(subImg, "png", file)
+    FileUtils.copyFile(file, new File(fileName+".x.y.png"))
+  }
 }
