@@ -1,5 +1,5 @@
 
-import com.xueqiu.qa.appcrawler.{RichData, Crawler, CrawlerConf, XueqiuCrawlerConf}
+import com.xueqiu.qa.appcrawler.{RichData, Crawler, CrawlerConf}
 import org.scalatest.FunSuite
 
 import scala.collection.mutable
@@ -323,11 +323,6 @@ class TestCrawler extends FunSuite{
     conf.save("conf.json")
   }
 
-
-  test("save xueqiu crawl config"){
-    val conf=new XueqiuCrawlerConf
-    conf.save("xueqiu.json")
-  }
 /*
   test("load config"){
     var conf=new com.xueqiu.qa.appcrawler.CrawlerConf
@@ -347,20 +342,4 @@ class TestCrawler extends FunSuite{
     println(conf.baseUrl)
     assert(conf.baseUrl==List("xxx"))
   }
-
-  test("load xueqiu config"){
-    val conf=new XueqiuCrawlerConf
-    conf.elementActions++=List(mutable.Map("idOrName"->"demo", "times"->2, "action"->"click"))
-    conf.save("conf.json")
-    val xq=conf.load("conf.json")
-    println(xq.elementActions)
-
-  }
-
-  test("dump yaml"){
-    val conf=new XueqiuCrawlerConf
-    println(conf.toYaml())
-  }
-
-
 }
