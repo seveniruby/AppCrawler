@@ -1,17 +1,25 @@
 # 自动遍历工具
+基于appium框架的一个自动遍历工具和app爬虫工具, 支持Android和iOS, 支持真机和模拟器
 
 # 为什么做这个工具
-* 各大云市场上自动遍历功能都是限制了时长, 企业无法自由定制.
-* 解决monkey等工具可控性差的缺点
-* 发现深层次的布局问题. 通过新老版本的diff可以发现每个版本的UI变动范围
+- 各大云市场上自动遍历功能都是限制了时长, 企业无法自由定制.
+- 解决monkey等工具可控性差的缺点
+- 发现深层次的布局问题. 通过新老版本的diff可以发现每个版本的UI变动范围
 
 # 设计目标
-* 自动爬取加上规则引导(完成)
-* 支持定制化, 可以自己设定遍历深度(完成)
-* 支持插件化, 允许别人改造和增强(完成)
-* 支持滑动等更多动作(完成)
-* 支持自动截获接口请求(Doing)
-* 支持新老版本的界面对比(Doing)
+- 自动爬取加上规则引导(完成)
+- 支持定制化, 可以自己设定遍历深度(完成)
+- 支持插件化, 允许别人改造和增强(完成)
+- 支持滑动等更多动作(完成)
+- 支持自动截获接口请求(完成)
+- 支持新老版本的界面对比(Doing)
+- 结合Frida (TODO)
+- 支持云测 (Doing)
+
+# 设计思想
+- 自动遍历
+- 大量的XPath应用
+- 类似ReactNative的虚拟dom机制
 
 # 安装依赖
 ### mac下安装appium
@@ -23,44 +31,22 @@ npm install -g appium
 ### 启动appium
 启动appium
 <pre>
-#ios测试默认连接4724默认端口
 appium --session-override
-#android测试默认连接4730默认端口
-appium --session-override -p 4730
 </pre>
-### 下载appcrawler.
+### 启动appcrawler.
 下载appcrawler工具, 解压. 只要有java即可  
 ### 快速遍历
 <pre>
-#使用默认规则运行
-appcrawler -a xueqiu.apk
-#查看帮助文档
 appcrawler --help
+appcrawler -a xueqiu.apk
 </pre>
-
-### 配置文件运行方式
-<pre>
-#配置文件的方式运行
-#Android测试
-appcrawler -c conf/xueqiu.json -p Android
-#iOS测试
-appcrawler -c conf/xueqiu.json -p iOS
-</pre>
-
-### 混合使用
--c参数表示是配置模板. 其他参数会在模板的基础上应用指定配置, --capability指定的参数会覆盖模板中的capability配置
-<pre>
-target/universal/stage/bin/appcrawler -c xueqiu.json  -p ios --capability udid="4c1bd4ed1cc4089c10a5917959f6ddd804714b2a"  -a /Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphoneos/Snowball.app
-target/universal/stage/bin/appcrawler -c xueqiu.json  -p android  -a http://build.snowballfinance.com/static/apps/com.xueqiu.droid.rc/20160204_165054/xueqiu.apk
-</pre>
-
-通过修改配置文件. 可以实现细节的控制. 具体细节说明可参考conf下的雪球app的自动遍历示例.   
 
 ### 输出结果
 在当前目录下会生成一个包含输出结果的目录, 以时间命名. 包含了如下的测试结果  
-* 每个步骤的截图
-* 所有遍历过的控件组成的思维导图
-* 一些点击和元素log
+
+- 每个步骤的截图
+- 所有遍历过的控件组成的思维导图
+- 一些点击和元素log
 
 # 设计理念
 ## 定义url
@@ -157,3 +143,11 @@ last表示最后应该遍历的元素特征
     "UserProfileActivity"
   ],
 </pre>
+
+# How To Develop
+
+- 安装scala
+- 安装sbt
+- 执行sbt stage打包
+
+# 备注

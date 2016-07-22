@@ -1,5 +1,7 @@
+package com.xueqiu.qa.appcrawler.ut
 
-import com.brsanthu.googleanalytics.{PageViewHit, GoogleAnalytics}
+
+import com.brsanthu.googleanalytics.{GoogleAnalytics, PageViewHit}
 import org.apache.log4j.{BasicConfigurator, Level, Logger}
 import org.scalatest.FunSuite
 

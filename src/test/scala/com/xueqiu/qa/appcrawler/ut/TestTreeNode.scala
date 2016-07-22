@@ -1,3 +1,5 @@
+package com.xueqiu.qa.appcrawler.ut
+
 import com.xueqiu.qa.appcrawler.TreeNode
 import org.scalatest.FunSuite
 

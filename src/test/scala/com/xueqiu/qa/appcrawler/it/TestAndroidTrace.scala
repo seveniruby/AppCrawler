@@ -1,3 +1,5 @@
+package com.xueqiu.qa.appcrawler.it
+
 import com.xueqiu.qa.appcrawler.plugin.AndroidTrace
 import org.scalatest.FunSuite
 

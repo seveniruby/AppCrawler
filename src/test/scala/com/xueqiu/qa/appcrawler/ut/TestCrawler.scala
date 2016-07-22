@@ -1,8 +1,8 @@
+package com.xueqiu.qa.appcrawler.ut
 
-import com.xueqiu.qa.appcrawler.{RichData, Crawler, CrawlerConf}
+
+import com.xueqiu.qa.appcrawler.{Crawler, CrawlerConf, RichData}
 import org.scalatest.FunSuite
-
-import scala.collection.mutable
 
 
 /**

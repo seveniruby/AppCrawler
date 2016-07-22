@@ -6,29 +6,6 @@ import com.xueqiu.qa.appcrawler.MiniAppium
   * Created by seveniruby on 16/5/21.
   */
 class TestAndroidSimulator extends MiniAppium {
-
-  override def beforeAll(): Unit = {
-    start()
-    config("app",  "/Users/seveniruby/Downloads/xueqiu.apk")
-    config("appPackage", "com.xueqiu.android")
-    config("appActivity", ".view.WelcomeActivityAlias")
-    config("fullReset", "false")
-    config("noReset", "true")
-    appium()
-    login()
-    quit()
-  }
-
-  def login(): Unit = {
-    swipe("left")
-    swipe("down")
-    see("输入手机号").send("13067754297")
-    see("password").send("xueqiu4297")
-    see("button_next").tap()
-    see("tip").tap().tap().tap()
-    swipe("down")
-  }
-
   override def beforeEach(): Unit = {
     config("appPackage", "com.xueqiu.android")
     config("appActivity", ".view.WelcomeActivityAlias")
@@ -54,10 +31,6 @@ class TestAndroidSimulator extends MiniAppium {
 
   override def afterEach: Unit = {
     quit()
-  }
-
-  override def afterAll(): Unit = {
-    stop()
   }
 
 }

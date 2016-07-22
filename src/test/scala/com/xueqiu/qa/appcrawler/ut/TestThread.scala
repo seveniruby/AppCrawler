@@ -1,3 +1,5 @@
+package com.xueqiu.qa.appcrawler.ut
+
 import org.scalatest.FunSuite
 
 
@@ -38,7 +40,6 @@ class TestThread extends FunSuite{
 
   test("logger testing"){
 
-    import org.apache.log4j.spi.LoggerFactory
     import org.apache.log4j.{BasicConfigurator, Logger}
 
     BasicConfigurator.configure()
@@ -71,7 +72,6 @@ class TestThread extends FunSuite{
 
   test("test slf4j"){
 
-    import org.slf4j.Logger
     import org.slf4j.LoggerFactory
     val log = LoggerFactory.getLogger(classOf[TestThread])
     log.trace("trace")
@@ -82,15 +82,17 @@ class TestThread extends FunSuite{
   }
 
 
+/*
   test("test console"){
-    import scala.tools.nsc.interpreter.ILoop
     import scala.tools.nsc.Settings
+    import scala.tools.nsc.interpreter.ILoop
 
     val settings=new Settings()
     val loop = new ILoop
     settings.usejavacp.value=true
     loop.process(settings)
   }
+*/
 
 
 }

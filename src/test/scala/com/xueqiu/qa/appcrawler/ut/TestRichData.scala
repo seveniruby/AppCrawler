@@ -1,5 +1,7 @@
+package com.xueqiu.qa.appcrawler.ut
+
 import com.xueqiu.qa.appcrawler.{CommonLog, RichData, UrlElement}
-import org.scalatest.{Matchers, FunSuite}
+import org.scalatest.{FunSuite, Matchers}
 
 /**
   * Created by seveniruby on 16/3/26.
