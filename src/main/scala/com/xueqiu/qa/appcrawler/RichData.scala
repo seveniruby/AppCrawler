@@ -6,6 +6,7 @@ import javax.xml.parsers.{DocumentBuilder, DocumentBuilderFactory}
 import javax.xml.xpath.{XPath, XPathConstants, XPathFactory}
 
 import com.sun.org.apache.xml.internal.serialize.{XMLSerializer, OutputFormat}
+
 //import org.apache.xml.serialize.{OutputFormat, XMLSerializer}
 import org.w3c.dom.{Attr, Document, Node, NodeList}
 
@@ -15,7 +16,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by seveniruby on 16/3/26.
   */
-object RichData extends CommonLog{
+object RichData extends CommonLog {
   def toXML(raw: String): Document = {
     val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
     val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
@@ -23,8 +24,8 @@ object RichData extends CommonLog{
     document
   }
 
-  def toPrettyXML(raw:String): String ={
-    val document=toXML(raw)
+  def toPrettyXML(raw: String): String = {
+    val document = toXML(raw)
     val format = new OutputFormat(document); //document is an instance of org.w3c.dom.Document
     format.setLineWidth(65)
     format.setIndenting(true)
@@ -35,64 +36,79 @@ object RichData extends CommonLog{
     out.toString
   }
 
-  def getXPathFromAttributes(attributes: ListBuffer[Map[String, String]]): String ={
-    var xpath=attributes.reverse.takeRight(attributes.size-2).map(attribute=> {
-      var xpathSingle = attribute.map(kv => {
-        //todo: appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
-        //todo: 帮appium打补丁
+  /**
+    * 从属性中获取xpath的唯一表达式
+    *
+    * @param attributes
+    * @return
+    */
+  def getXPathFromAttributes(attributes: ListBuffer[Map[String, String]]): String = {
+    var xpath = attributes.reverse.map(attribute => {
+      if (List("UIAApplication", "UIAWindow", "").contains(attribute.getOrElse("tag", "")) == false) {
+        var xpathSingle = attribute.map(kv => {
+          //todo: appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
+          //todo: 需要帮appium打补丁
 
-        if (kv._1 != "tag") {
-          if(kv._1=="name" & kv._2.size>20) {
-
+          if (kv._1 != "tag") {
+            if (kv._1 == "name" && kv._2.size > 20) {
+              log.trace(s"name size too long ${kv._2.size}>20")
+            }
+            else {
+              s"@${kv._1}=" + "\"" + kv._2.replace("\"", "\\\"") + "\""
+            }
           }
-          else{
-            s"@${kv._1}=" + "\"" + kv._2.replace("\"", "\\\"") + "\""
-          }
-        }
-      }).filter(_!= ()).mkString(" and ")
-      xpathSingle = s"/${attribute("tag")}[${xpathSingle}]"
-      xpathSingle
-    }).mkString("")
-    xpath=s"/${xpath}"
+        }).filter(_ !=()).mkString(" and ")
+        xpathSingle = s"/${attribute("tag")}[${xpathSingle}]"
+        xpathSingle
+      }else{
+        ""
+      }
+    }
+    ).mkString("")
+    if (xpath.isEmpty) {
+      log.error(attributes)
+    }
+    xpath = s"/${xpath}"
     return xpath
   }
-  def parseXPath(xpath:String, pageDom:Document): List[Map[String, Any]] ={
-    val nodesMap=ListBuffer[Map[String, Any]]()
+
+  def parseXPath(xpath: String, pageDom: Document): List[Map[String, Any]] = {
+    val nodesMap = ListBuffer[Map[String, Any]]()
     val xPath: XPath = XPathFactory.newInstance().newXPath()
     val compexp = xPath.compile(xpath)
     //val node=compexp.evaluate(pageDom)
 
-    val node=if(xpath.matches("string(.*)")){
+    val node = if (xpath.matches("string(.*)")) {
       compexp.evaluate(pageDom, XPathConstants.STRING)
-    }else{
+    } else {
       compexp.evaluate(pageDom, XPathConstants.NODESET)
     }
 
     node match {
-      case nodeList:NodeList=>{
+      case nodeList: NodeList => {
         0 until nodeList.getLength foreach (i => {
-          val nodeMap=mutable.Map[String, Any]()
-          val node=nodeList.item(i)
+          val nodeMap = mutable.Map[String, Any]()
+          val node = nodeList.item(i)
           nodeMap("tag") = node.getNodeName
-          val path=ListBuffer[Map[String, String]]()
+          val path = ListBuffer[Map[String, String]]()
           //递归获取路径,生成可定位的xpath表达式
-          def getParent(node: Node): Unit ={
-            if(node.hasAttributes){
-              val attributes=node.getAttributes
-              var attributeMap=Map[String, String]()
+          def getParent(node: Node): Unit = {
+            if (node.hasAttributes) {
+              val attributes = node.getAttributes
+              var attributeMap = Map[String, String]()
 
-              0 until attributes.getLength foreach(i=>{
-                val kv=attributes.item(i).asInstanceOf[Attr]
-                if(List("name", "path", "resource-id", "content-desc", "index").contains(kv.getName) &&
-                  kv.getValue.nonEmpty
-                ){
-                  attributeMap++=Map(kv.getName->kv.getValue)
+              0 until attributes.getLength foreach (i => {
+                val kv = attributes.item(i).asInstanceOf[Attr]
+                if (List("name", "label", "path", "resource-id", "content-desc", "index").contains(kv.getName)
+                  && kv.getValue.nonEmpty
+                ) {
+                  attributeMap ++= Map(kv.getName -> kv.getValue)
                 }
               })
-              attributeMap++=Map("tag"->node.getNodeName)
-              path+=attributeMap
+              attributeMap ++= Map("tag" -> node.getNodeName)
+              path += attributeMap
             }
-            if(node.getParentNode!=null){
+            if (node.getParentNode != null) {
               getParent(node.getParentNode)
             }
           }
@@ -100,10 +116,10 @@ object RichData extends CommonLog{
           nodeMap("xpath") = getXPathFromAttributes(path)
 
           //支持导出单个字段
-          nodeMap(node.getNodeName)=node.getNodeValue
+          nodeMap(node.getNodeName) = node.getNodeValue
           //获得所有节点属性
           val nodeAttributes = node.getAttributes
-          if(nodeAttributes!=null) {
+          if (nodeAttributes != null) {
             0 until nodeAttributes.getLength foreach (a => {
               val attr = nodeAttributes.item(a).asInstanceOf[Attr]
               nodeMap(attr.getName) = attr.getValue
@@ -111,10 +127,10 @@ object RichData extends CommonLog{
           }
 
           //保持根元素兼容
-          if(nodeMap.contains("resource-id")==false && nodeMap.contains("name")==false){
-            nodeMap("name")=""
-            nodeMap("value")=""
-            nodeMap("label")=""
+          if (nodeMap.contains("resource-id") == false && nodeMap.contains("name") == false) {
+            nodeMap("name") = ""
+            nodeMap("value") = ""
+            nodeMap("label") = ""
           }
           //todo: 支持selendroid
           //如果是android 转化为和iOS相同的结构
@@ -135,7 +151,8 @@ object RichData extends CommonLog{
             nodeMap("label") = nodeMap("content-desc")
           }
 
-          nodesMap+=(nodeMap.toMap)
+          log.info(s"node=${nodeMap.toMap}")
+          nodesMap += (nodeMap.toMap)
         })
       }
       case _ => {

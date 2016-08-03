@@ -5,13 +5,14 @@ import com.xueqiu.qa.appcrawler.MiniAppium
 /**
   * Created by seveniruby on 16/7/20.
   */
-class TestXueqiu extends MiniAppium{
+class TestXueqiuAndroid extends MiniAppium{
   override def beforeAll(): Unit ={
-    start()
+    //start()
     config("appPackage", "com.xueqiu.android")
     config("appActivity", ".view.WelcomeActivityAlias")
     config("fullReset", "false")
     config("noReset", "false")
+    config("unicodeKeyboard", true)
     appium()
   }
   override def afterAll(): Unit ={
@@ -23,6 +24,11 @@ class TestXueqiu extends MiniAppium{
     see("交易记录").tap()
     crawl(maxDepth = 2)
 
+  }
+  test("行情"){
+    see("搜索股票").tap
+    send("alibaba")
+    see("BABA").tap
   }
 
 }

@@ -68,8 +68,8 @@ class Crawler extends CommonLog {
   var url = ""
   val urlStack = mutable.Stack[String]()
 
-  private val elementTree = TreeNode(UrlElement("Start", "", "", "", ""))
-  private val elementTreeList = ListBuffer[UrlElement]()
+  private val elementTree = TreeNode("AppCrawler")
+  private val elementTreeList = ListBuffer[String]()
 
   /**
     * 根据类名初始化插件. 插件可以使用java编写. 继承自Plugin即可
@@ -883,7 +883,7 @@ class Crawler extends CommonLog {
   }
 
   def saveLog(): Unit = {
-    log.trace("save log")
+    log.trace("save log start")
     //记录点击log
     var index = 0
     File(s"${conf.resultDir}/clickedList.log").writeAll(clickedElementsList.reverse.map(n => {
@@ -897,7 +897,7 @@ class Crawler extends CommonLog {
       elementTree.generateFreeMind(elementTreeList)
     )
 
-    log.trace(s"save log ${File(s"${conf.resultDir}/").toURI} done")
+    log.trace(s"save log finish ${File(s"${conf.resultDir}/").toURI}")
   }
 
   def getLogFileName(): String = {
@@ -966,8 +966,8 @@ class Crawler extends CommonLog {
 
 
   def appendClickedList(e: UrlElement): Unit = {
-    elementTreeList.append(UrlElement(e.url, "url", "", "", ""))
-    elementTreeList.append(e)
+    elementTreeList.append(e.url)
+    elementTreeList.append(e.loc)
   }
 
   def doAppiumAction(e: UrlElement, action: String): Option[Unit] = {

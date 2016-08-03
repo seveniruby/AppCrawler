@@ -46,7 +46,12 @@ case class TreeNode[T](
   def toXml(tree: TreeNode[T]): String = {
     val s=new StringBuffer()
     val before = (tree: TreeNode[T]) => {
-      s.append(s"""<node TEXT="${tree.value.toString}">""")
+      s.append(s"""<node TEXT="${tree.value.toString
+        .replace("&", "&amp;")
+        .replace("\"", "&quot;")
+        .replace("'", "&apos;")
+        .replace("\n", "&#xa;")
+      }">""")
       //todo: 增加图片地址链接   LINK="file:///Users/seveniruby/projects/LBSRefresh/Android_20160216105737/946_StockDetail-Back--.jpg"
     }
     val after = (tree: TreeNode[T]) => {

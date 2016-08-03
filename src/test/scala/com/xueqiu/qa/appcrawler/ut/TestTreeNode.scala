@@ -23,6 +23,12 @@ class TestTreeNode extends FunSuite{
     TreeNode(0).generateFreeMind(list, "1.mm")
   }
 
+
+  test("generate tree by list string"){
+    val list=ListBuffer("1", "2", "3", "4", "1", "5", "66\"66", "5", "7")
+    TreeNode("demo").generateFreeMind(list, "2.mm")
+  }
+
   test("append node single"){
     val root=TreeNode(0)
     var current1=root.appendNode(root, TreeNode(1))
