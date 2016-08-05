@@ -17,6 +17,8 @@ class TestIOS extends MiniAppium {
     config("fullReset", "false")
     config("noReset", "true")
     config("autoAcceptAlerts", "true")
+    config("screenshotWaitTimeout", "10")
+    config("newCommandTimeout", "120")
     appium()
     //todo: do something like login
     quit()
@@ -52,6 +54,11 @@ class TestIOS extends MiniAppium {
     swipe("down")
     see("自选").tap.shot()
     crawl(conf="src/universal/conf/xueqiu.json", maxDepth = 2)
+  }
+
+  test("iOS 8.3 test2"){
+    swipe("down")
+    crawl(conf="src/universal/conf/xueqiu.json", maxDepth = 6)
   }
 
   override def afterEach: Unit = {

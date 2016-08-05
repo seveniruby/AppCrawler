@@ -37,7 +37,6 @@ class IOSCrawler extends Crawler {
     val url=conf.capability("appium").toString
     driver = new IOSDriver[WebElement](new URL(url), capabilities)
     //driver.launchApp()
-    getDeviceInfo()
   }
 
   /**

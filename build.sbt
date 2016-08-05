@@ -18,7 +18,7 @@ libraryDependencies ++= Seq(
   //"org.json4s" %% "json4s-jackson" % "3.3.0",
   "org.json4s" %% "json4s-native" % "3.3.0",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.7.3",
-  "com.github.scopt" %% "scopt" % "3.3.0",
+  "com.github.scopt" %% "scopt" % "3.5.0",
   "com.brsanthu" % "google-analytics-java" % "1.1.2",
   "org.slf4j" % "slf4j-api" % "1.7.18",
   "org.slf4j" % "slf4j-log4j12" % "1.7.18",

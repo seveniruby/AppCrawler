@@ -22,7 +22,7 @@ class AppCrawlerTestCase extends FunSuite with BeforeAndAfterAllConfigMap with C
         crawler=new IOSCrawler
       }
       case _ =>{
-        log.trace("请指定currentDriver为Android或者iOS")
+        log.info("请指定currentDriver为Android或者iOS")
       }
     }
     crawler.loadConf(conf)

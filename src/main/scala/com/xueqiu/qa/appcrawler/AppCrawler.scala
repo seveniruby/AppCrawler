@@ -11,15 +11,15 @@ import org.scalatest.ConfigMap
 object AppCrawler extends CommonLog{
   var logPath=""
   case class Param(
-                           app: File = new File("."),
-                           conf: File = new File("."),
+                           app: File = new File(""),
+                           conf: File = new File(""),
                            verbose: Boolean = false,
                            mode:String="",
                            sbt_params: Seq[String]=Seq(),
                            platform: String = "android",
                            appium:String = "http://127.0.0.1:4723/wd/hub/",
                            resultDir: String = "",
-                           maxTime:Int = 3600*3,
+                           maxTime:Int = 0,
                            capability: Map[String, String] = Map[String, String]()
                          )
     def sbt(args: Seq[String]): Unit = {
@@ -38,9 +38,9 @@ object AppCrawler extends CommonLog{
     val parser = new scopt.OptionParser[Param]("appcrawler") {
       head(
         """
-          |AppCrawler 1.3.2
+          |AppCrawler 1.4.0
           |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
-          |灵感来源: 晓光 泉龙 杨榕 恒温
+          |灵感来源: 晓光 泉龙 杨榕 恒温 狂帅
           |移动测试技术交流 https://testerhome.com
         """.stripMargin)
       opt[File]('a', "app") action { (x, c) =>{
@@ -72,7 +72,7 @@ object AppCrawler extends CommonLog{
       opt[Map[String, String]]("capability") valueName ("k1=v1,k2=v2...") action { (x, c) =>
         c.copy(capability = x)
       } text ("appium capability选项, 这个参数会覆盖-c指定的配置模板参数, 用于在模板配置之上的参数微调")
-      opt[Unit]('v', "verbose") action { (_, c) =>
+      opt[Unit]("verbose").abbr("vv") action { (_, c) =>
         c.copy(verbose = true)
       } text ("是否展示更多debug信息")
       help("help") text (
@@ -102,8 +102,10 @@ object AppCrawler extends CommonLog{
     }
     parser.parse(args_new, Param()) match {
       case Some(config) => {
+        log.info(s"verbose=${config.verbose}")
         if(config.verbose){
-          logLevel=Level.TRACE
+          GA.logLevel=Level.TRACE
+          log.info(s"set global log level to ${GA.logLevel}")
         }
         log.trace("config=")
         log.trace(config)
@@ -119,8 +121,6 @@ object AppCrawler extends CommonLog{
         }
         //判断平台
         crawlerConf.currentDriver = config.platform
-
-
         val fileName=config.app.getName
         if(fileName.matches(".*\\.apk$")){
           log.info("Set Platform=Android")
@@ -143,11 +143,8 @@ object AppCrawler extends CommonLog{
         crawlerConf.capability ++= config.capability
 
         if(config.app.getName.nonEmpty) {
-          if(config.app.getPath.matches(".*:/.*")){
-            crawlerConf.capability ++= Map("app" -> config.app.getPath.replace(":/", "://"))
-          }else{
-            crawlerConf.capability ++= Map("app" -> config.app.getAbsolutePath)
-          }
+          //支持相对路径
+          crawlerConf.capability ++= Map("app" -> config.app.getCanonicalPath)
           log.info(s"app path = ${crawlerConf.capability("app")}")
         }
         if(config.appium.matches("[0-9]+")){
@@ -157,11 +154,14 @@ object AppCrawler extends CommonLog{
         }
         log.info(s"appium address = ${crawlerConf.capability.get("appium")}")
 
-        crawlerConf.maxTime=config.maxTime
+        if(config.maxTime>0){
+          crawlerConf.maxTime=config.maxTime
+        }
         crawlerConf.resultDir=config.resultDir
 
         //获得app设置
         //log.trace(s"app path=${config.app.getPath} ${config.app.getName} ${config.app.getAbsolutePath} ${config.app.getCanonicalPath}")
+        log.trace("config =")
         log.trace(crawlerConf.toJson)
         new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf), fullstacks = true)
       }

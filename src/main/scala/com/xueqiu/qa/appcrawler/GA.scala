@@ -9,6 +9,8 @@ import org.apache.log4j.{BasicConfigurator, Level, Logger}
 
 
 object GA {
+  var logLevel=Level.INFO
+
   BasicConfigurator.configure()
   Logger.getRootLogger.setLevel(Level.OFF)
   Logger.getLogger(classOf[GoogleAnalytics]).setLevel(Level.OFF)

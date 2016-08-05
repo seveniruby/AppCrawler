@@ -10,9 +10,8 @@ import org.apache.log4j._
 trait CommonLog {
   BasicConfigurator.configure()
   Logger.getRootLogger.setLevel(Level.INFO)
-  var logLevel=Level.INFO
   val layout=new PatternLayout("%d{yyyy-MM-dd HH:mm:ss} %p [%c{1}.%M.%L] %m%n")
-  val log = initLog()
+  lazy val log = initLog()
 
   def initLog(): Logger ={
     val log = Logger.getLogger(this.getClass.getName)
@@ -21,7 +20,8 @@ trait CommonLog {
     console.setWriter(new OutputStreamWriter(System.out))
     console.setLayout(layout)
     log.addAppender(console)
-    log.setLevel(Level.INFO)
+    log.info(s"set ${this} log level to ${GA.logLevel}")
+    log.setLevel(GA.logLevel)
     log.setAdditivity(false)
     log
   }

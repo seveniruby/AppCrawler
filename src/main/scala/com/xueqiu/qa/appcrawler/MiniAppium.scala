@@ -1,5 +1,6 @@
 package com.xueqiu.qa.appcrawler
 
+import java.awt.{Color, BasicStroke}
 import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
@@ -86,21 +87,11 @@ class MiniAppium extends FunSuite
     */
   def wait(key:String): Unit ={
     var isFound=false
-    var preLocation:org.openqa.selenium.Point=null
     1 to 10 foreach (i=>{
       if(isFound==false) {
         log.info(s"find by xpath ${keyToXPath(key)}")
         val elements=driver.findElementsByXPath(keyToXPath(key))
         if (elements.size() > 0) {
-          log.info("found")
-          val curLocation=elements.get(0).getLocation
-          if(preLocation==curLocation){
-            log.info("ui ready")
-            isFound=true
-          }else{
-            log.info("ui not ready")
-          }
-          preLocation=curLocation
           isFound = true
         } else {
           sleep(0.5)
@@ -133,7 +124,7 @@ class MiniAppium extends FunSuite
     attribute(key)
   }
   def nodes(): List[Map[String, Any]] ={
-    RichData.parseXPath(keyToXPath(loc), RichData.toXML(pageSource))
+    RichData.getListFromXPath(keyToXPath(loc), RichData.toXML(pageSource))
   }
 
 
@@ -145,10 +136,6 @@ class MiniAppium extends FunSuite
   def appium(url: String = "http://127.0.0.1:4723/wd/hub"): Unit = {
     appiumUrl = url
     //todo: 无法通过url来确定是否是android, 需要改进
-    println(capabilities)
-    println(capabilities.getCapability("app"))
-    println(capabilities.getCapability("appActivity"))
-    println(capabilities.getCapability("appPackage"))
     if(capabilities.getCapability("app")==null){
       config("app", "")
     }
@@ -212,7 +199,7 @@ class MiniAppium extends FunSuite
     */
   def tree(key: String = "//*", index: Int = 0): Map[String, Any] = {
     log.info(s"find by key = ${key} index=${index}")
-    val nodes = RichData.parseXPath(keyToXPath(key), RichData.toXML(pageSource))
+    val nodes = RichData.getListFromXPath(keyToXPath(key), RichData.toXML(pageSource))
     nodes.foreach(node => {
       log.debug(s"index=${nodes.indexOf(node)}")
       node.foreach(kv=>{
@@ -322,21 +309,32 @@ class MiniAppium extends FunSuite
 
   }
 
-  def shot(fileName:String=""): Unit ={
-    sleep(1)
-    val xpath=tree(loc, index)("xpath").toString
-    val location=driver.findElementByXPath(xpath).getLocation
-    val size=driver.findElementByXPath(xpath).getSize
+  def shot(element: WebElement): File ={
+    val location=element.getLocation
     val x=location.getX
     val y=location.getY
+
+    val size=element.getSize
     val w=size.getWidth
     val h=size.getHeight
 
-    log.info(s"x=${location.getX} y=${location.getY} w=${size.getWidth} h=${size.getHeight}")
     val file=(driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)
-    FileUtils.copyFile(file, new File(fileName+".png"))
-    val subImg = ImageIO.read(file).getSubimage(x, y, w, h)
+    val img=ImageIO.read(file)
+    val graph = img.createGraphics()
+    graph.drawImage(img, 0, 0, screenWidth, screenHeight, null)
+    graph.setStroke(new BasicStroke(2))
+    graph.setColor(Color.RED)
+    graph.drawRect(x, y, w, h)
+    graph.dispose()
+    val subImg = img.getSubimage(0, 0, screenWidth, screenHeight)
     ImageIO.write(subImg, "png", file)
-    FileUtils.copyFile(file, new File(fileName+".x.y.png"))
+    return file
+  }
+  def shot(fileName:String=loc): Unit ={
+    sleep(1)
+    val xpath=tree(loc, index)("xpath").toString
+    val element=driver.findElementByXPath(xpath)
+    val file=shot(element)
+    FileUtils.copyFile(file, new File(fileName+".png"))
   }
 }

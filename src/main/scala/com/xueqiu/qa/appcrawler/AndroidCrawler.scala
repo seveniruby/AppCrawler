@@ -33,10 +33,11 @@ class AndroidCrawler extends Crawler {
     conf.capability.foreach(kv=>capabilities.setCapability(kv._1, kv._2))
 
     val url=conf.capability("appium").toString
+    log.info(s"url=${url}")
+    log.info(capabilities)
     driver = new AndroidDriver[WebElement](new URL(url), capabilities)
     //driver.launchAp
     log.info(s"driver=${driver}")
-    getDeviceInfo()
   }
 
   override def getUrl(): String = {

@@ -1,6 +1,8 @@
 package com.xueqiu.qa.appcrawler
 
+import java.awt.{Color, BasicStroke}
 import java.util.Date
+import javax.imageio.ImageIO
 
 import io.appium.java_client.{TouchAction, AppiumDriver}
 import org.apache.commons.io.FileUtils
@@ -89,12 +91,12 @@ class Crawler extends CommonLog {
     */
   def loadConf(crawlerConf: CrawlerConf): Unit = {
     conf = crawlerConf
-    log.setLevel(AppCrawler.logLevel)
+    log.setLevel(GA.logLevel)
   }
 
   def loadConf(file: String): Unit = {
     conf = new CrawlerConf().load(file)
-    log.setLevel(AppCrawler.logLevel)
+    log.setLevel(GA.logLevel)
   }
 
   def addLogFile(): Unit = {
@@ -124,12 +126,15 @@ class Crawler extends CommonLog {
     if (existDriver == null) {
       log.info("prepare setup Appium")
       setupAppium()
-      driver.getAppStringMap
+      //driver.getAppStringMap
     } else {
       log.info("use existed driver")
       this.driver = existDriver
     }
+    Thread.sleep(5)
     log.info(s"driver=${existDriver}")
+    log.info("get screen info")
+    getDeviceInfo()
     driver.manage().logs().getAvailableLogTypes().toArray.foreach(log.info)
     //设定结果目录
 
@@ -218,7 +223,7 @@ class Crawler extends CommonLog {
     * @return
     */
   def getAllElements(xpath: String): List[immutable.Map[String, Any]] = {
-    RichData.parseXPath(xpath, pageDom)
+    RichData.getListFromXPath(xpath, pageDom)
   }
 
   /**
@@ -247,7 +252,6 @@ class Crawler extends CommonLog {
     */
   def getSchema(): String = {
     val nodeList = getAllElements("//*[not(ancestor-or-self::UIAStatusBar)]")
-    nodeList.foreach(log.trace)
     md5(nodeList.map(getUrlElementByMap(_).toTagPath()).distinct.mkString("\n"))
   }
 
@@ -416,7 +420,6 @@ class Crawler extends CommonLog {
           case Some(v) => {
             log.trace("get page source success")
             pageSource = v
-            log.trace(v)
             pageSource = RichData.toPrettyXML(pageSource)
             pageDom = RichData.toXML(pageSource)
             refreshFinish = true
@@ -473,7 +476,6 @@ class Crawler extends CommonLog {
   }
 
   def isClicked(ele: UrlElement): Boolean = {
-    log.trace(ele.toString)
     if (elements.contains(ele.toLoc())) {
       elements(ele.toLoc())
     } else {
@@ -527,8 +529,6 @@ class Crawler extends CommonLog {
         log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
         refreshPage()
         needRefresh = true
-        saveDom()
-        saveScreen()
       }
       case None => {
         log.warn("find back button error")
@@ -618,10 +618,6 @@ class Crawler extends CommonLog {
 
         if (getElementAction() != "skip") {
           doElementAction(element)
-          //刷新页面. 让schema更新
-          refreshPage()
-          saveDom()
-          saveScreen()
           needRefresh = false
         } else {
           clickedElementsList.pop()
@@ -728,9 +724,6 @@ class Crawler extends CommonLog {
         log.info(s"swipeCount of current Url=${swipeCountPerUrl(url)}")
         clickedElementsList.push(UrlElement(s"${url}-Scroll${direction}", "", "", "", ""))
         log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
-        refreshPage()
-        saveDom()
-        saveScreen()
       }
       case None => {
         log.info("swipe fail")
@@ -790,6 +783,8 @@ class Crawler extends CommonLog {
           if (arr.size > 0) {
             log.trace("just use the first one")
             return Some(arr.head.asInstanceOf[WebElement])
+          }else{
+            refreshPage()
           }
         }
       }
@@ -913,21 +908,58 @@ class Crawler extends CommonLog {
     log.trace("save dom end")
   }
 
-  def screenshot(path:String): Unit ={
+  //todo: 重构到独立的trait中
+  def shot(element: WebElement): java.io.File ={
+    val file=(driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)
+    if(element!=null) {
+      val location=element.getLocation
+      val x=location.getX
+      val y=location.getY
+
+      val size=element.getSize
+      val w=size.getWidth
+      val h=size.getHeight
+
+      val img = ImageIO.read(file)
+      val graph = img.createGraphics()
+      if(platformName.toLowerCase=="ios") {
+        graph.drawImage(img, 0, 0, screenWidth, screenHeight, null)
+      }
+      graph.setStroke(new BasicStroke(2))
+      graph.setColor(Color.RED)
+      graph.drawRect(x, y, w, h)
+      graph.dispose()
+      val subImg=if(platformName.toLowerCase=="ios") {
+        img.getSubimage(0, 0, screenWidth, screenHeight)
+      }else {
+        img
+      }
+      ImageIO.write(subImg, "png", file)
+    }
+    return file
+  }
+
+  def screenshot(path:String, element:WebElement=null): Unit ={
     if(pluginClasses.map(p => p.screenshot(path)).contains(true)){
       return
     }
-    doAppium((driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)) match {
-      case Some(src) => {
-        FileUtils.copyFile(src, new java.io.File(path))
+    Try(shot(element)) match {
+      case Success(file)=>{
+        FileUtils.copyFile(file, new java.io.File(path))
         log.info("save screenshot end")
       }
-      case None => {
+      case Failure(e)=>{
         log.warn("get screenshot error")
+
+        log.warn(e.getMessage)
+        log.warn(e.getCause)
+        log.warn(e.getStackTrace.mkString("\n"))
       }
     }
+
+
   }
-  def saveScreen(force: Boolean = false): Unit = {
+  def saveScreen(force: Boolean = false, element: WebElement=null): Unit = {
     //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
     if (conf.saveScreen && lastContentHash != currentContentHash || force) {
       Thread.sleep(100)
@@ -936,7 +968,7 @@ class Crawler extends CommonLog {
 
       val getScreen = new Thread(new Runnable {
         override def run(): Unit = {
-          screenshot(path)
+          screenshot(path, element)
         }
       })
       getScreen.start()
@@ -948,16 +980,16 @@ class Crawler extends CommonLog {
           stopThreadCount += 1
           //超时退出
           if (stopThreadCount >= 20) {
-            log.warn("save screenshot timeout stop thread")
+            log.warn("screenshot timeout stop thread")
             getScreen.stop()
             needStopThread = true
           } else {
-            //等待
+            log.debug("screenshot wait")
             Thread.sleep(500)
           }
         } else {
           //正常退出
-          log.trace("thread finish")
+          log.trace("screenshot finish")
           needStopThread = true
         }
       }
@@ -971,13 +1003,19 @@ class Crawler extends CommonLog {
   }
 
   def doAppiumAction(e: UrlElement, action: String): Option[Unit] = {
-    log.info(s"element=${e} action=${action}")
+    log.info(s"url element=${e} action=${action}")
     findElementByUrlElement(e) match {
       case Some(v) => {
+        log.info(s"find WebElement ${v}")
         log.info(v)
+        saveDom()
+        saveScreen(false, v)
         action match {
           case "click" => {
-            val res = doAppium(tap(v))
+            //todo: tap和click的行为不一致. 在ipad上有时候click会点错位置, 而tap不会
+            //todo: tap的缺点就是点击元素的时候容易点击到元素上层的控件
+            //val res = doAppium(tap(v))
+            val res = doAppium(v.click())
             appendClickedList(e)
             if (List("UIATextField", "UIATextView", "EditText").map(e.tag.contains(_)).contains(true)) {
               doAppium(driver.hideKeyboard())
@@ -1014,6 +1052,10 @@ class Crawler extends CommonLog {
             }
           }
         }
+
+        if(action=="skip"){
+          refreshPage()
+        }
         Some()
       }
       case None => {
@@ -1021,6 +1063,7 @@ class Crawler extends CommonLog {
         None
       }
     }
+
   }
 
   def doAppiumAction(action: String = "click"): Unit = {

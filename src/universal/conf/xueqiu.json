@@ -1,7 +1,6 @@
 {
   "pluginList" : [
-    "com.xueqiu.qa.appcrawler.plugin.TagLimitPlugin",
-    "com.xueqiu.qa.appcrawler.plugin.LogPlugin"
+    "com.xueqiu.qa.appcrawler.plugin.TagLimitPlugin"
   ],
   "saveScreen" : true,
   "currentDriver" : "android",
@@ -28,6 +27,7 @@
     "bundleId" : "",
     "platformVersion" : "9.1",
     "autoAcceptAlerts" : "true",
+    "screenshotWaitTimeout": "10",
     "app" : ""
   },
   "defineUrl" : [
@@ -63,14 +63,10 @@
     "//UIAWindow[1]//UIAStaticText//UIATableCell[@dom!='' and @name!='']"
   ],
   "selectedList" : [
-    "//*[@resource-id!='' and not(contains(name(), 'Layout'))]",
-    "//*[@content-desc!='' and not(contains(name(), 'Layout'))]",
-    "//android.widget.TextView[@clickable='true']",
-    "//android.widget.ImageView[@clickable='true']",
     "//*[contains(name(), 'Text')]",
     "//*[contains(name(), 'Image')]",
     "//*[contains(name(), 'Button')]",
-    "//*[not(ancestor-or-self::UIAWebView)]"
+    "//*[contains(name(), 'CheckBox')]"
   ],
   "lastList" : [
     "//*[contains(@resource-id,'group_header_view')]//android.widget.TextView",

@@ -13,10 +13,13 @@ class TestXueqiuAndroid extends MiniAppium{
     config("fullReset", "false")
     config("noReset", "false")
     config("unicodeKeyboard", true)
-    appium()
+    appium("http://127.0.0.1:4723/wd/hub")
   }
   override def afterAll(): Unit ={
     quit()
+  }
+  test("首页"){
+    crawl(maxDepth = 4)
   }
 
   test("交易"){
