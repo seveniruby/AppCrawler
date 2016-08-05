@@ -722,6 +722,5 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
   test("get all leaf node"){
     val value=RichData.getListFromXPath("//node()[not(node())]", dom)
     value.foreach(log.info)
-
   }
 }

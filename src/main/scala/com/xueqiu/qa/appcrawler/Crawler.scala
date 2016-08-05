@@ -382,15 +382,21 @@ class Crawler extends CommonLog {
     })
     commonElements=commonElements diff blackElements
 
+    log.trace(conf.firstList)
     conf.firstList.foreach(xpath => {
       firstElements ++= getAllElements(xpath).filter(isValid).intersect(commonElements)
     })
+    log.trace("first elements")
+    firstElements.foreach(log.trace)
+
     conf.lastList.foreach(xpath => {
       appendElements ++= getAllElements(xpath).filter(isValid).intersect(commonElements)
     })
 
     //确保不重, 并保证顺序
     all = (firstElements ++ commonElements ++ appendElements).distinct
+    log.trace("all elements")
+    all.foreach(log.trace)
     log.trace(s"all selected length=${all.length}")
     Some(all)
 
@@ -422,6 +428,7 @@ class Crawler extends CommonLog {
             pageSource = v
             pageSource = RichData.toPrettyXML(pageSource)
             pageDom = RichData.toXML(pageSource)
+            log.trace(pageSource)
             refreshFinish = true
             needRefresh = false
           }

@@ -89,29 +89,6 @@ object RichData extends CommonLog {
     return xpath
   }
 
-  //递归获取路径,生成可定位的xpath表达式
-  def getParent(node: Node): ListBuffer[Map[String, String]] = {
-    val path = ListBuffer[Map[String, String]]()
-    if (node.hasAttributes) {
-      val attributes = node.getAttributes
-      var attributeMap = Map[String, String]()
-
-      0 until attributes.getLength foreach (i => {
-        val kv = attributes.item(i).asInstanceOf[Attr]
-        if (List("name", "label", "path", "resource-id", "content-desc", "index").contains(kv.getName)
-          && kv.getValue.nonEmpty
-        ) {
-          attributeMap ++= Map(kv.getName -> kv.getValue)
-        }
-      })
-      attributeMap ++= Map("tag" -> node.getNodeName)
-      path += attributeMap
-    }
-    if (node.getParentNode != null) {
-      getParent(node.getParentNode)
-    }
-    return path
-  }
 
   def getListFromXPath(xpath: String, pageDom: Document): List[Map[String, Any]] = {
     val nodesMap = ListBuffer[Map[String, Any]]()
@@ -131,7 +108,29 @@ object RichData extends CommonLog {
           val nodeMap = mutable.Map[String, Any]()
           val node = nodeList.item(i)
           nodeMap("tag") = node.getNodeName
-          val path=getParent(node)
+          val path = ListBuffer[Map[String, String]]()
+          //递归获取路径,生成可定位的xpath表达式
+          def getParent(node: Node): Unit = {
+            if (node.hasAttributes) {
+              val attributes = node.getAttributes
+              var attributeMap = Map[String, String]()
+
+              0 until attributes.getLength foreach (i => {
+                val kv = attributes.item(i).asInstanceOf[Attr]
+                if (List("name", "label", "path", "resource-id", "content-desc", "index").contains(kv.getName)
+                  && kv.getValue.nonEmpty
+                ) {
+                  attributeMap ++= Map(kv.getName -> kv.getValue)
+                }
+              })
+              attributeMap ++= Map("tag" -> node.getNodeName)
+              path += attributeMap
+            }
+            if (node.getParentNode != null) {
+              getParent(node.getParentNode)
+            }
+          }
+          getParent(node)
           nodeMap("xpath") = getXPathFromAttributes(path)
 
           //支持导出单个字段

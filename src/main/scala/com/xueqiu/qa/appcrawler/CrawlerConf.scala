@@ -66,17 +66,16 @@ class CrawlerConf {
   var backButton = ListBuffer[String]()
 
   /**优先遍历元素*/
-  var firstList=ListBuffer[String]()
+  var firstList=ListBuffer[String](
+    "//*[@text='高手理财']",
+    "//*[@text='港股高手']"
+  )
   /**默认遍历列表*/
   var selectedList = ListBuffer[String](
     "//*[contains(name(), 'Text')]",
     "//*[contains(name(), 'Image')]",
     "//*[contains(name(), 'Button')]",
-
-    "//*[@clickable='true' and contains(name(), 'Text')]",
-    "//*[@clickable='true' and contains(name(), 'Image')]",
-    "//*[@resource-id!='']",
-    "//*[@content-desc!='']"
+    "//*[contains(name(), 'CheckBox')]"
   )
   /**最后遍历列表*/
   var lastList=ListBuffer[String]()

@@ -40,8 +40,8 @@ object AppCrawler extends CommonLog{
         """
           |AppCrawler 1.4.0
           |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
-          |灵感来源: 晓光 泉龙 杨榕 恒温 狂帅
           |移动测试技术交流 https://testerhome.com
+          |感谢: 晓光 泉龙 杨榕 恒温 mikezhou
         """.stripMargin)
       opt[File]('a', "app") action { (x, c) =>{
         c.copy(app = x)
@@ -85,13 +85,6 @@ object AppCrawler extends CommonLog{
           |appcrawler -c xueqiu.json -a Snowball.app -u 4730
           |appcrawler -c xueqiu.json -a Snowball.app -u http://127.0.0.1:4730/wd/hub
         """.stripMargin)
-      cmd("sbt") action { (_, c) => {
-        c.copy(mode = "sbt")
-      } } text("sbt是一个调用sbt命令运行测试的开关. 可以传递sbt的参数\n") children(
-        arg[String]("<sbt params>...") unbounded() optional() action { (x, c) =>
-          c.copy(sbt_params = c.sbt_params :+ x) } text("sbt的参数列表")
-        )
-
     }
     // parser.parse returns Option[C]
 
