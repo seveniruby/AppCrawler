@@ -307,39 +307,41 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
     """.stripMargin
 
   val dom=RichData.toXML(xml)
+
+
   test("parse xpath"){
-    val node=RichData.parseXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", dom)(0)
+    val node=RichData.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", dom)(0)
     println(node)
     node("resource-id") should be equals("com.xueqiu.android:id/action_search")
     node("content-desc") should be equals("输入股票名称/代码")
   }
 
   test("getPackage"){
-    val node=RichData.parseXPath("(//*[@package!=''])[1]", dom)(0)
+    val node=RichData.getListFromXPath("(//*[@package!=''])[1]", dom)(0)
     println(node)
   }
   test("extra attribute from xpath"){
-    val node=RichData.parseXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id", dom)(0)
+    val node=RichData.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id", dom)(0)
     println(node)
     node.values.toList(0) should be equals("com.xueqiu.android:id/action_search")
 
     //todo:暂不支持
-    val value=RichData.parseXPath("string(//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id)", dom)
+    val value=RichData.getListFromXPath("string(//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id)", dom)
     println(value)
 
   }
 
   test("get parent path"){
-    val value=RichData.parseXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/parent::*", dom)
+    val value=RichData.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/parent::*", dom)
     value.foreach(println)
     println(value)
 
-    val ancestor=RichData.parseXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor-or-self::*", dom)
+    val ancestor=RichData.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor-or-self::*", dom)
     ancestor.foreach(x=>if(x.contains("tag")) println(x("tag")))
     println(ancestor)
     ancestor.foreach(println)
 
-    val ancestorName=RichData.parseXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor::name", dom)
+    val ancestorName=RichData.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor::name", dom)
     ancestorName.foreach(println)
   }
 
@@ -681,11 +683,11 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
 
 
     val dom=RichData.toXML(xml)
-    val value=RichData.parseXPath("//UIAApplication[@name=\"雪球\" and @path=\"/0\"]/UIAWindow[@path=\"/0/0\"]/UIAStaticText[@name=\"这里可以批量实盘买卖组合持仓股票\" and @path=\"/0/0/8\"]", dom)
+    val value=RichData.getListFromXPath("//UIAApplication[@name=\"雪球\" and @path=\"/0\"]/UIAWindow[@path=\"/0/0\"]/UIAStaticText[@name=\"这里可以批量实盘买卖组合持仓股票\" and @path=\"/0/0/8\"]", dom)
     value.foreach(println)
     println(value)
 
-    val appName=RichData.parseXPath("//UIAApplication", dom)
+    val appName=RichData.getListFromXPath("//UIAApplication", dom)
     appName.foreach(println)
     println(appName.head.getOrElse("name", ""))
     appName.head.getOrElse("name", "") should be equals("雪球")
@@ -714,6 +716,12 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
     val ele=UrlElement("", "", "", "", str)
     log.info(ele.toTagPath())
     log.info(ele.toFileName())
+
+  }
+
+  test("get all leaf node"){
+    val value=RichData.getListFromXPath("//node()[not(node())]", dom)
+    value.foreach(log.info)
 
   }
 }
