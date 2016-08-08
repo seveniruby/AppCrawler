@@ -46,7 +46,7 @@ object RichData extends CommonLog {
     var xpath = attributes.reverse.takeRight(2).map(attribute => {
       var newAttribute=attribute
       //如果有值就不需要path了, 基本上两层xpath定位即可唯一
-      List("name", "label", "value", "resource-id", "content-desc", "text").foreach(key=>{
+      List("name", "label", "value", "resource-id", "content-desc", "index", "text").foreach(key=>{
         if(newAttribute.getOrElse(key, "").isEmpty){
           newAttribute=newAttribute - key
         }else{
@@ -68,6 +68,10 @@ object RichData extends CommonLog {
           if (kv._1 != "tag") {
             if (kv._1 == "name" && kv._2.size > 20) {
               log.trace(s"name size too long ${kv._2.size}>20")
+              ""
+            }
+            else if (kv._1 == "text" && kv._2.size > 20) {
+              log.trace(s"text size too long ${kv._2.size}>20")
               ""
             }
             else {
@@ -117,7 +121,7 @@ object RichData extends CommonLog {
 
               0 until attributes.getLength foreach (i => {
                 val kv = attributes.item(i).asInstanceOf[Attr]
-                if (List("name", "label", "path", "resource-id", "content-desc", "index").contains(kv.getName)
+                if (List("name", "label", "path", "resource-id", "content-desc", "index", "text").contains(kv.getName)
                   && kv.getValue.nonEmpty
                 ) {
                   attributeMap ++= Map(kv.getName -> kv.getValue)

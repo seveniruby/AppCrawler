@@ -58,7 +58,7 @@ class TestIOS extends MiniAppium {
 
   test("iOS 8.3 test2"){
     swipe("down")
-    crawl(conf="src/universal/conf/xueqiu.json", maxDepth = 6)
+    crawl(conf="src/universal/conf/xueqiu.json", maxDepth = 4)
   }
 
   override def afterEach: Unit = {

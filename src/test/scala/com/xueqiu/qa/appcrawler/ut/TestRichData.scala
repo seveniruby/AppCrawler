@@ -723,4 +723,10 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
     val value=RichData.getListFromXPath("//node()[not(node())]", dom)
     value.foreach(log.info)
   }
+
+
+  test("text xpath"){
+    val value=RichData.getListFromXPath("//*[@text='买什么']", dom)
+    value.foreach(log.info)
+  }
 }
