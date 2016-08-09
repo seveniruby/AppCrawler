@@ -42,10 +42,10 @@ class TestIOS extends MiniAppiumSuite {
   test("自选") {
     swipe("down")
     see("自选").tap
-    see("自选").shot("自选.element.png")
-    see("港股").shot("港股.element.png")
-    see("沪深").shot("沪深.element.png")
-    see("交易").shot("交易.element.png")
+    see("自选").shot()
+    see("港股").shot()
+    see("沪深").shot()
+    see("交易").shot()
     see("雪球100").tap
     swipe("down")
     see("stock_current_price")("text").toDouble should be > 1000.0

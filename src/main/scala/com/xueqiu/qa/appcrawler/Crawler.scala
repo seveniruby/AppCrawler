@@ -623,10 +623,10 @@ class Crawler extends CommonLog {
       if (allElements.nonEmpty) {
         //保存第一个元素到要点击元素的堆栈里, 这里可以决定是后向遍历, 还是前向遍历
         val element = allElements.head
+        elements(element.toLoc()) = true
         clickedElementsList.push(element)
         //加载插件分析
         beforeElementAction(element)
-        elements(element.toLoc()) = true
         //处理控件
         doElementAction(element)
         //插件处理
@@ -1079,32 +1079,6 @@ class Crawler extends CommonLog {
     }
 
   }
-
-  def doAppiumAction(action: String = "click"): Unit = {
-    action match {
-      case "skip" => {
-        log.info("skip")
-      }
-      case "scroll left" => {
-        swipe("left")
-      }
-      case "scroll up" => {
-        swipe("up")
-      }
-      case "scroll down" => {
-        swipe("down")
-      }
-      case "scroll" => {
-        swipe()
-      }
-      case str: String => {
-
-      }
-    }
-
-
-  }
-
 
   /**
     * 子类重载
