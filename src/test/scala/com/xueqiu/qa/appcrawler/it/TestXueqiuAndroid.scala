@@ -8,6 +8,7 @@ import com.xueqiu.qa.appcrawler.MiniAppium
 class TestXueqiuAndroid extends MiniAppium{
   override def beforeAll(): Unit ={
     //start()
+    config("app", "/Users/seveniruby/Downloads/xueqiu_8.3-3.apk")
     config("appPackage", "com.xueqiu.android")
     config("appActivity", ".view.WelcomeActivityAlias")
     config("fullReset", "false")
@@ -19,7 +20,7 @@ class TestXueqiuAndroid extends MiniAppium{
     quit()
   }
   test("首页"){
-    crawl(maxDepth = 4)
+    crawl(conf="src/universal/conf/xueqiu.json", maxDepth = 10)
   }
 
   test("交易"){

@@ -186,5 +186,5 @@
     "idOrName" : "隐藏键盘",
     "times" : 0
   }],
-  "startupActions" : [ ]
+  "startupActions" : [ "scroll left", "scroll left", "scroll left", "scroll left", "scroll left", "scroll down"]
 }
