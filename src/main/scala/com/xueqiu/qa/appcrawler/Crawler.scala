@@ -534,20 +534,24 @@ class Crawler extends CommonLog {
     getBackElements().headOption match {
       case Some(v) => {
         val element = getUrlElementByMap(v)
-        doAppiumAction(element, "click")
         clickedElementsList.push(element)
         log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
+        saveScreen()
+        saveDom()
+        doAppiumAction(element, "click")
         refreshPage()
       }
       case None => {
         log.warn("find back button error")
         if (platformName.toLowerCase == "android") {
-          driver.navigate().back()
           clickedElementsList.push(UrlElement(s"${url}-Back", "", "", "", ""))
           log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
-          refreshPage()
           saveDom()
           saveScreen()
+          driver.navigate().back()
+          refreshPage()
+        }else{
+          log.warn("you should define you back button in the conf file")
         }
       }
     }

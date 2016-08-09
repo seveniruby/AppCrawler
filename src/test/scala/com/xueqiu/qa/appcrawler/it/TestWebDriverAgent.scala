@@ -1,12 +1,12 @@
 package com.xueqiu.qa.appcrawler.it
 
-import com.xueqiu.qa.appcrawler.MiniAppium
+import com.xueqiu.qa.appcrawler.MiniAppiumSuite
 import org.scalatest.FunSuite
 
 /**
   * Created by seveniruby on 16/6/3.
   */
-class TestWebDriverAgent extends MiniAppium{
+class TestWebDriverAgent extends MiniAppiumSuite{
   test("test facebook webdriver"){
     config("app", "/Users/seveniruby/projects/snowball-ios/DerivedData/Snowball/Build/Products/Debug-iphonesimulator/Snowball.app")
     config("bundleId", "com.xueqiu")

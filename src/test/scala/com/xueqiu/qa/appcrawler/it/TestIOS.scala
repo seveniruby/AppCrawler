@@ -1,11 +1,11 @@
 package com.xueqiu.qa.appcrawler.it
 
-import com.xueqiu.qa.appcrawler.MiniAppium
+import com.xueqiu.qa.appcrawler.MiniAppiumSuite
 
 /**
   * Created by seveniruby on 16/5/21.
   */
-class TestIOS extends MiniAppium {
+class TestIOS extends MiniAppiumSuite {
   override def beforeAll(): Unit = {
     //start()
     config("app", "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/" +

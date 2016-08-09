@@ -1,11 +1,11 @@
 package com.xueqiu.qa.appcrawler.it
 
-import com.xueqiu.qa.appcrawler.MiniAppium
+import com.xueqiu.qa.appcrawler.MiniAppiumSuite
 
 /**
   * Created by seveniruby on 16/7/20.
   */
-class TestXueqiuAndroid extends MiniAppium{
+class TestXueqiuAndroid extends MiniAppiumSuite{
   override def beforeAll(): Unit ={
     //start()
     config("app", "/Users/seveniruby/Downloads/xueqiu_8.3-3.apk")
