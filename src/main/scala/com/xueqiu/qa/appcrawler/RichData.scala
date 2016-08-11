@@ -44,51 +44,56 @@ object RichData extends CommonLog {
     */
   def getXPathFromAttributes(attributes: ListBuffer[Map[String, String]]): String = {
     var xpath = attributes.reverse.takeRight(2).map(attribute => {
-      var newAttribute=attribute
+      var newAttribute = attribute
       //如果有值就不需要path了, 基本上两层xpath定位即可唯一
-      List("name", "label", "value", "resource-id", "content-desc", "index", "text").foreach(key=>{
-        if(newAttribute.getOrElse(key, "").isEmpty){
-          newAttribute=newAttribute - key
-        }else{
-          newAttribute=newAttribute - "path"
+      List("name", "label", "value", "resource-id", "content-desc", "index", "text").foreach(key => {
+        if (newAttribute.getOrElse(key, "").isEmpty) {
+          newAttribute = newAttribute - key
+        } else {
+          newAttribute = newAttribute - "path"
         }
       })
 
       //如果label和name相同且非空 取一个即可
-      if(newAttribute.getOrElse("name", "")==newAttribute.getOrElse("label", "")){
-        newAttribute=newAttribute-"name"
+      if (newAttribute.getOrElse("name", "") == newAttribute.getOrElse("label", "")) {
+        newAttribute = newAttribute - "name"
       }
-      if(newAttribute.getOrElse("content-desc", "")==newAttribute.getOrElse("resource-id", "")){
-        newAttribute=newAttribute-"content-desc"
+      if (newAttribute.getOrElse("content-desc", "") == newAttribute.getOrElse("resource-id", "")) {
+        newAttribute = newAttribute - "content-desc"
       }
 
       var xpathSingle = newAttribute.map(kv => {
-          //todo: appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
-          //todo: 需要帮appium打补丁
-          if (kv._1 != "tag") {
-            if (kv._1 == "name" && kv._2.size > 20) {
-              log.trace(s"name size too long ${kv._2.size}>20")
-              ""
-            }
-            else if (kv._1 == "text" && kv._2.size > 20) {
-              log.trace(s"text size too long ${kv._2.size}>20")
-              ""
-            }
-            else {
-              s"@${kv._1}=" + "\"" + kv._2.replace("\"", "\\\"") + "\""
-            }
-          }else{
+        //todo: appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
+        //todo: 需要帮appium打补丁
+        if (kv._1 != "tag") {
+          if (kv._1 == "name" && kv._2.size > 20) {
+            log.trace(s"name size too long ${kv._2.size}>20")
             ""
           }
-        }).filter(x=>x.nonEmpty).mkString(" and ")
-        xpathSingle = s"/${attribute("tag")}[${xpathSingle}]"
-        xpathSingle
+          else if (kv._1 == "text" && kv._2.size > 20) {
+            log.trace(s"text size too long ${kv._2.size}>20")
+            ""
+          }
+          else {
+            s"@${kv._1}=" + "\"" + kv._2.replace("\"", "\\\"") + "\""
+          }
+        } else {
+          ""
+        }
+      }).filter(x => x.nonEmpty).mkString(" and ")
+
+      xpathSingle = if (xpathSingle.isEmpty) {
+        s"/${attribute("tag")}"
+      } else {
+        s"/${attribute("tag")}[${xpathSingle}]"
+      }
+      xpathSingle
     }
     ).mkString("")
     if (xpath.isEmpty) {
       log.trace(attributes)
-    }else {
-      xpath="/"+xpath
+    } else {
+      xpath = "/" + xpath
     }
     return xpath
   }
@@ -173,12 +178,12 @@ object RichData extends CommonLog {
             nodeMap("label") = nodeMap("content-desc")
           }
 
-          if(nodeMap("xpath").toString.nonEmpty) {
+          if (nodeMap("xpath").toString.nonEmpty) {
             nodesMap += (nodeMap.toMap)
-          }else{
+          } else {
             log.trace(s"xpath error skip ${nodeMap}")
           }
-        })
+        } )
       }
       case _ => {
         log.trace("not node list")
