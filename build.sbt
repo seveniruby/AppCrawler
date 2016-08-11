@@ -29,6 +29,7 @@ libraryDependencies ++= Seq(
   "net.lightbody.bmp" % "browsermob-core-littleproxy" % "2.1.0-beta-6",
   "net.lightbody.bmp" % "browsermob-core" % "2.1.0-beta-6",
   "org.lucee" % "commons-codec" % "1.10.L001",
+  "com.twitter" %% "util-eval" % "6.35.0",
   "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 
@@ -37,9 +38,9 @@ enablePlugins(JavaAppPackaging)
 assemblyJarName in assembly := "appcrawler-"+version.value+".jar"
 test in assembly := {}
 mainClass in assembly := Some("com.xueqiu.qa.appcrawler.AppCrawler")
+scriptClasspath := Seq("*")
 assemblyMergeStrategy in assembly := {
     case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
-
     case PathList("META-INF", xs @ _*)=>{
       (xs map {_.toLowerCase}) match {
         case ps @ (x :: xs) if ps.last.endsWith(".sf") || ps.last.endsWith(".dsa") => MergeStrategy.discard
@@ -59,6 +60,7 @@ externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral
 
 parallelExecution in Test := false
 (testOptions in Test) += Tests.Argument(TestFrameworks.ScalaTest, "-o", "-u", "target/test-reports", "-h", "target/test-reports")
+(testOptions in Test) += Tests.Argument(TestFrameworks.ScalaTest, "-o")
 testOptions in Test += Tests.Setup(() => {
   println("List All TestCases")
   (definedTests in Test).value.map(println(_))

@@ -21,6 +21,7 @@ class CrawlerConf {
   var logLevel="TRACE"
   /**是否截图*/
   var saveScreen=true
+  var screenshotTimeout=20
   var currentDriver="android"
   /**最大运行时间*/
   var maxTime = 3600*3
@@ -90,7 +91,7 @@ class CrawlerConf {
   var elementActions = ListBuffer[scala.collection.mutable.Map[String, Any]]()
   elementActions += mutable.Map("idOrName"->".*seveniruby.*", "action"->"click", "times"->0)
   var startupActions=ListBuffer[String]()
-  startupActions++=List("scroll left", "scroll left", "scroll left", "scroll left", "scroll left")
+  startupActions++=List("sleep(3)", "println(\"startupAction call use scala code\")")
 
   def loadByJson4s(file: String): Option[this.type] ={
     implicit val formats = DefaultFormats+ FieldSerializer[this.type]()

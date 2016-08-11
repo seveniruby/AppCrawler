@@ -5,6 +5,7 @@ import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
 
+import com.twitter.util.Eval
 import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
@@ -12,7 +13,6 @@ import org.apache.commons.io.FileUtils
 import org.apache.log4j.Level
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
-import org.scalatest._
 import org.scalatest.selenium.WebBrowser
 import org.scalatest.time.{Seconds, Span}
 
@@ -34,6 +34,12 @@ trait MiniAppium extends CommonLog with WebBrowser{
 
   var screenWidth = 0
   var screenHeight = 0
+  private var platformName=""
+
+  def setPlatformName(platform:String): Unit ={
+    log.info(s"set platform ${platform}")
+    platformName=platform
+  }
 
   def start(port: Int=4723): Unit ={
     val buffer=new StringBuffer("\n")
@@ -142,8 +148,10 @@ trait MiniAppium extends CommonLog with WebBrowser{
         capabilities.getCapability("appPackage") !=null
     ) {
       driver = new AndroidDriver[WebElement](new URL(appiumUrl), capabilities)
+      setPlatformName("android")
     } else {
       driver = new IOSDriver[WebElement](new URL(appiumUrl), capabilities)
+      setPlatformName("ios")
     }
 
     getDeviceInfo
@@ -211,9 +219,11 @@ trait MiniAppium extends CommonLog with WebBrowser{
     driver.getClass.getSimpleName match {
       case "AndroidDriver" => {
         crawler = new AndroidCrawler
+        MiniAppium.setPlatformName("android")
       }
       case "IOSDriver" => {
         crawler = new IOSCrawler
+        MiniAppium.setPlatformName("ios")
       }
       case _ => {
         log.warn("never heard this driver before")
@@ -291,6 +301,7 @@ trait MiniAppium extends CommonLog with WebBrowser{
   def doAppium[T](r: => T): Option[T] = {
     Try(r) match {
       case Success(v) => {
+        log.info("success")
         Some(v)
       }
       case Failure(e) => {
@@ -303,27 +314,6 @@ trait MiniAppium extends CommonLog with WebBrowser{
 
   }
 
-  def shot(element: WebElement): File ={
-    val location=element.getLocation
-    val x=location.getX
-    val y=location.getY
-
-    val size=element.getSize
-    val w=size.getWidth
-    val h=size.getHeight
-
-    val file=(driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)
-    val img=ImageIO.read(file)
-    val graph = img.createGraphics()
-    graph.drawImage(img, 0, 0, screenWidth, screenHeight, null)
-    graph.setStroke(new BasicStroke(2))
-    graph.setColor(Color.RED)
-    graph.drawRect(x, y, w, h)
-    graph.dispose()
-    val subImg = img.getSubimage(0, 0, screenWidth, screenHeight)
-    ImageIO.write(subImg, "png", file)
-    return file
-  }
   def shot(fileName:String=loc): Unit ={
     sleep(1)
     val xpath=tree(loc, index)("xpath").toString
@@ -331,4 +321,51 @@ trait MiniAppium extends CommonLog with WebBrowser{
     val file=shot(element)
     FileUtils.copyFile(file, new File(fileName+".png"))
   }
+
+  //todo: 重构到独立的trait中
+  def shot(element: WebElement): java.io.File = {
+    log.info(s"platformName=${platformName}")
+    log.info("getScreenshot")
+    val file = (driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)
+    if (element != null) {
+      log.info("getLocation")
+      val location = element.getLocation
+      val x = location.getX
+      val y = location.getY
+
+      val size = element.getSize
+      val w = size.getWidth
+      val h = size.getHeight
+
+      val img = ImageIO.read(file)
+      val graph = img.createGraphics()
+
+      if (platformName.toLowerCase == "ios") {
+        graph.drawImage(img, 0, 0, screenWidth, screenHeight, null)
+      }
+      graph.setStroke(new BasicStroke(2))
+      graph.setColor(Color.RED)
+      graph.drawRect(x, y, w, h)
+      graph.dispose()
+      val subImg = if (platformName.toLowerCase == "ios") {
+        img.getSubimage(0, 0, screenWidth, screenHeight)
+      } else {
+        img
+      }
+      log.info("write png")
+      ImageIO.write(subImg, "png", file)
+    }
+    return file
+  }
+
+  def dsl(command:String): Unit ={
+    new Eval().inPlace(s"com.xueqiu.qa.appcrawler.MiniAppium.${command.trim}")
+  }
+
+  def hello(action:String, number:Int=0): Unit ={
+    println(s"hello ${action} ${number}")
+  }
+
 }
+
+object MiniAppium extends MiniAppium

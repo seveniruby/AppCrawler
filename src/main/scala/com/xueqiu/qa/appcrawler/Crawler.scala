@@ -130,11 +130,20 @@ class Crawler extends CommonLog {
       log.info("use existed driver")
       this.driver = existDriver
     }
+    log.info("init MiniAppium")
+    log.info(s"platformName=${platformName} driver=${driver}")
+
     log.info("waiting for app load")
     Thread.sleep(8000)
     log.info(s"driver=${existDriver}")
     log.info("get screen info")
     getDeviceInfo()
+
+    MiniAppium.driver=driver
+    MiniAppium.screenHeight=screenHeight
+    MiniAppium.screenWidth=screenWidth
+
+
     driver.manage().logs().getAvailableLogTypes().toArray.foreach(log.info)
     //设定结果目录
 
@@ -157,9 +166,9 @@ class Crawler extends CommonLog {
     log.info("run startup script")
     log.info(conf.startupActions)
     conf.startupActions.foreach(action => {
-      scrollAction(action.split(" ").last)
+      MiniAppium.dsl(action)
       refreshPage()
-      clickedElementsList.push(UrlElement(s"${url}-Scroll-${action}", "", "", "", ""))
+      clickedElementsList.push(UrlElement(s"${url}-startupActions-${action}", "", "", "", ""))
       log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
       saveDom()
       saveScreen(true)
@@ -408,7 +417,7 @@ class Crawler extends CommonLog {
     //iOS键盘隐藏
     if (getAllElements("//UIAKeyboard").size >= 1) {
       log.info("find keyboard , just hide")
-      doAppium(driver.hideKeyboard())
+      MiniAppium.doAppium(driver.hideKeyboard())
     }
   }
 
@@ -424,7 +433,7 @@ class Crawler extends CommonLog {
     pageSource = ""
     1 to 10 foreach (i => {
       if (!refreshFinish) {
-        doAppium(driver.getPageSource) match {
+        MiniAppium.doAppium(driver.getPageSource) match {
           case Some(v) => {
             log.trace("get page source success")
             pageSource = v
@@ -464,8 +473,8 @@ class Crawler extends CommonLog {
     url = currentUrl
     log.info(s"url=${url}")
 
-    //val contexts = doAppium(driver.getContextHandles).getOrElse("")
-    //val windows=doAppium(driver.getWindowHandles).getOrElse("")
+    //val contexts = MiniAppium.doAppium(driver.getContextHandles).getOrElse("")
+    //val windows=MiniAppium.doAppium(driver.getWindowHandles).getOrElse("")
     //val windows = ""
     //log.trace(s"windows=${windows}")
     lastContentHash = currentContentHash
@@ -690,7 +699,7 @@ class Crawler extends CommonLog {
       }
     }
 
-    doAppium(
+    MiniAppium.doAppium(
       driver.swipe(
         (screenWidth * startX).toInt, (screenHeight * startY).toInt,
         (screenWidth * endX).toInt, (screenHeight * endY).toInt, 1000
@@ -743,14 +752,14 @@ class Crawler extends CommonLog {
     }
 
 
-    /*    doAppium((new TouchAction(driver))
+    /*    MiniAppium.doAppium((new TouchAction(driver))
           .press(screenHeight * 0.5.toInt, screenWidth * 0.5.toInt)
           .moveTo(screenHeight * 0.1.toInt, screenWidth * 0.5.toInt)
           .release()
           .perform()
         )
-        doAppium(driver.executeScript("mobile: scroll", HashMap("direction" -> "up")))*/
-    //doAppium(driver.swipe(screenHeight*0.6.toInt, screenWidth*0.5.toInt, screenHeight*0.1.toInt, screenWidth*0.5.toInt, 400))
+        MiniAppium.doAppium(driver.executeScript("mobile: scroll", HashMap("direction" -> "up")))*/
+    //MiniAppium.doAppium(driver.swipe(screenHeight*0.6.toInt, screenWidth*0.5.toInt, screenHeight*0.1.toInt, screenWidth*0.5.toInt, 400))
   }
 
 
@@ -762,7 +771,7 @@ class Crawler extends CommonLog {
     log.info(s"find element by uid ${element}")
     if (element.id != "") {
       log.info(s"find by id=${element.id}")
-      doAppium(driver.findElementsById(element.id)) match {
+      MiniAppium.doAppium(driver.findElementsById(element.id)) match {
         case Some(v) => {
           val arr = v.toArray().distinct
           if (arr.length == 1) {
@@ -781,7 +790,7 @@ class Crawler extends CommonLog {
     }
     */
     log.info(s"find by xpath= ${element.loc}")
-    doAppium(driver.findElementsByXPath(element.loc)) match {
+    MiniAppium.doAppium(driver.findElementsByXPath(element.loc)) match {
       case Some(v) => {
         val arr = v.toArray().distinct
         if (arr.length == 1) {
@@ -809,7 +818,7 @@ class Crawler extends CommonLog {
     platformName.toLowerCase() match {
       case "ios" => {
         //照顾iOS android会在findByName的时候自动找text属性.
-        doAppium(driver.findElementByXPath(
+        MiniAppium.doAppium(driver.findElementByXPath(
           //s"//${uid.tag}[@name='${uid.id}' and @value='${uid.name}' and @x='${uid.loc.split(',').head}' and @y='${uid.loc.split(',').last}']"
           s"//${element.tag}[@path='${element.loc}']"
         )) match {
@@ -827,7 +836,7 @@ class Crawler extends CommonLog {
         /*
         if (uid.name != "") {
           log.info(s"find by name=${uid.name}")
-          doAppium(driver.findElementsByName(uid.name)) match {
+          MiniAppium.doAppium(driver.findElementsByName(uid.name)) match {
             case Some(v) => {
               val arr=v.toArray().distinct
               if (arr.length == 1) {
@@ -845,7 +854,7 @@ class Crawler extends CommonLog {
         }
         */
         //xpath会较慢
-        doAppium(driver.findElementsByXPath(element.loc)) match {
+        MiniAppium.doAppium(driver.findElementsByXPath(element.loc)) match {
           case Some(v) => {
             val arr = v.toArray().distinct
             if (arr.length == 1) {
@@ -919,42 +928,12 @@ class Crawler extends CommonLog {
     log.trace("save dom end")
   }
 
-  //todo: 重构到独立的trait中
-  def shot(element: WebElement): java.io.File = {
-    val file = (driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)
-    if (element != null) {
-      val location = element.getLocation
-      val x = location.getX
-      val y = location.getY
-
-      val size = element.getSize
-      val w = size.getWidth
-      val h = size.getHeight
-
-      val img = ImageIO.read(file)
-      val graph = img.createGraphics()
-      if (platformName.toLowerCase == "ios") {
-        graph.drawImage(img, 0, 0, screenWidth, screenHeight, null)
-      }
-      graph.setStroke(new BasicStroke(2))
-      graph.setColor(Color.RED)
-      graph.drawRect(x, y, w, h)
-      graph.dispose()
-      val subImg = if (platformName.toLowerCase == "ios") {
-        img.getSubimage(0, 0, screenWidth, screenHeight)
-      } else {
-        img
-      }
-      ImageIO.write(subImg, "png", file)
-    }
-    return file
-  }
 
   def screenshot(path: String, element: WebElement = null): Unit = {
     if (pluginClasses.map(p => p.screenshot(path)).contains(true)) {
       return
     }
-    Try(shot(element)) match {
+    Try(MiniAppium.shot(element)) match {
       case Success(file) => {
         FileUtils.copyFile(file, new java.io.File(path))
         log.info("save screenshot end")
@@ -984,14 +963,14 @@ class Crawler extends CommonLog {
         }
       })
       getScreen.start()
-      //最多等待5s
       var needStopThread = false
       var stopThreadCount = 0
+      val screenshotWaitCount: Int = conf.screenshotTimeout*2
       while (needStopThread == false) {
         if (getScreen.getState != Thread.State.TERMINATED) {
           stopThreadCount += 1
           //超时退出
-          if (stopThreadCount >= 20) {
+          if (stopThreadCount >= screenshotWaitCount) {
             log.warn("screenshot timeout stop thread")
             getScreen.stop()
             needStopThread = true
@@ -1031,11 +1010,11 @@ class Crawler extends CommonLog {
           case "click" => {
             //todo: tap和click的行为不一致. 在ipad上有时候click会点错位置, 而tap不会
             //todo: tap的缺点就是点击元素的时候容易点击到元素上层的控件
-            //val res = doAppium(tap(v))
-            val res = doAppium(v.click())
+            //val res = MiniAppium.doAppium(tap(v))
+            val res = MiniAppium.doAppium(v.click())
             appendClickedList(e)
             if (List("UIATextField", "UIATextView", "EditText").map(e.tag.contains(_)).contains(true)) {
-              doAppium(driver.hideKeyboard())
+              MiniAppium.doAppium(driver.hideKeyboard())
             }
 
           }
@@ -1059,10 +1038,10 @@ class Crawler extends CommonLog {
           }
           case str: String => {
             log.info(s"sendkeys ${v} with ${str}")
-            doAppium(v.sendKeys(str)) match {
+            MiniAppium.doAppium(v.sendKeys(str)) match {
               case Some(v) => {
                 appendClickedList(e)
-                doAppium(driver.hideKeyboard())
+                MiniAppium.doAppium(driver.hideKeyboard())
                 Some(v)
               }
               case None => None

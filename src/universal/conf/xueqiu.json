@@ -3,6 +3,7 @@
     "com.xueqiu.qa.appcrawler.plugin.TagLimitPlugin"
   ],
   "saveScreen" : true,
+  "screenshotTimeout" : 20,
   "currentDriver" : "android",
   "maxTime" : 10800,
   "resultDir" : "",
@@ -186,5 +187,5 @@
     "idOrName" : "隐藏键盘",
     "times" : 0
   }],
-  "startupActions" : [ "scroll left", "scroll left", "scroll left", "scroll left", "scroll left", "scroll down"]
+  "startupActions" : [ "swipe(\"left\")", "swipe(\"left\")", "swipe(\"left\")", "swipe(\"left\")", "swipe(\"down\")"]
 }
