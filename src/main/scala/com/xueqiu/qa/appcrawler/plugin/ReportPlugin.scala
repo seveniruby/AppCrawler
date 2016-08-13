@@ -15,8 +15,12 @@ import scala.reflect.io.File
   */
 class ReportPlugin extends Plugin{
   val suites=ListBuffer[String]()
+  var reportPath=""
 
   override def start(): Unit ={
+    reportPath=new java.io.File(getCrawler().conf.resultDir).getCanonicalPath
+    log.info(s"reportPath=${reportPath}")
+
   }
 
   override def stop(): Unit ={
@@ -25,24 +29,27 @@ class ReportPlugin extends Plugin{
   }
 
   override def afterUrlRefresh(url:String): Unit ={
-    saveTestCase()
-    runTestCase()
+    if(suites.contains(url)){
+      //新页面出现的时候保存老数据
+      return
+    }else {
+      suites.append(url)
+      saveTestCase()
+      runTestCase()
+    }
   }
 
   def saveTestCase(): Unit ={
     log.info("save testcase")
     val elements=getCrawler().elements
-    val path=getCrawler().conf.resultDir
+    //为了保持独立使用
+    val path=new java.io.File(getCrawler().conf.resultDir).getCanonicalPath
 
-    elements.map(x=>x._1.url).toList.distinct.foreach(url =>{
-      val suiteName=url.replaceAll("[_?\\-]", "")
-      val code=genTestCase(suiteName, elements.filter(x=>x._1.url==url).toList)
-      val fileName=s"${path}/${suiteName}.scala"
+    val suites=elements.map(x=>x._1.url).toList.distinct
+    suites.foreach(suite =>{
+      val code=genTestCase(suite, elements.filter(x=>x._1.url==suite).toList)
+      val fileName=s"${path}/AppCrawler_${suites.indexOf(suite)}.scala"
       File(fileName).writeAll(code)
-      //Eval(new java.io.File(fileName))
-      if(suites.contains(suiteName)==false){
-        suites.append(suiteName)
-      }
     })
   }
 
@@ -76,23 +83,21 @@ class ReportPlugin extends Plugin{
   }
 
   def runTestCase(): Unit ={
-    val reportPath=new java.io.File(getCrawler().conf.resultDir).getCanonicalPath
-    log.info(s"reportPath=${reportPath}")
-    var cmdArgs=Array("-R", reportPath ,
+    var cmdArgs=Array("-R", reportPath+"/tmp/" ,
       "-o", "-u", reportPath, "-h", reportPath)
 
+    val suites=new java.io.File(reportPath).list().filter(_.endsWith(".scala")).map(_.split(".scala").head).toList
     suites.map(suite=>Array("-s", s"${suite}")).foreach(array=>{
       cmdArgs=cmdArgs++array
     })
 
-    val sourceFiles=suites.map(name=>new java.io.File(s"${reportPath}/${name}.scala").getCanonicalPath).toList
+    val sourceFiles=suites.map(name=>s"${reportPath}/${name}.scala")
     log.info(s"compile testcase ${sourceFiles} into ${reportPath}")
-    Runtimes.init(reportPath)
+    Runtimes.init(reportPath+"/tmp/")
     Runtimes.compile(sourceFiles)
 
     log.info(s"run ${cmdArgs.toList}")
     Runner.run(cmdArgs)
-
   }
 
 

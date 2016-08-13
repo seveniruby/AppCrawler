@@ -20,6 +20,7 @@ object AppCrawler extends CommonLog{
                            appium:String = "http://127.0.0.1:4723/wd/hub/",
                            resultDir: String = "",
                            maxTime:Int = 0,
+                           report:Boolean=false,
                            capability: Map[String, String] = Map[String, String]()
                          )
     def sbt(args: Seq[String]): Unit = {
@@ -38,7 +39,7 @@ object AppCrawler extends CommonLog{
     val parser = new scopt.OptionParser[Param]("appcrawler") {
       head(
         """
-          |AppCrawler 1.4.0
+          |AppCrawler 1.5.0
           |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
           |移动测试技术交流 https://testerhome.com
           |感谢: 晓光 泉龙 杨榕 恒温 mikezhou
@@ -72,6 +73,9 @@ object AppCrawler extends CommonLog{
       opt[Map[String, String]]("capability") valueName ("k1=v1,k2=v2...") action { (x, c) =>
         c.copy(capability = x)
       } text ("appium capability选项, 这个参数会覆盖-c指定的配置模板参数, 用于在模板配置之上的参数微调")
+      opt[Unit]('r', "report") action { (_, c)=>
+        c.copy(report = true)
+      } text("输出html和xml报告")
       opt[Unit]("verbose").abbr("vv") action { (_, c) =>
         c.copy(verbose = true)
       } text ("是否展示更多debug信息")
@@ -84,6 +88,7 @@ object AppCrawler extends CommonLog{
           |appcrawler -c xueqiu.json --capability udid=[你的udid] -a Snowball.app
           |appcrawler -c xueqiu.json -a Snowball.app -u 4730
           |appcrawler -c xueqiu.json -a Snowball.app -u http://127.0.0.1:4730/wd/hub
+          |appcrawler --report -o result/
         """.stripMargin)
     }
     // parser.parse returns Option[C]

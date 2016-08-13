@@ -21,6 +21,10 @@ object Runtimes extends CommonLog{
     settings = new Settings()
     settings.deprecation.value = true // enable detailed deprecation warnings
     settings.unchecked.value = true // enable detailed unchecked warnings
+    val tempDir=new File(this.outputDir)
+    if(tempDir.exists()==false){
+      tempDir.mkdir()
+    }
     settings.outputDirs.setSingleOutput(this.outputDir)
     settings.usejavacp.value = true
     log.info(settings)

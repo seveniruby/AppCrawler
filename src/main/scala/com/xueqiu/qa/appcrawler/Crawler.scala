@@ -905,8 +905,10 @@ class Crawler extends CommonLog {
       index += 1
       List(index, n.toFileName, n.toLoc, n.toTagPath).mkString("\n")
     }).mkString("\n"))
-    File(s"${conf.resultDir}/elementList.log").writeAll(elements.mkString("\n"))
-    File(s"${conf.resultDir}/allElements.log").writeAll(allElementsRecord.map(_.toLoc()).mkString("\n"))
+
+    File(s"${conf.resultDir}/clickedList.yml").writeAll(DataObject.toYaml(clickedElementsList))
+    File(s"${conf.resultDir}/elementList.yml").writeAll(DataObject.toYaml(elements))
+    File(s"${conf.resultDir}/allElements.yml").writeAll(DataObject.toYaml(allElementsRecord))
 
     File(s"${conf.resultDir}/freemind.mm").writeAll(
       elementTree.generateFreeMind(elementTreeList)
