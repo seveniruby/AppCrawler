@@ -15,7 +15,7 @@ import scala.io.Source
 /**
   * Created by seveniruby on 16/1/6.
   */
-class CrawlerConf {
+class CrawlerConf extends CommonLog{
   /**插件列表*/
   var pluginList=List("com.xueqiu.qa.appcrawler.plugin.TagLimitPlugin")
   var logLevel="TRACE"
@@ -149,14 +149,22 @@ class CrawlerConf {
 
 
   def load(file :String): CrawlerConf ={
-    val mapper = new ObjectMapper()
-    mapper.registerModule(DefaultScalaModule)
-    mapper.readValue(Source.fromFile(file).mkString.getBytes, classOf[CrawlerConf])
+    load(new File(file)).get
   }
-  def load(file :File): CrawlerConf ={
-    val mapper = new ObjectMapper()
-    mapper.registerModule(DefaultScalaModule)
-    mapper.readValue(Source.fromFile(file).mkString.getBytes, classOf[CrawlerConf])
+  def load(file :File): Option[CrawlerConf] ={
+    val content=Source.fromFile(file).getLines().mkString("\n")
+    file.getName match {
+      case json if json.endsWith(".json") =>{
+        Some(DataObject.fromJson[CrawlerConf](content))
+      }
+      case yaml if yaml.endsWith(".yml") || yaml.endsWith(".yaml") =>{
+        Some(DataObject.fromYaml[CrawlerConf](content))
+      }
+      case path =>{
+        log.info(s"${path} not support")
+        None
+      }
+    }
   }
 
 

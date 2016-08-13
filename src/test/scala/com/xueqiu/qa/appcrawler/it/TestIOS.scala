@@ -60,7 +60,7 @@ class TestIOS extends MiniAppiumSuite {
 
   test("iOS 8.3 test2"){
     swipe("down")
-    crawl(conf="src/test/scala/com/xueqiu/qa/appcrawler/it/xueqiu_private.json", maxDepth = 6)
+    crawl(conf="src/test/scala/com/xueqiu/qa/appcrawler/it/xueqiu_private.yml", maxDepth = 10)
   }
 
   override def afterEach: Unit = {

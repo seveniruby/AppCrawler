@@ -1,9 +1,13 @@
 package com.xueqiu.qa.appcrawler.ut
 
+import java.io
+
 import com.xueqiu.qa.appcrawler.{UrlElement, CrawlerConf, CommonLog, DataObject}
 import org.scalatest.FunSuite
 
 import scala.collection.mutable
+import scala.io.Source
+import scala.reflect.io.File
 
 /**
   * Created by seveniruby on 16/8/13.
@@ -32,5 +36,27 @@ class TestDataObject extends FunSuite with CommonLog{
     log.info(elementList.head)
     log.info(elementList.last)
 
+  }
+
+  test("json to yaml"){
+    val conf=new CrawlerConf().load("src/test/scala/com/xueqiu/qa/appcrawler/it/xueqiu_private.json")
+    log.info(conf)
+    val yaml=DataObject.toYaml(conf)
+    File("src/test/scala/com/xueqiu/qa/appcrawler/it/xueqiu_private.yml").writeAll(yaml)
+
+
+  }
+
+  test("convert json to yaml"){
+    val file="src/universal/conf/xueqiu.json"
+    val conf=new CrawlerConf().load(file)
+    log.info(conf)
+    val yaml=DataObject.toYaml(conf)
+    File("src/universal/conf/xueqiu.yml").writeAll(yaml)
+  }
+
+  test("read json"){
+    val conf=DataObject.fromJson[CrawlerConf](Source.fromFile("src/test/scala/com/xueqiu/qa/appcrawler/it/xueqiu_private.json").getLines().mkString("\n"))
+    log.info(conf.saveScreen)
   }
 }

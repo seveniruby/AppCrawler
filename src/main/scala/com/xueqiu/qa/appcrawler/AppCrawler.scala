@@ -115,7 +115,7 @@ object AppCrawler extends CommonLog{
         //获取配置模板文件
         if (config.conf.isFile) {
           log.info(s"Find Conf ${config.conf.getAbsolutePath}")
-          crawlerConf=crawlerConf.load(config.conf)
+          crawlerConf=crawlerConf.load(config.conf).get
         }
         //判断平台
         crawlerConf.currentDriver = config.platform

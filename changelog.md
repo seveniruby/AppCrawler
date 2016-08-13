@@ -3,7 +3,7 @@
 支持自动重启appium机制, 用于防止iOS遍历内存占用太大问题
 支持url的xpath过滤
 分离插件到独立项目
-标准的html报告
+标准的html报告 [完成]
 windows下中文编码问题
 windows下命令行超长问题[完成]
 

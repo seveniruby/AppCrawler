@@ -17,17 +17,16 @@ object Runtimes extends CommonLog{
   var outputDir=""
   def init(outputDir:String="target") {
     this.outputDir=outputDir
-
-    settings = new Settings()
-    settings.deprecation.value = true // enable detailed deprecation warnings
-    settings.unchecked.value = true // enable detailed unchecked warnings
     val tempDir=new File(this.outputDir)
     if(tempDir.exists()==false){
       tempDir.mkdir()
     }
+
+    settings = new Settings()
+    settings.deprecation.value = true // enable detailed deprecation warnings
+    settings.unchecked.value = true // enable detailed unchecked warnings
     settings.outputDirs.setSingleOutput(this.outputDir)
     settings.usejavacp.value = true
-    log.info(settings)
 
     //todo:同时使用IMain和Global会导致无法编译
     //interpreter = new IMain(settings)

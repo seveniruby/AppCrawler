@@ -14,7 +14,6 @@ import scala.reflect.io.File
   * Created by seveniruby on 16/8/12.
   */
 class ReportPlugin extends Plugin{
-  val suites=ListBuffer[String]()
   var reportPath=""
 
   override def start(): Unit ={
@@ -28,12 +27,11 @@ class ReportPlugin extends Plugin{
     runTestCase()
   }
 
-  override def afterUrlRefresh(url:String): Unit ={
-    if(suites.contains(url)){
-      //新页面出现的时候保存老数据
-      return
-    }else {
-      suites.append(url)
+
+  override def afterElementAction(element: UrlElement): Unit ={
+    val count=getCrawler().clickedElementsList.length
+    log.info(s"clickedElementsList size = ${count}")
+    if(count%10==0){
       saveTestCase()
       runTestCase()
     }
@@ -47,16 +45,21 @@ class ReportPlugin extends Plugin{
 
     val suites=elements.map(x=>x._1.url).toList.distinct
     suites.foreach(suite =>{
-      val code=genTestCase(suite, elements.filter(x=>x._1.url==suite).toList)
+      val index=suites.indexOf(suite)
+      val code=genTestCase(index, suite, elements.filter(x=>x._1.url==suite).toList)
       val fileName=s"${path}/AppCrawler_${suites.indexOf(suite)}.scala"
       File(fileName).writeAll(code)
     })
   }
 
-  def genTestCase(suite:String, elements:List[(UrlElement, Boolean)]): String ={
+  def genTestCase(index:Int, suite:String, elements:List[(UrlElement, Boolean)]): String ={
 
     val codeTestCase=new StringBuilder
-    elements.foreach(ele=>{
+    //先展示点击过的
+    val newElements=ListBuffer[(UrlElement, Boolean)]()
+    newElements.appendAll(elements.filter(ele=>ele._2==true))
+    newElements.appendAll(elements.filter(ele=>ele._2==false))
+    newElements.foreach(ele=>{
       val testcase=ele._1.loc.replace("\"", "\\\"")
       val isPass=ele._2
       val img=(getCrawler().clickedElementsList.reverse.indexOf(ele._1)+1)+s"_${ele._1.toFileName()}.jpg"
@@ -64,7 +67,7 @@ class ReportPlugin extends Plugin{
         s"""
           |  test("${testcase}"){
           |    ${if(isPass){s"""markup("<img src='${img}'/>")"""}else{""}}
-          |    assert(true==${isPass})
+          |    assert(true==${isPass}, "未遍历")
           |  }
         """.stripMargin)
     })
@@ -74,7 +77,7 @@ class ReportPlugin extends Plugin{
          |//package com.xueqiu.qa.appcrawler.report
          |
          |import org.scalatest.FunSuite
-         |class AppCrawler_${suites.indexOf(suite)} extends FunSuite {
+         |class AppCrawler_${index} extends FunSuite {
          |  override def suiteName="${suite.replace("\"", "\\\"")}"
          |${codeTestCase}
          |}
@@ -96,8 +99,10 @@ class ReportPlugin extends Plugin{
     Runtimes.init(reportPath+"/tmp/")
     Runtimes.compile(sourceFiles)
 
-    log.info(s"run ${cmdArgs.toList}")
-    Runner.run(cmdArgs)
+    if(suites.size>0) {
+      log.info(s"run ${cmdArgs.toList}")
+      Runner.run(cmdArgs)
+    }
   }
 
 

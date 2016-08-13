@@ -20,7 +20,7 @@ class TestXueqiuAndroid extends MiniAppiumSuite{
     quit()
   }
   test("首页"){
-    crawl(conf="src/test/scala/com/xueqiu/qa/appcrawler/it/xueqiu_private.json", maxDepth = 10)
+    crawl(conf="src/test/scala/com/xueqiu/qa/appcrawler/it/xueqiu_private.yaml", maxDepth = 10)
   }
 
   test("问答广场"){

@@ -545,8 +545,6 @@ class Crawler extends CommonLog {
         val element = getUrlElementByMap(v)
         clickedElementsList.push(element)
         log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
-        saveScreen()
-        saveDom()
         doAppiumAction(element, "click")
         refreshPage()
       }
@@ -555,8 +553,6 @@ class Crawler extends CommonLog {
         if (platformName.toLowerCase == "android") {
           clickedElementsList.push(UrlElement(s"${url}-Back", "", "", "", ""))
           log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
-          saveDom()
-          saveScreen()
           driver.navigate().back()
           refreshPage()
         }else{
@@ -1101,6 +1097,8 @@ class Crawler extends CommonLog {
     //先判断是否在期望的界面里. 提升速度
     var isHit = false
     conf.elementActions.foreach(r => {
+      log.trace("current rule action")
+      log.trace(r)
       val idOrName = r("idOrName").toString
       val action = r("action").toString
       val times = r("times").toString.toInt

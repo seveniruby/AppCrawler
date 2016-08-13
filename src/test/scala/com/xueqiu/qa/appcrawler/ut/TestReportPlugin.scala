@@ -20,9 +20,8 @@ class TestReportPlugin extends FunSuite with CommonLog{
       UrlElement("aa", "b", "c", "d", "e3")->false
 
     )
-    val code=report.genTestCase("demo", elements)
+    val code=report.genTestCase(1, "demo", elements)
     log.info(code)
-
 
   }
 
