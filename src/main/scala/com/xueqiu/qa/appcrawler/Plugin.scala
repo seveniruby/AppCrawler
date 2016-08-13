@@ -8,6 +8,9 @@ abstract class Plugin extends CommonLog{
   def getCrawler(): Crawler ={
     this.crawler
   }
+  def setCrawer(crawler:Crawler): Unit ={
+    this.crawler=crawler
+  }
   def init(crawler: Crawler): Unit ={
     this.crawler=crawler
     log.addAppender(crawler.fileAppender)

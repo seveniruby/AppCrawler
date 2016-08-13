@@ -30,7 +30,7 @@ class Crawler extends CommonLog {
   var pluginClasses = List[Plugin]()
   var fileAppender: FileAppender = _
 
-  private val elements: scala.collection.mutable.Map[String, Boolean] = scala.collection.mutable.Map()
+  val elements: scala.collection.mutable.Map[UrlElement, Boolean] = scala.collection.mutable.Map()
   private var allElementsRecord = ListBuffer[UrlElement]()
   private var isSkip = false
   /** 元素的默认操作 */
@@ -492,8 +492,8 @@ class Crawler extends CommonLog {
   }
 
   def isClicked(ele: UrlElement): Boolean = {
-    if (elements.contains(ele.toLoc())) {
-      elements(ele.toLoc())
+    if (elements.contains(ele)) {
+      elements(ele)
     } else {
       log.trace(s"element=${ele.toLoc()} first show, need click")
       false
@@ -598,8 +598,8 @@ class Crawler extends CommonLog {
     log.info(s"fresh elements length=${allElements.length}")
     //记录未被点击的元素
     allElements.foreach(e => {
-      if (!elements.contains(e.toLoc())) {
-        elements(e.toLoc()) = false
+      if (!elements.contains(e)) {
+        elements(e) = false
         log.info(s"first found ${e}")
       }
     })
@@ -632,7 +632,7 @@ class Crawler extends CommonLog {
       if (allElements.nonEmpty) {
         //保存第一个元素到要点击元素的堆栈里, 这里可以决定是后向遍历, 还是前向遍历
         val element = allElements.head
-        elements(element.toLoc()) = true
+        elements(element) = true
         clickedElementsList.push(element)
         //加载插件分析
         beforeElementAction(element)
@@ -950,39 +950,64 @@ class Crawler extends CommonLog {
 
   }
 
+
+  /**
+    * 间隔一定时间判断线程是否完成, 未完成就重试
+    * @param interval
+    * @param retry
+    */
+  def retryThread(interval:Int=conf.screenshotTimeout, retry:Int=1)(callback: =>Unit): Unit ={
+    var needRetry=true
+    1 to retry foreach (i => {
+      if (needRetry == true) {
+        log.info(s"retry time = ${i}")
+        val thread = new Thread(new Runnable {
+          override def run(): Unit = {
+            callback
+          }
+        })
+        thread.start()
+        log.info(s"${thread.getId} ${thread.getState}")
+
+        var stopThreadCount = 0
+        var needStopThread = false
+        while (needStopThread == false) {
+          if (thread.getState != Thread.State.TERMINATED) {
+            stopThreadCount += 1
+            //超时退出
+            if (stopThreadCount >= interval * 2) {
+              log.warn("screenshot timeout stop thread")
+              thread.stop()
+              needStopThread = true
+              log.info(thread.getState)
+              //refreshPage()
+              //发送一个命令测试appium
+              //log.info(driver.manage().window().getSize)
+            } else {
+              //未超时等待
+              log.debug("screenshot wait")
+              Thread.sleep(500)
+            }
+          } else {
+            //正常退出
+            log.trace("screenshot finish")
+            needRetry = false
+            needStopThread = true
+          }
+        }
+      }
+
+    })
+
+  }
   def saveScreen(force: Boolean = false, element: WebElement = null): Unit = {
     //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
     if (conf.saveScreen && lastContentHash != currentContentHash || force) {
       Thread.sleep(100)
       log.info("start screenshot")
       val path = getLogFileName() + ".jpg"
-
-      val getScreen = new Thread(new Runnable {
-        override def run(): Unit = {
-          screenshot(path, element)
-        }
-      })
-      getScreen.start()
-      var needStopThread = false
-      var stopThreadCount = 0
-      val screenshotWaitCount: Int = conf.screenshotTimeout*2
-      while (needStopThread == false) {
-        if (getScreen.getState != Thread.State.TERMINATED) {
-          stopThreadCount += 1
-          //超时退出
-          if (stopThreadCount >= screenshotWaitCount) {
-            log.warn("screenshot timeout stop thread")
-            getScreen.stop()
-            needStopThread = true
-          } else {
-            log.debug("screenshot wait")
-            Thread.sleep(500)
-          }
-        } else {
-          //正常退出
-          log.trace("screenshot finish")
-          needStopThread = true
-        }
+      retryThread(){
+        screenshot(path, element)
       }
     }
   }

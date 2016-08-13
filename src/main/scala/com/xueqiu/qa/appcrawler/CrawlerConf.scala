@@ -135,10 +135,16 @@ class CrawlerConf {
     mapper.registerModule(DefaultScalaModule)
     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)
   }
-  def loadYaml(fileName:String): CrawlerConf ={
+  def loadYaml(fileName:File): CrawlerConf ={
     val mapper = new ObjectMapper(new YAMLFactory())
     mapper.registerModule(DefaultScalaModule)
     mapper.readValue(fileName, classOf[CrawlerConf])
+  }
+
+  def loadYaml(content:String): Unit ={
+    val mapper = new ObjectMapper(new YAMLFactory())
+    mapper.registerModule(DefaultScalaModule)
+    mapper.readValue(content, classOf[CrawlerConf])
   }
 
 

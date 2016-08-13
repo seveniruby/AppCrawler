@@ -1,7 +1,7 @@
 package com.xueqiu.qa.appcrawler.ut
 
 
-import com.xueqiu.qa.appcrawler.{Crawler, CrawlerConf, RichData}
+import com.xueqiu.qa.appcrawler.{UrlElement, Crawler, CrawlerConf, RichData}
 import org.scalatest.FunSuite
 
 
@@ -318,28 +318,14 @@ class TestCrawler extends FunSuite{
   }
 */
 
-  test("save config"){
-    val conf=new CrawlerConf
-    conf.save("conf.json")
-  }
-
-/*
-  test("load config"){
-    var conf=new com.xueqiu.qa.appcrawler.CrawlerConf
-    conf.baseUrl="xxx"
-    println(conf.baseUrl)
-    conf=conf.loadByJson4s("conf.json").get
-    println(conf.baseUrl)
-  }
-*/
-
-  test("load config by jackson"){
-    var conf=new CrawlerConf
-    conf.baseUrl=List("xxx")
-    println(conf.baseUrl)
-    conf.save("conf.json")
-    conf=conf.load("conf.json")
-    println(conf.baseUrl)
-    assert(conf.baseUrl==List("xxx"))
+  test("elements equal"){
+    val crawler=new Crawler()
+    val u1=UrlElement("a", "b", "c", "d","")
+    val u2=UrlElement("a", "b", "c", "d","")
+    val u3=UrlElement("a", "b", "c", "d","e")
+    assert(u1==u2)
+    crawler.elements(u1)=true
+    assert(crawler.elements(u2)==true)
+    assert(crawler.elements.getOrElse(u3, false)==false)
   }
 }

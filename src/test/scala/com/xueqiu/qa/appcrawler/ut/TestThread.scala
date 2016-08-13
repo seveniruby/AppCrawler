@@ -95,4 +95,35 @@ class TestThread extends FunSuite{
 */
 
 
+  def callbyname(count:Int =3)(callback: =>Unit): Unit ={
+    1 to count foreach(x=>callback)
+  }
+
+
+  def callbythread(count:Int =3)(callback: =>Unit): Unit ={
+    1 to count foreach(x=>{
+      val thread = new Thread(new Runnable {
+        override def run(): Unit = {
+          callback
+        }
+      })
+      thread.start()
+      thread.join(3000)
+      thread.stop()
+    })
+  }
+
+  test("test by name callback"){
+    println("before")
+    callbythread(3){
+      println("xx start")
+      Thread.sleep(5000)
+      println("xx stop")
+    }
+    println("after")
+
+  }
+
+
+
 }
