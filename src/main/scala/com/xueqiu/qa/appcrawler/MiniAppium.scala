@@ -359,7 +359,10 @@ trait MiniAppium extends CommonLog with WebBrowser{
   }
 
   def dsl(command:String): Unit ={
-    new Eval().inPlace(s"com.xueqiu.qa.appcrawler.MiniAppium.${command.trim}")
+    Runtimes.init()
+    Runtimes.eval("import com.xueqiu.qa.appcrawler.MiniAppium")
+    Runtimes.eval(command)
+    //new Eval().inPlace(s"com.xueqiu.qa.appcrawler.MiniAppium.${command.trim}")
   }
 
   def hello(action:String, number:Int=0): Unit ={

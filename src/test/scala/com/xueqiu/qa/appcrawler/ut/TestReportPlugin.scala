@@ -36,6 +36,7 @@ class TestReportPlugin extends FunSuite with CommonLog{
       "-R", "/Users/seveniruby/projects/LBSRefresh/target",
       "-w", "com.xueqiu.qa.appcrawler",
       "-o", "-u", "target/test-reports", "-h", "target/test-reports"))
+
   }
 
 }

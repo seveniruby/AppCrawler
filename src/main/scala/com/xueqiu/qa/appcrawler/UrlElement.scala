@@ -35,4 +35,5 @@ case class UrlElement(url: String, tag: String, id: String, name: String, loc:St
     //s"${element.url}_${element.tag}_${element.loc}".replaceAll("@index=[^ ]*", "") //replaceAll("\\[[^\\[]*$", "")
     s"${url}-${"(/[a-zA-Z][a-zA-Z\\.]*)".r.findAllMatchIn(loc.replaceAll(":id/", "").replaceAll("android\\.[a-z]*\\.", "")).map(_.subgroups).toList.flatten.mkString("")}"
   }
+
 }

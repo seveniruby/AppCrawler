@@ -894,7 +894,6 @@ class Crawler extends CommonLog {
   }
 
   def saveLog(): Unit = {
-    log.trace("save log start")
     //记录点击log
     var index = 0
     File(s"${conf.resultDir}/clickedList.log").writeAll(clickedElementsList.reverse.map(n => {
@@ -909,8 +908,6 @@ class Crawler extends CommonLog {
     File(s"${conf.resultDir}/freemind.mm").writeAll(
       elementTree.generateFreeMind(elementTreeList)
     )
-
-    log.trace(s"save log finish ${File(s"${conf.resultDir}/").toURI}")
   }
 
   def getLogFileName(): String = {
@@ -920,10 +917,8 @@ class Crawler extends CommonLog {
 
   def saveDom(): Unit = {
     //保存dom结构
-    log.trace("save dom")
     val domPath = getLogFileName() + ".dom"
     File(domPath).writeAll(pageSource)
-    log.trace("save dom end")
   }
 
 

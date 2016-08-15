@@ -18,6 +18,8 @@ import scala.tools.nsc.interpreter.IMain
   * Created by seveniruby on 16/8/10.
   */
 class TestEval extends FunSuite with CommonLog{
+
+  val fileName="/Users/seveniruby/projects/LBSRefresh/iOS_20160813203343/AppCrawler_8.scala"
   test("eval"){
     val result:Int=new Eval().inPlace("1+2")
     assert(result == 3)
@@ -40,15 +42,13 @@ class TestEval extends FunSuite with CommonLog{
   }
 
   test("compile"){
-    val file=new File("/Users/seveniruby/projects/LBSRefresh/src/test/scala/com/xueqiu/qa/appcrawler/temp/雪球雪球问答.scala")
+    val file=new File(fileName)
     val e=new Eval(Some(file))
     log.info(e.compilerOutputDir)
 
   }
 
   test("compile by scala"){
-
-    val fileName="/Users/seveniruby/projects/LBSRefresh/iOS_20160813132121/雪球SNBPublicTimelineView.scala"
     Runtimes.init(new File(fileName).getParent)
     Runtimes.compile(List(fileName))
 
@@ -59,7 +59,6 @@ class TestEval extends FunSuite with CommonLog{
   test("native compile"){
 
 
-    val fileName="/Users/seveniruby/projects/LBSRefresh/iOS_20160813132121/雪球SNBPublicTimelineView.scala"
     val outputDir=new File(fileName).getParent
 
     val settings = new Settings()
@@ -88,6 +87,22 @@ class TestEval extends FunSuite with CommonLog{
 
 
   }
+
+
+  test("imain q"){
+
+    Runtimes.init()
+    Runtimes.eval("import com.xueqiu.qa.appcrawler.MiniAppium")
+    Runtimes.eval(
+      """
+        |println("xxx")
+        |println("ddd")
+        |MiniAppium.hello("222")
+      """.stripMargin)
+
+
+  }
+
 
 }
 

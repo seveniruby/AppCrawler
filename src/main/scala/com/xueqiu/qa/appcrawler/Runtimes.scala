@@ -13,26 +13,20 @@ import scala.tools.nsc.{Global, Settings}
 object Runtimes extends CommonLog{
 
   private var interpreter:IMain=_
-  private var settings:Settings=_
+  private val settings:Settings=new Settings()
   var outputDir=""
-  def init(outputDir:String="target") {
+  def init(outputDir:String="") {
     this.outputDir=outputDir
     val tempDir=new File(this.outputDir)
-    if(tempDir.exists()==false){
+    if(outputDir.nonEmpty && tempDir.exists()==false){
       tempDir.mkdir()
+      settings.outputDirs.setSingleOutput(this.outputDir)
     }
-
-    settings = new Settings()
     settings.deprecation.value = true // enable detailed deprecation warnings
     settings.unchecked.value = true // enable detailed unchecked warnings
-    settings.outputDirs.setSingleOutput(this.outputDir)
     settings.usejavacp.value = true
 
     //todo:同时使用IMain和Global会导致无法编译
-    //interpreter = new IMain(settings)
-
-
-
   }
 
   def compile(fileNames:List[String]): Unit ={
@@ -42,8 +36,15 @@ object Runtimes extends CommonLog{
   }
 
   def eval(code:String): Unit ={
-    interpreter = new IMain(settings)
+    if (interpreter == null) {
+      init()
+      interpreter = new IMain(settings)
+    }
     interpreter.interpret(code)
+  }
+
+  def reset(): Unit ={
+
   }
 
 }

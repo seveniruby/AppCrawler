@@ -17,6 +17,7 @@ import scala.collection.mutable.ListBuffer
   * Created by seveniruby on 16/3/26.
   */
 object RichData extends CommonLog {
+  var xpathExpr=List("name", "label", "value", "resource-id", "content-desc", "index", "text")
   def toXML(raw: String): Document = {
     val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
     val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
@@ -36,6 +37,9 @@ object RichData extends CommonLog {
     out.toString
   }
 
+  def setXPathExpr(expr:List[String]): Unit ={
+    xpathExpr=expr
+  }
   /**
     * 从属性中获取xpath的唯一表达式
     *
@@ -46,7 +50,7 @@ object RichData extends CommonLog {
     var xpath = attributes.reverse.takeRight(2).map(attribute => {
       var newAttribute = attribute
       //如果有值就不需要path了, 基本上两层xpath定位即可唯一
-      List("name", "label", "value", "resource-id", "content-desc", "index", "text").foreach(key => {
+      xpathExpr.foreach(key => {
         if (newAttribute.getOrElse(key, "").isEmpty) {
           newAttribute = newAttribute - key
         } else {
@@ -66,11 +70,11 @@ object RichData extends CommonLog {
         //todo: appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
         //todo: 需要帮appium打补丁
         if (kv._1 != "tag") {
-          if (kv._1 == "name" && kv._2.size > 20) {
+          if (kv._1 == "name" && kv._2.size > 50) {
             log.trace(s"name size too long ${kv._2.size}>20")
             ""
           }
-          else if (kv._1 == "text" && kv._2.size > 20) {
+          else if (kv._1 == "text" && kv._2.size > 50) {
             log.trace(s"text size too long ${kv._2.size}>20")
             ""
           }
@@ -126,7 +130,7 @@ object RichData extends CommonLog {
 
               0 until attributes.getLength foreach (i => {
                 val kv = attributes.item(i).asInstanceOf[Attr]
-                if (List("name", "label", "path", "resource-id", "content-desc", "index", "text").contains(kv.getName)
+                if (xpathExpr.contains(kv.getName)
                   && kv.getValue.nonEmpty
                 ) {
                   attributeMap ++= Map(kv.getName -> kv.getValue)
@@ -178,7 +182,7 @@ object RichData extends CommonLog {
             nodeMap("label") = nodeMap("content-desc")
           }
 
-          if (nodeMap("xpath").toString.nonEmpty) {
+          if (nodeMap("xpath").toString.nonEmpty && nodeMap("value").toString().size<50) {
             nodesMap += (nodeMap.toMap)
           } else {
             log.trace(s"xpath error skip ${nodeMap}")

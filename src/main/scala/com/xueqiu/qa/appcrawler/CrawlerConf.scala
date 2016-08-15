@@ -48,6 +48,7 @@ class CrawlerConf extends CommonLog{
     "platformVersion"->"9.2",
     "deviceName"-> "iPhone 6"
   )
+  var xpathAttributes=List("name", "label", "value", "resource-id", "content-desc", "index", "text")
   /**用来确定url的元素定位xpath 他的text会被取出当作url因素*/
   var defineUrl=List[String]()
   /**设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度*/
