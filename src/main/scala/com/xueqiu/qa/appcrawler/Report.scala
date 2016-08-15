@@ -46,9 +46,10 @@ trait Report extends CommonLog{
       val isPass=ele._2
       val imgIndex=(clickedElementsList.reverse.lastIndexOf(ele._1)+1)
       val img=imgIndex+s"_${ele._1.toFileName()}.jpg"
+      //换行会导致scala编译报错.
       codeTestCase.append(
         s"""
-           |  test("xpath=${testcase}"){
+           |  test("xpath=${testcase.replace("\n", "").replace("\r", "")}"){
            |    ${if(isPass){s"""markup("<img src='${img}'/>")"""}else{""}}
            |    assert(true==${isPass}, "未遍历")
            |  }
