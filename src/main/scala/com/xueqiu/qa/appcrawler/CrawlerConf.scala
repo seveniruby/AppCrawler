@@ -15,7 +15,7 @@ import scala.io.Source
 /**
   * Created by seveniruby on 16/1/6.
   */
-class CrawlerConf extends CommonLog{
+class CrawlerConf{
   /**插件列表*/
   var pluginList=List("com.xueqiu.qa.appcrawler.plugin.TagLimitPlugin")
   var logLevel="TRACE"
@@ -153,7 +153,7 @@ class CrawlerConf extends CommonLog{
     load(new File(file)).get
   }
   def load(file :File): Option[CrawlerConf] ={
-    val content=Source.fromFile(file).getLines().mkString("\n")
+    val content=Source.fromFile(file, "UTF-8").getLines().mkString("\n")
     file.getName match {
       case json if json.endsWith(".json") =>{
         Some(DataObject.fromJson[CrawlerConf](content))
@@ -162,7 +162,7 @@ class CrawlerConf extends CommonLog{
         Some(DataObject.fromYaml[CrawlerConf](content))
       }
       case path =>{
-        log.info(s"${path} not support")
+        println(s"${path} not support")
         None
       }
     }

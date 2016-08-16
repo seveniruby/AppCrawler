@@ -100,9 +100,9 @@ object AppCrawler extends CommonLog{
     }
     parser.parse(args_new, Param()) match {
       case Some(config) => {
-        log.info(s"verbose=${config.verbose}")
         if(config.verbose){
           GA.logLevel=Level.TRACE
+          log.info(s"verbose=${config.verbose}")
           log.info(s"set global log level to ${GA.logLevel}")
         }
         log.trace("config=")
@@ -157,10 +157,10 @@ object AppCrawler extends CommonLog{
         }
         crawlerConf.resultDir=config.resultDir
 
-        //获得app设置
-        //log.trace(s"app path=${config.app.getPath} ${config.app.getName} ${config.app.getAbsolutePath} ${config.app.getCanonicalPath}")
-        log.trace("config =")
+        log.trace("json config")
         log.trace(crawlerConf.toJson)
+        log.trace("yaml config")
+        log.trace(DataObject.toYaml(crawlerConf))
         new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf), fullstacks = true)
       }
       case None => {}

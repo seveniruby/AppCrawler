@@ -481,7 +481,9 @@ class Crawler extends CommonLog {
     currentContentHash = getContentHash()
     log.info(s"currentContentHash=$currentContentHash lastContentHash=$lastContentHash")
     if (currentContentHash != lastContentHash) {
-      saveLog()
+      log.info("ui change")
+    }else{
+      log.info("ui not change")
     }
     afterUrlRefresh()
 
@@ -1099,8 +1101,10 @@ class Crawler extends CommonLog {
       val times = r("times").toString.toInt
 
       val allMap = if (idOrName.matches("/.*")) {
+        //支持xpath
         getAllElements(idOrName)
       } else {
+        //支持正则通配
         val all = getRuleMatchNodes()
         (all.filter(_ ("name").toString.matches(idOrName)) ++ all.filter(_ ("value").toString.matches(idOrName))).distinct
       }
