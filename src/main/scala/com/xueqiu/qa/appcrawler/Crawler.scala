@@ -142,6 +142,7 @@ class Crawler extends CommonLog {
     MiniAppium.driver=driver
     MiniAppium.screenHeight=screenHeight
     MiniAppium.screenWidth=screenWidth
+    MiniAppium.setPlatformName(platformName)
 
 
     driver.manage().logs().getAvailableLogTypes().toArray.foreach(log.info)

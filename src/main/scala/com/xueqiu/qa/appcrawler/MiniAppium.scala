@@ -341,6 +341,7 @@ trait MiniAppium extends CommonLog with WebBrowser{
       val graph = img.createGraphics()
 
       if (platformName.toLowerCase == "ios") {
+        log.info("scale the origin image")
         graph.drawImage(img, 0, 0, screenWidth, screenHeight, null)
       }
       graph.setStroke(new BasicStroke(2))

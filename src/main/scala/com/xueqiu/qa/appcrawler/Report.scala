@@ -4,6 +4,7 @@ import org.scalatest.tools.Runner
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scala.io.Codec
 import scala.reflect.io.File
 
 /**
@@ -24,7 +25,8 @@ trait Report extends CommonLog{
       val index=suites.indexOf(suite)
       val code=genTestCase(index, suite, elements.filter(x=>x._1.url==suite).toList)
       val fileName=s"${path}/AppCrawler_${suites.indexOf(suite)}.scala"
-      File(fileName).writeAll(code)
+      File(fileName)(Codec.UTF8).writeAll(code)
+      //File(fileName).writeAll(code)
     })
   }
 

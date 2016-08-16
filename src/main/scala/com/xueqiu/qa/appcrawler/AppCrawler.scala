@@ -1,6 +1,8 @@
 package com.xueqiu.qa.appcrawler
 
 import java.io.File
+import java.lang.reflect.Field
+import java.nio.charset.Charset
 
 import org.apache.log4j.Level
 import org.scalatest.ConfigMap
@@ -42,7 +44,7 @@ object AppCrawler extends CommonLog{
           |AppCrawler 1.5.0
           |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
           |移动测试技术交流 https://testerhome.com
-          |感谢: 晓光 泉龙 杨榕 恒温 mikezhou
+          |感谢: 晓光 泉龙 杨榕 恒温 mikezhou yaming116
         """.stripMargin)
       opt[File]('a', "app") action { (x, c) =>{
         c.copy(app = x)
@@ -156,6 +158,16 @@ object AppCrawler extends CommonLog{
           crawlerConf.maxTime=config.maxTime
         }
         crawlerConf.resultDir=config.resultDir
+
+        log.info("set file.encoding to UTF-8")
+        System.setProperty("file.encoding","UTF-8");
+
+        val charset = classOf[Charset].getDeclaredField("defaultCharset")
+        charset.setAccessible(true)
+        charset.set(null,null)
+        log.info("Default Charset=" + Charset.defaultCharset())
+        log.info("file.encoding=" + System.getProperty("file.encoding"))
+        log.info("Default Charset=" + Charset.defaultCharset())
 
         log.trace("json config")
         log.trace(crawlerConf.toJson)
