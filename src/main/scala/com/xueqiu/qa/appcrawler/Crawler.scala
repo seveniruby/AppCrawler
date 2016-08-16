@@ -920,7 +920,18 @@ class Crawler extends CommonLog {
   def saveDom(): Unit = {
     //保存dom结构
     val domPath = getLogFileName() + ".dom"
-    File(domPath).writeAll(pageSource)
+    //感谢QQ:434715737的反馈
+    Try(File(domPath).writeAll(pageSource)) match {
+      case Success(v)=>{
+        log.trace(s"save to ${domPath}")
+      }
+      case Failure(e)=>{
+        log.error(s"save to ${domPath} error")
+        log.error(e.getMessage)
+        log.error(e.getCause.toString)
+        log.error(e.getStackTrace)
+      }
+    }
   }
 
 
