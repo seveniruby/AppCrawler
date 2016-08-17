@@ -360,7 +360,13 @@ trait MiniAppium extends CommonLog with WebBrowser{
   def dsl(command:String): Unit ={
     Runtimes.init()
     Runtimes.eval("import com.xueqiu.qa.appcrawler.MiniAppium")
-    Runtimes.eval(command)
+    Runtimes.eval("import com.xueqiu.qa.appcrawler.MiniAppium.driver")
+    log.info(s"eval ${command}")
+    Try(Runtimes.eval(command)) match {
+      case Success(v)=> log.info(v)
+      case Failure(e)=> log.warn(e.getMessage)
+    }
+    log.info("eval finish")
     //new Eval().inPlace(s"com.xueqiu.qa.appcrawler.MiniAppium.${command.trim}")
   }
 

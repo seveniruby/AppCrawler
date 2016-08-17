@@ -432,7 +432,7 @@ class Crawler extends CommonLog {
     //获取页面结构, 最多重试10次.
     var refreshFinish = false
     pageSource = ""
-    1 to 5 foreach (i => {
+    1 to 3 foreach (i => {
       if (!refreshFinish) {
         MiniAppium.retry(driver.getPageSource) match {
           case Some(v) => {
