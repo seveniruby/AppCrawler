@@ -2,7 +2,6 @@ package com.xueqiu.qa.appcrawler.plugin
 
 import java.io
 
-import com.twitter.util.Eval
 import com.xueqiu.qa.appcrawler._
 import org.scalatest.FunSuite
 import org.scalatest.tools.Runner

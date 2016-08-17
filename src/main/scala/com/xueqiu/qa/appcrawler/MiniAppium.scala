@@ -4,8 +4,6 @@ import java.awt.{BasicStroke, Color}
 import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
-
-import com.twitter.util.Eval
 import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
@@ -289,7 +287,7 @@ trait MiniAppium extends CommonLog with WebBrowser{
     }
 
 
-    doAppium(driver.swipe(
+    retry(driver.swipe(
       (screenWidth * startX).toInt, (screenHeight * startY).toInt,
       (screenWidth * endX).toInt, (screenHeight * endY).toInt, 1000
     )
@@ -298,7 +296,7 @@ trait MiniAppium extends CommonLog with WebBrowser{
   }
 
 
-  def doAppium[T](r: => T): Option[T] = {
+  def retry[T](r: => T): Option[T] = {
     Try(r) match {
       case Success(v) => {
         log.info("success")

@@ -418,7 +418,7 @@ class Crawler extends CommonLog {
     //iOS键盘隐藏
     if (getAllElements("//UIAKeyboard").size >= 1) {
       log.info("find keyboard , just hide")
-      MiniAppium.doAppium(driver.hideKeyboard())
+      MiniAppium.retry(driver.hideKeyboard())
     }
   }
 
@@ -432,16 +432,24 @@ class Crawler extends CommonLog {
     //获取页面结构, 最多重试10次.
     var refreshFinish = false
     pageSource = ""
-    1 to 10 foreach (i => {
+    1 to 5 foreach (i => {
       if (!refreshFinish) {
-        MiniAppium.doAppium(driver.getPageSource) match {
+        MiniAppium.retry(driver.getPageSource) match {
           case Some(v) => {
             log.trace("get page source success")
             pageSource = v
             pageSource = RichData.toPrettyXML(pageSource)
-            pageDom = RichData.toXML(pageSource)
-            log.trace(pageSource)
-            refreshFinish = true
+            Try(RichData.toXML(pageSource)) match {
+              case Success(v)=> {
+                pageDom=v
+                log.trace(pageSource)
+                refreshFinish = true
+              }
+              case Failure(e)=>{
+                log.warn("convert to xml fail")
+                log.warn(pageSource)
+              }
+            }
           }
           case None => {
             log.trace("get page source error")
@@ -449,9 +457,11 @@ class Crawler extends CommonLog {
         }
       }
     })
+    //todo:appium解析pageSource有bug. 有些页面会始终无法dump. 改成解析不了就后退
     if (!refreshFinish) {
-      log.warn("retry time > 10 exit")
-      System.exit(0)
+      log.warn("page source get fail, go back")
+      goBack()
+      return
     }
     val currentUrl = getUrl()
     log.trace(s"url=${currentUrl}")
@@ -698,7 +708,7 @@ class Crawler extends CommonLog {
       }
     }
 
-    MiniAppium.doAppium(
+    MiniAppium.retry(
       driver.swipe(
         (screenWidth * startX).toInt, (screenHeight * startY).toInt,
         (screenWidth * endX).toInt, (screenHeight * endY).toInt, 1000
@@ -789,7 +799,7 @@ class Crawler extends CommonLog {
     }
     */
     log.info(s"find by xpath= ${element.loc}")
-    MiniAppium.doAppium(driver.findElementsByXPath(element.loc)) match {
+    MiniAppium.retry(driver.findElementsByXPath(element.loc)) match {
       case Some(v) => {
         val arr = v.toArray().distinct
         if (arr.length == 1) {
@@ -960,6 +970,7 @@ class Crawler extends CommonLog {
 
   /**
     * 间隔一定时间判断线程是否完成, 未完成就重试
+ *
     * @param interval
     * @param retry
     */
@@ -1017,6 +1028,9 @@ class Crawler extends CommonLog {
         screenshot(path, element)
       }
     }
+    else{
+      log.info("skip screenshot")
+    }
   }
 
 
@@ -1028,7 +1042,7 @@ class Crawler extends CommonLog {
   def doAppiumAction(e: UrlElement, action: String): Option[Unit] = {
     log.info(s"url element=${e} action=${action}")
     if (action == "skip") {
-      log.info("just skip")
+      log.info("action=skip just skip")
       //refreshPage()
       return Some()
     }
@@ -1043,10 +1057,10 @@ class Crawler extends CommonLog {
             //todo: tap和click的行为不一致. 在ipad上有时候click会点错位置, 而tap不会
             //todo: tap的缺点就是点击元素的时候容易点击到元素上层的控件
             //val res = MiniAppium.doAppium(tap(v))
-            val res = MiniAppium.doAppium(v.click())
+            val res = MiniAppium.retry(v.click())
             appendClickedList(e)
             if (List("UIATextField", "UIATextView", "EditText").map(e.tag.contains(_)).contains(true)) {
-              MiniAppium.doAppium(driver.hideKeyboard())
+              MiniAppium.retry(driver.hideKeyboard())
             }
 
           }
@@ -1070,10 +1084,10 @@ class Crawler extends CommonLog {
           }
           case str: String => {
             log.info(s"sendkeys ${v} with ${str}")
-            MiniAppium.doAppium(v.sendKeys(str)) match {
+            MiniAppium.retry(v.sendKeys(str)) match {
               case Some(v) => {
                 appendClickedList(e)
-                MiniAppium.doAppium(driver.hideKeyboard())
+                MiniAppium.retry(driver.hideKeyboard())
                 Some(v)
               }
               case None => None

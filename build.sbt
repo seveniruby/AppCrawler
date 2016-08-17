@@ -3,15 +3,14 @@ version := "1.5.0"
 scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
-  "org.scala-lang" % "scala-compiler" % "2.11.7",
-  "org.scala-lang" % "scala-library" % "2.11.7",
-  "org.scala-lang" % "scala-reflect" % "2.11.7",
+  "org.scala-lang" % "scala-compiler" % scalaVersion.value,
+  "org.scala-lang" % "scala-library" % scalaVersion.value,
+  //"org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "org.scalatest" %% "scalatest" % "2.2.6",
   "io.appium" % "java-client" % "3.4.1",
   "org.seleniumhq.selenium" % "selenium-java" % "2.35.0" % "test",
   //"io.selendroid" % "selendroid" % "0.16.0",
   "io.selendroid" % "selendroid-client" % "0.16.0",
-  "org.scala-lang" % "scala-compiler" % scalaVersion.value,
   //"com.propensive" %% "rapture" % "2.0.0-M1",
   //"com.propensive" %% "rapture-json" % "2.0.0-M1",
   //"com.propensive" %% "rapture-json-json4s" % "2.0.0-M1",

@@ -21,7 +21,11 @@ object RichData extends CommonLog {
   def toXML(raw: String): Document = {
     val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
     val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
-    val document: Document = builder.parse(new ByteArrayInputStream(raw.replaceAll("[\\x00-\\x1F]", "").getBytes(StandardCharsets.UTF_8)))
+    //todo: appium有bug, 会返回&#非法字符. 需要给appium打补丁
+    val document: Document = builder.parse(
+      new ByteArrayInputStream(
+        //todo: 替换可能存在问题
+        raw.replaceAll("[\\x00-\\x1F]", "").replace("&#", xml.Utility.escape("&#")).getBytes(StandardCharsets.UTF_8)))
     document
   }
 
@@ -47,7 +51,7 @@ object RichData extends CommonLog {
     * @return
     */
   def getXPathFromAttributes(attributes: ListBuffer[Map[String, String]]): String = {
-    var xpath = attributes.reverse.takeRight(2).map(attribute => {
+    var xpath = attributes.reverse.takeRight(3).map(attribute => {
       var newAttribute = attribute
       //如果有值就不需要path了, 基本上两层xpath定位即可唯一
       xpathExpr.foreach(key => {
