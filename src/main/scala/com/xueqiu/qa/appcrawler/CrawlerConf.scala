@@ -94,6 +94,9 @@ class CrawlerConf{
   var startupActions=ListBuffer[String]()
   startupActions++=List("sleep(3)", "println(\"startupAction call use scala code\")")
 
+  var beforeElementAction=ListBuffer[String]()
+  var afterElementAction=ListBuffer[String]()
+
   def loadByJson4s(file: String): Option[this.type] ={
     implicit val formats = DefaultFormats+ FieldSerializer[this.type]()
     if (new java.io.File(file).exists()) {

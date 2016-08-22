@@ -80,6 +80,12 @@ class Crawler extends CommonLog {
       log.info(s"load com.xueqiu.qa.appcrawler.plugin $name")
       Class.forName(name).newInstance().asInstanceOf[Plugin]
     })
+    val dynamicPluginDir="plugins/"
+    log.info(s"dynamic load plugin in ${dynamicPluginDir}")
+    val dynamicPlugins=Runtimes.loadPlugins(dynamicPluginDir)
+    log.info(s"found dynamic plugins size ${dynamicPlugins.size}")
+    dynamicPlugins.foreach(log.info)
+    pluginClasses=pluginClasses++dynamicPlugins
     pluginClasses.foreach(log.info)
     pluginClasses.foreach(p => p.init(this))
     pluginClasses.foreach(p => p.start())
@@ -121,6 +127,7 @@ class Crawler extends CommonLog {
     */
   def start(existDriver: AppiumDriver[WebElement] = null): Unit = {
     addLogFile()
+    loadPlugins()
     GA.log("start")
     if (existDriver == null) {
       log.info("prepare setup Appium")
@@ -149,7 +156,6 @@ class Crawler extends CommonLog {
     //设定结果目录
 
     GA.log("crawler")
-    loadPlugins()
     runStartupScript()
     refreshPage()
     crawl()
@@ -307,13 +313,13 @@ class Crawler extends CommonLog {
   def isReturn(): Boolean = {
     //超时退出
     if ((new Date().getTime - startTime) > conf.maxTime * 1000) {
-      log.info("maxTime out Quit")
+      log.warn("maxTime out Quit need exit")
       needExit = true
       return true
     }
     //回到桌面了
     if (urlStack.filter(_.matches("Launcher.*")).nonEmpty) {
-      log.info(s"maybe back to desktop ${urlStack.reverse.mkString("-")}")
+      log.warn(s"maybe back to desktop ${urlStack.reverse.mkString("-")} need exit")
       needExit = true
       return true
     }
@@ -493,6 +499,7 @@ class Crawler extends CommonLog {
     log.info(s"currentContentHash=$currentContentHash lastContentHash=$lastContentHash")
     if (currentContentHash != lastContentHash) {
       log.info("ui change")
+      saveLog()
     }else{
       log.info("ui not change")
     }
@@ -515,12 +522,29 @@ class Crawler extends CommonLog {
 
 
   def beforeElementAction(element: UrlElement): Unit = {
+    log.trace("beforeElementAction")
+    if(conf.beforeElementAction.nonEmpty){
+      log.info("eval beforeElementAction")
+      conf.beforeElementAction.foreach(cmd=>{
+        log.info(cmd)
+        Runtimes.eval(cmd)
+      })
+    }
     pluginClasses.foreach(p => p.beforeElementAction(element))
   }
 
   def afterElementAction(element: UrlElement): Unit = {
+    log.trace("afterElementAction")
     if (getElementAction() != "skip") {
       refreshPage()
+    }
+
+    if(conf.beforeElementAction.nonEmpty){
+      log.info("eval afterElementAction")
+      conf.beforeElementAction.foreach(cmd=>{
+        log.info(cmd)
+        Runtimes.eval(cmd)
+      })
     }
     pluginClasses.foreach(p => p.afterElementAction(element))
   }
@@ -578,7 +602,7 @@ class Crawler extends CommonLog {
     //超过十次连续不停的回退就认为是需要退出
     backRetry += 1
     if (backRetry > backMaxRetry) {
-      log.info(s"backRetry ${backRetry} > backMaxRetry ${backMaxRetry}")
+      log.info(s"backRetry ${backRetry} > backMaxRetry ${backMaxRetry} need exit")
       needExit = true
     } else {
       log.info(s"backRetry=${backRetry}")

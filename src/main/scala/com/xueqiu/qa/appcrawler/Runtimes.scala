@@ -3,6 +3,7 @@ package com.xueqiu.qa.appcrawler
 import java.io.File
 
 import scala.reflect.internal.util.BatchSourceFile
+import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
 import scala.reflect.io.AbstractFile
 import scala.tools.nsc.interpreter.IMain
 import scala.tools.nsc.{Global, Settings}
@@ -10,41 +11,68 @@ import scala.tools.nsc.{Global, Settings}
 /**
   * Created by seveniruby on 16/8/13.
   */
-object Runtimes extends CommonLog{
+class Runtimes(val outputDir:String="") extends CommonLog{
+  private val settingsCompile=new Settings()
 
-  private var interpreter:IMain=_
-  private val settings:Settings=new Settings()
-  var outputDir=""
-  def init(outputDir:String="") {
-    this.outputDir=outputDir
-    val tempDir=new File(this.outputDir)
-    if(outputDir.nonEmpty && tempDir.exists()==false){
+  if(outputDir.nonEmpty){
+    val tempDir=new File(outputDir)
+    if(tempDir.exists()==false){
       tempDir.mkdir()
-      settings.outputDirs.setSingleOutput(this.outputDir)
     }
-    settings.deprecation.value = true // enable detailed deprecation warnings
-    settings.unchecked.value = true // enable detailed unchecked warnings
-    settings.usejavacp.value = true
-
-    //todo:同时使用IMain和Global会导致无法编译
+    settingsCompile.outputDirs.setSingleOutput(this.outputDir)
   }
 
+  settingsCompile.deprecation.value = true // enable detailed deprecation warnings
+  settingsCompile.unchecked.value = true // enable detailed unchecked warnings
+  settingsCompile.usejavacp.value = true
+
+  val global = new Global(settingsCompile)
+  val run = new global.Run
+
+  private val settingsEval=new Settings()
+  val interpreter = new IMain(settingsEval)
+
   def compile(fileNames:List[String]): Unit ={
-    val global = new Global(settings)
-    val run = new global.Run
     run.compile(fileNames)
   }
 
   def eval(code:String): Unit ={
-    if (interpreter == null) {
-      init()
-      interpreter = new IMain(settings)
-    }
     interpreter.interpret(code)
   }
-
   def reset(): Unit ={
 
   }
 
+
+
+}
+
+object Runtimes extends CommonLog{
+  var instance=new Runtimes()
+  def eval(code:String): Unit ={
+    instance.eval(code)
+  }
+
+  def compile(fileNames:List[String]): Unit ={
+    instance.compile(fileNames)
+  }
+  def init(classDir:String=""): Unit ={
+    instance=new Runtimes(classDir)
+  }
+  def reset(): Unit ={
+
+  }
+  def loadPlugins(pluginDir:String=""): List[Plugin] ={
+    val pluginDirFile=new java.io.File(pluginDir)
+    val pluginFiles=pluginDirFile.list().filter(_.endsWith(".scala")).toList
+    val pluginClassNames=pluginFiles.map(_.split(".scala").head)
+    log.info(s"find plugins in ${pluginDir}")
+    log.info(pluginFiles)
+    log.info(pluginClassNames)
+    val runtimes=new Runtimes(pluginDir)
+    runtimes.compile(pluginFiles.map(pluginDirFile.getCanonicalPath+File.separator+_))
+    val urls=Seq(pluginDirFile.toURI.toURL, getClass.getProtectionDomain.getCodeSource.getLocation)
+    val loader=new URLClassLoader(urls, Thread.currentThread().getContextClassLoader)
+    pluginClassNames.map(loader.loadClass(_).newInstance().asInstanceOf[Plugin])
+  }
 }
