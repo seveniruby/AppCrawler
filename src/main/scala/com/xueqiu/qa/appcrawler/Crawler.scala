@@ -590,6 +590,8 @@ class Crawler extends CommonLog {
         if (platformName.toLowerCase == "android") {
           clickedElementsList.push(UrlElement(s"${url}-Back", "", "", "", ""))
           log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
+          saveDom()
+          saveScreen(true)
           driver.navigate().back()
           refreshPage()
         }else{

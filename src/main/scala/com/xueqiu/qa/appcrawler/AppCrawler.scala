@@ -142,11 +142,14 @@ object AppCrawler extends CommonLog{
         }
         crawlerConf.capability ++= config.capability
 
-        if(config.app.getName.nonEmpty) {
+        if(config.app.exists() && config.app.isFile) {
           //支持相对路径
           crawlerConf.capability ++= Map("app" -> config.app.getCanonicalPath)
-          log.info(s"app path = ${crawlerConf.capability("app")}")
+        }else{
+          //支持http
+          crawlerConf.capability ++= Map("app" -> config.app.getPath.replace(":/", "://"))
         }
+        log.info(s"app path = ${crawlerConf.capability("app")}")
         if(config.appium.matches("[0-9]+")){
           crawlerConf.capability++=Map("appium" -> s"http://127.0.0.1:${config.appium}/wd/hub")
         }else{
