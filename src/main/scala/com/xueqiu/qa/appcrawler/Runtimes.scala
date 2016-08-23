@@ -2,9 +2,7 @@ package com.xueqiu.qa.appcrawler
 
 import java.io.File
 
-import scala.reflect.internal.util.BatchSourceFile
 import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
-import scala.reflect.io.AbstractFile
 import scala.tools.nsc.interpreter.IMain
 import scala.tools.nsc.{Global, Settings}
 
@@ -30,6 +28,10 @@ class Runtimes(val outputDir:String="") extends CommonLog{
   val run = new global.Run
 
   private val settingsEval=new Settings()
+  settingsEval.deprecation.value = true // enable detailed deprecation warnings
+  settingsEval.unchecked.value = true // enable detailed unchecked warnings
+  settingsEval.usejavacp.value = true
+
   val interpreter = new IMain(settingsEval)
 
   def compile(fileNames:List[String]): Unit ={
@@ -64,6 +66,10 @@ object Runtimes extends CommonLog{
   }
   def loadPlugins(pluginDir:String=""): List[Plugin] ={
     val pluginDirFile=new java.io.File(pluginDir)
+    if(pluginDirFile.exists()==false){
+      log.warn(s"no ${pluginDir} directory, skip")
+      return Nil
+    }
     val pluginFiles=pluginDirFile.list().filter(_.endsWith(".scala")).toList
     val pluginClassNames=pluginFiles.map(_.split(".scala").head)
     log.info(s"find plugins in ${pluginDir}")

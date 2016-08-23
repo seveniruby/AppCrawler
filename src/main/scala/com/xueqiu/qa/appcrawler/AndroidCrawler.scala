@@ -52,6 +52,7 @@ class AndroidCrawler extends Crawler {
     }
     lastAppName=appName
     appName=getAppName()
+    log.info(s"appName = ${appName}")
     val baseUrl=super.getUrl()
     List(screenName, baseUrl).distinct.filter(_.nonEmpty).mkString("-")
   }

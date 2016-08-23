@@ -1,11 +1,15 @@
-# 1.5.1[计划]
-支持beforeElementAction的配置
+# 1.7.0 [计划]
 对子菜单的支持, 智能判断是否有子菜单
 支持自定义Logo
 支持断点续传机制
 支持自动重启appium机制, 用于防止iOS遍历内存占用太大问题
-支持url的xpath过滤
 分离插件到独立项目
+
+# 1.6.0 [内测]
+增加动态插件 [完成]
+支持beforeElementAction的afterElementAction配置 [完成]
+修复app的http连接支持 [完成]
+支持url白名单 [完成]
 
 # 1.5.0
 配置文件内容变更 此版本不再向下兼容, 推荐使用yaml配置文件

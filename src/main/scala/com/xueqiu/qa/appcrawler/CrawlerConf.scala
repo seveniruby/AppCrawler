@@ -62,7 +62,8 @@ class CrawlerConf{
   /**是否遍历WebView控件*/
   var enterWebView=true
   /**url黑名单.用于排除某些页面*/
-  var blackUrlList = ListBuffer("")
+  var urlBlackList = ListBuffer("")
+  var urlWhiteList = ListBuffer("")
 
   /**后退按钮标记, 主要用于iOS, xpath*/
   var backButton = ListBuffer[String]()

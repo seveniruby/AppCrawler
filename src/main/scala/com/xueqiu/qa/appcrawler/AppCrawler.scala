@@ -171,6 +171,7 @@ object AppCrawler extends CommonLog{
         log.info("Default Charset=" + Charset.defaultCharset())
         log.info("file.encoding=" + System.getProperty("file.encoding"))
         log.info("Default Charset=" + Charset.defaultCharset())
+        log.info("project directory="+ (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
 
         log.trace("json config")
         log.trace(crawlerConf.toJson)

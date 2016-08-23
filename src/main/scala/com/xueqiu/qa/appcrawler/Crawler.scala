@@ -80,7 +80,8 @@ class Crawler extends CommonLog {
       log.info(s"load com.xueqiu.qa.appcrawler.plugin $name")
       Class.forName(name).newInstance().asInstanceOf[Plugin]
     })
-    val dynamicPluginDir="plugins/"
+    val dynamicPluginDir=(new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath))
+      .getParentFile.getParentFile.getCanonicalPath+File.separator+"plugins"+File.separator
     log.info(s"dynamic load plugin in ${dynamicPluginDir}")
     val dynamicPlugins=Runtimes.loadPlugins(dynamicPluginDir)
     log.info(s"found dynamic plugins size ${dynamicPlugins.size}")
@@ -329,8 +330,17 @@ class Crawler extends CommonLog {
       return true
     }
     //url黑名单
-    if (conf.blackUrlList.filter(urlStack.head.matches(_)).nonEmpty) {
-      log.info(s"${urlStack.head} in blackUrlList should return")
+    if (conf.urlBlackList.filter(urlStack.head.matches(_)).nonEmpty) {
+      log.info(s"${urlStack.head} in urlBlackList should return")
+      return true
+    }
+
+    //url白名单, 第一次进入了白名单的范围, 就始终在白名单中. 不然就算不在白名单中也得遍历.
+    //上层是白名单, 当前不是白名单才需要返回
+    if (conf.urlWhiteList.size>0
+      && conf.urlWhiteList.filter(urlStack.head.matches(_)).isEmpty
+      && conf.urlWhiteList.filter(urlStack.tail.headOption.getOrElse("").matches(_)).nonEmpty) {
+      log.info(s"${urlStack.head} not in urlWhiteList should return")
       return true
     }
 
