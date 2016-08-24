@@ -53,7 +53,11 @@ trait Report extends CommonLog{
         s"""
            |  test("xpath=${testcase.replace("\n", "").replace("\r", "")}"){
            |    ${if(isPass){s"""markup("<img src='${img}'/>")"""}else{""}}
-           |    assert(true==${isPass}, "未遍历")
+           |    if(true==${isPass}){
+           |
+           |    }else{
+           |      cancel("never access this element 此控件未遍历")
+           |    }
            |  }
         """.stripMargin)
     })

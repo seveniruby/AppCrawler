@@ -16,4 +16,18 @@ class DemoCrawlerSuite extends FunSuite{
     }
   })
 
+  1 to 10 foreach(i=>{
+    test(s"xxx ignore ${i}"){
+      markup("<img src='/Users/seveniruby/projects/LBSRefresh/iOS_20160811165931/141_雪球-港股聚宝盆_老熊老雄.jpg'/>")
+      cancel("未遍历")
+    }
+  })
+
+  1 to 10 foreach(i=>{
+    test(s"xxx ignore ${i}"){
+      markup("<img src='/Users/seveniruby/projects/LBSRefresh/iOS_20160811165931/141_雪球-港股聚宝盆_老熊老雄.jpg'/>")
+    }
+  })
+
+
 }
