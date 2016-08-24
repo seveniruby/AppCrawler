@@ -281,7 +281,18 @@ class Crawler extends CommonLog {
   def getUrl(): String = {
     if (conf.defineUrl.nonEmpty) {
       val urlString = conf.defineUrl.flatMap(getAllElements(_)).distinct.map(x => {
-        x("name")
+        //按照attribute, label, name顺序挨个取第一个非空的指
+        log.info("getUrl")
+        log.info(x)
+        if(x.contains("attribute")){
+          x.getOrElse("attribute", "")
+        }else{
+          if(x.get("label").nonEmpty){
+            x.getOrElse("label", "")
+          }else{
+            x.getOrElse("name", "")
+          }
+        }
       }).filter(_.toString.nonEmpty).mkString("-")
       log.info(s"defineUrl=$urlString")
       return urlString

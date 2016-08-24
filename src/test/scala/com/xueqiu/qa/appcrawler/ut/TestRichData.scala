@@ -649,6 +649,7 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
 
 
   test("parse xpath"){
+    log.info(RichData.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", domAndroid))
     val node=RichData.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", domAndroid)(0)
     println(node)
     node("resource-id") should be equals("com.xueqiu.android:id/action_search")

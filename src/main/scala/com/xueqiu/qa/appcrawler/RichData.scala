@@ -113,7 +113,8 @@ object RichData extends CommonLog {
     val compexp = xPath.compile(xpath)
     //val node=compexp.evaluate(pageDom)
 
-    val node = if (xpath.matches("string(.*)")) {
+    log.info(xpath)
+    val node = if (xpath.matches("string(.*)") || xpath.matches(".*/@[^/]*")) {
       compexp.evaluate(pageDom, XPathConstants.STRING)
     } else {
       compexp.evaluate(pageDom, XPathConstants.NODESET)
@@ -193,9 +194,9 @@ object RichData extends CommonLog {
           }
         } )
       }
-      case _ => {
-        log.trace("not node list")
-        log.trace(node)
+      case attr:String => {
+        //如果是提取xpath的属性值, 就返回一个简单的结构
+        nodesMap+=Map("attribute"->attr)
       }
     }
     nodesMap.toList
