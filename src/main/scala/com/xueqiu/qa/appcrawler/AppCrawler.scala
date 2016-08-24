@@ -18,7 +18,7 @@ object AppCrawler extends CommonLog{
                            verbose: Boolean = false,
                            mode:String="",
                            sbt_params: Seq[String]=Seq(),
-                           platform: String = "android",
+                           platform: String = "",
                            appium:String = "http://127.0.0.1:4723/wd/hub/",
                            resultDir: String = "",
                            maxTime:Int = 0,
@@ -119,17 +119,23 @@ object AppCrawler extends CommonLog{
           log.info(s"Find Conf ${config.conf.getAbsolutePath}")
           crawlerConf=crawlerConf.load(config.conf).get
         }
+
         //判断平台
-        crawlerConf.currentDriver = config.platform
-        val fileName=config.app.getName
-        if(fileName.matches(".*\\.apk$")){
-          log.info("Set Platform=Android")
-          crawlerConf.currentDriver = "Android"
+        config.app.getName match {
+          case androidApp if androidApp.matches(".*\\.apk$") =>{
+            crawlerConf.currentDriver = "Android"
+          }
+          case iosApp if iosApp.matches(".*\\.ipa$") || iosApp.matches(".*\\.app$") =>{
+            crawlerConf.currentDriver = "iOS"
+          }
+          case platform if config.platform.nonEmpty =>{
+            log.info("use platform param")
+            crawlerConf.currentDriver=config.platform
+          }
+          case _ =>
+            log.warn("can not know what platform, will use default android, please use -p to set the platform")
         }
-        if(fileName.matches(".*\\.ipa$") || fileName.matches(".*\\.app$") ){
-          log.info("Set Platform=iOS")
-          crawlerConf.currentDriver = "iOS"
-        }
+        log.info(s"Set Platform=${crawlerConf.currentDriver}")
 
         //合并capability, 命令行>特定平台的capability>通用capability
         crawlerConf.currentDriver.toLowerCase match {
@@ -142,18 +148,33 @@ object AppCrawler extends CommonLog{
         }
         crawlerConf.capability ++= config.capability
 
-        if(config.app.exists() && config.app.isFile) {
-          //支持相对路径
-          crawlerConf.capability ++= Map("app" -> config.app.getCanonicalPath)
-        }else{
-          //支持http
-          crawlerConf.capability ++= Map("app" -> config.app.getPath.replace(":/", "://"))
+        //设定app
+        config.app match {
+          case file if file.exists() && file.isFile =>{
+            //支持相对路径
+            crawlerConf.capability ++= Map("app" -> config.app.getCanonicalPath)
+          }
+          case fileNotExist if fileNotExist.getPath.nonEmpty && fileNotExist.exists()==false && fileNotExist.getPath.contains(":/")==false =>{
+            log.warn(s"app not exist ${fileNotExist.getPath}")
+            System.exit(1)
+          }
+          case network if network.getPath.contains(":/") =>{
+            //支持http:// https:// ftp:// file://
+            crawlerConf.capability ++= Map("app" -> config.app.getPath.replace(":/", "://"))
+          }
+          case _ =>{
+            log.info("use app in the config file")
+          }
         }
         log.info(s"app path = ${crawlerConf.capability("app")}")
-        if(config.appium.matches("[0-9]+")){
-          crawlerConf.capability++=Map("appium" -> s"http://127.0.0.1:${config.appium}/wd/hub")
-        }else{
-          crawlerConf.capability++=Map("appium" -> config.appium)
+
+        //设定appium的端口
+        config.appium match {
+          case port if port.matches("[0-9]+")=>
+            crawlerConf.capability++=Map("appium" -> s"http://127.0.0.1:${config.appium}/wd/hub")
+          case url if url.contains(":/") =>
+            crawlerConf.capability++=Map("appium" -> config.appium)
+          case _ => log.info("use appium in the config file")
         }
         log.info(s"appium address = ${crawlerConf.capability.get("appium")}")
 

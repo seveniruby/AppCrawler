@@ -44,17 +44,13 @@ class TestIOS extends MiniAppiumSuite {
   test("自选") {
     swipe("down")
     see("自选").tap
-    see("自选").shot()
-    see("港股").shot()
-    see("沪深").shot()
-    see("交易").shot()
     see("雪球100").tap
     swipe("down")
     see("stock_current_price")("text").toDouble should be > 1000.0
   }
   test("自选遍历"){
     swipe("down")
-    see("自选").tap.shot()
+    see("自选").tap
     crawl(conf="src/universal/conf/xueqiu.json", maxDepth = 2)
   }
 

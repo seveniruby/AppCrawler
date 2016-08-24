@@ -62,8 +62,8 @@ class CrawlerConf{
   /**是否遍历WebView控件*/
   var enterWebView=true
   /**url黑名单.用于排除某些页面*/
-  var urlBlackList = ListBuffer("")
-  var urlWhiteList = ListBuffer("")
+  var urlBlackList = ListBuffer[String]()
+  var urlWhiteList = ListBuffer[String]()
 
   /**后退按钮标记, 主要用于iOS, xpath*/
   var backButton = ListBuffer[String]()
@@ -93,7 +93,7 @@ class CrawlerConf{
   var elementActions = ListBuffer[scala.collection.mutable.Map[String, Any]]()
   elementActions += mutable.Map("idOrName"->".*seveniruby.*", "action"->"click", "times"->0)
   var startupActions=ListBuffer[String]()
-  startupActions++=List("sleep(3)", "println(\"startupAction call use scala code\")")
+  startupActions++=List("println(\"startupAction call use scala code\")")
 
   var beforeElementAction=ListBuffer[String]()
   var afterElementAction=ListBuffer[String]()

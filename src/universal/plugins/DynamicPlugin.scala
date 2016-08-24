@@ -1,4 +1,4 @@
-import com.xueqiu.qa.appcrawler.{Plugin, UrlElement}
+import com.xueqiu.qa.appcrawler._
 
 /**
   * Created by seveniruby on 16/1/21.
