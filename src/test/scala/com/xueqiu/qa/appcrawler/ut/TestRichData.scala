@@ -745,6 +745,15 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
     value2.foreach(log.info)
   }
 
+  test("同类型的控件是否具备selected=true属性"){
+    val nodes=RichData.getListFromXPath("//*[../*[@selected='true']]", domAndroid)
+    nodes.foreach(x=>log.info(x.getOrElse("xpath", "")))
+
+    log.info("两层以上")
+    val nodes2=RichData.getListFromXPath("//*[../../*[@selected='true']]", domAndroid)
+    nodes2.foreach(x=>log.info(x.getOrElse("xpath", "")))
+  }
+
 
 
 }

@@ -330,7 +330,7 @@ class Crawler extends CommonLog {
       return true
     }
     //回到桌面了
-    if (urlStack.filter(_.matches("Launcher.*")).nonEmpty) {
+    if (urlStack.filter(_.matches("Launcher.*")).nonEmpty || appName.matches("com.android\\..*")) {
       log.warn(s"maybe back to desktop ${urlStack.reverse.mkString("-")} need exit")
       needExit = true
       return true
@@ -845,24 +845,29 @@ class Crawler extends CommonLog {
       }
     }
     */
+    //todo: 用其他定位方式优化
     log.info(s"find by xpath= ${element.loc}")
     MiniAppium.retry(driver.findElementsByXPath(element.loc)) match {
       case Some(v) => {
         val arr = v.toArray().distinct
-        if (arr.length == 1) {
-          log.trace("find by xpath success")
-          return Some(arr.head.asInstanceOf[WebElement])
-        } else {
-          //有些公司可能存在重名id
-          arr.foreach(log.info)
-          log.warn(s"find count ${v.size()}, you should check your dom file")
-          if (arr.size > 0) {
-            log.trace("just use the first one")
+        arr.length match {
+          case len if len==1 =>{
+            log.info("find by xpath success")
             return Some(arr.head.asInstanceOf[WebElement])
-          } else {
+          }
+          case len if len>1 =>{
+            log.warn(s"find count ${v.size()}, you should check your dom file")
+            //有些公司可能存在重名id
+            arr.foreach(log.info)
+            log.warn("just use the first one")
+            return Some(arr.head.asInstanceOf[WebElement])
+          }
+          case len if len==0 => {
+            log.warn("find by xpath error no element found")
             refreshPage()
           }
         }
+
       }
       case None => {
         log.warn("find by xpath error")

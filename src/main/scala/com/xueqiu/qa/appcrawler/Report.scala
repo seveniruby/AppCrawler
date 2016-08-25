@@ -12,10 +12,12 @@ import scala.reflect.io.File
   */
 trait Report extends CommonLog{
   var reportPath=""
+  var testcaseDir=""
   var clickedElementsList=mutable.Stack[UrlElement]()
   def saveTestCase(elements:scala.collection.mutable.Map[UrlElement, Boolean], clickedElementsList: mutable.Stack[UrlElement],resultDir:String): Unit ={
     log.info("save testcase")
     reportPath=resultDir
+    testcaseDir=reportPath+"/tmp/"
     this.clickedElementsList=clickedElementsList
     //为了保持独立使用
     val path=new java.io.File(resultDir).getCanonicalPath
@@ -24,7 +26,7 @@ trait Report extends CommonLog{
     suites.foreach(suite =>{
       val index=suites.indexOf(suite)
       val code=genTestCase(index, suite, elements.filter(x=>x._1.url==suite).toList)
-      val fileName=s"${path}/AppCrawler_${suites.indexOf(suite)}.scala"
+      val fileName=s"${path}/tmp/AppCrawler_${suites.indexOf(suite)}.scala"
       File(fileName)(Codec.UTF8).writeAll(code)
       //File(fileName).writeAll(code)
     })
@@ -51,7 +53,7 @@ trait Report extends CommonLog{
       //换行会导致scala编译报错.
       codeTestCase.append(
         s"""
-           |  test("xpath=${testcase.replace("\n", "").replace("\r", "")}"){
+           |  test("clickedIndex=${imgIndex} xpath=${testcase.replace("\n", "").replace("\r", "")}"){
            |    ${if(isPass){s"""markup("<img src='${img}'/>")"""}else{""}}
            |    if(true==${isPass}){
            |
@@ -76,17 +78,17 @@ trait Report extends CommonLog{
   }
 
   def runTestCase(): Unit ={
-    var cmdArgs=Array("-R", reportPath+"/tmp/" ,
+    var cmdArgs=Array("-R", testcaseDir ,
       "-o", "-u", reportPath, "-h", reportPath)
 
-    val suites=new java.io.File(reportPath).list().filter(_.endsWith(".scala")).map(_.split(".scala").head).toList
+    val suites=new java.io.File(testcaseDir).list().filter(_.endsWith(".scala")).map(_.split(".scala").head).toList
     suites.map(suite=>Array("-s", s"${suite}")).foreach(array=>{
       cmdArgs=cmdArgs++array
     })
 
-    val sourceFiles=suites.map(name=>s"${reportPath}/${name}.scala")
-    log.info(s"compile testcase ${sourceFiles} into ${reportPath}")
-    Runtimes.init(reportPath+"/tmp/")
+    val sourceFiles=suites.map(name=>s"${testcaseDir}/${name}.scala")
+    log.info(s"compile testcase ${sourceFiles} into ${testcaseDir}")
+    Runtimes.init(testcaseDir)
     Runtimes.compile(sourceFiles)
 
     if(suites.size>0) {

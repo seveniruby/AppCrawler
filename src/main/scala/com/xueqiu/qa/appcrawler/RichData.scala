@@ -112,8 +112,6 @@ object RichData extends CommonLog {
     val xPath: XPath = XPathFactory.newInstance().newXPath()
     val compexp = xPath.compile(xpath)
     //val node=compexp.evaluate(pageDom)
-
-    log.info(xpath)
     val node = if (xpath.matches("string(.*)") || xpath.matches(".*/@[^/]*")) {
       compexp.evaluate(pageDom, XPathConstants.STRING)
     } else {

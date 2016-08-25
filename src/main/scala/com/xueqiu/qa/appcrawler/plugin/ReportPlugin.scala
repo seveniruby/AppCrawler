@@ -18,7 +18,11 @@ class ReportPlugin extends Plugin with Report{
   override def start(): Unit ={
     reportPath=new java.io.File(getCrawler().conf.resultDir).getCanonicalPath
     log.info(s"reportPath=${reportPath}")
-
+    val tmpDir=new io.File(s"${reportPath}/tmp/")
+    if(tmpDir.exists()==false){
+      log.info(s"create ${reportPath}/tmp/ directory")
+      tmpDir.mkdir()
+    }
   }
 
   override def stop(): Unit ={
@@ -32,6 +36,7 @@ class ReportPlugin extends Plugin with Report{
     log.info(s"clickedElementsList size = ${count}")
     val curTime=(System.currentTimeMillis / 1000).toInt
     if(curTime-lastTime>120){
+      log.info("every 2 min to save test report ")
       saveTestCase(getCrawler().elements, getCrawler().clickedElementsList, getCrawler().conf.resultDir)
       runTestCase()
       lastTime=curTime

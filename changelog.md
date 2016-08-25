@@ -10,6 +10,8 @@
 支持beforeElementAction的afterElementAction配置 [完成]
 修复app的http连接支持 [完成]
 支持url白名单 [完成]
+支持defineUrl的xpath属性提取 [完成]
+未遍历控件用测试用例的cancel状态表示 [完成]
 
 # 1.5.0
 配置文件内容变更 此版本不再向下兼容, 推荐使用yaml配置文件

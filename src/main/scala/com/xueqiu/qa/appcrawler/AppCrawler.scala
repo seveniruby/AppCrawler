@@ -19,7 +19,7 @@ object AppCrawler extends CommonLog{
                            mode:String="",
                            sbt_params: Seq[String]=Seq(),
                            platform: String = "",
-                           appium:String = "http://127.0.0.1:4723/wd/hub/",
+                           appium:String = "",
                            resultDir: String = "",
                            maxTime:Int = 0,
                            report:Boolean=false,
@@ -106,6 +106,7 @@ object AppCrawler extends CommonLog{
           GA.logLevel=Level.TRACE
           log.info(s"verbose=${config.verbose}")
           log.info(s"set global log level to ${GA.logLevel}")
+          RichData.initLog()
         }
         log.trace("config=")
         log.trace(config)
@@ -140,10 +141,10 @@ object AppCrawler extends CommonLog{
         //合并capability, 命令行>特定平台的capability>通用capability
         crawlerConf.currentDriver.toLowerCase match {
           case "android"=> {
-            crawlerConf.capability=crawlerConf.capability++crawlerConf.androidCapability
+            crawlerConf.capability++=crawlerConf.androidCapability
           }
           case "ios" => {
-            crawlerConf.capability=crawlerConf.capability++crawlerConf.iosCapability
+            crawlerConf.capability++=crawlerConf.iosCapability
           }
         }
         crawlerConf.capability ++= config.capability
