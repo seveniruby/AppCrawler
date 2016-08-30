@@ -41,9 +41,6 @@ class Crawler extends CommonLog {
   private var preTimeStamp = 0L
   private var nowTimeStamp = 0L
   val strtTimestamp = getTimeStamp()
-  //todo:留作判断当前界面是否变化
-  private var currentContentHash = ""
-  private var lastContentHash = ""
   protected var automationName = "appium"
   protected var platformName = ""
 
@@ -51,7 +48,6 @@ class Crawler extends CommonLog {
   private var screenHeight = 0
 
   var appName = ""
-  var lastAppName = ""
   var pageSource = ""
   private var pageDom: Document = null
   private var backRetry = 0
@@ -71,6 +67,10 @@ class Crawler extends CommonLog {
 
   private val elementTree = TreeNode("AppCrawler")
   private val elementTreeList = ListBuffer[String]()
+
+  protected val backDistance=new DataRecord()
+  protected val appNameRecord=new DataRecord()
+  protected val contentHash=new DataRecord
 
   /**
     * 根据类名初始化插件. 插件可以使用java编写. 继承自Plugin即可
@@ -336,8 +336,8 @@ class Crawler extends CommonLog {
       return true
     }
     //跳到了其他app
-    if (appName != lastAppName && lastAppName.nonEmpty) {
-      log.warn(s"jump to other app appName=${appName} lastAppName=${lastAppName}")
+    if (appNameRecord.isDiff()) {
+      log.warn(s"jump to other app appName=${appNameRecord.last()} lastAppName=${appNameRecord.pre()}")
       return true
     }
     //url黑名单
@@ -515,10 +515,9 @@ class Crawler extends CommonLog {
     //val windows=MiniAppium.doAppium(driver.getWindowHandles).getOrElse("")
     //val windows = ""
     //log.trace(s"windows=${windows}")
-    lastContentHash = currentContentHash
-    currentContentHash = getContentHash()
-    log.info(s"currentContentHash=$currentContentHash lastContentHash=$lastContentHash")
-    if (currentContentHash != lastContentHash) {
+    contentHash.append(getContentHash())
+    log.info(s"currentContentHash=${contentHash.last()} lastContentHash=${contentHash.pre()}")
+    if (contentHash.isDiff()) {
       log.info("ui change")
       saveLog()
     }else{
@@ -613,7 +612,12 @@ class Crawler extends CommonLog {
           log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
           saveDom()
           saveScreen(true)
+          if(backDistance.intervalMS()<4000){
+            log.warn("two back action too close")
+            Thread.sleep(4000)
+          }
           driver.navigate().back()
+          backDistance.append("back")
           refreshPage()
         }else{
           log.warn("you should define you back button in the conf file")
@@ -1004,8 +1008,13 @@ class Crawler extends CommonLog {
     }
     Try(MiniAppium.shot(element)) match {
       case Success(file) => {
-        FileUtils.copyFile(file, new java.io.File(path))
-        log.info("save screenshot end")
+        val imgFile=new java.io.File(path)
+        if(imgFile.exists()){
+          log.error(s"${path} already exist")
+        }else {
+          FileUtils.copyFile(file, imgFile)
+          log.info("save screenshot end")
+        }
       }
       case Failure(e) => {
         log.warn("get screenshot error")
@@ -1072,7 +1081,7 @@ class Crawler extends CommonLog {
   }
   def saveScreen(force: Boolean = false, element: WebElement = null): Unit = {
     //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
-    if (conf.saveScreen && lastContentHash != currentContentHash || force) {
+    if (conf.saveScreen && contentHash.isDiff() || force) {
       Thread.sleep(100)
       log.info("start screenshot")
       val path = getLogFileName() + ".jpg"

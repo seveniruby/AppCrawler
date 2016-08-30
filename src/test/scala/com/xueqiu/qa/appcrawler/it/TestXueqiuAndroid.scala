@@ -8,7 +8,7 @@ import com.xueqiu.qa.appcrawler.MiniAppiumSuite
 class TestXueqiuAndroid extends MiniAppiumSuite{
   override def beforeAll(): Unit ={
     //start()
-    config("app", "/Users/seveniruby/Downloads/xueqiu_8.3-3.apk")
+    config("app", "/Users/seveniruby/Downloads/xueqiu-8.3-3.apk")
     config("appPackage", "com.xueqiu.android")
     config("appActivity", ".view.WelcomeActivityAlias")
     config("fullReset", "false")

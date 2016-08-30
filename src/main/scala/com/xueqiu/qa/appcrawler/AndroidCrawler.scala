@@ -50,9 +50,10 @@ class AndroidCrawler extends Crawler {
         driver.getCurrentUrl.split('.').last
       }
     }
-    lastAppName=appName
     appName=getAppName()
     log.info(s"appName = ${appName}")
+    appNameRecord.append(appName)
+
     val baseUrl=super.getUrl()
     List(screenName, baseUrl).distinct.filter(_.nonEmpty).mkString("-")
   }

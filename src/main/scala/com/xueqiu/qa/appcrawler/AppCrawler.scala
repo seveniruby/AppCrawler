@@ -175,7 +175,14 @@ object AppCrawler extends CommonLog{
             crawlerConf.capability++=Map("appium" -> s"http://127.0.0.1:${config.appium}/wd/hub")
           case url if url.contains(":/") =>
             crawlerConf.capability++=Map("appium" -> config.appium)
-          case _ => log.info("use appium in the config file")
+          case _ => {
+            if(!crawlerConf.capability.contains("appium")){
+              log.info("use default appium address 4723")
+              crawlerConf.capability++=Map("appium" -> s"http://127.0.0.1:4723/wd/hub")
+            }else{
+              log.info(s"use appium in the config file ${crawlerConf.capability("appium")}")
+            }
+          }
         }
         log.info(s"appium address = ${crawlerConf.capability.get("appium")}")
 
