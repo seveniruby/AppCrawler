@@ -41,9 +41,10 @@ object AppCrawler extends CommonLog{
     val parser = new scopt.OptionParser[Param]("appcrawler") {
       head(
         """
-          |AppCrawler 1.5.0
+          |AppCrawler 1.6.0
           |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
-          |移动测试技术交流 https://testerhome.com
+          |帮助文档: http://appcrawler.testerhome.com
+          |移动测试技术交流: https://testerhome.com
           |感谢: 晓光 泉龙 杨榕 恒温 mikezhou yaming116
         """.stripMargin)
       opt[File]('a', "app") action { (x, c) =>{
