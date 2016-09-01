@@ -12,6 +12,7 @@ import org.scalatest.ConfigMap
   */
 object AppCrawler extends CommonLog{
   var logPath=""
+  val startTime=new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
   case class Param(
                            app: File = new File(""),
                            conf: File = new File(""),
@@ -37,13 +38,26 @@ object AppCrawler extends CommonLog{
     }
 
 
+  def setGlobalEncoding(): Unit ={
+    log.info("set file.encoding to UTF-8")
+    System.setProperty("file.encoding","UTF-8");
+
+    val charset = classOf[Charset].getDeclaredField("defaultCharset")
+    charset.setAccessible(true)
+    charset.set(null,null)
+    log.info("Default Charset=" + Charset.defaultCharset())
+    log.info("file.encoding=" + System.getProperty("file.encoding"))
+    log.info("Default Charset=" + Charset.defaultCharset())
+    log.info("project directory="+ (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
+
+  }
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[Param]("appcrawler") {
       head(
         """
           |AppCrawler 1.6.0
           |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
-          |帮助文档: http://appcrawler.testerhome.com
+          |帮助文档: http://seveniruby.gitbooks.io/appcrawler
           |移动测试技术交流: https://testerhome.com
           |感谢: 晓光 泉龙 杨榕 恒温 mikezhou yaming116
         """.stripMargin)
@@ -190,18 +204,16 @@ object AppCrawler extends CommonLog{
         if(config.maxTime>0){
           crawlerConf.maxTime=config.maxTime
         }
-        crawlerConf.resultDir=config.resultDir
 
-        log.info("set file.encoding to UTF-8")
-        System.setProperty("file.encoding","UTF-8");
+        config.resultDir match {
+          case param if param.nonEmpty => crawlerConf.resultDir=param
+          case conf if crawlerConf.resultDir.nonEmpty => log.info("use conf in config file")
+          case _ =>
+            crawlerConf.resultDir = s"${crawlerConf.currentDriver}_${startTime}"
+        }
+        log.info(s"result directory = ${crawlerConf.resultDir}")
 
-        val charset = classOf[Charset].getDeclaredField("defaultCharset")
-        charset.setAccessible(true)
-        charset.set(null,null)
-        log.info("Default Charset=" + Charset.defaultCharset())
-        log.info("file.encoding=" + System.getProperty("file.encoding"))
-        log.info("Default Charset=" + Charset.defaultCharset())
-        log.info("project directory="+ (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
+        setGlobalEncoding()
 
         log.trace("json config")
         log.trace(crawlerConf.toJson)

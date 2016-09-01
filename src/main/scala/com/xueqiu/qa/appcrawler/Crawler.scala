@@ -40,7 +40,6 @@ class Crawler extends CommonLog {
 
   private var preTimeStamp = 0L
   private var nowTimeStamp = 0L
-  val strtTimestamp = getTimeStamp()
   protected var automationName = "appium"
   protected var platformName = ""
 
@@ -106,10 +105,6 @@ class Crawler extends CommonLog {
   }
 
   def addLogFile(): Unit = {
-    if (conf.resultDir == "") {
-      conf.resultDir = s"${platformName}_${strtTimestamp}"
-    }
-    log.info(s"result directory = ${conf.resultDir}")
     AppCrawler.logPath = conf.resultDir + "/appcrawler.log"
 
     fileAppender = new FileAppender(layout, AppCrawler.logPath, false)
@@ -202,16 +197,6 @@ class Crawler extends CommonLog {
 
   def black(keys: String*): Unit = {
     keys.foreach(conf.blackList.append(_))
-  }
-
-  def getTimeStamp(): String = {
-    preTimeStamp = nowTimeStamp
-    nowTimeStamp = new java.util.Date().getTime
-    val distance = nowTimeStamp - preTimeStamp
-    if (preTimeStamp != 0 && distance > 500) {
-      log.trace(s"time consume: $distance ms")
-    }
-    new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(nowTimeStamp)
   }
 
   def md5(format: String) = {
