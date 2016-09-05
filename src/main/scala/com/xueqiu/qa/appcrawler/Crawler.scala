@@ -390,7 +390,7 @@ class Crawler extends CommonLog {
   def getSelectedElements(): Option[List[immutable.Map[String, Any]]] = {
     var all = List[immutable.Map[String, Any]]()
     var firstElements = List[immutable.Map[String, Any]]()
-    var appendElements = List[immutable.Map[String, Any]]()
+    var lastElements = List[immutable.Map[String, Any]]()
     var commonElements = List[immutable.Map[String, Any]]()
     var blackElements = List[immutable.Map[String, Any]]()
 
@@ -425,11 +425,15 @@ class Crawler extends CommonLog {
       log.trace(s"lastList xpath = ${xpath}")
       val temp=getAllElements(xpath).filter(isValid).intersect(commonElements)
       temp.foreach(log.trace)
-      appendElements ++= temp
+      lastElements ++= temp
     })
 
+    //去掉不在first和last中的元素
+    commonElements=commonElements diff firstElements
+    commonElements=commonElements diff lastElements
+
     //确保不重, 并保证顺序
-    all = (firstElements ++ commonElements ++ appendElements).distinct
+    all = (firstElements ++ commonElements ++ lastElements).distinct
     log.trace("all elements")
     all.foreach(log.trace)
     log.trace(s"all selected length=${all.length}")
@@ -625,6 +629,8 @@ class Crawler extends CommonLog {
 
     //超过十次连续不停的回退就认为是需要退出
     backRetry += 1
+    log.info("backRetry +=1 refresh page")
+    refreshPage()
     if (backRetry > backMaxRetry) {
       log.info(s"backRetry ${backRetry} > backMaxRetry ${backMaxRetry} need exit")
       needExit = true
