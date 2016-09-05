@@ -144,10 +144,10 @@ object AppCrawler extends CommonLog{
           case iosApp if iosApp.matches(".*\\.ipa$") || iosApp.matches(".*\\.app$") =>{
             crawlerConf.currentDriver = "iOS"
           }
-          case platform if config.platform.nonEmpty =>{
-            log.info("use platform param")
-            crawlerConf.currentDriver=config.platform
-          }
+          case ios if config.platform.toLowerCase=="ios"=>
+            crawlerConf.currentDriver="iOS"
+          case android if config.platform.toLowerCase=="android"=>
+            crawlerConf.currentDriver="Android"
           case _ =>
             log.warn("can not know what platform, will use default android, please use -p to set the platform")
         }
