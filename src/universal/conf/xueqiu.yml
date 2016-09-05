@@ -1,0 +1,263 @@
+---
+#插件列表. 目前有五六个插件
+pluginList:
+- "com.xueqiu.qa.appcrawler.plugin.TagLimitPlugin"
+- "com.xueqiu.qa.appcrawler.plugin.ReportPlugin"
+#log的日志级别, 也可以通过命令行的-vv参数来显示更多log
+logLevel: "TRACE"
+#是否保存截图, 设置为false可加快速度. 一般截图耗时在3s-10s之间
+saveScreen: true
+#截图最长等待时间
+screenshotTimeout: 20
+#当前使用的平台. 会根据app文件的后缀重新判断. 可不填写.
+currentDriver: "android"
+#最大运行时间
+maxTime: 10800
+#结果保存目录. 为空会自动生成一个新的时间戳为名字的目录
+resultDir: ""
+#appium的配置 androidCapability和iosCapability分别代表针对android或iOS的特定配置. 最后三个配置会合并为一个
+capability:
+  deviceName: ""
+  newCommandTimeout: 120
+  launchTimeout: 120000
+  platformVersion: ""
+  platformName: ""
+  autoWebview: "false"
+  autoLaunch: "true"
+  noReset: "false"
+androidCapability:
+  deviceName: "demo"
+  appPackage: "com.xueqiu.android"
+  appActivity: ".view.WelcomeActivityAlias"
+  app: ""
+iosCapability:
+  deviceName: "iPhone 6"
+  bundleId: ""
+  screenshotWaitTimeout: "10"
+  platformVersion: "9.1"
+  autoAcceptAlerts: "true"
+  app: ""
+#除了默认的activity名字和iOS的UIANavigationBar的name之外, 还可以设置更多的表示界面功能的控件的name作为标题. 一般不需要定制
+defineUrl:
+- "//*[@resource-id='com.xueqiu.android:id/indicator']//*[@selected='true']/@text"
+- "//*[@resource-id='com.xueqiu.android:id/tab_name' and @selected='true']/@text"
+- "//UIANavigationBar[1]/@label"
+- "//*[contains(@name, '_title')]/@label"
+- "//*[contains(@resource-id, '_title')]/@text"
+#一般不需要配置. 表示遇到特定匹配的url的时候, 遍历深度会自动清零并重新计数
+baseUrl:
+- ".*MainActivity"
+- ".*SNBHomeView.*"
+#生成的xpath包含的属性,用于定位元素.text属性可省略.
+#xpathAttributes:
+#- "name"
+#- "label"
+#- "value"
+#- "resource-id"
+#- "content-desc"
+#- "index"
+#- "text"
+#遍历最大深度
+maxDepth: 20
+#是否在点击完所有控件后自动滚屏发现更多元素. 适合微博这种app
+needSwipe: false
+#是否从上到下遍历
+headFirst: true
+#是否进入WebView
+enterWebView: true
+#个别页面不进入. 发现进入了黑名单的url会自动后退
+urlBlackList:
+- ".*球友.*"
+- ".*png.*"
+- ".*Talk.*"
+- ".*Chat.*"
+- ".*Safari.*"
+- "WriteStatus.*"
+- "Browser.*"
+- "UserProfile.*"
+- ".*消息.*"
+- "MyselfUser"
+- ".*消息.*"
+- ".*MyselfUser.*"
+- ".*股市直播.*"
+- ".*UserVC.*"
+- ".*正文页.*"
+- "SNBTradeSegment"
+#url白名单. 第一次遍历到白名单内的页面时才开始进入白名单模式. 防止有人忘记把启动页面加入到白名单里面导致无法遍历
+#urlWhiteList:
+#-
+#后退的按键. 遍历完所有的控件会自动点击后退按钮. android上找不到就使用back键, iOS则必须指定
+backButton:
+- "//*[@resource-id='action_back']"
+- "//*[@resource-id='android:id/up']"
+- "//*[@resource-id='android:id/home']"
+- "//*[@resource-id='android:id/action_bar_title']"
+- "//*[@name='nav_icon_back']"
+- "//*[@name='Back']"
+- "//*[@name='返回']"
+- "//UIAButton[@name='取消']"
+- "//UIAButton[@label='返回']"
+- "//UIAButton[@name='关闭']"
+- "//UIAButton[@name='首页']"
+#优先遍历的元素列表. 这个列表必须在selectedList中存在
+firstList:
+- "//UIACollectionView//*"
+- "//UIAPopover//*"
+- "//UIAWindow[3]//*[not(ancestor-or-self::UIAStatusBar)]"
+- "//UIAWindow[2]//*[not(ancestor-or-self::UIAStatusBar)]"
+- "//android.widget.ListView//android.widget.TextView"
+- "//android.widget.ListView//android.widget.Button"
+- "//UIAWindow[1]//UIATableView//UIATableCell[@name!='']"
+- "//UIAWindow[1]//UIAStaticText//UIATableCell[@dom!='' and @name!='']"
+#要遍历的元素. 会只遍历这些元素, 然后再按照firstList和lastList排序
+selectedList:
+- "//*[contains(name(), 'Text')]"
+- "//*[contains(name(), 'Image')]"
+- "//*[contains(name(), 'Button')]"
+- "//*[contains(name(), 'CheckBox')]"
+#最后遍历的元素列表
+lastList:
+- "//*[contains(@resource-id,'group_header_view')]//android.widget.TextView"
+- "//*[contains(@resource-id,'indicator')]//android.widget.TextView"
+#遍历黑名单, 遇到这些元素跳过
+blackList:
+- "//*[name()='UIATextField']"
+- "//*[contains(name(), 'EditText')]"
+- "//UIAStatusBar//*"
+- ".*Safari"
+- ".*电话.*"
+- ".*Safari.*"
+- "发布"
+- "action_bar_title"
+- ".*浏览器.*"
+- "message"
+- ".*home"
+- "首页"
+- "Photos"
+- "地址"
+- "网址"
+- "发送"
+- "拉黑"
+- "举报"
+- "camera"
+- "Camera"
+- "nav_icon_home"
+- "分享.*"
+- "转发.*"
+- "comments"
+- "comment"
+- "stock_item_.*"
+- ".*[0-9]{2}.*"
+- "发送"
+- "保存"
+- "确定"
+- "up"
+- "user_profile_icon"
+- "selectAll"
+- "cut"
+- "copy"
+- "send"
+- "买[0-9]*"
+- "卖[0-9]*"
+- "聊天.*"
+- "拍照.*"
+#特殊元素特殊处理. 用于定制化的处理. 比如需要输入的元素. 默认是点击操作. 非click内容一律表示输入的意思
+elementActions:
+- action: "click"
+  idOrName: "//*[@resource-id='com.xueqiu.android:id/button_login']"
+  times: 1
+- action: "13067754297"
+  idOrName: "//*[@resource-id='com.xueqiu.android:id/login_account']"
+  times: 1
+- action: "xueqiu4297"
+  idOrName: "//*[@resource-id='com.xueqiu.android:id/login_password']"
+  times: 1
+- action: "click"
+  idOrName: "button_next"
+  times: 1
+- action: "13067754297"
+  idOrName: "//UIAStaticText[contains(@name, '登录')]"
+  times: 1
+- action: "13067754297"
+  idOrName: "//UIATextField[contains(@value, '手机')]"
+  times: 1
+- action: "xueqiu4297"
+  idOrName: "//UIASecureTextField"
+  times: 1
+- action: "click"
+  idOrName: "//UIAButton[contains(@name, '登 录')]"
+  times: 1
+- action: "click"
+  idOrName: ".*立即登录"
+  times: 2
+- action: "click"
+  idOrName: "//*[@name='登 录']"
+  times: 2
+- action: "click"
+  idOrName: "//*[@name='登录']"
+  times: 2
+- action: "scroll left"
+  idOrName: "专题"
+  times: 1
+- action: "click"
+  idOrName: "点此.*"
+  times: 0
+- action: "click"
+  idOrName: "取消"
+  times: 0
+- action: "click"
+  idOrName: "不保存"
+  times: 0
+- action: "click"
+  idOrName: "确定"
+  times: 0
+- action: "click"
+  idOrName: "关闭"
+  times: 0
+- action: "click"
+  idOrName: "稍后再说"
+  times: 0
+- action: "click"
+  idOrName: "Cancel"
+  times: 0
+- action: "click"
+  idOrName: "这里可以.*"
+  times: 0
+- action: "click"
+  idOrName: ".*搬到这里.*"
+  times: 0
+- action: "click"
+  idOrName: "我要退出"
+  times: 0
+- action: "click"
+  idOrName: "tip_click_position"
+  times: 0
+- action: "click"
+  idOrName: "common guide icon ok"
+  times: 0
+- action: "click"
+  idOrName: "icon quotationinformation day"
+  times: 1
+- action: "click"
+  idOrName: "icon stock close"
+  times: 0
+- action: "click"
+  idOrName: "隐藏键盘"
+  times: 0
+#支持简单的scala表达式, MiniAppium是一个全局的Object, 你可以调用他的基本方法实现定制化支持
+#比如Thread.sleep(3000) MiniAppium.send("dddd") MiniAppium.see("//xxxxx").tap() 记得用\"代替"
+startupActions:
+- "MiniAppium.swipe(\"left\")"
+- "MiniAppium.swipe(\"left\")"
+- "MiniAppium.swipe(\"left\")"
+- "MiniAppium.swipe(\"left\")"
+- "MiniAppium.swipe(\"down\")"
+- "println(driver)"
+#beforeElementAction:
+#- "println(driver)"
+#- "Thread.sleep(3000)"
+#- "println(driver.getPageSource())"
+#afterElementAction:
+#- "println(driver)"
+#- "println(driver.getPageSource)"
+#- "Thread.sleep(3000)"
