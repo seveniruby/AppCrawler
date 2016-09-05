@@ -398,22 +398,34 @@ class Crawler extends CommonLog {
     log.trace(s"all elements = ${allElements.size}")
 
     conf.blackList.filter(_.head == '/').foreach(xpath => {
-      blackElements ++= getAllElements(xpath).filter(isValid)
+      log.trace(s"blackList xpath = ${xpath}")
+      val temp=getAllElements(xpath).filter(isValid)
+      temp.foreach(log.trace)
+      blackElements ++= temp
     })
     conf.selectedList.foreach(xpath => {
-      commonElements ++= getAllElements(xpath).filter(isValid)
+      log.trace(s"selectedList xpath =  ${xpath}")
+      val temp=getAllElements(xpath).filter(isValid)
+      temp.foreach(log.trace)
+      commonElements ++= temp
     })
     commonElements = commonElements diff blackElements
 
     log.trace(conf.firstList)
     conf.firstList.foreach(xpath => {
-      firstElements ++= getAllElements(xpath).filter(isValid).intersect(commonElements)
+      log.trace(s"firstList xpath = ${xpath}")
+      val temp=getAllElements(xpath).filter(isValid).intersect(commonElements)
+      temp.foreach(log.trace)
+      firstElements ++= temp
     })
     log.trace("first elements")
     firstElements.foreach(log.trace)
 
     conf.lastList.foreach(xpath => {
-      appendElements ++= getAllElements(xpath).filter(isValid).intersect(commonElements)
+      log.trace(s"lastList xpath = ${xpath}")
+      val temp=getAllElements(xpath).filter(isValid).intersect(commonElements)
+      temp.foreach(log.trace)
+      appendElements ++= temp
     })
 
     //确保不重, 并保证顺序
@@ -931,21 +943,6 @@ class Crawler extends CommonLog {
     None
   }
 
-  def doAppium[T](r: => T): Option[T] = {
-    Try(r) match {
-      case Success(v) => {
-        log.info("success")
-        Some(v)
-      }
-      case Failure(e) => {
-        log.warn("message=" + e.getMessage)
-        log.warn("cause=" + e.getCause)
-        //log.trace(e.getStackTrace.mkString("\n"))
-        None
-      }
-    }
-
-  }
 
   def saveLog(): Unit = {
     //记录点击log
