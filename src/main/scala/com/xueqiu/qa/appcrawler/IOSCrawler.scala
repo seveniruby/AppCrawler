@@ -9,7 +9,6 @@ import org.openqa.selenium.WebElement
   * Created by seveniruby on 15/12/10.
   */
 class IOSCrawler extends Crawler {
-  platformName = "iOS"
   if(conf.selectedList.isEmpty) {
     conf.selectedList.insertAll(0, Seq(
       "//UIAWindow[1]//UIATextField[@visible='true' and @enabled='true' and @valid='true']",

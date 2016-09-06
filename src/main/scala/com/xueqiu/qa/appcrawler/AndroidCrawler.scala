@@ -12,7 +12,6 @@ import scala.collection.mutable.ListBuffer
   * Created by seveniruby on 15/12/10.
   */
 class AndroidCrawler extends Crawler {
-  platformName = "Android"
   if(conf.selectedList.isEmpty){
     conf.selectedList.insertAll(0, ListBuffer[String](
       "//*[@enabled='true' and @resource-id!='' and not(contains(name(), 'Layout'))]",

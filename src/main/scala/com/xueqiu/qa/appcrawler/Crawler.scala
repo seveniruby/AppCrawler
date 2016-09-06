@@ -27,22 +27,17 @@ class Crawler extends CommonLog {
   val capabilities = new DesiredCapabilities()
 
   /** 存放插件类 */
-  var pluginClasses = List[Plugin]()
+  val pluginClasses = ListBuffer[Plugin]()
   var fileAppender: FileAppender = _
 
   val elements: scala.collection.mutable.Map[UrlElement, Boolean] = scala.collection.mutable.Map()
   private var allElementsRecord = ListBuffer[UrlElement]()
-  private var isSkip = false
   /** 元素的默认操作 */
   private var currentElementAction = "click"
   /** 点击顺序, 留作画图用 */
   val clickedElementsList = mutable.Stack[UrlElement]()
 
-  private var preTimeStamp = 0L
-  private var nowTimeStamp = 0L
   protected var automationName = "appium"
-  protected var platformName = ""
-
   private var screenWidth = 0
   private var screenHeight = 0
 
@@ -75,17 +70,22 @@ class Crawler extends CommonLog {
     * 根据类名初始化插件. 插件可以使用java编写. 继承自Plugin即可
     */
   def loadPlugins(): Unit = {
-    pluginClasses = conf.pluginList.map(name => {
+    //todo: 需要考虑默认加载一些插件,并防止重复加载
+    /**
+    List(
+      "com.xueqiu.qa.appcrawler.plugin.ReportPlugin"
+    ).foreach(name=>pluginClasses.append(Class.forName(name).newInstance().asInstanceOf[Plugin]))
+      */
+    conf.pluginList.map(name => {
       log.info(s"load com.xueqiu.qa.appcrawler.plugin $name")
-      Class.forName(name).newInstance().asInstanceOf[Plugin]
+      pluginClasses.append(Class.forName(name).newInstance().asInstanceOf[Plugin])
     })
     val dynamicPluginDir=(new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath))
       .getParentFile.getParentFile.getCanonicalPath+File.separator+"plugins"+File.separator
     log.info(s"dynamic load plugin in ${dynamicPluginDir}")
     val dynamicPlugins=Runtimes.loadPlugins(dynamicPluginDir)
     log.info(s"found dynamic plugins size ${dynamicPlugins.size}")
-    dynamicPlugins.foreach(log.info)
-    pluginClasses=pluginClasses++dynamicPlugins
+    dynamicPlugins.foreach(pluginClasses.append(_))
     pluginClasses.foreach(log.info)
     pluginClasses.foreach(p => p.init(this))
     pluginClasses.foreach(p => p.start())
@@ -134,7 +134,7 @@ class Crawler extends CommonLog {
       this.driver = existDriver
     }
     log.info("init MiniAppium")
-    log.info(s"platformName=${platformName} driver=${driver}")
+    log.info(s"platformName=${conf.currentDriver} driver=${driver}")
 
     log.info("waiting for app load")
     Thread.sleep(8000)
@@ -145,7 +145,7 @@ class Crawler extends CommonLog {
     MiniAppium.driver=driver
     MiniAppium.screenHeight=screenHeight
     MiniAppium.screenWidth=screenWidth
-    MiniAppium.setPlatformName(platformName)
+    MiniAppium.setPlatformName(conf.currentDriver)
 
 
     driver.manage().logs().getAvailableLogTypes().toArray.foreach(log.info)
@@ -314,12 +314,7 @@ class Crawler extends CommonLog {
       needExit = true
       return true
     }
-    //回到桌面了
-    if (urlStack.filter(_.matches("Launcher.*")).nonEmpty || appName.matches("com.android\\..*")) {
-      log.warn(s"maybe back to desktop ${urlStack.reverse.mkString("-")} need exit")
-      needExit = true
-      return true
-    }
+
     //跳到了其他app
     if (appNameRecord.isDiff()) {
       log.warn(s"jump to other app appName=${appNameRecord.last()} lastAppName=${appNameRecord.pre()}")
@@ -358,6 +353,13 @@ class Crawler extends CommonLog {
       log.info(s"urlStack.depth=${urlStack.length} > maxDepth=${conf.maxDepth}")
       return true
     }
+    //回到桌面了
+    if (urlStack.filter(_.matches("Launcher.*")).nonEmpty || appName.matches("com.android\\..*")) {
+      log.warn(s"maybe back to desktop ${urlStack.reverse.mkString("-")} need exit")
+      needExit = true
+      return true
+    }
+
     false
 
   }
@@ -391,7 +393,7 @@ class Crawler extends CommonLog {
     var all = List[immutable.Map[String, Any]]()
     var firstElements = List[immutable.Map[String, Any]]()
     var lastElements = List[immutable.Map[String, Any]]()
-    var commonElements = List[immutable.Map[String, Any]]()
+    var selectedElements = List[immutable.Map[String, Any]]()
     var blackElements = List[immutable.Map[String, Any]]()
 
     val allElements = getAllElements("//*")
@@ -407,14 +409,14 @@ class Crawler extends CommonLog {
       log.trace(s"selectedList xpath =  ${xpath}")
       val temp=getAllElements(xpath).filter(isValid)
       temp.foreach(log.trace)
-      commonElements ++= temp
+      selectedElements ++= temp
     })
-    commonElements = commonElements diff blackElements
+    selectedElements = selectedElements diff blackElements
 
     log.trace(conf.firstList)
     conf.firstList.foreach(xpath => {
       log.trace(s"firstList xpath = ${xpath}")
-      val temp=getAllElements(xpath).filter(isValid).intersect(commonElements)
+      val temp=getAllElements(xpath).filter(isValid).intersect(selectedElements)
       temp.foreach(log.trace)
       firstElements ++= temp
     })
@@ -423,17 +425,17 @@ class Crawler extends CommonLog {
 
     conf.lastList.foreach(xpath => {
       log.trace(s"lastList xpath = ${xpath}")
-      val temp=getAllElements(xpath).filter(isValid).intersect(commonElements)
+      val temp=getAllElements(xpath).filter(isValid).intersect(selectedElements)
       temp.foreach(log.trace)
       lastElements ++= temp
     })
 
     //去掉不在first和last中的元素
-    commonElements=commonElements diff firstElements
-    commonElements=commonElements diff lastElements
+    selectedElements=selectedElements diff firstElements
+    selectedElements=selectedElements diff lastElements
 
     //确保不重, 并保证顺序
-    all = (firstElements ++ commonElements ++ lastElements).distinct
+    all = (firstElements ++ selectedElements ++ lastElements).distinct
     log.trace("all elements")
     all.foreach(log.trace)
     log.trace(s"all selected length=${all.length}")
@@ -599,16 +601,17 @@ class Crawler extends CommonLog {
     log.info("go back")
     //找到可能的关闭按钮, 取第一个可用的关闭按钮
     getBackElements().headOption match {
-      case Some(v) => {
+      case Some(v) if appNameRecord.isDiff()==false => {
+        //app相同并且找到back控件才点击. 否则就默认back
         val element = getUrlElementByMap(v)
         clickedElementsList.push(element)
         log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
         doAppiumAction(element, "click")
         refreshPage()
       }
-      case None => {
+      case _ => {
         log.warn("find back button error")
-        if (platformName.toLowerCase == "android") {
+        if (conf.currentDriver.toLowerCase == "android") {
           clickedElementsList.push(UrlElement(s"${url}-Back", "", "", "", ""))
           log.info(s"index = ${clickedElementsList.size} current =  ${clickedElementsList.head.loc}")
           saveDom()
