@@ -5,52 +5,63 @@ import java.io.File
 import com.brsanthu.googleanalytics.GoogleAnalytics
 import com.xueqiu.qa.appcrawler.{UrlElement, Plugin}
 import net.lightbody.bmp.BrowserMobProxyServer
-import net.lightbody.bmp.proxy.{CaptureType, ProxyServer}
+import net.lightbody.bmp.proxy.{CaptureType}
 import org.apache.log4j.{Level, Logger, BasicConfigurator}
+
+import scala.util.Try
 
 /**
   * Created by seveniruby on 16/4/26.
   */
 class ProxyPlugin extends Plugin {
-  private var proxy: ProxyServer = _
-  private var harFileName = ""
-  val port = 7771
+  private var proxy: BrowserMobProxyServer = _
+  val port = 7777
 
   //todo: 支持代理
   override def start(): Unit = {
     BasicConfigurator.configure()
-    Logger.getRootLogger.setLevel(Level.OFF)
+    Logger.getRootLogger.setLevel(Level.INFO)
     Logger.getLogger("ProxyServer").setLevel(Level.WARN)
 
-    proxy = new ProxyServer()
+    proxy = new BrowserMobProxyServer()
+    proxy.setHarCaptureTypes(CaptureType.getNonBinaryContentCaptureTypes)
+    proxy.setTrustAllServers(true)
     proxy.start(port)
 
-    proxy.setHarCaptureTypes(CaptureType.getNonBinaryContentCaptureTypes)
     //proxy.setHarCaptureTypes(CaptureType.getAllContentCaptureTypes)
     //proxy.setHarCaptureTypes(CaptureType.getHeaderCaptureTypes)
     log.info(s"proxy server listen on ${port}")
-    proxy.newHar(harFileName)
+    proxy.newHar("start")
   }
 
   override def beforeElementAction(element: UrlElement): Unit = {
-    if(harFileName.isEmpty){
-      harFileName = getCrawler().getLogFileName() + ".har"
-    }
-    //保存上次的请求
-    log.info(s"save har to ${harFileName}")
+    log.info("clear har")
     proxy.endHar()
-    val file = new File(harFileName)
-    log.info(s"har entry size = ${proxy.getHar.getLog.getEntries.size()}")
-    if(proxy.getHar.getLog.getEntries.size()>0){
-      proxy.getHar.writeTo(file)
-    }
-
     //创建新的har
-    harFileName = getCrawler().getLogFileName() + ".har"
+    val harFileName = getCrawler().getLogFileName() + ".har"
     proxy.newHar(harFileName)
   }
 
   override def afterElementAction(element: UrlElement): Unit = {
+    log.info("save har")
+    val harFileName = getCrawler().getLogFileName() + ".har"
+    val file = new File(harFileName)
+    try {
+      log.info(proxy.getHar)
+      log.info(proxy.getHar.getLog)
+      log.info(proxy.getHar.getLog.getEntries.size())
+      log.info(s"har entry size = ${proxy.getHar.getLog.getEntries.size()}")
+      if (proxy.getHar.getLog.getEntries.size() > 0) {
+        proxy.getHar.writeTo(file)
+      }
+    } catch {
+      case e: Exception =>{
+        log.error("read har error")
+        log.error(e.getCause)
+        log.error(e.getMessage)
+        e.getStackTrace.foreach(log.error)
+      }
+    }
 
   }
 

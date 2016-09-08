@@ -57,15 +57,19 @@ object Runtimes extends CommonLog{
   }
   def eval(code:String): Unit ={
     if(isLoaded==false){
+      log.info("first import")
       instance.eval("import com.xueqiu.qa.appcrawler.MiniAppium")
       instance.eval("import com.xueqiu.qa.appcrawler.MiniAppium._")
       isLoaded=true
     }
+    log.info(code)
     instance.eval(code)
+    log.info("eval finish")
   }
 
   def compile(fileNames:List[String]): Unit ={
     instance.compile(fileNames)
+    isLoaded=false
   }
   def init(classDir:String=""): Unit ={
     instance=new Runtimes(classDir)

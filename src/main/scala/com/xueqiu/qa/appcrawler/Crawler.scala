@@ -537,14 +537,13 @@ class Crawler extends CommonLog {
 
   def beforeElementAction(element: UrlElement): Unit = {
     log.trace("beforeElementAction")
-    if(conf.beforeElementAction.nonEmpty){
-      log.info("eval beforeElementAction")
-      conf.beforeElementAction.foreach(cmd=>{
-        log.info(cmd)
-        Runtimes.eval(cmd)
-        log.info("eval finish")
-      })
-    }
+    conf.beforeElementAction.foreach(elementAction=>{
+      val xpath=elementAction.get("xpath").get
+      val action=elementAction.get("action").get
+      if(getAllElements(xpath).contains(element)){
+        Runtimes.eval(action)
+      }
+    })
     pluginClasses.foreach(p => p.beforeElementAction(element))
   }
 
@@ -553,14 +552,8 @@ class Crawler extends CommonLog {
     if (getElementAction() != "skip") {
       refreshPage()
     }
+    conf.afterElementAction.foreach(Runtimes.eval)
 
-    if(conf.beforeElementAction.nonEmpty){
-      log.info("eval afterElementAction")
-      conf.beforeElementAction.foreach(cmd=>{
-        log.info(cmd)
-        Runtimes.eval(cmd)
-      })
-    }
     pluginClasses.foreach(p => p.afterElementAction(element))
   }
 
@@ -706,10 +699,13 @@ class Crawler extends CommonLog {
         swipeRetry = 0
       } else {
         log.warn("all elements had be clicked")
-        if (conf.needSwipe) {
-          swipe()
+        if(backRetry==0){
+          conf.afterUrlFinished.foreach(Runtimes.eval)
+          refreshPage()
+          backRetry+=1
+        }else{
+          goBack()
         }
-        goBack()
       }
     }
     crawl()
@@ -1100,6 +1096,9 @@ class Crawler extends CommonLog {
           }
           case "scroll" => {
             swipe()
+          }
+          case event if event.matches(".*event.*") => {
+            Runtimes.eval(event)
           }
           case str: String => {
             log.info(s"sendkeys ${v} with ${str}")

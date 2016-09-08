@@ -21,8 +21,7 @@ class ReportPlugin extends Plugin with Report {
     Signal.handle(new Signal("INT"), new SignalHandler() {
       def handle(sig: Signal) {
         log.info("exit by INT")
-        saveTestCase(getCrawler().store.elements, getCrawler().clickedElementsList,getCrawler().conf.resultDir)
-        runTestCase()
+        generateReport()
         log.info("generate report finish")
         println("generate report finish")
         sys.exit(1)
@@ -39,8 +38,7 @@ class ReportPlugin extends Plugin with Report {
   }
 
   override def stop(): Unit ={
-    saveTestCase(getCrawler().store.elements, getCrawler().clickedElementsList,getCrawler().conf.resultDir)
-    runTestCase()
+    generateReport()
   }
 
 
@@ -50,10 +48,17 @@ class ReportPlugin extends Plugin with Report {
     val curTime=(System.currentTimeMillis / 1000).toInt
     if(curTime-lastTime>120){
       log.info("every 2 min to save test report ")
-      saveTestCase(getCrawler().store.elements, getCrawler().clickedElementsList, getCrawler().conf.resultDir)
-      runTestCase()
+      generateReport()
       lastTime=curTime
     }
+  }
+
+  def generateReport(): Unit ={
+    saveTestCase(
+      getCrawler().store.elements.filter(_._2!=ElementStatus.Skiped),
+      getCrawler().clickedElementsList,
+      getCrawler().conf.resultDir)
+    runTestCase()
   }
 
 

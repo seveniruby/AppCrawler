@@ -25,8 +25,7 @@ libraryDependencies ++= Seq(
   //"com.android.tools.ddms" % "ddmlib" % "24.5.0",
   //"org.lucee" % "xml-xerces" % "2.11.0",
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.5.4",
-  "net.lightbody.bmp" % "browsermob-core-littleproxy" % "2.1.0-beta-6",
-  "net.lightbody.bmp" % "browsermob-core" % "2.1.0-beta-6",
+  "net.lightbody.bmp" % "browsermob-core" % "2.1.2",
   "org.lucee" % "commons-codec" % "1.10.L001",
   "com.twitter" %% "util-eval" % "6.35.0",
   "org.pegdown" % "pegdown" % "1.6.0" //html report
