@@ -51,7 +51,7 @@ object RichData extends CommonLog {
     * @return
     */
   def getXPathFromAttributes(attributes: ListBuffer[Map[String, String]]): String = {
-    var xpath = attributes.reverse.takeRight(3).map(attribute => {
+    var xpath = attributes.takeRight(4).map(attribute => {
       var newAttribute = attribute
       //如果有值就不需要path了, 基本上两层xpath定位即可唯一
       xpathExpr.foreach(key => {
@@ -106,6 +106,35 @@ object RichData extends CommonLog {
     return xpath
   }
 
+  def getAttributesFromNode(node: Node): ListBuffer[Map[String, String]] ={
+    val path = ListBuffer[Map[String, String]]()
+    //递归获取路径,生成可定位的xpath表达式
+    def getParent(node: Node): Unit = {
+      if (node.hasAttributes) {
+        val attributes = node.getAttributes
+        var attributeMap = Map[String, String]()
+
+        0 until attributes.getLength foreach (i => {
+          val kv = attributes.item(i).asInstanceOf[Attr]
+          if (xpathExpr.contains(kv.getName)
+            && kv.getValue.nonEmpty
+          ) {
+            attributeMap ++= Map(kv.getName -> kv.getValue)
+          }
+        })
+        attributeMap ++= Map("tag" -> node.getNodeName)
+        path += attributeMap
+      }
+      if (node.getParentNode != null) {
+        getParent(node.getParentNode)
+      }
+    }
+    getParent(node)
+    //返回一个从root到leaf的属性列表
+    return path.reverse
+
+  }
+
 
   def getListFromXPath(xpath: String, pageDom: Document): List[Map[String, Any]] = {
     val nodesMap = ListBuffer[Map[String, Any]]()
@@ -124,31 +153,8 @@ object RichData extends CommonLog {
           val nodeMap = mutable.Map[String, Any]()
           val node = nodeList.item(i)
           nodeMap("tag") = node.getNodeName
-          val path = ListBuffer[Map[String, String]]()
-          //递归获取路径,生成可定位的xpath表达式
-          def getParent(node: Node): Unit = {
-            if (node.hasAttributes) {
-              val attributes = node.getAttributes
-              var attributeMap = Map[String, String]()
-
-              0 until attributes.getLength foreach (i => {
-                val kv = attributes.item(i).asInstanceOf[Attr]
-                if (xpathExpr.contains(kv.getName)
-                  && kv.getValue.nonEmpty
-                ) {
-                  attributeMap ++= Map(kv.getName -> kv.getValue)
-                }
-              })
-              attributeMap ++= Map("tag" -> node.getNodeName)
-              path += attributeMap
-            }
-            if (node.getParentNode != null) {
-              getParent(node.getParentNode)
-            }
-          }
-          getParent(node)
+          val path=getAttributesFromNode(node)
           nodeMap("xpath") = getXPathFromAttributes(path)
-
           //支持导出单个字段
           nodeMap(node.getNodeName) = node.getNodeValue
           //获得所有节点属性

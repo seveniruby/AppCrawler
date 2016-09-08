@@ -20,7 +20,7 @@ trait CommonLog {
     console.setWriter(new OutputStreamWriter(System.out))
     console.setLayout(layout)
     log.addAppender(console)
-    log.info(s"set ${this} log level to ${GA.logLevel}")
+    log.trace(s"set ${this} log level to ${GA.logLevel}")
     log.setLevel(GA.logLevel)
     log.setAdditivity(false)
     log

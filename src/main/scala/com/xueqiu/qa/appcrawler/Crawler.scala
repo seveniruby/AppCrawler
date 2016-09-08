@@ -30,7 +30,7 @@ class Crawler extends CommonLog {
   val pluginClasses = ListBuffer[Plugin]()
   var fileAppender: FileAppender = _
 
-  val elements: scala.collection.mutable.Map[UrlElement, Boolean] = scala.collection.mutable.Map()
+  val store=new UrlElementStore
   private var allElementsRecord = ListBuffer[UrlElement]()
   /** 元素的默认操作 */
   private var currentElementAction = "click"
@@ -72,9 +72,9 @@ class Crawler extends CommonLog {
   def loadPlugins(): Unit = {
     //todo: 需要考虑默认加载一些插件,并防止重复加载
     /**
-    List(
-      "com.xueqiu.qa.appcrawler.plugin.ReportPlugin"
-    ).foreach(name=>pluginClasses.append(Class.forName(name).newInstance().asInstanceOf[Plugin]))
+      * List(
+      * "com.xueqiu.qa.appcrawler.plugin.ReportPlugin"
+      * ).foreach(name=>pluginClasses.append(Class.forName(name).newInstance().asInstanceOf[Plugin]))
       */
     conf.pluginList.map(name => {
       log.info(s"load com.xueqiu.qa.appcrawler.plugin $name")
@@ -534,15 +534,6 @@ class Crawler extends CommonLog {
     pluginClasses.foreach(p => p.afterUrlRefresh(url))
   }
 
-  def isClicked(ele: UrlElement): Boolean = {
-    if (elements.contains(ele)) {
-      elements(ele)
-    } else {
-      log.trace(s"element=${ele.toLoc()} first show, need click")
-      false
-    }
-  }
-
 
   def beforeElementAction(element: UrlElement): Unit = {
     log.trace("beforeElementAction")
@@ -551,6 +542,7 @@ class Crawler extends CommonLog {
       conf.beforeElementAction.foreach(cmd=>{
         log.info(cmd)
         Runtimes.eval(cmd)
+        log.info("eval finish")
       })
     }
     pluginClasses.foreach(p => p.beforeElementAction(element))
@@ -660,18 +652,13 @@ class Crawler extends CommonLog {
     allElements.foreach(allElementsRecord.append(_))
     allElementsRecord = allElementsRecord.distinct
     //过滤已经被点击过的元素
-    allElements = allElements.filter(!isClicked(_))
+    allElements = allElements.filter(!store.isClicked(_))
+    allElements = allElements.filter(!store.isSkiped(_))
     log.info(s"fresh elements length=${allElements.length}")
     //记录未被点击的元素
     allElements.foreach(e => {
-      if (!elements.contains(e)) {
-        elements(e) = false
-        log.info(s"first found ${e}")
-      }
+      store.saveElement(e)
     })
-
-    log.trace("sort all elements")
-    allElements.foreach(x => log.trace(x.loc))
     allElements
   }
 
@@ -680,6 +667,7 @@ class Crawler extends CommonLog {
     * 刷新->找元素->点击第一个未被点击的元素->刷新
     */
   @tailrec final def crawl(): Unit = {
+    log.info("crawl next")
     //是否应该退出
     if (needExit) {
       log.warn("need exit")
@@ -698,20 +686,22 @@ class Crawler extends CommonLog {
       if (allElements.nonEmpty) {
         //保存第一个元素到要点击元素的堆栈里, 这里可以决定是后向遍历, 还是前向遍历
         val element = allElements.head
-        elements(element) = true
+        store.setElementClicked(element)
         clickedElementsList.push(element)
         //加载插件分析
         beforeElementAction(element)
-        //处理控件
-        doElementAction(element)
-        //插件处理
-        afterElementAction(element)
-        //复原
+
         if(getElementAction()=="skip"){
           clickedElementsList.pop()
+          store.setElementSkip(element)
+        }else{
+          //处理控件
+          doElementAction(element)
+          //插件处理
+          afterElementAction(element)
         }
-        setElementAction("click")
 
+        setElementAction("click")
         backRetry = 0
         swipeRetry = 0
       } else {
@@ -962,7 +952,7 @@ class Crawler extends CommonLog {
     }).mkString("\n"))
 
     File(s"${conf.resultDir}/clickedList.yml").writeAll(DataObject.toYaml(clickedElementsList))
-    File(s"${conf.resultDir}/elementList.yml").writeAll(DataObject.toYaml(elements))
+    File(s"${conf.resultDir}/elementList.yml").writeAll(DataObject.toYaml(store.elements))
     File(s"${conf.resultDir}/allElements.yml").writeAll(DataObject.toYaml(allElementsRecord))
 
     File(s"${conf.resultDir}/freemind.mm").writeAll(
@@ -970,9 +960,9 @@ class Crawler extends CommonLog {
     )
   }
 
-  def getLogFileName(): String = {
-    s"${conf.resultDir}/${clickedElementsList.length}_" +
-      clickedElementsList.head.toFileName()
+  def getLogFileName(element: UrlElement=clickedElementsList.head ): String = {
+    //序号_文件名
+    s"${conf.resultDir}/${clickedElementsList.reverse.lastIndexOf(element)}_" + element.toFileName()
   }
 
   def saveDom(): Unit = {
@@ -990,33 +980,6 @@ class Crawler extends CommonLog {
         log.error(e.getStackTrace)
       }
     }
-  }
-
-
-  def screenshot(path: String, element: WebElement = null): Unit = {
-    if (pluginClasses.map(p => p.screenshot(path)).contains(true)) {
-      return
-    }
-    Try(MiniAppium.shot(element)) match {
-      case Success(file) => {
-        val imgFile=new java.io.File(path)
-        if(imgFile.exists()){
-          log.error(s"${path} already exist")
-        }else {
-          FileUtils.copyFile(file, imgFile)
-          log.info("save screenshot end")
-        }
-      }
-      case Failure(e) => {
-        log.warn("get screenshot error")
-
-        log.warn(e.getMessage)
-        log.warn(e.getCause)
-        log.warn(e.getStackTrace.mkString("\n"))
-      }
-    }
-
-
   }
 
 
@@ -1072,15 +1035,19 @@ class Crawler extends CommonLog {
   }
   def saveScreen(force: Boolean = false, element: WebElement = null): Unit = {
     //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
-    if (conf.saveScreen && contentHash.isDiff() || force) {
+    val path = getLogFileName() + ".jpg"
+    if (pluginClasses.map(p => p.screenshot(path)).contains(true)) {
+      return
+    }
+    if (conf.saveScreen || force) {
       Thread.sleep(100)
       log.info("start screenshot")
-      val path = getLogFileName() + ".jpg"
       retryThread(){
-        screenshot(path, element)
+        val imgFile=MiniAppium.screenshot()
+        val newImageFile=MiniAppium.mark(imgFile, element)
+        FileUtils.copyFile(newImageFile, new java.io.File(path))
       }
-    }
-    else{
+    }else{
       log.info("skip screenshot")
     }
   }

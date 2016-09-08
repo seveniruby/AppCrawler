@@ -22,7 +22,8 @@ class CrawlerConf{
   /**是否截图*/
   var saveScreen=true
   var screenshotTimeout=20
-  var currentDriver="android"
+  var currentDriver="Android"
+  var tagLimitMax=6
   /**最大运行时间*/
   var maxTime = 3600*3
   /**结果目录*/

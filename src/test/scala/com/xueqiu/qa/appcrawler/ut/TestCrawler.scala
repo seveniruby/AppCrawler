@@ -1,7 +1,7 @@
 package com.xueqiu.qa.appcrawler.ut
 
 
-import com.xueqiu.qa.appcrawler.{UrlElement, Crawler, CrawlerConf, RichData}
+import com.xueqiu.qa.appcrawler._
 import org.scalatest.FunSuite
 
 
@@ -306,7 +306,6 @@ class TestCrawler extends FunSuite{
       println(x)
       println(x.isWhitespace)
     })
-
   }
 
 /*
@@ -324,8 +323,7 @@ class TestCrawler extends FunSuite{
     val u2=UrlElement("a", "b", "c", "d","")
     val u3=UrlElement("a", "b", "c", "d","e")
     assert(u1==u2)
-    crawler.elements(u1)=true
-    assert(crawler.elements(u2)==true)
-    assert(crawler.elements.getOrElse(u3, false)==false)
+    crawler.store.setElementClicked(u1)
+    assert(crawler.store.isClicked(u2)==true)
   }
 }

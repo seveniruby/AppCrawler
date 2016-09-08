@@ -51,7 +51,16 @@ class Runtimes(val outputDir:String="") extends CommonLog{
 
 object Runtimes extends CommonLog{
   var instance=new Runtimes()
+  var isLoaded=false
+  def apply(): Unit ={
+
+  }
   def eval(code:String): Unit ={
+    if(isLoaded==false){
+      instance.eval("import com.xueqiu.qa.appcrawler.MiniAppium")
+      instance.eval("import com.xueqiu.qa.appcrawler.MiniAppium._")
+      isLoaded=true
+    }
     instance.eval(code)
   }
 

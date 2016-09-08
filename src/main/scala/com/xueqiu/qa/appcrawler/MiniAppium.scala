@@ -4,8 +4,9 @@ import java.awt.{BasicStroke, Color}
 import java.io.File
 import java.net.URL
 import javax.imageio.ImageIO
-import io.appium.java_client.AppiumDriver
-import io.appium.java_client.android.AndroidDriver
+import com.thoughtworks.selenium.webdriven.commands.KeyEvent
+import io.appium.java_client.{MobileCommand, AppiumDriver}
+import io.appium.java_client.android.{AndroidKeyCode, AndroidDriver}
 import io.appium.java_client.ios.IOSDriver
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.Level
@@ -21,7 +22,7 @@ import scala.util.{Failure, Success, Try}
   * Created by seveniruby on 16/8/9.
   */
 trait MiniAppium extends CommonLog with WebBrowser{
-
+  Runtimes.init()
   val capabilities = new DesiredCapabilities()
   var appiumUrl = "http://127.0.0.1:4723/wd/hub"
 
@@ -114,6 +115,16 @@ trait MiniAppium extends CommonLog with WebBrowser{
     tap()
     driver.getKeyboard.sendKeys(keys)
     this
+  }
+  def event(keycode:Int): Unit ={
+    driver match {
+      case androidDriver : AndroidDriver[WebElement] =>{
+        androidDriver.pressKeyCode(keycode)
+      }
+      case iosDriver: IOSDriver[_] =>{
+        log.error("no event for ios")
+      }
+    }
   }
   def attribute(key:String): String ={
     nodes().head.get(key).get.toString
@@ -316,15 +327,18 @@ trait MiniAppium extends CommonLog with WebBrowser{
     sleep(1)
     val xpath=tree(loc, index)("xpath").toString
     val element=driver.findElementByXPath(xpath)
-    val file=shot(element)
+    val file=mark(screenshot(), element)
     FileUtils.copyFile(file, new File(fileName+".png"))
   }
 
+
+  def screenshot(): File ={
+    (driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)
+  }
   //todo: 重构到独立的trait中
-  def shot(element: WebElement): java.io.File = {
+  def mark(file: File, element: WebElement): java.io.File = {
     log.info(s"platformName=${platformName}")
     log.info("getScreenshot")
-    val file = (driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)
     if (element != null) {
       log.info("getLocation")
       val location = element.getLocation
@@ -358,9 +372,6 @@ trait MiniAppium extends CommonLog with WebBrowser{
   }
 
   def dsl(command:String): Unit ={
-    Runtimes.init()
-    Runtimes.eval("import com.xueqiu.qa.appcrawler.MiniAppium")
-    Runtimes.eval("import com.xueqiu.qa.appcrawler.MiniAppium.driver")
     log.info(s"eval ${command}")
     Try(Runtimes.eval(command)) match {
       case Success(v)=> log.info(v)
