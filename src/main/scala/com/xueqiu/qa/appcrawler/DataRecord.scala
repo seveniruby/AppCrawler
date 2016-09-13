@@ -36,5 +36,8 @@ class DataRecord extends CommonLog {
   def last(): Any ={
     record.last
   }
+  def pop(): Unit ={
+    record.remove(record.size-1)
+  }
 
 }

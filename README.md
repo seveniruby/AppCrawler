@@ -71,22 +71,22 @@ rule方法有三个参数. 元素的id或者name属性.第二个参数为输入.
   "elementActions":[
     {
       "action":"click",
-      "idOrName":"已有帐号？立即登录",
+      "xpath":"已有帐号？立即登录",
       "times":0
     },
     {
       "action":"click",
-      "idOrName":"登录",
+      "xpath":"登录",
       "times":0
     },
     {
       "action":"156005347XX",
-      "idOrName":"account",
+      "xpath":"account",
       "times":0
     },
     {
       "action":"xxxxxxxx",
-      "idOrName":"password",
+      "xpath":"password",
       "times":0
     }
   ]

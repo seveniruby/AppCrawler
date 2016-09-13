@@ -20,6 +20,7 @@ class TagLimitPlugin extends Plugin{
       tagLimit(key)=tagLimitMax
     }
     if(tagLimit(key)<=0){
+      log.warn(s"tagLimit[${key}]=${tagLimit(key)}")
       getCrawler().setElementAction("skip")
       log.info(s"$element need skip")
     }
@@ -27,8 +28,10 @@ class TagLimitPlugin extends Plugin{
 
   override def afterElementAction(element: UrlElement): Unit ={
     val key=element.toTagPath()
-    tagLimit(key)-=1
-    log.info(s"tagLimit[${key}]=${tagLimit(key)}")
+    if(tagLimit.contains(key)){
+      tagLimit(key)-=1
+      log.info(s"tagLimit[${key}]=${tagLimit(key)}")
+    }
   }
 
 

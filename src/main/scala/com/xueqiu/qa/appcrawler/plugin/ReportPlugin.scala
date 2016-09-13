@@ -43,7 +43,7 @@ class ReportPlugin extends Plugin with Report {
 
 
   override def afterElementAction(element: UrlElement): Unit ={
-    val count=getCrawler().clickedElementsList.length
+    val count=getCrawler().store.clickedElementsList.length
     log.info(s"clickedElementsList size = ${count}")
     val curTime=(System.currentTimeMillis / 1000).toInt
     if(curTime-lastTime>120){
@@ -56,7 +56,7 @@ class ReportPlugin extends Plugin with Report {
   def generateReport(): Unit ={
     saveTestCase(
       getCrawler().store.elements.filter(_._2!=ElementStatus.Skiped),
-      getCrawler().clickedElementsList,
+      getCrawler().store.clickedElementsList,
       getCrawler().conf.resultDir)
     runTestCase()
   }

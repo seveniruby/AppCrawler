@@ -90,7 +90,7 @@ class CrawlerConf{
   )
   /**引导规则. name, value, times三个元素组成*/
   var elementActions = ListBuffer[scala.collection.mutable.Map[String, Any]]()
-  elementActions += mutable.Map("idOrName"->".*seveniruby.*", "action"->"click", "times"->0)
+  elementActions += mutable.Map("xpath"->".*seveniruby.*", "action"->"click", "times"->0)
   var startupActions=ListBuffer[String]()
   startupActions++=List("println(\"startupAction call use scala code\")")
 

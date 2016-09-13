@@ -258,7 +258,7 @@ trait MiniAppium extends CommonLog with WebBrowser{
     log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
   }
 
-  def swipe(direction: String = "default"): Unit = {
+  def swipe(direction: String ): Unit = {
     log.info(s"start swipe ${direction}")
     var startX = 0.0
     var startY = 0.0
@@ -266,51 +266,52 @@ trait MiniAppium extends CommonLog with WebBrowser{
     var endY = 0.0
     direction match {
       case "left" => {
-        startX = 0.8
-        startY = 0.7
-        endX = 0.2
-        endY = 0.7
+        startX = 0.9
+        startY = 0.5
+        endX = 0.1
+        endY = 0.5
       }
       case "right" => {
-        startX = 0.2
+        startX = 0.1
         startY = 0.5
-        endX = 0.8
+        endX = 0.9
         endY = 0.5
       }
       case "up" => {
         startX = 0.5
-        startY = 0.8
+        startY = 0.9
         endX = 0.5
-        endY = 0.2
+        endY = 0.1
       }
       case "down" => {
         startX = 0.5
-        startY = 0.2
+        startY = 0.1
         endX = 0.5
-        endY = 0.8
+        endY = 0.9
       }
       case _ => {
-        startX = 0.8
-        startY = 0.8
-        endX = 0.2
-        endY = 0.2
+        startX = 0.9
+        startY = 0.9
+        endX = 0.1
+        endY = 0.1
       }
     }
-
-
+    swipe(startX, endX, startY, endY)
+    sleep(1)
+  }
+  def swipe(startX: Double =0.9, endX:Double = 0.1, startY:Double=0.9, endY:Double=0.1): Option[_] ={
     retry(driver.swipe(
       (screenWidth * startX).toInt, (screenHeight * startY).toInt,
       (screenWidth * endX).toInt, (screenHeight * endY).toInt, 1000
     )
     )
-    sleep(1)
   }
 
 
   def retry[T](r: => T): Option[T] = {
     Try(r) match {
       case Success(v) => {
-        log.info("success")
+        log.info("retry execute success")
         Some(v)
       }
       case Failure(e) => {
@@ -383,6 +384,18 @@ trait MiniAppium extends CommonLog with WebBrowser{
 
   def hello(action:String, number:Int=0): Unit ={
     println(s"hello ${action} ${number}")
+  }
+
+
+  def tap(x: Int = screenWidth / 2, y: Int = screenHeight / 2): Unit = {
+    log.info("tap")
+    driver.tap(1, x, y, 100)
+    //driver.findElementByXPath("//UIAWindow[@path='/0/2']").click()
+    //new TouchAction(driver).tap(x, y).perform()
+  }
+
+  def tap(element: WebElement): Unit = {
+    driver.tap(1, element, 100)
   }
 
 }

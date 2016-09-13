@@ -15,7 +15,7 @@ class DemoPlugin extends Plugin{
     getCrawler().url=url.split('|').last
     log.info(s"new url=${getCrawler().url}")
     if(getCrawler().url.contains("Browser")){
-      getCrawler().goBack()
+      getCrawler().getBackButton()
     }
   }
 

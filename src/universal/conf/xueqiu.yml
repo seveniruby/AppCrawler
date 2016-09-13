@@ -164,85 +164,85 @@ blackList:
 #特殊元素特殊处理. 用于定制化的处理. 比如需要输入的元素. 默认是点击操作. 非click内容一律表示输入的意思
 elementActions:
 - action: "click"
-  idOrName: "//*[@resource-id='com.xueqiu.android:id/button_login']"
+  xpath: "//*[@resource-id='com.xueqiu.android:id/button_login']"
   times: 1
 - action: "13067754297"
-  idOrName: "//*[@resource-id='com.xueqiu.android:id/login_account']"
+  xpath: "//*[@resource-id='com.xueqiu.android:id/login_account']"
   times: 1
 - action: "xueqiu4297"
-  idOrName: "//*[@resource-id='com.xueqiu.android:id/login_password']"
+  xpath: "//*[@resource-id='com.xueqiu.android:id/login_password']"
   times: 1
 - action: "click"
-  idOrName: "button_next"
+  xpath: "button_next"
   times: 1
 - action: "13067754297"
-  idOrName: "//UIAStaticText[contains(@name, '登录')]"
+  xpath: "//UIAStaticText[contains(@name, '登录')]"
   times: 1
 - action: "13067754297"
-  idOrName: "//UIATextField[contains(@value, '手机')]"
+  xpath: "//UIATextField[contains(@value, '手机')]"
   times: 1
 - action: "xueqiu4297"
-  idOrName: "//UIASecureTextField"
+  xpath: "//UIASecureTextField"
   times: 1
 - action: "click"
-  idOrName: "//UIAButton[contains(@name, '登 录')]"
+  xpath: "//UIAButton[contains(@name, '登 录')]"
   times: 1
 - action: "click"
-  idOrName: ".*立即登录"
+  xpath: ".*立即登录"
   times: 2
 - action: "click"
-  idOrName: "//*[@name='登 录']"
+  xpath: "//*[@name='登 录']"
   times: 2
 - action: "click"
-  idOrName: "//*[@name='登录']"
+  xpath: "//*[@name='登录']"
   times: 2
 - action: "scroll left"
-  idOrName: "专题"
+  xpath: "专题"
   times: 1
 - action: "click"
-  idOrName: "点此.*"
+  xpath: "点此.*"
   times: 0
 - action: "click"
-  idOrName: "取消"
+  xpath: "取消"
   times: 0
 - action: "click"
-  idOrName: "不保存"
+  xpath: "不保存"
   times: 0
 - action: "click"
-  idOrName: "确定"
+  xpath: "确定"
   times: 0
 - action: "click"
-  idOrName: "关闭"
+  xpath: "关闭"
   times: 0
 - action: "click"
-  idOrName: "稍后再说"
+  xpath: "稍后再说"
   times: 0
 - action: "click"
-  idOrName: "Cancel"
+  xpath: "Cancel"
   times: 0
 - action: "click"
-  idOrName: "这里可以.*"
+  xpath: "这里可以.*"
   times: 0
 - action: "click"
-  idOrName: ".*搬到这里.*"
+  xpath: ".*搬到这里.*"
   times: 0
 - action: "click"
-  idOrName: "我要退出"
+  xpath: "我要退出"
   times: 0
 - action: "click"
-  idOrName: "tip_click_position"
+  xpath: "tip_click_position"
   times: 0
 - action: "click"
-  idOrName: "common guide icon ok"
+  xpath: "common guide icon ok"
   times: 0
 - action: "click"
-  idOrName: "icon quotationinformation day"
+  xpath: "icon quotationinformation day"
   times: 1
 - action: "click"
-  idOrName: "icon stock close"
+  xpath: "icon stock close"
   times: 0
 - action: "click"
-  idOrName: "隐藏键盘"
+  xpath: "隐藏键盘"
   times: 0
 #支持简单的scala表达式, MiniAppium是一个全局的Object, 你可以调用他的基本方法实现定制化支持
 #比如Thread.sleep(3000) MiniAppium.send("dddd") MiniAppium.see("//xxxxx").tap() 记得用\"代替"

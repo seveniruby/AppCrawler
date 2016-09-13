@@ -108,6 +108,18 @@ class TestRuntimes extends FunSuite with CommonLog{
 
   }
 
+
+  test("imain with MiniAppium"){
+
+    Runtimes.init()
+    Runtimes.eval("import com.xueqiu.qa.appcrawler.MiniAppium._")
+    Runtimes.eval(
+      """
+        |hello("222")
+        |println(driver)
+      """.stripMargin)
+  }
+
   test("compile plugin"){
     Runtimes.init()
     Runtimes.compile(List("src/universal/plugins/DynamicPlugin.scala"))

@@ -78,9 +78,9 @@ object RichData extends CommonLog {
             log.trace(s"name size too long ${kv._2.size}>20")
             ""
           }
-          else if (kv._1 == "text" && kv._2.size > 50) {
-            log.trace(s"text size too long ${kv._2.size}>20")
-            ""
+          else if (kv._1 == "text" && kv._2.size > 10) {
+            log.trace(s"text size too long ${kv._2.size}>10")
+            s"contains(@text, '${kv._2.split("&")(0).take(10)}')"
           }
           else {
             s"@${kv._1}=" + "\"" + kv._2.replace("\"", "\\\"") + "\""

@@ -49,7 +49,7 @@ trait Report extends CommonLog {
         .replace("\r", "")
       val isPass = ele._2==ElementStatus.Clicked
       val imgIndex = (clickedElementsList.reverse.lastIndexOf(ele._1))
-      val img = imgIndex + s"_${ele._1.toFileName()}.jpg"
+      val img = imgIndex + s"_${ele._1.toFileName()}.mark.jpg"
       (imgIndex, testcase, isPass, img)
     }).sortBy(_._1)
     //把未遍历的放到后面
