@@ -9,7 +9,7 @@ import com.xueqiu.qa.appcrawler.{Plugin, UrlElement}
   */
 class TagLimitPlugin extends Plugin{
   private val tagLimit: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.Map()
-  private var tagLimitMax=10
+  private var tagLimitMax=6
   override def start(): Unit ={
    tagLimitMax=getCrawler().conf.tagLimitMax
   }

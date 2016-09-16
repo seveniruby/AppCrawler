@@ -168,7 +168,7 @@ class Crawler extends CommonLog {
     conf.startupActions.foreach(action => {
       MiniAppium.dsl(action)
       refreshPage()
-      store.setElementClicked(UrlElement(s"${url}-startupActions-${action}", "", "", "", ""))
+      store.setElementClicked(UrlElement(s"${url}", s"startupActions-${action}", "", "", ""))
       store.saveHash(contentHash.last().toString)
       log.info(s"index = ${store.clickedElementsList.size} current =  ${store.clickedElementsList.head.loc}")
       saveDom()
@@ -210,7 +210,7 @@ class Crawler extends CommonLog {
 
 
   def rule(loc: String, action: String, times: Int = 0): Unit = {
-    conf.elementActions.append(mutable.Map(
+    conf.triggerActions.append(mutable.Map(
       "xpath" -> loc,
       "action" -> action,
       "times" -> times))
@@ -528,7 +528,6 @@ class Crawler extends CommonLog {
     log.info(s"currentContentHash=${contentHash.last()} lastContentHash=${contentHash.pre()}")
     if (contentHash.isDiff()) {
       log.info("ui change")
-      saveLog()
     } else {
       log.info("ui not change")
     }
@@ -601,7 +600,7 @@ class Crawler extends CommonLog {
       }
       case _ => {
         log.warn("find back button error")
-        return Some(UrlElement(s"${url}-Back", "", "", "", ""))
+        return Some(UrlElement(s"${url}", "Back", "", "", ""))
       }
     }
   }
@@ -640,13 +639,13 @@ class Crawler extends CommonLog {
     */
   @tailrec final def crawl(): Unit = {
     log.info("crawl next")
-    Thread.sleep(500)
     //刷新页面
     //todo: skip之后可以不用刷新
     if(getElementAction()=="skip"){
       log.info("skip refresh page because last action is skip")
       setElementAction("click")
     }else{
+      Thread.sleep(1000)
       refreshPage()
       store.saveHash(contentHash.last().toString)
       setElementAction("click")
@@ -681,7 +680,7 @@ class Crawler extends CommonLog {
             case Some(e) => {
               log.info(s"found ${e} by first available element")
               nextElement = Some(e)
-              setElementAction("click")
+              setElementAction(getActionFromNormalActions(e))
             }
             case None => {
               log.warn("all elements had be clicked")
@@ -727,6 +726,35 @@ class Crawler extends CommonLog {
       }
     }
     crawl()
+  }
+
+
+  def getActionFromNormalActions(element:UrlElement):String ={
+    val normalActions=conf.triggerActions.filter(_.getOrElse("pri", 1).toString.toInt==0)
+    log.info(s"normal actions size = ${normalActions.size}")
+    normalActions.foreach(r => {
+      val xpath = r("xpath").toString
+      val action = r("action").toString
+
+      val allMap = if (xpath.matches("/.*")) {
+        //支持xpath
+        getAllElements(xpath)
+      } else {
+        //支持正则通配
+        val all = getRuleMatchNodes()
+        (all.filter(_ ("name").toString.matches(xpath)) ++ all.filter(_ ("value").toString.matches(xpath))).distinct
+      }
+
+      allMap.foreach(m=>{
+        val item=getUrlElementByMap(m)
+        if(item==element){
+          return action
+        }else{
+          log.info(s"not find ${item} not equal ${element}")
+        }
+      })
+    })
+    "click"
   }
 
 
@@ -864,6 +892,7 @@ class Crawler extends CommonLog {
     File(s"${conf.resultDir}/clickedList.yml").writeAll(DataObject.toYaml(store.clickedElementsList))
     File(s"${conf.resultDir}/elementList.yml").writeAll(DataObject.toYaml(store.elements))
     File(s"${conf.resultDir}/allElements.yml").writeAll(DataObject.toYaml(allElementsRecord))
+    File(s"${conf.resultDir}/elementStore.yml").writeAll(DataObject.toYaml(store.elementStore))
 
     File(s"${conf.resultDir}/freemind.mm").writeAll(
       elementTree.generateFreeMind(elementTreeList)
@@ -1001,19 +1030,17 @@ class Crawler extends CommonLog {
       }
       case "tap" => {
         saveDom()
-        store.saveHash(contentHash.last().toString)
         saveScreen()
         MiniAppium.tap()
       }
       case "back" => {
         saveDom()
-        store.saveHash(contentHash.last().toString)
         saveScreen()
         back()
+        saveLog()
       }
       case event if event.matches(".*\\(.*\\).*") => {
         saveDom()
-        store.saveHash(contentHash.last().toString)
         saveScreen()
         Runtimes.eval(event)
       }
@@ -1024,7 +1051,6 @@ class Crawler extends CommonLog {
         findElementByUrlElement(element) match {
           case Some(webElement) => {
             saveDom()
-            store.saveHash(contentHash.last().toString)
             saveScreen(false, webElement)
             MiniAppium.retry(
               if (str == "click") {
@@ -1059,7 +1085,6 @@ class Crawler extends CommonLog {
     } else {
       log.warn("you should define you back button in the conf file")
     }
-
   }
 
   /**
@@ -1075,7 +1100,7 @@ class Crawler extends CommonLog {
   def getElementByElementActions(): Option[UrlElement] = {
     log.trace("rule match start")
     //先判断是否在期望的界面里. 提升速度
-    conf.elementActions.foreach(r => {
+    conf.triggerActions.filter(_.getOrElse("pri", 1).toString.toInt==1).foreach(r => {
       val xpath = r("xpath").toString
       val action = r("action").toString
       val times = r("times").toString.toInt
@@ -1092,7 +1117,7 @@ class Crawler extends CommonLog {
         case Some(e) => {
           if (times == 1) {
             log.info(s"remove rule ${r}")
-            conf.elementActions -= r
+            conf.triggerActions -= r
           }
           r("times") = times - 1
           setElementAction(action)

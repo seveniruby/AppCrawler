@@ -31,10 +31,10 @@ class DataRecord extends CommonLog {
     }
   }
   def pre(): Any ={
-    record.takeRight(2).head
+    record.takeRight(2).head._2
   }
   def last(): Any ={
-    record.last
+    record.last._2
   }
   def pop(): Unit ={
     record.remove(record.size-1)

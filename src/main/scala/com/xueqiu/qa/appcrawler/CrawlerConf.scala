@@ -89,8 +89,8 @@ class CrawlerConf{
     ".*[0-9]{2}.*"
   )
   /**引导规则. name, value, times三个元素组成*/
-  var elementActions = ListBuffer[scala.collection.mutable.Map[String, Any]]()
-  elementActions += mutable.Map("xpath"->".*seveniruby.*", "action"->"click", "times"->0)
+  var triggerActions = ListBuffer[scala.collection.mutable.Map[String, Any]]()
+  triggerActions += mutable.Map("xpath"->".*seveniruby.*", "action"->"click", "times"->0, "pri"->1)
   var startupActions=ListBuffer[String]()
   startupActions++=List("println(\"startupAction call use scala code\")")
 

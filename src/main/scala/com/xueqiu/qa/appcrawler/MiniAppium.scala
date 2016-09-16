@@ -357,7 +357,7 @@ trait MiniAppium extends CommonLog with WebBrowser{
         log.info("scale the origin image")
         graph.drawImage(img, 0, 0, screenWidth, screenHeight, null)
       }
-      graph.setStroke(new BasicStroke(2))
+      graph.setStroke(new BasicStroke(5))
       graph.setColor(Color.RED)
       graph.drawRect(x, y, w, h)
       graph.dispose()

@@ -27,15 +27,17 @@ class UrlElementStore extends CommonLog {
   def saveHash(hash: String = ""): Unit = {
     val head = clickedElementsList.head
     if(elementStore(head.toString).reqHash.isEmpty){
+      log.info(s"save reqHash to ${clickedElementsList.size-1}")
       elementStore(head.toString).reqHash=hash
     }else if(elementStore(head.toString).resHash.isEmpty){
+      log.info(s"save resHash to ${clickedElementsList.size-1}")
       elementStore(head.toString).resHash=hash
     }
   }
 
   def isDomDiff(): Boolean = {
     val head = clickedElementsList.head
-    elementStore(head.toString).reqHash==elementStore(head.toString).resHash
+    elementStore(head.toString).reqHash!=elementStore(head.toString).resHash
   }
 
   def saveElement(e: UrlElement): Unit = {
