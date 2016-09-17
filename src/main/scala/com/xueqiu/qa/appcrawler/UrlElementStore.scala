@@ -1,5 +1,6 @@
 package com.xueqiu.qa.appcrawler
 
+import scala.beans.BeanProperty
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
@@ -8,9 +9,11 @@ import scala.collection.mutable.ListBuffer
   */
 class UrlElementStore {
   //todo: 用枚举替代  0表示未遍历 1表示已遍历 -1表示跳过
+  @BeanProperty
   val elementStore = scala.collection.mutable.Map[String, ElementInfo]()
   /** 点击顺序, 留作画图用 */
-  val clickedElementsList = mutable.Stack[UrlElement]()
+  @BeanProperty
+  val clickedElementsList = ListBuffer[UrlElement]()
 
   def setElementSkip(element: UrlElement): Unit = {
     if(elementStore.contains(element.toString)==false){
@@ -25,9 +28,9 @@ class UrlElementStore {
       elementStore(element.toString)=ElementInfo()
       elementStore(element.toString).element=element
     }
-    clickedElementsList.push(element)
+    clickedElementsList.append(element)
     elementStore(element.toString).action=ElementStatus.Clicked
-    elementStore(element.toString).clickedIndex=clickedElementsList.reverse.lastIndexOf(element)
+    elementStore(element.toString).clickedIndex=clickedElementsList.indexOf(element)
   }
 
   def saveElement(element: UrlElement): Unit = {
@@ -42,34 +45,34 @@ class UrlElementStore {
   }
 
   def saveHash(hash: String = ""): Unit = {
-    val head = clickedElementsList.head
+    val head = clickedElementsList.last
     if(elementStore(head.toString).reqHash.isEmpty){
       AppCrawler.log.info(s"save reqHash to ${clickedElementsList.size-1}")
       elementStore(head.toString).reqHash=hash
     }
 
     if(clickedElementsList.size>1) {
-      val pre = clickedElementsList(1)
+      val pre = clickedElementsList.takeRight(2).head
       elementStore(pre.toString).resHash = hash
     }
   }
 
   def saveImg(imgName:String): Unit = {
-    val head = clickedElementsList.head
+    val head = clickedElementsList.last
     if (elementStore(head.toString).reqImg.isEmpty) {
       AppCrawler.log.info(s"save reqImg ${imgName} to ${clickedElementsList.size - 1}")
       elementStore(head.toString).reqImg = imgName
     }
     if(clickedElementsList.size>1) {
-      val pre = clickedElementsList(1)
+      val pre = clickedElementsList.takeRight(2).head
       elementStore(pre.toString).resImg = imgName
     }
   }
 
 
-  def isDomDiff(): Boolean = {
-    val head = clickedElementsList.head
-    elementStore(head.toString).reqHash!=elementStore(head.toString).resHash
+  def isDiff(): Boolean = {
+    val currentElement = clickedElementsList.last
+    elementStore(currentElement.toString).reqHash!=elementStore(currentElement.toString).resHash
   }
 
 
@@ -84,7 +87,7 @@ class UrlElementStore {
 
   def isSkiped(ele: UrlElement): Boolean = {
     if (elementStore.contains(ele.toString)) {
-      elementStore(ele.toString) == ElementStatus.Skiped
+      elementStore(ele.toString).action == ElementStatus.Skiped
     } else {
       AppCrawler.log.trace(s"element=${ele.toLoc()} first show, need click")
       false

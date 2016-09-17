@@ -152,6 +152,7 @@ class Crawler extends CommonLog {
     GA.log("crawler")
     runStartupScript()
     refreshPage()
+    conf.appWhiteList.append(appNameRecord.last().toString)
     crawl()
     //爬虫结束
     pluginClasses.foreach(p => p.stop())
@@ -165,7 +166,7 @@ class Crawler extends CommonLog {
       refreshPage()
       store.setElementClicked(UrlElement(s"${currentUrl}", s"startupActions-${action}", s"${store.clickedElementsList.size}", "", ""))
       store.saveHash(contentHash.last().toString)
-      log.info(s"index = ${store.clickedElementsList.size} current =  ${store.clickedElementsList.head.loc}")
+      log.info(s"index = ${store.clickedElementsList.size} current =  ${store.clickedElementsList.last.loc}")
       saveDom()
       saveScreen(true)
       Thread.sleep(1000)
@@ -317,7 +318,7 @@ class Crawler extends CommonLog {
     }
 
     //跳到了其他app
-    if (appNameRecord.isDiff() && conf.appWhiteList.forall(appNameRecord.last()!=_)) {
+    if (conf.appWhiteList.forall(appNameRecord.last().toString!=_)) {
       log.warn(s"not in app white list ${conf.appWhiteList}")
       log.warn(s"jump to other app appName=${appNameRecord.last()} lastAppName=${appNameRecord.pre()}")
       setElementAction("backApp")
@@ -693,7 +694,7 @@ class Crawler extends CommonLog {
         log.info("need to back")
         getElementAction() match {
           case "backApp" =>
-            nextElement = Some(UrlElement(s"${currentUrl}-backApp", s"${appNameRecord.last()}", s"${store.clickedElementsList.size}", "", ""))
+            nextElement = Some(UrlElement(s"${currentUrl}", s"backApp-${appNameRecord.last()}", s"${store.clickedElementsList.size}", "", ""))
           case "exit" =>
             nextElement=Some(UrlElement(s"${currentUrl}-CrawlStop", "", "", "", ""))
           case _ =>
@@ -741,7 +742,7 @@ class Crawler extends CommonLog {
 
         log.info(s"current element = $element action = ${getElementAction()}")
         if (getElementAction() == "skip") {
-          store.clickedElementsList.pop()
+          store.clickedElementsList.remove(store.clickedElementsList.size-1)
           store.setElementSkip(element)
         } else {
           //处理控件
@@ -915,22 +916,15 @@ class Crawler extends CommonLog {
   def saveLog(): Unit = {
     //记录点击log
     var index = 0
-    File(s"${conf.resultDir}/clickedList.log").writeAll(store.clickedElementsList.reverse.map(n => {
-      index += 1
-      List(index, n.toFileName, n.toLoc, n.toTagPath).mkString("\n")
-    }).mkString("\n"))
-
-    File(s"${conf.resultDir}/clickedList.yml").writeAll(DataObject.toYaml(store.clickedElementsList))
-    File(s"${conf.resultDir}/elementStore.yml").writeAll(DataObject.toYaml(store.elementStore))
-
+    File(s"${conf.resultDir}/elements.yml").writeAll(DataObject.toYaml(store))
     File(s"${conf.resultDir}/freemind.mm").writeAll(
       elementTree.generateFreeMind(elementTreeList)
     )
   }
 
-  def getBasePathName(element: UrlElement = store.clickedElementsList.head): String = {
+  def getBasePathName(element: UrlElement = store.clickedElementsList.last): String = {
     //序号_文件名
-    s"${conf.resultDir}/${store.clickedElementsList.reverse.lastIndexOf(element)}_" + element.toFileName()
+    s"${conf.resultDir}/${store.clickedElementsList.indexOf(element)}_" + element.toFileName()
   }
 
   def saveDom(): Unit = {
@@ -1014,12 +1008,12 @@ class Crawler extends CommonLog {
       Thread.sleep(100)
       log.info("start screenshot")
       retryThread() {
-        val imgFile = if (store.isDomDiff()) {
+        val imgFile = if (store.isDiff()) {
           log.info("ui change screenshot again")
           MiniAppium.screenshot()
         } else {
           log.info("ui no change")
-          val preImageFileName = getBasePathName(store.clickedElementsList(1)) + ".jpg.origin"
+          val preImageFileName = getBasePathName(store.clickedElementsList.last) + ".jpg.origin"
           val preImageFile = new java.io.File(preImageFileName)
           if (preImageFile.exists()) {
             log.info(s"copy from pre image file ${preImageFileName}")

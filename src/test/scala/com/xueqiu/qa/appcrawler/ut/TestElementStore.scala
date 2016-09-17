@@ -1,14 +1,12 @@
 package com.xueqiu.qa.appcrawler.ut
 
 import com.xueqiu.qa.appcrawler._
-import org.scalatest.FunSuite
-
-import scala.collection.mutable.ListBuffer
+import org.scalatest.{Matchers, FunSuite}
 
 /**
   * Created by seveniruby on 16/9/17.
   */
-class TestElementStore extends FunSuite with CommonLog{
+class TestElementStore extends FunSuite with Matchers with CommonLog{
   test("save to yaml"){
     val store=new UrlElementStore
 
@@ -28,13 +26,18 @@ class TestElementStore extends FunSuite with CommonLog{
       element_2.toString->info_2
     )
 
-    store.clickedElementsList.push(element_2)
+    store.clickedElementsList.append(element_2)
 
     log.info(store)
     val str=DataObject.toYaml(store)
     log.info(str)
-    val store2=DataObject.fromYaml(str)
+    val store2=DataObject.fromYaml[UrlElementStore](str)
     log.info(store2)
+    val str2=DataObject.toYaml(store2)
+
+
+    str should be equals str2
+    store should be equals store2
 
   }
 

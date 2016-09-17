@@ -1,6 +1,6 @@
 package com.xueqiu.qa.appcrawler
 
-import com.fasterxml.jackson.databind.{SerializationFeature, ObjectMapper}
+import com.fasterxml.jackson.databind.{DeserializationFeature, SerializationFeature, ObjectMapper}
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
@@ -23,6 +23,7 @@ trait DataObject {
   def fromYaml[T: ClassTag](data:String): T ={
     val mapper = new ObjectMapper(new YAMLFactory())
     mapper.registerModule(DefaultScalaModule)
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     mapper.readValue(data, classTag[T].runtimeClass.asInstanceOf[Class[T]])
   }
 
