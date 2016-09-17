@@ -29,6 +29,10 @@ trait Report extends CommonLog {
       //todo: 基于规则的多次点击事件只会被保存到一个状态中. 需要区分
       val code = genTestCase(index, suite, store.elementStore.filter(x =>x._2.element.url == suite))
       val fileName = s"${path}/tmp/AppCrawler_${suites.indexOf(suite)}.scala"
+      val parentDir=new java.io.File(new java.io.File(fileName).getParent)
+      if(parentDir.exists()==false){
+        parentDir.mkdir()
+      }
       File(fileName)(Codec.UTF8).writeAll(code)
       //File(fileName).writeAll(code)
     })
@@ -102,5 +106,6 @@ trait Report extends CommonLog {
     }
   }
 
-
 }
+
+object Report extends Report

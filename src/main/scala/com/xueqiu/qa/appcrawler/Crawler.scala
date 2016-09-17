@@ -730,7 +730,7 @@ class Crawler extends CommonLog {
         //找到了要点击的元素或者其他的状态标记比如back swipe
         store.setElementClicked(element)
         store.saveHash(contentHash.last().toString)
-        store.saveImg(getBasePathName()+".mark.jpg")
+        store.saveImg(getBasePathName()+".ps.jpg")
 
         //加载插件分析
         if (skipBeforeElementAction == true) {
@@ -998,8 +998,8 @@ class Crawler extends CommonLog {
 
   def saveScreen(force: Boolean = false, element: WebElement = null): Unit = {
     //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
-    val markPath = getBasePathName() + ".mark.jpg"
-    val originPath=getBasePathName() + ".jpg.origin"
+    val markPath = getBasePathName() + ".ps.jpg"
+    val originPath=getBasePathName() + ".ori.jpg"
     val markImageFile = new java.io.File(markPath)
     if (pluginClasses.map(p => p.screenshot(markPath)).contains(true)) {
       return
@@ -1013,7 +1013,7 @@ class Crawler extends CommonLog {
           MiniAppium.screenshot()
         } else {
           log.info("ui no change")
-          val preImageFileName = getBasePathName(store.clickedElementsList.last) + ".jpg.origin"
+          val preImageFileName = getBasePathName(store.clickedElementsList.last) + ".ori.jpg"
           val preImageFile = new java.io.File(preImageFileName)
           if (preImageFile.exists()) {
             log.info(s"copy from pre image file ${preImageFileName}")

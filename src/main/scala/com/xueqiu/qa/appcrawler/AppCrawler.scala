@@ -7,6 +7,8 @@ import java.nio.charset.Charset
 import org.apache.log4j.Level
 import org.scalatest.ConfigMap
 
+import scala.io.Source
+
 /**
   * Created by seveniruby on 16/4/24.
   */
@@ -23,7 +25,7 @@ object AppCrawler extends CommonLog{
                            appium:String = "",
                            resultDir: String = "",
                            maxTime:Int = 0,
-                           report:Boolean=false,
+                           report:String="",
                            capability: Map[String, String] = Map[String, String]()
                          )
     def sbt(args: Seq[String]): Unit = {
@@ -90,8 +92,8 @@ object AppCrawler extends CommonLog{
       opt[Map[String, String]]("capability") valueName ("k1=v1,k2=v2...") action { (x, c) =>
         c.copy(capability = x)
       } text ("appium capability选项, 这个参数会覆盖-c指定的配置模板参数, 用于在模板配置之上的参数微调")
-      opt[Unit]('r', "report") action { (_, c)=>
-        c.copy(report = true)
+      opt[String]('r', "report") action { (x, c)=>
+        c.copy(report = x)
       } text("输出html和xml报告")
       opt[Unit]("verbose").abbr("vv") action { (_, c) =>
         c.copy(verbose = true)
@@ -101,11 +103,11 @@ object AppCrawler extends CommonLog{
           |示例
           |appcrawler -a xueqiu.apk
           |appcrawler -a xueqiu.apk --capability noReset=true
-          |appcrawler -c conf/xueqiu.json
+          |appcrawler -c conf/xueqiu.json -p android -o result/
           |appcrawler -c xueqiu.json --capability udid=[你的udid] -a Snowball.app
           |appcrawler -c xueqiu.json -a Snowball.app -u 4730
           |appcrawler -c xueqiu.json -a Snowball.app -u http://127.0.0.1:4730/wd/hub
-          |appcrawler --report -o result/
+          |appcrawler --report result/
         """.stripMargin)
     }
     // parser.parse returns Option[C]
@@ -219,7 +221,13 @@ object AppCrawler extends CommonLog{
         log.trace(crawlerConf.toJson)
         log.trace("yaml config")
         log.trace(DataObject.toYaml(crawlerConf))
-        new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf), fullstacks = true)
+        if(config.report!=""){
+          val store=DataObject.fromYaml[UrlElementStore](Source.fromFile(s"${config.report}/elements.yml").mkString)
+          Report.saveTestCase(store, config.report)
+          Report.runTestCase()
+        }else {
+          new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf), fullstacks = true)
+        }
       }
       case None => {}
     }

@@ -65,7 +65,7 @@ class UrlElementStore {
     }
     if(clickedElementsList.size>1) {
       val pre = clickedElementsList.takeRight(2).head
-      elementStore(pre.toString).resImg = imgName
+      elementStore(pre.toString).resImg = imgName.split('.')(0)+".ori.jpg"
     }
   }
 
