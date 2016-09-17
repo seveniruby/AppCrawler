@@ -164,7 +164,8 @@ class Crawler extends CommonLog {
     conf.startupActions.foreach(action => {
       MiniAppium.dsl(action)
       refreshPage()
-      store.setElementClicked(UrlElement(s"${currentUrl}", s"startupActions-${action}", s"${store.clickedElementsList.size}", "", ""))
+      store.setElementClicked(UrlElement(s"${currentUrl}", "", "", "",
+        s"startupActions-${action}-${store.clickedElementsList.size}"))
       store.saveHash(contentHash.last().toString)
       log.info(s"index = ${store.clickedElementsList.size} current =  ${store.clickedElementsList.last.loc}")
       saveDom()
@@ -405,13 +406,13 @@ class Crawler extends CommonLog {
     conf.blackList.filter(_.head == '/').foreach(xpath => {
       log.trace(s"blackList xpath = ${xpath}")
       val temp = getAllElements(xpath).filter(isValid)
-      temp.foreach(log.trace)
+      temp.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
       blackElements ++= temp
     })
     conf.selectedList.foreach(xpath => {
       log.trace(s"selectedList xpath =  ${xpath}")
       val temp = getAllElements(xpath).filter(isValid)
-      temp.foreach(log.trace)
+      temp.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
       selectedElements ++= temp
     })
     selectedElements = selectedElements diff blackElements
@@ -420,16 +421,16 @@ class Crawler extends CommonLog {
     conf.firstList.foreach(xpath => {
       log.trace(s"firstList xpath = ${xpath}")
       val temp = getAllElements(xpath).filter(isValid).intersect(selectedElements)
-      temp.foreach(log.trace)
+      temp.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
       firstElements ++= temp
     })
     log.trace("first elements")
-    firstElements.foreach(log.trace)
+    firstElements.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
 
     conf.lastList.foreach(xpath => {
       log.trace(s"lastList xpath = ${xpath}")
       val temp = getAllElements(xpath).filter(isValid).intersect(selectedElements)
-      temp.foreach(log.trace)
+      temp.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
       lastElements ++= temp
     })
 
@@ -440,7 +441,7 @@ class Crawler extends CommonLog {
     //确保不重, 并保证顺序
     all = (firstElements ++ selectedElements ++ lastElements).distinct
     log.trace("all elements")
-    all.foreach(log.trace)
+    all.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
     log.trace(s"all selected length=${all.length}")
     Some(all)
 
@@ -606,7 +607,8 @@ class Crawler extends CommonLog {
       case _ => {
         log.warn("find back button error")
         setElementAction("back")
-        return Some(UrlElement(s"${currentUrl}", "Back", s"${store.clickedElementsList.size}", "", ""))
+        return Some(UrlElement(s"${currentUrl}", "", "", "",
+          s"Back-${store.clickedElementsList.size}"))
       }
     }
   }
@@ -614,22 +616,23 @@ class Crawler extends CommonLog {
 
   def getAvailableElement(): Seq[UrlElement] = {
     var all = getSelectedElements().getOrElse(List[immutable.Map[String, Any]]())
-    log.info(s"all nodes length=${all.length}")
+    log.info(s"all nodes size=${all.length}")
     //去掉黑名单, 这样rule优先级高于黑名单
     all = all.filter(isBlack(_) == false)
-    log.info(s"all non-black nodes length=${all.length}")
+    log.info(s"all - black size=${all.length}")
     //去掉back菜单
     all = all diff getBackElements()
-    log.info(s"all non-black non-back nodes length=${all.length}")
+    log.info(s"all - back size=${all.length}")
     //把元素转换为Element对象
     var allElements = all.map(getUrlElementByMap(_))
     //获得所有未点击元素
-    log.info(s"all elements length=${allElements.length}")
+    log.info(s"all elements size=${allElements.length}")
 
     //过滤已经被点击过的元素
     allElements = allElements.filter(!store.isClicked(_))
+    log.info(s"all - clicked size=${allElements.size}")
     allElements = allElements.filter(!store.isSkiped(_))
-    log.info(s"fresh elements length=${allElements.length}")
+    log.info(s"fresh elements size=${allElements.length}")
     //记录未被点击的元素
     allElements.foreach(e => {
       store.saveElement(e)
@@ -644,7 +647,7 @@ class Crawler extends CommonLog {
   @tailrec final def crawl(): Unit = {
     log.info("crawl next")
     //刷新页面
-    var isRefreshSuccess=false
+    var isRefreshSuccess=true
     var skipBeforeElementAction=true
     //是否需要退出或者后退, 得到要做的动作
     var nextElement: Option[UrlElement] = None
@@ -654,7 +657,7 @@ class Crawler extends CommonLog {
       log.info("skip refresh page because last action is skip")
       setElementAction("click")
     }else{
-      Thread.sleep(1000)
+      Thread.sleep(200)
       isRefreshSuccess=refreshPage()
       setElementAction("click")
     }
@@ -669,7 +672,8 @@ class Crawler extends CommonLog {
     //页面刷新失败自动后退
     if(nextElement==None) {
       if (isRefreshSuccess == false) {
-        nextElement=Some(UrlElement(s"${currentUrl}", "Back", s"${store.clickedElementsList.size}", "", ""))
+        nextElement=Some(UrlElement(s"${currentUrl}", "", "", "",
+          s"Back-${store.clickedElementsList.size}"))
         setElementAction("back")
       }else{
         log.info("refresh success")
@@ -694,9 +698,10 @@ class Crawler extends CommonLog {
         log.info("need to back")
         getElementAction() match {
           case "backApp" =>
-            nextElement = Some(UrlElement(s"${currentUrl}", s"backApp-${appNameRecord.last()}", s"${store.clickedElementsList.size}", "", ""))
+            nextElement = Some(UrlElement(s"${currentUrl}", "", "", "",
+              s"backApp-${appNameRecord.last()}-${store.clickedElementsList.size}"))
           case "exit" =>
-            nextElement=Some(UrlElement(s"${currentUrl}-CrawlStop", "", "", "", ""))
+            nextElement=Some(UrlElement(s"${currentUrl}-CrawlStop", "", "", "", "CrawlStop"))
           case _ =>
             nextElement = getBackButton()
         }

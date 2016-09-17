@@ -58,7 +58,13 @@ trait Report extends CommonLog {
     val sortedElements=elementStore.map(_._2).toList.sortBy(_.clickedIndex)
 
     //把未遍历的放到后面
-    (sortedElements.filter(_.action==ElementStatus.Clicked) ++ sortedElements.filter(_.action==ElementStatus.Skiped)).foreach(ele => {
+    val selected=if(Report.showCancel){
+      sortedElements.filter(_.action==ElementStatus.Clicked) ++ sortedElements.filter(_.action==ElementStatus.Skiped)
+    }else{
+      sortedElements.filter(_.action==ElementStatus.Clicked)
+    }
+    log.info(s"selected size = ${selected.size}")
+    selected.foreach(ele => {
       val testcase = ele.element.loc.replace("\\", "\\\\")
         .replace("\"", "\\\"")
         .replace("\n", "")
@@ -108,4 +114,6 @@ trait Report extends CommonLog {
 
 }
 
-object Report extends Report
+object Report extends Report{
+  var showCancel=false
+}
