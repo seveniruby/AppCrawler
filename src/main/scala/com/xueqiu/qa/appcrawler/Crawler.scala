@@ -1018,7 +1018,7 @@ class Crawler extends CommonLog {
           MiniAppium.screenshot()
         } else {
           log.info("ui no change")
-          val preImageFileName = getBasePathName(store.clickedElementsList.last) + ".ori.jpg"
+          val preImageFileName = getBasePathName(store.clickedElementsList.takeRight(2).head) + ".ori.jpg"
           val preImageFile = new java.io.File(preImageFileName)
           if (preImageFile.exists()) {
             log.info(s"copy from pre image file ${preImageFileName}")

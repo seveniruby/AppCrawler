@@ -216,6 +216,9 @@ object AppCrawler extends CommonLog{
         log.info(s"result directory = ${crawlerConf.resultDir}")
 
         Report.showCancel=crawlerConf.showCancel
+        if(crawlerConf.reportTitle.nonEmpty){
+          Report.title=crawlerConf.reportTitle
+        }
 
         setGlobalEncoding()
 

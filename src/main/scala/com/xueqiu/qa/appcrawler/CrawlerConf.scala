@@ -21,6 +21,7 @@ class CrawlerConf{
   var logLevel="TRACE"
   /**是否截图*/
   var saveScreen=true
+  var reportTitle=""
   var screenshotTimeout=20
   var currentDriver="Android"
   var tagLimitMax=6

@@ -4,7 +4,7 @@ import org.scalatest.tools.Runner
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-import scala.io.Codec
+import scala.io.{Source, Codec}
 import scala.reflect.io.File
 
 /**
@@ -110,10 +110,19 @@ trait Report extends CommonLog {
       Runner.run(cmdArgs)
       Runtimes.reset
     }
+    changeTitle
+  }
+
+  def changeTitle(): Unit ={
+    val originTitle="ScalaTest Results"
+    val indexFile=reportPath+"/index.html"
+    val newContent=Source.fromFile(indexFile).mkString.replace(originTitle, Report.title)
+    scala.reflect.io.File(indexFile).writeAll(newContent)
   }
 
 }
 
 object Report extends Report{
   var showCancel=false
+  var title="AppCrawler"
 }
