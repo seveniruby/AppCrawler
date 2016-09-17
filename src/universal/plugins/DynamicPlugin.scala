@@ -13,7 +13,7 @@ class DynamicPlugin extends Plugin{
   }
   //当进入新页面会回调此接口
   override def afterUrlRefresh(url:String): Unit ={
-    log.info(s"url=${getCrawler().url}")
+    log.info(s"url=${getCrawler().currentUrl}")
   }
 
 }

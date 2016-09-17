@@ -1,6 +1,6 @@
 package com.xueqiu.qa.appcrawler.ut
 
-import com.xueqiu.qa.appcrawler.{ElementStatus, Crawler, UrlElement, CommonLog}
+import com.xueqiu.qa.appcrawler._
 import com.xueqiu.qa.appcrawler.plugin.ReportPlugin
 import org.scalatest.FunSuite
 import org.scalatest.tools.Runner
@@ -13,14 +13,23 @@ class TestReportPlugin extends FunSuite with CommonLog{
     val report=new ReportPlugin()
     val crawler=new Crawler()
     report.setCrawer(crawler)
-    val elements=List(
-      UrlElement("a", "b", "c", "d", "e")->ElementStatus.Clicked,
-      UrlElement("a", "b", "c", "d", "e")->ElementStatus.Clicked,
-      UrlElement("a", "b", "c", "d", "e2")->ElementStatus.Clicked,
-      UrlElement("aa", "b", "c", "d", "e3")->ElementStatus.Ready
 
+    val element_1=UrlElement("a", "b", "c", "d", "e")
+    val info_1=new ElementInfo()
+    info_1.element=element_1
+    info_1.action=ElementStatus.Skiped
+
+
+    val element_2=UrlElement("aa", "bb", "cc", "dd", "ee")
+    val info_2=new ElementInfo()
+    info_2.element=element_2
+    info_2.action=ElementStatus.Clicked
+
+    val elementsStore=scala.collection.mutable.Map(
+      element_1.toString->info_1,
+      element_2.toString->info_2
     )
-    val code=report.genTestCase(1, "demo", elements)
+    val code=report.genTestCase(1, "demo", elementsStore)
     log.info(code)
 
   }

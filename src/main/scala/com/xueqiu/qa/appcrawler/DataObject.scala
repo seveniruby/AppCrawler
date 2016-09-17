@@ -1,6 +1,6 @@
 package com.xueqiu.qa.appcrawler
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.{SerializationFeature, ObjectMapper}
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
@@ -16,6 +16,7 @@ trait DataObject {
   def toYaml(data:Any): String ={
     val mapper = new ObjectMapper(new YAMLFactory())
     mapper.registerModule(DefaultScalaModule)
+    mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data)
   }
 
@@ -29,6 +30,7 @@ trait DataObject {
   def toJson(data:Any): String ={
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
+    mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data)
   }
 

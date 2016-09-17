@@ -15,7 +15,7 @@ trait Report extends CommonLog {
   var testcaseDir = ""
   var clickedElementsList = mutable.Stack[UrlElement]()
 
-  def saveTestCase(elements: scala.collection.mutable.Map[UrlElement, ElementStatus.Value], clickedElementsList: mutable.Stack[UrlElement], resultDir: String): Unit = {
+  def saveTestCase(store: UrlElementStore, resultDir: String): Unit = {
     log.info("save testcase")
     reportPath = resultDir
     testcaseDir = reportPath + "/tmp/"
@@ -23,55 +23,47 @@ trait Report extends CommonLog {
     //为了保持独立使用
     val path = new java.io.File(resultDir).getCanonicalPath
 
-    val suites = elements.map(x => x._1.url).toList.distinct
+    val suites = store.elementStore.map(x => x._2.element.url).toList.distinct
     suites.foreach(suite => {
       val index = suites.indexOf(suite)
-      val code = genTestCase(index, suite, elements.filter(x => x._1.url == suite).toList)
+      //todo: 基于规则的多次点击事件只会被保存到一个状态中. 需要区分
+      val code = genTestCase(index, suite, store.elementStore.filter(x =>x._2.element.url == suite))
       val fileName = s"${path}/tmp/AppCrawler_${suites.indexOf(suite)}.scala"
       File(fileName)(Codec.UTF8).writeAll(code)
       //File(fileName).writeAll(code)
     })
   }
 
-  def genTestCase(index: Int, suite: String, elements: List[(UrlElement, ElementStatus.Value)]): String = {
+
+  def genImg(elementInfo: ElementInfo): String ={
+    if (elementInfo.action==ElementStatus.Clicked) {
+      s"""
+         |    markup("<img src='${elementInfo.reqImg}' width='400' /><br></br><p>after clicked</p><img src='${elementInfo.resImg}' width='400' />")
+         |""".stripMargin}
+    else {
+      """
+        |    cancel("never access this element 此控件未遍历")
+      """.stripMargin
+    }
+
+  }
+  def genTestCase(index: Int, suite: String, elementStore: scala.collection.mutable.Map[String, ElementInfo]): String = {
 
     val codeTestCase = new StringBuilder
-    //判断有无xpath重叠的元素, 这样会导致生成的测试用例因为重名出问题
-    val locs = elements.map(_._1.loc)
-    if (locs.distinct.size != locs.size) {
-      log.warn("duplicate element")
-      elements.foreach(log.warn)
-    }
-    val sortedElements=elements.map(ele => {
-      val testcase = ele._1.loc.replace("\\", "\\\\")
+
+    val sortedElements=elementStore.map(_._2).toList.sortBy(_.clickedIndex)
+
+    //把未遍历的放到后面
+    (sortedElements.filter(_.action==ElementStatus.Clicked) ++ sortedElements.filter(_.action==ElementStatus.Skiped)).foreach(ele => {
+      val testcase = ele.element.loc.replace("\\", "\\\\")
         .replace("\"", "\\\"")
         .replace("\n", "")
         .replace("\r", "")
-      val isPass = ele._2==ElementStatus.Clicked
-      val imgIndex = (clickedElementsList.reverse.lastIndexOf(ele._1))
-      val img = imgIndex + s"_${ele._1.toFileName()}.mark.jpg"
-      (imgIndex, testcase, isPass, img)
-    }).sortBy(_._1)
-    //把未遍历的放到后面
-    (sortedElements.filter(_._1 != -1) ++ sortedElements.filter(_._1 == -1)).foreach(ele => {
-      val imgIndex = ele._1
-      val testcase = ele._2
-      val isPass = ele._3
-      val img = ele._4
       //换行会导致scala编译报错.
       codeTestCase.append(
         s"""
-           |  test("clickedIndex=${imgIndex} xpath=${testcase}"){
-           |    ${
-          if (isPass) {s"""markup("<img src='${img}' width='400' />")"""} else {
-            ""
-          }
-        }
-           |    if(true==${isPass}){
-           |
-           |    }else{
-           |      cancel("never access this element 此控件未遍历")
-           |    }
+           |  test("clickedIndex=${ele.clickedIndex} xpath=${testcase}"){
+           |    ${genImg(ele)}
            |  }
         """.stripMargin)
     })

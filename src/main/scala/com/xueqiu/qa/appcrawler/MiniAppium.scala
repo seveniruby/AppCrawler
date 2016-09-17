@@ -398,6 +398,16 @@ trait MiniAppium extends CommonLog with WebBrowser{
     driver.tap(1, element, 100)
   }
 
+  def back(): Unit ={
+    driver.navigate().back()
+  }
+  def backApp(): Unit ={
+    sleep(10)
+    event(AndroidKeyCode.BACK)
+    sleep(2)
+    event(AndroidKeyCode.ENTER)
+  }
+
 }
 
 object MiniAppium extends MiniAppium

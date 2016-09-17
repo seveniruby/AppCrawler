@@ -44,9 +44,6 @@ class IOSCrawler extends Crawler {
     */
   override def getUrl(): String = {
     val superUrl=super.getUrl()
-    appName=getAppName()
-    log.info(s"appName = ${appName}")
-    appNameRecord.append(appName)
 
     log.trace(getAllElements("//UIAApplication").head)
     val title=getAllElements("//UIANavigationBar").map(_.getOrElse("name", "").toString).mkString("")

@@ -6,61 +6,87 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by seveniruby on 16/9/8.
   */
-class UrlElementStore extends CommonLog {
+class UrlElementStore {
   //todo: 用枚举替代  0表示未遍历 1表示已遍历 -1表示跳过
-  val elements: scala.collection.mutable.Map[UrlElement, ElementStatus.Value] = scala.collection.mutable.Map()
   val elementStore = scala.collection.mutable.Map[String, ElementInfo]()
   /** 点击顺序, 留作画图用 */
   val clickedElementsList = mutable.Stack[UrlElement]()
 
   def setElementSkip(element: UrlElement): Unit = {
-    elements(element) = ElementStatus.Skiped
+    if(elementStore.contains(element.toString)==false){
+      elementStore(element.toString)=ElementInfo()
+      elementStore(element.toString).element=element
+    }
+    elementStore(element.toString).action=ElementStatus.Skiped
   }
 
   def setElementClicked(element: UrlElement): Unit = {
-    elements(element) = ElementStatus.Clicked
+    if(elementStore.contains(element.toString)==false){
+      elementStore(element.toString)=ElementInfo()
+      elementStore(element.toString).element=element
+    }
     clickedElementsList.push(element)
-    elementStore(element.toString)=ElementInfo()
-    elementStore(element.toString).element=element
+    elementStore(element.toString).action=ElementStatus.Clicked
+    elementStore(element.toString).clickedIndex=clickedElementsList.reverse.lastIndexOf(element)
+  }
+
+  def saveElement(element: UrlElement): Unit = {
+    if(elementStore.contains(element.toString)==false){
+      elementStore(element.toString)=ElementInfo()
+      elementStore(element.toString).element=element
+    }
+    if (elementStore.contains(element.toString) == false) {
+      elementStore(element.toString).action=ElementStatus.Clicked
+      AppCrawler.log.info(s"first found ${element}")
+    }
   }
 
   def saveHash(hash: String = ""): Unit = {
     val head = clickedElementsList.head
     if(elementStore(head.toString).reqHash.isEmpty){
-      log.info(s"save reqHash to ${clickedElementsList.size-1}")
+      AppCrawler.log.info(s"save reqHash to ${clickedElementsList.size-1}")
       elementStore(head.toString).reqHash=hash
-    }else if(elementStore(head.toString).resHash.isEmpty){
-      log.info(s"save resHash to ${clickedElementsList.size-1}")
-      elementStore(head.toString).resHash=hash
+    }
+
+    if(clickedElementsList.size>1) {
+      val pre = clickedElementsList(1)
+      elementStore(pre.toString).resHash = hash
     }
   }
+
+  def saveImg(imgName:String): Unit = {
+    val head = clickedElementsList.head
+    if (elementStore(head.toString).reqImg.isEmpty) {
+      AppCrawler.log.info(s"save reqImg ${imgName} to ${clickedElementsList.size - 1}")
+      elementStore(head.toString).reqImg = imgName
+    }
+    if(clickedElementsList.size>1) {
+      val pre = clickedElementsList(1)
+      elementStore(pre.toString).resImg = imgName
+    }
+  }
+
 
   def isDomDiff(): Boolean = {
     val head = clickedElementsList.head
     elementStore(head.toString).reqHash!=elementStore(head.toString).resHash
   }
 
-  def saveElement(e: UrlElement): Unit = {
-    if (elements.contains(e) == false) {
-      elements(e) = ElementStatus.Ready
-      log.info(s"first found ${e}")
-    }
-  }
 
   def isClicked(ele: UrlElement): Boolean = {
-    if (elements.contains(ele)) {
-      elements(ele) == ElementStatus.Clicked
+    if (elementStore.contains(ele.toString)) {
+      elementStore(ele.toString).action == ElementStatus.Clicked
     } else {
-      log.trace(s"element=${ele.toLoc()} first show, need click")
+      AppCrawler.log.trace(s"element=${ele.toLoc()} first show, need click")
       false
     }
   }
 
   def isSkiped(ele: UrlElement): Boolean = {
-    if (elements.contains(ele)) {
-      elements(ele) == ElementStatus.Skiped
+    if (elementStore.contains(ele.toString)) {
+      elementStore(ele.toString) == ElementStatus.Skiped
     } else {
-      log.trace(s"element=${ele.toLoc()} first show, need click")
+      AppCrawler.log.trace(s"element=${ele.toLoc()} first show, need click")
       false
     }
   }
@@ -77,5 +103,9 @@ case class ElementInfo(
                         var resDom: String = "",
                         var reqHash: String = "",
                         var resHash: String = "",
-                        var element: UrlElement = null
+                        var reqImg:String="",
+                        var resImg:String="",
+                        var clickedIndex: Int = -1,
+                        var action: ElementStatus.Value = ElementStatus.Ready,
+                        var element: UrlElement = UrlElement("Init", "", "", "", "")
                       )

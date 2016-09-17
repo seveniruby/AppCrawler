@@ -42,7 +42,7 @@ class LogPlugin extends Plugin {
     val logMessage = driver.manage().logs.get(logName.toString).filter(Level.ALL).toArray()
     log.info(s"log=${logName} size=${logMessage.size}")
     if (logMessage.size > 0) {
-      val fileName = getCrawler().getLogFileName()+".log"
+      val fileName = getCrawler().getBasePathName()+".log"
       log.info(s"save ${logName} to $fileName")
       File(fileName).writeAll(logMessage.mkString("\n"))
       log.info(s"save ${logName} end")

@@ -38,13 +38,13 @@ class ProxyPlugin extends Plugin {
     log.info("clear har")
     proxy.endHar()
     //创建新的har
-    val harFileName = getCrawler().getLogFileName() + ".har"
+    val harFileName = getCrawler().getBasePathName() + ".har"
     proxy.newHar(harFileName)
   }
 
   override def afterElementAction(element: UrlElement): Unit = {
     log.info("save har")
-    val harFileName = getCrawler().getLogFileName() + ".har"
+    val harFileName = getCrawler().getBasePathName() + ".har"
     val file = new File(harFileName)
     try {
       log.info(proxy.getHar)

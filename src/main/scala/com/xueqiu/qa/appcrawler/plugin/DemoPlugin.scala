@@ -12,9 +12,9 @@ class DemoPlugin extends Plugin{
     log.info("demo com.xueqiu.qa.appcrawler.plugin end")
   }
   override def afterUrlRefresh(url:String): Unit ={
-    getCrawler().url=url.split('|').last
-    log.info(s"new url=${getCrawler().url}")
-    if(getCrawler().url.contains("Browser")){
+    getCrawler().currentUrl=url.split('|').last
+    log.info(s"new url=${getCrawler().currentUrl}")
+    if(getCrawler().currentUrl.contains("Browser")){
       getCrawler().getBackButton()
     }
   }

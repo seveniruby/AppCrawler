@@ -24,6 +24,7 @@ class CrawlerConf{
   var screenshotTimeout=20
   var currentDriver="Android"
   var tagLimitMax=6
+  var showCancel=false
   /**最大运行时间*/
   var maxTime = 3600*3
   /**结果目录*/
@@ -54,6 +55,7 @@ class CrawlerConf{
   var defineUrl=List[String]()
   /**设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度*/
   var baseUrl= List[String]()
+  var appWhiteList=ListBuffer[String]()
   /**默认的最大深度10, 结合baseUrl可很好的控制遍历的范围*/
   var maxDepth=6
   /**是否是前向遍历或者后向遍历*/
@@ -64,6 +66,7 @@ class CrawlerConf{
   var urlBlackList = ListBuffer[String]()
   var urlWhiteList = ListBuffer[String]()
 
+  var defaultBackAction=ListBuffer[String]()
   /**后退按钮标记, 主要用于iOS, xpath*/
   var backButton = ListBuffer[String]()
 

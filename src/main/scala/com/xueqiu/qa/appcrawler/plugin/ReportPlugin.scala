@@ -54,10 +54,7 @@ class ReportPlugin extends Plugin with Report {
   }
 
   def generateReport(): Unit ={
-    saveTestCase(
-      getCrawler().store.elements.filter(_._2!=ElementStatus.Skiped),
-      getCrawler().store.clickedElementsList,
-      getCrawler().conf.resultDir)
+    saveTestCase(getCrawler().store, getCrawler().conf.resultDir)
     runTestCase()
   }
 
