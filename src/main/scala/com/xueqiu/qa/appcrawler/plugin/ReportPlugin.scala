@@ -21,6 +21,8 @@ class ReportPlugin extends Plugin with Report {
     Signal.handle(new Signal("INT"), new SignalHandler() {
       def handle(sig: Signal) {
         log.info("exit by INT")
+        getCrawler().needExit=true
+        getCrawler().stopAll=true
         generateReport()
         log.info("generate report finish")
         println("generate report finish")

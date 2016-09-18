@@ -14,6 +14,7 @@ import scala.io.Source
   */
 object AppCrawler extends CommonLog{
   var logPath=""
+  var crawler=new Crawler
   val startTime=new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
   case class Param(
                            app: File = new File(""),
@@ -231,10 +232,28 @@ object AppCrawler extends CommonLog{
           Report.saveTestCase(store, config.report)
           Report.runTestCase()
         }else {
-          new AppCrawlerTestCase().execute(configMap = ConfigMap("conf" -> crawlerConf), fullstacks = true)
+          crawler=startCrawl(crawlerConf)
         }
       }
       case None => {}
     }
+  }
+
+
+  def startCrawl(conf:CrawlerConf): Crawler ={
+    conf.currentDriver.toLowerCase match {
+      case "android"=>{
+        crawler=new AndroidCrawler
+      }
+      case "ios" => {
+        crawler=new IOSCrawler
+      }
+      case _ =>{
+        log.info("请指定currentDriver为Android或者iOS")
+      }
+    }
+    crawler.loadConf(conf)
+    crawler.start()
+    crawler
   }
 }

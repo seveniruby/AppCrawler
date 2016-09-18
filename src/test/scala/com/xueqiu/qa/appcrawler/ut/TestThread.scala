@@ -1,5 +1,6 @@
 package com.xueqiu.qa.appcrawler.ut
 
+import com.xueqiu.qa.appcrawler.MiniAppium
 import org.scalatest.FunSuite
 
 
@@ -123,6 +124,60 @@ class TestThread extends FunSuite{
     println("after")
 
   }
+
+  test("executor service default"){
+
+    val pre=System.currentTimeMillis()
+    val r=MiniAppium.asyncTask(5){
+      Thread.sleep(100000)
+      "xxxx"
+    }
+    assert(r==None)
+    val now=System.currentTimeMillis()
+    println((now-pre)/1000)
+
+  }
+
+
+  test("executor service expect"){
+
+    val pre=System.currentTimeMillis()
+    val r=MiniAppium.asyncTask(5){
+      Thread.sleep(1000)
+      "xxxx"
+    }
+    assert(r.get=="xxxx")
+    val now=System.currentTimeMillis()
+    println((now-pre)/1000)
+
+  }
+
+  test("executor service Int expect"){
+
+    val pre=System.currentTimeMillis()
+    val r=MiniAppium.asyncTask(5) {
+      Thread.sleep(100000)
+      1
+    }
+    assert(r==None)
+    val now=System.currentTimeMillis()
+    println((now-pre)/1000)
+
+  }
+
+  test("executor service Int"){
+
+    val pre=System.currentTimeMillis()
+    val r=MiniAppium.asyncTask(5){
+      Thread.sleep(1000)
+      1
+    }
+    assert(r.get==1)
+    val now=System.currentTimeMillis()
+    println((now-pre)/1000)
+
+  }
+
 
 
 

@@ -3,6 +3,7 @@ package com.xueqiu.qa.appcrawler
 import java.awt.{BasicStroke, Color}
 import java.io.File
 import java.net.URL
+import java.util.concurrent.{TimeoutException, Callable, TimeUnit, Executors}
 import javax.imageio.ImageIO
 import com.thoughtworks.selenium.webdriven.commands.KeyEvent
 import io.appium.java_client.{MobileCommand, AppiumDriver}
@@ -402,12 +403,43 @@ trait MiniAppium extends CommonLog with WebBrowser{
     driver.navigate().back()
   }
   def backApp(): Unit ={
+    /*
     sleep(10)
     event(AndroidKeyCode.BACK)
     sleep(2)
     event(AndroidKeyCode.ENTER)
+    */
+    driver.launchApp()
   }
 
+  def asyncTask[T](timeout:Int, restart:Boolean=false)(callback: =>T): Option[T] ={
+    Try({
+      val task = Executors.newSingleThreadExecutor().submit(new Callable[T]() {
+        def call(): T = {
+          callback
+        }
+      })
+      task.get(timeout, TimeUnit.SECONDS)
+    }) match {
+      case Success(v) => Some(v)
+      case Failure(e) => {
+        e match {
+          case e:TimeoutException=>{
+            log.error("timeout")
+            if(restart){
+              AppCrawler.crawler.restart()
+            }
+          }
+          case _ =>{
+            log.error("exception")
+            log.error(e.getMessage)
+            log.error(e.getStackTrace.mkString("\n"))
+          }
+        }
+        None
+      }
+    }
+  }
 }
 
 object MiniAppium extends MiniAppium
