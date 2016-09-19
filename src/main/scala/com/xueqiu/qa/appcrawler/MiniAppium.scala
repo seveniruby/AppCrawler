@@ -412,7 +412,7 @@ trait MiniAppium extends CommonLog with WebBrowser{
     driver.launchApp()
   }
 
-  def asyncTask[T](timeout:Int, restart:Boolean=false)(callback: =>T): Option[T] ={
+  def asyncTask[T](timeout:Int=30, restart:Boolean=false)(callback: =>T): Option[T] ={
     Try({
       val task = Executors.newSingleThreadExecutor().submit(new Callable[T]() {
         def call(): T = {
@@ -425,10 +425,7 @@ trait MiniAppium extends CommonLog with WebBrowser{
       case Failure(e) => {
         e match {
           case e:TimeoutException=>{
-            log.error("timeout")
-            if(restart){
-              AppCrawler.crawler.restart()
-            }
+            log.error(s"${timeout} seconds timeout")
           }
           case _ =>{
             log.error("exception")

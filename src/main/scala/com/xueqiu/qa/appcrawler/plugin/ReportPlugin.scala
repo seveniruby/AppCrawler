@@ -15,17 +15,20 @@ import scala.reflect.io.File
   */
 class ReportPlugin extends Plugin with Report {
   var lastTime=0
+  var signalInt=0
 
   override def start(): Unit ={
     log.info("add shutdown hook")
     Signal.handle(new Signal("INT"), new SignalHandler() {
       def handle(sig: Signal) {
         log.info("exit by INT")
+        signalInt+=1
         getCrawler().needExit=true
         getCrawler().stopAll=true
-        generateReport()
-        log.info("generate report finish")
-        println("generate report finish")
+        if(signalInt<2){
+          generateReport()
+          log.info("generate report finish")
+        }
         sys.exit(1)
       }
     })

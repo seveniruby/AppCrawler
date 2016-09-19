@@ -55,11 +55,8 @@ class Crawler extends CommonLog {
   var currentUrl = ""
   val urlStack = mutable.Stack[String]()
 
-  private val elementTree = TreeNode("AppCrawler")
-  private val elementTreeList = ListBuffer[String]()
-
   protected val backDistance = new DataRecord()
-  protected val appNameRecord = new DataRecord()
+  val appNameRecord = new DataRecord()
   protected val contentHash = new DataRecord
 
   /**
@@ -69,7 +66,8 @@ class Crawler extends CommonLog {
     //todo: 需要考虑默认加载一些插件,并防止重复加载
     val defaultPlugins = List(
       "com.xueqiu.qa.appcrawler.plugin.TagLimitPlugin",
-      "com.xueqiu.qa.appcrawler.plugin.ReportPlugin"
+      "com.xueqiu.qa.appcrawler.plugin.ReportPlugin",
+      "com.xueqiu.qa.appcrawler.plugin.FreeMind"
     )
     defaultPlugins.foreach(name => pluginClasses.append(Class.forName(name).newInstance().asInstanceOf[Plugin]))
 
@@ -154,7 +152,6 @@ class Crawler extends CommonLog {
     runStartupScript()
     refreshPage()
     conf.appWhiteList.append(appNameRecord.last().toString)
-    monitorAppium()
     crawl()
     stopAll = true
     //爬虫结束
@@ -165,25 +162,6 @@ class Crawler extends CommonLog {
     log.info("restart appium")
     setupAppium()
     MiniAppium.driver = driver
-  }
-
-  def monitorAppium(): Unit = {
-    val monitor = new Thread(new Runnable {
-      override def run(): Unit = {
-        log.info("monitor thread start")
-        while (stopAll == false) {
-          if (appNameRecord.intervalMS() > 1000 * 60 * 3) {
-            log.error("5 mins passed after last refresh, retry launch app")
-            driver.launchApp()
-          } else {
-
-          }
-          Thread.sleep(1000 * 60)
-        }
-      }
-    })
-
-    monitor.start()
   }
 
   def runStartupScript(): Unit = {
@@ -496,7 +474,7 @@ class Crawler extends CommonLog {
     pageSource = ""
     1 to 3 foreach (i => {
       if (!refreshFinish) {
-        MiniAppium.asyncTask(60, true)(driver.getPageSource) match {
+        MiniAppium.asyncTask(60)(driver.getPageSource) match {
           case Some(v) => {
             log.trace("get page source success")
             pageSource = v
@@ -771,7 +749,6 @@ class Crawler extends CommonLog {
           beforeElementAction(element)
         }
 
-        log.info(s"current element = $element action = ${getElementAction()}")
         if (getElementAction() == "skip") {
           store.clickedElementsList.remove(store.clickedElementsList.size - 1)
           store.setElementSkip(element)
@@ -949,9 +926,6 @@ class Crawler extends CommonLog {
     //记录点击log
     var index = 0
     File(s"${conf.resultDir}/elements.yml").writeAll(DataObject.toYaml(store))
-    File(s"${conf.resultDir}/freemind.mm").writeAll(
-      elementTree.generateFreeMind(elementTreeList)
-    )
   }
 
   def getBasePathName(element: UrlElement = store.clickedElementsList.last): String = {
@@ -1039,7 +1013,7 @@ class Crawler extends CommonLog {
     if (conf.saveScreen || force) {
       Thread.sleep(100)
       log.info("start screenshot")
-      MiniAppium.asyncTask(120) {
+      MiniAppium.asyncTask(60) {
         val imgFile = if (store.isDiff()) {
           log.info("ui change screenshot again")
           MiniAppium.screenshot()
@@ -1072,19 +1046,15 @@ class Crawler extends CommonLog {
   }
 
 
-  def appendClickedList(e: UrlElement): Unit = {
-    elementTreeList.append(e.url)
-    elementTreeList.append(e.loc)
-  }
-
   def doElementAction(element: UrlElement, action: String): Unit = {
-    log.info(s"index = ${store.clickedElementsList.size - 1} action=${action}")
     log.info(s"current element = ${element}")
-    log.info(s"current element url = ${element.url}")
-    log.info(s"current element xpath = ${element.loc}")
-    log.info(s"current element tag path = ${element.toTagPath()}")
-    log.info(s"current element file name = ${element.toFileName()}")
-    log.info(s"current element uri = ${element.toLoc()}")
+    log.info(s"current index = ${store.clickedElementsList.size - 1}")
+    log.info(s"current action = ${action}")
+    log.info(s"current url = ${element.url}")
+    log.info(s"current xpath = ${element.loc}")
+    log.info(s"current tag path = ${element.toTagPath()}")
+    log.info(s"current file name = ${element.toFileName()}")
+    log.info(s"current uri = ${element.toLoc()}")
 
     action match {
       case "tap" => {
@@ -1123,15 +1093,12 @@ class Crawler extends CommonLog {
           case Some(webElement) => {
             saveDom()
             saveScreen(false, webElement)
-            MiniAppium.retry(
+            MiniAppium.asyncTask() {
               if (str == "click") {
                 webElement.click()
               } else {
                 webElement.sendKeys(str)
               }
-            ) match {
-              case Some(v) => appendClickedList(element)
-              case None => {}
             }
           }
           case None => {
