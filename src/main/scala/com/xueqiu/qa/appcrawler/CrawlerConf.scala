@@ -25,7 +25,8 @@ class CrawlerConf{
   var screenshotTimeout=20
   var currentDriver="Android"
   var tagLimitMax=6
-  var tagLimit=scala.collection.mutable.Map[String, Int]()
+  var tagLimit=ListBuffer[Map[String, Any]]()
+  //var tagLimit=scala.collection.mutable.Map[String, Int]()
   var showCancel=false
   /**最大运行时间*/
   var maxTime = 3600*3
@@ -102,6 +103,9 @@ class CrawlerConf{
   var beforeElementAction=ListBuffer[Map[String, String]]()
   var afterElementAction=ListBuffer[String]()
   var afterUrlFinished=ListBuffer[String]()
+  var monkeyEvents=ListBuffer[Int]()
+  var monkeyRunTimeSeconds=30
+
 
   def loadByJson4s(file: String): Option[this.type] ={
     implicit val formats = DefaultFormats+ FieldSerializer[this.type]()

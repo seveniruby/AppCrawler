@@ -20,18 +20,28 @@ libraryDependencies ++= Seq(
   "com.github.scopt" %% "scopt" % "3.5.0",
   "com.brsanthu" % "google-analytics-java" % "1.1.2",
   "org.slf4j" % "slf4j-api" % "1.7.18",
-  "org.slf4j" % "slf4j-log4j12" % "1.7.18",
-  "org.apache.logging.log4j" % "log4j" % "2.5",
+  //"org.slf4j" % "slf4j-log4j12" % "1.7.18",
+  //"org.apache.logging.log4j" % "log4j" % "2.5",
   //"com.android.tools.ddms" % "ddmlib" % "24.5.0",
   //"org.lucee" % "xml-xerces" % "2.11.0",
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.5.4",
   "net.lightbody.bmp" % "browsermob-core" % "2.1.2",
   "org.lucee" % "commons-codec" % "1.10.L001",
   "com.twitter" %% "util-eval" % "6.35.0",
+  "net.sourceforge.tess4j" % "tess4j" % "3.2.1",
   "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 
-enablePlugins(JavaAppPackaging)
+libraryDependencies ~= { _.map(_.exclude("ch.qos.logback", "logback-classic")) }
+
+proguardSettings
+ProguardKeys.proguardVersion in Proguard := "5.2.1"
+inConfig(Proguard)(javaOptions in ProguardKeys.proguard := Seq("-Xmx2g"))
+ProguardKeys.merge in Proguard := true
+ProguardKeys.options in Proguard ++= Seq("-dontnote", "-dontwarn", "-ignorewarnings")
+ProguardKeys.options in Proguard += ProguardOptions.keepMain("com.xueqiu.qa.appcrawler.AppCrawler")
+ProguardKeys.mergeStrategies in Proguard += ProguardMerge.first(".*".r)
+ProguardKeys.mergeStrategies in Proguard += ProguardMerge.discard("META-INF/.*".r)
 
 assemblyJarName in assembly := "appcrawler-"+version.value+".jar"
 test in assembly := {}
@@ -45,7 +55,12 @@ assemblyMergeStrategy in assembly := {
         case _ => MergeStrategy.first
       }
     }
-    case x =>  MergeStrategy.first
+    case x if x.matches("com.xueqiu.qa.appcrawler.plugin.OCR.class")  => MergeStrategy.discard
+    case x if x.matches("com.xueqiu.qa.appcrawler.plugin.AndroidTrace.class")  => MergeStrategy.discard
+    case x =>  {
+      println(x)
+      MergeStrategy.first
+    }
 }
 
 

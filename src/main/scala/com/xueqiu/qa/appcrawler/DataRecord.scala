@@ -30,6 +30,9 @@ class DataRecord extends CommonLog {
       lastRecords.last._2 != lastRecords.head._2
     }
   }
+  def last(count: Int): List[Any] ={
+    record.takeRight(count).map(_._2).toList
+  }
   def pre(): Any ={
     record.takeRight(2).head._2
   }

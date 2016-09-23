@@ -17,8 +17,6 @@ class TestAndroidSimulator extends MiniAppiumSuite {
   test("test android simulator") {
     see("选股策略").tap()
     see("短线黑马").tap()
-    see("最新价").shot()
-    see("累计涨跌幅").shot()
 
   }
 

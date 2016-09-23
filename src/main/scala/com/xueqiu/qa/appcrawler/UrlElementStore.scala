@@ -16,6 +16,7 @@ class UrlElementStore {
   val clickedElementsList = ListBuffer[UrlElement]()
 
   def setElementSkip(element: UrlElement): Unit = {
+    clickedElementsList.remove(clickedElementsList.size - 1)
     if(elementStore.contains(element.toString)==false){
       elementStore(element.toString)=ElementInfo()
       elementStore(element.toString).element=element
@@ -67,6 +68,9 @@ class UrlElementStore {
       val pre = clickedElementsList.takeRight(2).head
       elementStore(pre.toString).resImg = imgName.split('.').dropRight(2).mkString(".")+".ori.jpg"
     }
+  }
+  def getLastResponseImage(): Unit ={
+
   }
 
 

@@ -14,6 +14,7 @@ class FreeMind extends Plugin{
   private val elementTreeList = ListBuffer[String]()
 
   override def stop(): Unit ={
+    log.info(s"genereate freemind file freemind.mm")
     report()
   }
 

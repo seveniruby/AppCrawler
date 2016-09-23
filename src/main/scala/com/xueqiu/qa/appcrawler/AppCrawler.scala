@@ -232,7 +232,7 @@ object AppCrawler extends CommonLog{
           Report.saveTestCase(store, config.report)
           Report.runTestCase()
         }else {
-          crawler=startCrawl(crawlerConf)
+          startCrawl(crawlerConf)
         }
       }
       case None => {}
@@ -240,7 +240,7 @@ object AppCrawler extends CommonLog{
   }
 
 
-  def startCrawl(conf:CrawlerConf): Crawler ={
+  def startCrawl(conf:CrawlerConf): Unit ={
     conf.currentDriver.toLowerCase match {
       case "android"=>{
         crawler=new AndroidCrawler
@@ -254,6 +254,5 @@ object AppCrawler extends CommonLog{
     }
     crawler.loadConf(conf)
     crawler.start()
-    crawler
   }
 }

@@ -43,14 +43,18 @@ class AndroidCrawler extends Crawler {
     //todo:selendroid和appium在这块上不一致. api不一样.  appium不遵从标准. 需要改进
     val screenName = automationName.toLowerCase() match {
       case "appium" => {
-        MiniAppium.retry(driver.asInstanceOf[AndroidDriver[WebElement]].currentActivity()).getOrElse("").split('.').last
+        (MiniAppium.asyncTask() {
+          val name=driver.asInstanceOf[AndroidDriver[WebElement]].currentActivity()
+          log.info(s"get activity name ${name}")
+          name
+        }).getOrElse("").split('.').last
       }
       case "selendroid" => {
         driver.getCurrentUrl.split('.').last
       }
     }
     val baseUrl=super.getUrl()
-    List(screenName, baseUrl).distinct.filter(_.nonEmpty).mkString("-")
+    List(getAppName(), screenName, baseUrl).distinct.filter(_.nonEmpty).mkString("-")
   }
 
   override def getAppName(): String ={

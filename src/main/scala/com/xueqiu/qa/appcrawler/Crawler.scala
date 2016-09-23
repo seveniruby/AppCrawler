@@ -10,6 +10,7 @@ import org.apache.log4j._
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
 import org.w3c.dom.Document
+import sun.misc.{SignalHandler, Signal}
 
 import scala.annotation.tailrec
 import scala.collection.mutable.{ListBuffer, Map}
@@ -43,12 +44,12 @@ class Crawler extends CommonLog {
   private var pageDom: Document = null
   private var backRetry = 0
   //最大重试次数
-  var backMaxRetry = 10
+  var backMaxRetry = 5
   private var swipeRetry = 0
   //滑动最大重试次数
   var swipeMaxRetry = 2
-  var needExit = false
   var stopAll = false
+  var signalInt = 0
   private val startTime = new Date().getTime
 
   /** 当前的url路径 */
@@ -121,6 +122,7 @@ class Crawler extends CommonLog {
   def start(existDriver: AppiumDriver[WebElement] = null): Unit = {
     addLogFile()
     loadPlugins()
+    handleCtrlC()
     GA.log("start")
     if (existDriver == null) {
       log.info("prepare setup Appium")
@@ -152,13 +154,20 @@ class Crawler extends CommonLog {
     runStartupScript()
     refreshPage()
     conf.appWhiteList.append(appNameRecord.last().toString)
-    crawl()
-    stopAll = true
+
+    Try(crawl()) match {
+      case Success(v) => log.info("crawl finish")
+      case Failure(e) => {
+        log.error("crawl not finish, return with exception")
+        log.error(e.getMessage)
+        e.getStackTrace.foreach(log.error)
+      }
+    }
     //爬虫结束
-    pluginClasses.foreach(p => p.stop())
+    stop()
   }
 
-  def restart(): Unit ={
+  def restart(): Unit = {
     log.info("restart appium")
     setupAppium()
     MiniAppium.driver = driver
@@ -173,6 +182,7 @@ class Crawler extends CommonLog {
       store.setElementClicked(UrlElement(s"${currentUrl}", "", "", "",
         s"startupActions-${action}-${store.clickedElementsList.size}"))
       store.saveHash(contentHash.last().toString)
+      store.saveImg(getBasePathName() + ".ps.jpg")
       log.info(s"index = ${store.clickedElementsList.size} current =  ${store.clickedElementsList.last.loc}")
       saveDom()
       saveScreen(true)
@@ -311,26 +321,38 @@ class Crawler extends CommonLog {
 
   }
 
-  def isReturn(): Boolean = {
-    //超时退出
-    if ((new Date().getTime - startTime) > conf.maxTime * 1000) {
-      log.warn("maxTime out Quit need exit")
-      needExit = true
-      setElementAction("exit")
-      return true
-    }
-    if (backRetry > backMaxRetry) {
-      log.warn(s"backRetry ${backRetry} > backMaxRetry ${backMaxRetry} need exit")
-      needExit = true
-    }
-
+  def isBackApp(): Boolean = {
     //跳到了其他app
     if (conf.appWhiteList.forall(appNameRecord.last().toString != _)) {
       log.warn(s"not in app white list ${conf.appWhiteList}")
       log.warn(s"jump to other app appName=${appNameRecord.last()} lastAppName=${appNameRecord.pre()}")
       setElementAction("backApp")
       return true
+    } else {
+      return false
     }
+
+  }
+
+  def isExit(): Boolean = {
+    //超时退出
+    if ((new Date().getTime - startTime) > conf.maxTime * 1000) {
+      log.warn("maxTime out Quit need exit")
+      return true
+    }
+    if (backRetry > backMaxRetry) {
+      log.warn(s"backRetry ${backRetry} > backMaxRetry ${backMaxRetry} need exit")
+      return true
+    }
+
+    if (appNameRecord.last(5).forall(conf.appWhiteList.contains(_) == false)) {
+      log.error(s"appNameRecord last 5 ${appNameRecord.last(5)}")
+      return true
+    }
+    return false
+  }
+
+  def isReturn(): Boolean = {
     //url黑名单
     if (conf.urlBlackList.filter(urlStack.head.matches(_)).nonEmpty) {
       log.warn(s"${urlStack.head} in urlBlackList should return")
@@ -395,7 +417,22 @@ class Crawler extends CommonLog {
   def isValid(m: immutable.Map[String, Any]): Boolean = {
     m.getOrElse("visible", "true") == "true" &&
       m.getOrElse("enabled", "true") == "true" &&
-      m.getOrElse("valid", "true") == "true"
+      m.getOrElse("valid", "true") == "true" && isSmall(m)==false
+  }
+
+  def isSmall(m: immutable.Map[String, Any]): Boolean ={
+    if(m.getOrElse("bounds", "").toString.nonEmpty){
+      val bounds="\\d+".r().findAllIn(m.get("bounds").get.toString).matchData.map(_.group(0)).toList
+      val width=bounds(2).toInt-bounds(0).toInt
+      val height=bounds(3).toInt-bounds(1).toInt
+      if(width<40 && height<40){
+        true
+      }else{
+        false
+      }
+    }else{
+      false
+    }
   }
 
   //todo: 支持xpath表达式
@@ -469,43 +506,27 @@ class Crawler extends CommonLog {
       hideKeyBoard()
     }
 
-    //获取页面结构, 最多重试10次.
-    var refreshFinish = false
-    pageSource = ""
-    1 to 3 foreach (i => {
-      if (!refreshFinish) {
-        MiniAppium.asyncTask(60)(driver.getPageSource) match {
-          case Some(v) => {
-            log.trace("get page source success")
-            pageSource = v
-            pageSource = RichData.toPrettyXML(pageSource)
-            Try(RichData.toXML(pageSource)) match {
-              case Success(v) => {
-                pageDom = v
-                refreshFinish = true
-              }
-              case Failure(e) => {
-                log.warn("convert to xml fail")
-                log.warn(pageSource)
-              }
-            }
-          }
-          case None => {
-            log.trace("get page source error")
-          }
+    pageSource = MiniAppium.getPageSource()
+
+    if (pageSource != null) {
+      Try(RichData.toXML(pageSource)) match {
+        case Success(v) => {
+          pageDom = v
+        }
+        case Failure(e) => {
+          log.warn("convert to xml fail")
+          log.warn(pageSource)
         }
       }
-    })
-    //todo:appium解析pageSource有bug. 有些页面会始终无法dump. 改成解析不了就后退
-    //todo: 迁移到主流程里面去
-    if (!refreshFinish) {
+      parsePageContext()
+      return true
+    } else {
       log.warn("page source get fail, go back")
       setElementAction("back")
       return false
-    } else {
-      parsePageContext()
-      return true
+
     }
+    //appium解析pageSource有bug. 有些页面会始终无法dump. 改成解析不了就后退
   }
 
   def parsePageContext(): Unit = {
@@ -570,7 +591,7 @@ class Crawler extends CommonLog {
     }
     */
 
-    if (getElementAction() == "back") {
+    if (getElementAction() == "back" || getElementAction() == "backApp") {
       backRetry += 1
       log.info(s"backRetry=${backRetry}")
     } else {
@@ -664,25 +685,29 @@ class Crawler extends CommonLog {
     } else {
       Thread.sleep(200)
       isRefreshSuccess = refreshPage()
-      setElementAction("click")
     }
+
     //判断下一步动作
 
     //是否应该退出
-    if (needExit) {
+    if (isExit()) {
       log.warn("get signal to exit")
       return
     }
-
     //页面刷新失败自动后退
-    if (nextElement == None) {
-      if (isRefreshSuccess == false) {
-        nextElement = Some(UrlElement(s"${currentUrl}", "", "", "",
-          s"Back-${store.clickedElementsList.size}"))
-        setElementAction("back")
-      } else {
-        log.info("refresh success")
-      }
+    if (isRefreshSuccess == false) {
+      nextElement = Some(UrlElement(s"${currentUrl}", "", "", "",
+        s"Back-${store.clickedElementsList.size}"))
+      setElementAction("back")
+    } else {
+      log.info("refresh success")
+    }
+
+    //是否需要回退到app
+    if (isBackApp()) {
+      nextElement = Some(UrlElement(s"${currentUrl}", "", "", "",
+        s"backApp-${appNameRecord.last()}-${store.clickedElementsList.size}"))
+      setElementAction("backApp")
     }
 
     //先应用优先规则
@@ -696,19 +721,12 @@ class Crawler extends CommonLog {
       }
     }
 
-    //判断是否需要返回
+    //判断是否需要返回上层
     if (nextElement == None) {
       if (isReturn()) {
         log.info("need to back")
-        getElementAction() match {
-          case "backApp" =>
-            nextElement = Some(UrlElement(s"${currentUrl}", "", "", "",
-              s"backApp-${appNameRecord.last()}-${store.clickedElementsList.size}"))
-          case "exit" =>
-            nextElement = Some(UrlElement(s"${currentUrl}-CrawlStop", "", "", "", "CrawlStop"))
-          case _ =>
-            nextElement = getBackButton()
-        }
+        nextElement = getBackButton()
+        setElementAction("back")
       } else {
         log.info("no need to back")
       }
@@ -750,11 +768,12 @@ class Crawler extends CommonLog {
         }
 
         if (getElementAction() == "skip") {
-          store.clickedElementsList.remove(store.clickedElementsList.size - 1)
           store.setElementSkip(element)
         } else {
           //处理控件
-          doElementAction(element, getElementAction())
+          MiniAppium.asyncTask(120){
+            doElementAction(element, getElementAction())
+          }
           //插件处理
           afterElementAction(element)
         }
@@ -796,6 +815,31 @@ class Crawler extends CommonLog {
       })
     })
     "click"
+  }
+
+
+  def getTagLimitFromElementActions(element: UrlElement): Option[Int] = {
+    conf.tagLimit.foreach(r => {
+      val xpath = r.getOrElse("xpath", "").toString
+      val action = r.getOrElse("count", 1).toString.toInt
+
+      val allMap = if (xpath.matches("/.*")) {
+        //支持xpath
+        getAllElements(xpath).map(getUrlElementByMap(_))
+      } else {
+        //支持正则通配
+        if (element.toTagPath().matches(xpath)) {
+          List(element)
+        } else {
+          List[UrlElement]()
+        }
+      }
+
+      if (allMap.exists(_ == element)) {
+        return Some(action)
+      }
+    })
+    None
   }
 
 
@@ -930,13 +974,14 @@ class Crawler extends CommonLog {
 
   def getBasePathName(element: UrlElement = store.clickedElementsList.last): String = {
     //序号_文件名
-    s"${conf.resultDir}/${store.clickedElementsList.indexOf(element)}_" + element.toFileName()
+    s"${conf.resultDir}/${store.clickedElementsList.lastIndexOf(element)}_" + element.toFileName()
   }
 
   def saveDom(): Unit = {
     //保存dom结构
     val domPath = getBasePathName() + ".dom"
     //感谢QQ:434715737的反馈
+    log.info(s"save to ${domPath}")
     Try(File(domPath).writeAll(pageSource)) match {
       case Success(v) => {
         log.trace(s"save to ${domPath}")
@@ -948,58 +993,6 @@ class Crawler extends CommonLog {
         log.error(e.getStackTrace)
       }
     }
-  }
-
-
-  /**
-    * 间隔一定时间判断线程是否完成, 未完成就重试
-    *
-    * @param interval
-    * @param retry
-    */
-  def retryThread(interval: Int = conf.screenshotTimeout, retry: Int = 1)(callback: => Unit): Unit = {
-    var needRetry = true
-    1 to retry foreach (i => {
-      if (needRetry == true) {
-        log.info(s"retry time = ${i}")
-        val thread = new Thread(new Runnable {
-          override def run(): Unit = {
-            callback
-          }
-        })
-        thread.start()
-        log.info(s"${thread.getId} ${thread.getState}")
-
-        var stopThreadCount = 0
-        var needStopThread = false
-        while (needStopThread == false) {
-          if (thread.getState != Thread.State.TERMINATED) {
-            stopThreadCount += 1
-            //超时退出
-            if (stopThreadCount >= interval * 2) {
-              log.warn("screenshot timeout stop thread")
-              thread.stop()
-              needStopThread = true
-              log.info(thread.getState)
-              //refreshPage()
-              //发送一个命令测试appium
-              //log.info(driver.manage().window().getSize)
-            } else {
-              //未超时等待
-              log.debug("screenshot wait")
-              Thread.sleep(500)
-            }
-          } else {
-            //正常退出
-            log.trace("screenshot finish")
-            needRetry = false
-            needStopThread = true
-          }
-        }
-      }
-
-    })
-
   }
 
   def saveScreen(force: Boolean = false, element: WebElement = null): Unit = {
@@ -1021,7 +1014,7 @@ class Crawler extends CommonLog {
           log.info("ui no change")
           val preImageFileName = getBasePathName(store.clickedElementsList.takeRight(2).head) + ".ori.jpg"
           val preImageFile = new java.io.File(preImageFileName)
-          if (preImageFile.exists()) {
+          if (preImageFile.exists() && preImageFileName!=originPath) {
             log.info(s"copy from pre image file ${preImageFileName}")
             //FileUtils.copyFile(preImageFile, markImageFile)
             preImageFile
@@ -1029,9 +1022,12 @@ class Crawler extends CommonLog {
             MiniAppium.screenshot()
           }
         }
-        FileUtils.copyFile(imgFile, new java.io.File(originPath))
-        val newImageFile = MiniAppium.mark(imgFile, element)
-        FileUtils.copyFile(newImageFile, markImageFile)
+        if(imgFile.getAbsolutePath==new java.io.File(originPath).getAbsolutePath){
+          log.info(s"${imgFile.getAbsolutePath} same as before")
+        }else{
+          FileUtils.copyFile(imgFile, new java.io.File(originPath))
+        }
+        FileUtils.copyFile(imgFile, markImageFile)
       } match {
         case Some(v) => {
           log.info("screenshot success")
@@ -1075,8 +1071,16 @@ class Crawler extends CommonLog {
 
         saveDom()
         saveScreen()
-
-        MiniAppium.backApp()
+        if (conf.defaultBackAction.size > 0) {
+          conf.defaultBackAction.foreach(Runtimes.eval)
+        } else {
+          MiniAppium.backApp()
+        }
+      }
+      case "monkey" => {
+        saveDom()
+        saveScreen()
+        MiniAppium.event(element.name.toInt)
       }
       case event if event.matches(".*\\(.*\\).*") => {
 
@@ -1092,11 +1096,27 @@ class Crawler extends CommonLog {
         findElementByUrlElement(element) match {
           case Some(webElement) => {
             saveDom()
-            saveScreen(false, webElement)
+            saveScreen()
+
+            log.info("getLocation")
+            val location = webElement.getLocation
+            val x = location.getX
+            val y = location.getY
+
+            val size = webElement.getSize
+            val w = size.getWidth
+            val h = size.getHeight
+
+            val originImageName = getBasePathName() + ".ori.jpg"
+            val newImageName = getBasePathName() + ".ps.jpg"
+            val newImageFile = MiniAppium.mark(originImageName, newImageName, x, y, w, h)
+
             MiniAppium.asyncTask() {
               if (str == "click") {
+                log.info("click element")
                 webElement.click()
               } else {
+                log.info(s"input ${str}")
                 webElement.sendKeys(str)
               }
             }
@@ -1120,8 +1140,9 @@ class Crawler extends CommonLog {
         log.warn("two back action too close")
         Thread.sleep(4000)
       }
-      driver.navigate().back()
-
+      MiniAppium.asyncTask() {
+        MiniAppium.back()
+      }
       backDistance.append("back")
       appNameRecord.pop()
     } else {
@@ -1163,11 +1184,39 @@ class Crawler extends CommonLog {
           }
           r("times") = times - 1
           setElementAction(action)
-          return Some(getUrlElementByMap(e))
+          if (action == "monkey") {
+            val count = conf.monkeyEvents.size
+            val random = util.Random.nextInt(count)
+            val code = conf.monkeyEvents(random)
+            return Some(UrlElement("Monkey", "", "", s"${code}", s"event-${code}"))
+          } else {
+            return Some(getUrlElementByMap(e))
+          }
         }
         case None => {}
       }
     })
     None
+  }
+
+  def stop(): Unit = {
+    stopAll = true
+    if (signalInt < 2) {
+      pluginClasses.foreach(_.stop())
+      log.info("generate report finish")
+      sys.exit()
+    }
+  }
+
+  def handleCtrlC(): Unit = {
+    log.info("add shutdown hook")
+    Signal.handle(new Signal("INT"), new SignalHandler() {
+      def handle(sig: Signal) {
+        log.info("exit by INT")
+        signalInt += 1
+        stop()
+        sys.exit(1)
+      }
+    })
   }
 }

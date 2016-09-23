@@ -8,7 +8,7 @@ import javax.imageio.ImageIO
 import com.thoughtworks.selenium.webdriven.commands.KeyEvent
 import io.appium.java_client.{MobileCommand, AppiumDriver}
 import io.appium.java_client.android.{AndroidKeyCode, AndroidDriver}
-import io.appium.java_client.ios.IOSDriver
+import io.appium.java_client.ios.{IOSKeyCode, IOSDriver}
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.Level
 import org.openqa.selenium.remote.DesiredCapabilities
@@ -22,53 +22,55 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by seveniruby on 16/8/9.
   */
-trait MiniAppium extends CommonLog with WebBrowser{
+trait MiniAppium extends CommonLog with WebBrowser {
   Runtimes.init()
+  var conf: CrawlerConf = _
   val capabilities = new DesiredCapabilities()
   var appiumUrl = "http://127.0.0.1:4723/wd/hub"
 
   implicit var driver: AppiumDriver[WebElement] = _
   var appiumProcess: Process = null
-  var loc=""
-  var index=0
+  var loc = ""
+  var index = 0
 
   var screenWidth = 0
   var screenHeight = 0
-  private var platformName=""
+  private var platformName = ""
 
-  def setPlatformName(platform:String): Unit ={
+  def setPlatformName(platform: String): Unit = {
     log.info(s"set platform ${platform}")
-    platformName=platform
+    platformName = platform
   }
 
-  def start(port: Int=4723): Unit ={
-    val buffer=new StringBuffer("\n")
-    var lineBuffer=""
-    val daemonLogger=ProcessLogger(line=>{
+  def start(port: Int = 4723): Unit = {
+    val buffer = new StringBuffer("\n")
+    var lineBuffer = ""
+    val daemonLogger = ProcessLogger(line => {
       buffer.append(line).append("\n")
-      lineBuffer=line
-    }, line=>{
+      lineBuffer = line
+    }, line => {
       buffer.append(line).append("\n")
-      lineBuffer=line
+      lineBuffer = line
     })
-    appiumProcess=Process(s"appium -p ${port}").run(daemonLogger)
-    var waitTime=0
-    def waitForStarted(): Unit ={
-      waitTime+=1
-      if(waitTime>10){
+    appiumProcess = Process(s"appium -p ${port}").run(daemonLogger)
+    var waitTime = 0
+    def waitForStarted(): Unit = {
+      waitTime += 1
+      if (waitTime > 10) {
         return
       }
       sleep(0.5)
-      if(buffer.toString.contains("started")){
+      if (buffer.toString.contains("started")) {
         log.info(buffer)
-      }else{
+      } else {
         waitForStarted()
       }
     }
     waitForStarted()
     log.info(buffer)
   }
-  def stop(): Unit ={
+
+  def stop(): Unit = {
     appiumProcess.destroy()
   }
 
@@ -85,12 +87,12 @@ trait MiniAppium extends CommonLog with WebBrowser{
     *
     * @param key
     */
-  def wait(key:String): Unit ={
-    var isFound=false
-    1 to 10 foreach (i=>{
-      if(isFound==false) {
+  def wait(key: String): Unit = {
+    var isFound = false
+    1 to 10 foreach (i => {
+      if (isFound == false) {
         log.info(s"find by xpath ${keyToXPath(key)}")
-        val elements=driver.findElementsByXPath(keyToXPath(key))
+        val elements = driver.findElementsByXPath(keyToXPath(key))
         if (elements.size() > 0) {
           isFound = true
         } else {
@@ -101,40 +103,46 @@ trait MiniAppium extends CommonLog with WebBrowser{
 
   }
 
-  def see(key: String="//*", index: Int = 0): this.type = {
-    loc=key
-    this.index=index
+  def see(key: String = "//*", index: Int = 0): this.type = {
+    loc = key
+    this.index = index
     wait(key)
     this
   }
 
-  def tap(): this.type ={
+  def tap(): this.type = {
     click on (XPathQuery(tree(loc, index)("xpath").toString))
     this
   }
+
   def send(keys: String): this.type = {
     tap()
     driver.getKeyboard.sendKeys(keys)
     this
   }
-  def event(keycode:Int): Unit ={
+
+  def event(keycode: Int): Unit = {
     driver match {
-      case androidDriver : AndroidDriver[WebElement] =>{
+      case androidDriver: AndroidDriver[WebElement] => {
+        log.info(s"send event ${keycode}")
         androidDriver.pressKeyCode(keycode)
       }
-      case iosDriver: IOSDriver[_] =>{
+      case iosDriver: IOSDriver[_] => {
         log.error("no event for ios")
       }
     }
   }
-  def attribute(key:String): String ={
+
+  def attribute(key: String): String = {
     nodes().head.get(key).get.toString
   }
-  def apply(key:String): String ={
+
+  def apply(key: String): String = {
     attribute(key)
   }
-  def nodes(): List[Map[String, Any]] ={
-    RichData.getListFromXPath(keyToXPath(loc), RichData.toXML(pageSource))
+
+  def nodes(): List[Map[String, Any]] = {
+    RichData.getListFromXPath(keyToXPath(loc), RichData.toXML(getPageSource))
   }
 
 
@@ -146,16 +154,16 @@ trait MiniAppium extends CommonLog with WebBrowser{
   def appium(url: String = "http://127.0.0.1:4723/wd/hub"): Unit = {
     appiumUrl = url
     //todo: 无法通过url来确定是否是android, 需要改进
-    if(capabilities.getCapability("app")==null){
+    if (capabilities.getCapability("app") == null) {
       config("app", "")
     }
-    if(capabilities.getCapability("deviceName")==null || capabilities.getCapability("deviceName").toString.isEmpty){
+    if (capabilities.getCapability("deviceName") == null || capabilities.getCapability("deviceName").toString.isEmpty) {
       config("deviceName", "demo")
     }
     if (
       capabilities.getCapability("app").toString.matches(".*\\.apk$") ||
-        capabilities.getCapability("appActivity") !=null ||
-        capabilities.getCapability("appPackage") !=null
+        capabilities.getCapability("appActivity") != null ||
+        capabilities.getCapability("appPackage") != null
     ) {
       driver = new AndroidDriver[WebElement](new URL(appiumUrl), capabilities)
       setPlatformName("android")
@@ -211,10 +219,10 @@ trait MiniAppium extends CommonLog with WebBrowser{
     */
   def tree(key: String = "//*", index: Int = 0): Map[String, Any] = {
     log.info(s"find by key = ${key} index=${index}")
-    val nodes = RichData.getListFromXPath(keyToXPath(key), RichData.toXML(pageSource))
+    val nodes = RichData.getListFromXPath(keyToXPath(key), RichData.toXML(getPageSource))
     nodes.foreach(node => {
       log.debug(s"index=${nodes.indexOf(node)}")
-      node.foreach(kv=>{
+      node.foreach(kv => {
         log.debug(kv)
       })
     })
@@ -224,7 +232,7 @@ trait MiniAppium extends CommonLog with WebBrowser{
   }
 
   //todo: not test
-  def crawl(conf: String = "", resultDir: String = "", maxDepth:Int=1): Unit = {
+  def crawl(conf: String = "", resultDir: String = "", maxDepth: Int = 1): Unit = {
     var crawler: Crawler = new Crawler
     driver.getClass.getSimpleName match {
       case "AndroidDriver" => {
@@ -259,7 +267,7 @@ trait MiniAppium extends CommonLog with WebBrowser{
     log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
   }
 
-  def swipe(direction: String ): Unit = {
+  def swipe(direction: String): Unit = {
     log.info(s"start swipe ${direction}")
     var startX = 0.0
     var startY = 0.0
@@ -300,7 +308,8 @@ trait MiniAppium extends CommonLog with WebBrowser{
     swipe(startX, endX, startY, endY)
     sleep(1)
   }
-  def swipe(startX: Double =0.9, endX:Double = 0.1, startY:Double=0.9, endY:Double=0.1): Option[_] ={
+
+  def swipe(startX: Double = 0.9, endX: Double = 0.1, startY: Double = 0.9, endY: Double = 0.1): Option[_] = {
     retry(driver.swipe(
       (screenWidth * startX).toInt, (screenHeight * startY).toInt,
       (screenWidth * endX).toInt, (screenHeight * endY).toInt, 1000
@@ -325,65 +334,47 @@ trait MiniAppium extends CommonLog with WebBrowser{
 
   }
 
-  def shot(fileName:String=loc): Unit ={
-    sleep(1)
-    val xpath=tree(loc, index)("xpath").toString
-    val element=driver.findElementByXPath(xpath)
-    val file=mark(screenshot(), element)
-    FileUtils.copyFile(file, new File(fileName+".png"))
-  }
-
-
-  def screenshot(): File ={
+  def screenshot(): File = {
     (driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)
   }
+
   //todo: 重构到独立的trait中
-  def mark(file: File, element: WebElement): java.io.File = {
+  def mark(fileName: String, newImageName:String,  x: Int, y: Int, w: Int, h: Int): Unit = {
+    val file = new java.io.File(fileName)
     log.info(s"platformName=${platformName}")
     log.info("getScreenshot")
-    if (element != null) {
-      log.info("getLocation")
-      val location = element.getLocation
-      val x = location.getX
-      val y = location.getY
+    val img = ImageIO.read(file)
+    val graph = img.createGraphics()
 
-      val size = element.getSize
-      val w = size.getWidth
-      val h = size.getHeight
-
-      val img = ImageIO.read(file)
-      val graph = img.createGraphics()
-
-      if (platformName.toLowerCase == "ios") {
-        log.info("scale the origin image")
-        graph.drawImage(img, 0, 0, screenWidth, screenHeight, null)
-      }
-      graph.setStroke(new BasicStroke(5))
-      graph.setColor(Color.RED)
-      graph.drawRect(x, y, w, h)
-      graph.dispose()
-      val subImg = if (platformName.toLowerCase == "ios") {
-        img.getSubimage(0, 0, screenWidth, screenHeight)
-      } else {
-        img
-      }
-      log.info("write png")
-      ImageIO.write(subImg, "png", file)
+    if (platformName.toLowerCase == "ios") {
+      log.info("scale the origin image")
+      graph.drawImage(img, 0, 0, screenWidth, screenHeight, null)
     }
-    return file
+    graph.setStroke(new BasicStroke(5))
+    graph.setColor(Color.RED)
+    graph.drawRect(x, y, w, h)
+    graph.dispose()
+
+    log.info(s"write png ${fileName}")
+    if (platformName.toLowerCase == "ios") {
+      val subImg=img.getSubimage(0, 0, screenWidth, screenHeight)
+      ImageIO.write(subImg, "png", new java.io.File(newImageName))
+    } else {
+      ImageIO.write(img, "png", new java.io.File(newImageName))
+    }
   }
 
-  def dsl(command:String): Unit ={
+  def dsl(command: String): Unit = {
     log.info(s"eval ${command}")
     Try(Runtimes.eval(command)) match {
-      case Success(v)=> log.info(v)
-      case Failure(e)=> log.warn(e.getMessage)
+      case Success(v) => log.info(v)
+      case Failure(e) => log.warn(e.getMessage)
     }
     log.info("eval finish")
     //new Eval().inPlace(s"com.xueqiu.qa.appcrawler.MiniAppium.${command.trim}")
   }
 
-  def hello(action:String, number:Int=0): Unit ={
+  def hello(action: String, number: Int = 0): Unit = {
     println(s"hello ${action} ${number}")
   }
 
@@ -399,20 +390,21 @@ trait MiniAppium extends CommonLog with WebBrowser{
     driver.tap(1, element, 100)
   }
 
-  def back(): Unit ={
+  def back(): Unit = {
     driver.navigate().back()
   }
-  def backApp(): Unit ={
+
+  def backApp(): Unit = {
     /*
     sleep(10)
     event(AndroidKeyCode.BACK)
     sleep(2)
     event(AndroidKeyCode.ENTER)
     */
-    driver.launchApp()
+    back()
   }
 
-  def asyncTask[T](timeout:Int=30, restart:Boolean=false)(callback: =>T): Option[T] ={
+  def asyncTask[T](timeout: Int = 30, restart: Boolean = false)(callback: => T): Option[T] = {
     Try({
       val task = Executors.newSingleThreadExecutor().submit(new Callable[T]() {
         def call(): T = {
@@ -421,13 +413,16 @@ trait MiniAppium extends CommonLog with WebBrowser{
       })
       task.get(timeout, TimeUnit.SECONDS)
     }) match {
-      case Success(v) => Some(v)
+      case Success(v) => {
+        log.info(s"async task success")
+        Some(v)
+      }
       case Failure(e) => {
         e match {
-          case e:TimeoutException=>{
+          case e: TimeoutException => {
             log.error(s"${timeout} seconds timeout")
           }
-          case _ =>{
+          case _ => {
             log.error("exception")
             log.error(e.getMessage)
             log.error(e.getStackTrace.mkString("\n"))
@@ -437,6 +432,43 @@ trait MiniAppium extends CommonLog with WebBrowser{
       }
     }
   }
+
+  def getPageSource(): String = {
+    var source: String = null
+    //获取页面结构, 最多重试10次
+
+    1 to 3 foreach (i => {
+      MiniAppium.asyncTask(60)(driver.getPageSource) match {
+        case Some(v) => {
+          log.trace("get page source success")
+          source = RichData.toPrettyXML(v)
+          return source
+        }
+        case None => {
+          log.trace("get page source error")
+        }
+      }
+    })
+    source
+  }
+
+
+  def monkey(): Unit = {
+    val crawl = AppCrawler.crawler
+    val monkeyEvents = crawl.conf.monkeyEvents
+    val count = monkeyEvents.size
+    val limits = AppCrawler.crawler.conf.monkeyRunTimeSeconds
+    val record = new DataRecord
+    while (record.intervalMS() / 1000 < limits) {
+      val number = util.Random.nextInt(count)
+      val code = monkeyEvents(number)
+      event(code)
+      record.append(code)
+      val element = UrlElement(crawl.currentUrl + "_Monkey", "", "", "", s"monkey_${code}")
+      crawl.store.setElementClicked(element)
+    }
+  }
+
 }
 
 object MiniAppium extends MiniAppium

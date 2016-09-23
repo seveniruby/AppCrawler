@@ -13,16 +13,15 @@ class TagLimitPlugin extends Plugin {
 
   override def start(): Unit = {
     tagLimitMax = getCrawler().conf.tagLimitMax
-    tagLimit ++= getCrawler().conf.tagLimit
   }
 
   override def beforeElementAction(element: UrlElement): Unit = {
     val key = element.toTagPath()
     log.trace(s"tag path = ${key}")
     if (!tagLimit.contains(key)) {
-      getCrawler().conf.tagLimit.filter(kv=>key.matches(kv._1)).headOption match {
+      getCrawler().getTagLimitFromElementActions(element) match {
         case Some(v)=> {
-          tagLimit(key)=v._2
+          tagLimit(key)=v
           log.info(s"tagLimit[${key}]=${tagLimit(key)} with conf.tagLimit")
         }
         case None => tagLimit(key)=tagLimitMax

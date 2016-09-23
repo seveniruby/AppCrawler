@@ -37,6 +37,10 @@ abstract class Plugin extends CommonLog{
   def screenshot(path:String): Boolean ={
     false
   }
+
+  def getPageSource(): String ={
+    ""
+  }
   def stop(): Unit ={
 
   }
