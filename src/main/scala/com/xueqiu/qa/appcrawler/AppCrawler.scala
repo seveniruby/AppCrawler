@@ -4,6 +4,7 @@ import java.io.File
 import java.lang.reflect.Field
 import java.nio.charset.Charset
 
+import com.xueqiu.qa.appcrawler.plugin.FlowDiff
 import org.apache.log4j.Level
 import org.scalatest.ConfigMap
 
@@ -27,6 +28,9 @@ object AppCrawler extends CommonLog{
                            resultDir: String = "",
                            maxTime:Int = 0,
                            report:String="",
+                           candidate:String="",
+                           master:String="",
+                           diff:Boolean=false,
                            capability: Map[String, String] = Map[String, String]()
                          )
     def sbt(args: Seq[String]): Unit = {
@@ -96,6 +100,15 @@ object AppCrawler extends CommonLog{
       opt[String]('r', "report") action { (x, c)=>
         c.copy(report = x)
       } text("输出html和xml报告")
+      opt[String]("master") action { (x, c)=>
+        c.copy(master = x)
+      } text("master的diff.yml文件地址")
+      opt[String]("candidate") action { (x, c)=>
+        c.copy(candidate = x)
+      } text("candidate环境的diff.yml文件")
+      opt[Unit]("diff") action { (x, c)=>
+        c.copy(diff = true)
+      } text("执行diff对比")
       opt[Unit]("verbose").abbr("vv") action { (_, c) =>
         c.copy(verbose = true)
       } text ("是否展示更多debug信息")
@@ -108,7 +121,12 @@ object AppCrawler extends CommonLog{
           |appcrawler -c xueqiu.json --capability udid=[你的udid] -a Snowball.app
           |appcrawler -c xueqiu.json -a Snowball.app -u 4730
           |appcrawler -c xueqiu.json -a Snowball.app -u http://127.0.0.1:4730/wd/hub
+          |#启动已经安装过的app
+          |appcrawler --capability appPackage=com.xueqiu.android,appActivity=.welcomeActivity
+          |#从已经结束的结果中重新生成报告
           |appcrawler --report result/
+          |#新老版本对比
+          |appcrawler --diff --candidate pre/diff.yml --master master/diff.yml
         """.stripMargin)
     }
     // parser.parse returns Option[C]
@@ -227,9 +245,18 @@ object AppCrawler extends CommonLog{
         log.trace(crawlerConf.toJson)
         log.trace("yaml config")
         log.trace(DataObject.toYaml(crawlerConf))
-        if(config.report!=""){
+
+        if(config.report!="" && config.diff==false){
           val store=DataObject.fromYaml[UrlElementStore](Source.fromFile(s"${config.report}/elements.yml").mkString)
           Report.saveTestCase(store, config.report)
+          Report.runTestCase()
+        } else if(config.diff){
+          FlowDiff.candidate=config.candidate
+          FlowDiff.master=config.master
+          FlowDiff.reportDir=config.report
+          FlowDiff.generateTestCase()
+          Report.reportPath=config.report
+          Report.testcaseDir=config.report
           Report.runTestCase()
         }else {
           startCrawl(crawlerConf)

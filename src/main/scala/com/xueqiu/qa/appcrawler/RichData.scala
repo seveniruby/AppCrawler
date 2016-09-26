@@ -152,6 +152,7 @@ object RichData extends CommonLog {
         0 until nodeList.getLength foreach (i => {
           val nodeMap = mutable.Map[String, Any]()
           val node = nodeList.item(i)
+          //如果node为.可能会异常. 不过目前不会
           nodeMap("tag") = node.getNodeName
           val path=getAttributesFromNode(node)
           nodeMap("xpath") = getXPathFromAttributes(path)

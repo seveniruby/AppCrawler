@@ -1,32 +1,35 @@
 package com.xueqiu.qa.appcrawler.ut
 
 import com.xueqiu.qa.appcrawler.DataObject
-import org.scalatest.{Matchers, FunSuite}
+import com.xueqiu.qa.appcrawler.plugin.FlowDiff
+import org.scalatest._
 
 /**
   * Created by seveniruby on 16/9/26.
   */
+@WrapWith(classOf[ConfigMapWrapperSuite])
 class TestDiffReport extends FunSuite with Matchers {
-  val oldReport= DataObject.fromYaml[Map[String, Map[String, Any]]]( scala.io.Source.fromFile("/Volumes/RamDisk/xueqiu_7/diff.yml").mkString)
-  val newReport= DataObject.fromYaml[Map[String, Map[String, Any]]]( scala.io.Source.fromFile("/Volumes/RamDisk/xueqiu_8/diff.yml").mkString)
+  val masterReport= DataObject.fromYaml[Map[String, Map[String, Any]]]( scala.io.Source.fromFile(FlowDiff.master).mkString)
+  val candidateReport= DataObject.fromYaml[Map[String, Map[String, Any]]]( scala.io.Source.fromFile(FlowDiff.candidate).mkString)
 
-  val keys=oldReport.keys.toList.intersect(newReport.keys.toList)
+  println(masterReport.size)
+  println(candidateReport.size)
+  val keys=masterReport.keys.toList.intersect(candidateReport.keys.toList)
 
   keys.foreach(key=>{
     test(s"${key}"){
-      val oldMap=oldReport.getOrElse(key, Map[String, Any]())
-      val newMap=newReport.getOrElse(key, Map[String, Any]())
-      val subKeys=oldMap.keys++newMap.keys
+      val masterMap=masterReport.getOrElse(key, Map[String, Any]())
+      val candidateMap=candidateReport.getOrElse(key, Map[String, Any]())
+      val subKeys=masterMap.keys++candidateMap.keys
       subKeys.foreach(subKey=>{
-        val origin=oldMap.getOrElse(subKey, null)
-        val actual=newMap.getOrElse(subKey, null)
-        val message=(s"\n\nkey=${subKey}\nactual=${actual} vs origin=${origin}")
+        val master=masterMap.getOrElse(subKey, null)
+        val candidate=candidateMap.getOrElse(subKey, null)
+        val message=(s"\n\nkey=${subKey}\nactual=${candidate} vs origin=${master}\n\n")
         println(message)
-        actual should be equals( origin)
-        assert(actual==origin, message)
+        candidate should be equals( master)
+        assert(candidate==master, message)
       }
       )
     }
   })
-
 }

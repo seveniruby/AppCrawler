@@ -42,6 +42,7 @@ libraryDependencies ~= { _.map(_.exclude("ch.qos.logback", "logback-classic")) }
 
 enablePlugins(JavaAppPackaging)
 
+/*
 proguardSettings
 ProguardKeys.proguardVersion in Proguard := "5.2.1"
 inConfig(Proguard)(javaOptions in ProguardKeys.proguard := Seq("-Xmx2g"))
@@ -50,6 +51,7 @@ ProguardKeys.options in Proguard ++= Seq("-dontnote", "-dontwarn", "-ignorewarni
 ProguardKeys.options in Proguard += ProguardOptions.keepMain("com.xueqiu.qa.appcrawler.AppCrawler")
 ProguardKeys.mergeStrategies in Proguard += ProguardMerge.first(".*".r)
 ProguardKeys.mergeStrategies in Proguard += ProguardMerge.discard("META-INF/.*".r)
+*/
 
 assemblyJarName in assembly := "appcrawler-"+version.value+".jar"
 test in assembly := {}
