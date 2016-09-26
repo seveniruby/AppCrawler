@@ -3,6 +3,8 @@ package com.xueqiu.qa.appcrawler.ut
 import com.xueqiu.qa.appcrawler.MiniAppium
 import org.scalatest.FunSuite
 
+import scala.sys.process.Process
+
 
 /**
   * Created by seveniruby on 16/3/30.
@@ -176,6 +178,29 @@ class TestThread extends FunSuite{
     val now=System.currentTimeMillis()
     println((now-pre)/1000)
 
+  }
+
+  test("-1 async"){
+    val x=MiniAppium.asyncTask(-1){
+      println("start")
+      Thread.sleep(6000)
+      3
+    }
+    0 to 10 foreach{ i=>
+      Thread.sleep(1000)
+      println(x)
+    }
+  }
+
+  test("appium start"){
+    val process=Process("appium -p 4445")
+    val pb=process.run()
+    val x=MiniAppium.asyncTask(10){
+      pb.exitValue()
+    }
+    println(x)
+    Thread.sleep(20000)
+    pb.destroy()
   }
 
 

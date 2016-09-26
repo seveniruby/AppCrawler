@@ -58,6 +58,21 @@ class UrlElementStore {
     }
   }
 
+
+  def saveDom(dom: String = ""): Unit = {
+    val head = clickedElementsList.last
+    if(elementStore(head.toString).reqDom.isEmpty){
+      AppCrawler.log.info(s"save reqDom to ${clickedElementsList.size-1}")
+      elementStore(head.toString).reqDom=dom
+    }
+
+    if(clickedElementsList.size>1) {
+      val pre = clickedElementsList.takeRight(2).head
+      elementStore(pre.toString).resDom = dom
+    }
+  }
+
+
   def saveImg(imgName:String): Unit = {
     val head = clickedElementsList.last
     if (elementStore(head.toString).reqImg.isEmpty) {

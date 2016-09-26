@@ -21,13 +21,13 @@ object Main extends App with CommonLog{
   val htmlReporter=new HtmlReporter("target/reports/", false, None, None)
   val junitXml=new JUnitXmlReporter("target/reports/")
   val reports=new DispatchReporter(List(htmlReporter, junitXml))
-  suite.run(testName = None, reporter = reports,
+  suite.run(None, Args(reporter = reports,
     stopper=Stopper.default, tracker = Tracker.default, filter = Filter.default,
-    distributor = None, configMap = Map())
+    distributor = None))
 
-  suite.run(testName = None, reporter = reports,
+  suite.run(None, Args(reporter = reports,
     stopper=Stopper.default, tracker = Tracker.default, filter = Filter.default,
-    distributor = None, configMap = Map())
+    distributor = None))
 
 
   //Runner.run(Array("-R", "target", "-s", "com.xueqiu.qa.appcrawler.ut.DemoCrawlerSuite", "-o", "-u", "target/test-reports", "-h", "target/test-reports"))

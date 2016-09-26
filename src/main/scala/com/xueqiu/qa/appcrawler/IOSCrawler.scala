@@ -4,6 +4,7 @@ import java.net.URL
 
 import io.appium.java_client.ios.IOSDriver
 import org.openqa.selenium.WebElement
+import org.openqa.selenium.remote.DesiredCapabilities
 
 /**
   * Created by seveniruby on 15/12/10.
@@ -26,11 +27,10 @@ class IOSCrawler extends Crawler {
   }
 
   override def setupAppium():Unit={
-    super.setupAppium()
+    val capabilities = new DesiredCapabilities()
     capabilities.setCapability("platformName", "iOS")
-    conf.capability.foreach{ case (k,v)=>{
-      capabilities.setCapability(k, v)
-    }}
+    conf.capability.foreach(kv => capabilities.setCapability(kv._1, kv._2))
+
     //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")
     //driver = new XueqiuDriver[WebElement](new URL("http://127.0.0.1:4729/wd/hub"), capabilities)
     val url=conf.capability("appium").toString
@@ -40,6 +40,7 @@ class IOSCrawler extends Crawler {
 
   /**
     * 用schema作为url替代
+    *
     * @return
     */
   override def getUrl(): String = {

@@ -295,8 +295,8 @@ class TestCrawler extends FunSuite{
       """.stripMargin
 
     val appium=new Crawler
-    appium.pageSource=xml
-    RichData.toXML(appium.pageSource)
+    appium.currentPageSource=xml
+    RichData.toXML(appium.currentPageSource)
     println(appium.getAllElements("//UIAWindow[1]//*[@visible='true' and @name!='']"))
     println(appium.getAllElements("//UIAWindow[1]//*[@visible='true' and @value!='']"))
   }

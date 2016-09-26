@@ -7,8 +7,8 @@ import java.util.concurrent.{TimeoutException, Callable, TimeUnit, Executors}
 import javax.imageio.ImageIO
 import com.thoughtworks.selenium.webdriven.commands.KeyEvent
 import io.appium.java_client.{MobileCommand, AppiumDriver}
-import io.appium.java_client.android.{AndroidKeyCode, AndroidDriver}
-import io.appium.java_client.ios.{IOSKeyCode, IOSDriver}
+import io.appium.java_client.android.{AndroidDriver}
+import io.appium.java_client.ios.{IOSDriver}
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.Level
 import org.openqa.selenium.remote.DesiredCapabilities
@@ -16,6 +16,7 @@ import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
 import org.scalatest.selenium.WebBrowser
 import org.scalatest.time.{Seconds, Span}
 
+import scala.io.Source
 import scala.sys.process.{ProcessLogger, _}
 import scala.util.{Failure, Success, Try}
 
@@ -42,32 +43,24 @@ trait MiniAppium extends CommonLog with WebBrowser {
     platformName = platform
   }
 
-  def start(port: Int = 4723): Unit = {
-    val buffer = new StringBuffer("\n")
-    var lineBuffer = ""
-    val daemonLogger = ProcessLogger(line => {
-      buffer.append(line).append("\n")
-      lineBuffer = line
-    }, line => {
-      buffer.append(line).append("\n")
-      lineBuffer = line
-    })
-    appiumProcess = Process(s"appium -p ${port}").run(daemonLogger)
-    var waitTime = 0
-    def waitForStarted(): Unit = {
-      waitTime += 1
-      if (waitTime > 10) {
-        return
-      }
-      sleep(0.5)
-      if (buffer.toString.contains("started")) {
-        log.info(buffer)
-      } else {
-        waitForStarted()
-      }
+
+  def shell(command:String): Unit ={
+    sys.props("os.name").toLowerCase match {
+      case x if x contains "windows" => Seq("cmd", "/C") ++ command
+      case _ => command
     }
-    waitForStarted()
-    log.info(buffer)
+  }
+
+  //todo: 集成appium进程管理
+  def start(port: Int = 4723): Unit = {
+    appiumProcess = Process(s"appium --session-override -p ${port}").run()
+    asyncTask(10){
+      appiumProcess.exitValue()
+    } match {
+      case None=>{log.info("appium start success")}
+      case Some(code)=>{log.error(s"appium failed with code ${code}")}
+    }
+
   }
 
   def stop(): Unit = {
@@ -411,8 +404,13 @@ trait MiniAppium extends CommonLog with WebBrowser {
           callback
         }
       })
-      task.get(timeout, TimeUnit.SECONDS)
-    }) match {
+      if(timeout<0){
+        task.get()
+      }else {
+        task.get(timeout, TimeUnit.SECONDS)
+      }
+
+    })  match {
       case Success(v) => {
         log.info(s"async task success")
         Some(v)
@@ -434,7 +432,7 @@ trait MiniAppium extends CommonLog with WebBrowser {
   }
 
   def getPageSource(): String = {
-    var source: String = null
+    var source: String = ""
     //获取页面结构, 最多重试10次
 
     1 to 3 foreach (i => {

@@ -1,7 +1,7 @@
 package org.scalatest.tools
 
 import com.xueqiu.qa.appcrawler.CrawlerSuite
-import org.scalatest.{Tracker, Filter, Stopper}
+import org.scalatest.{Args, Tracker, Filter, Stopper}
 
 /**
   * Created by seveniruby on 16/8/10.
@@ -21,9 +21,9 @@ class TestSuite extends CrawlerSuite{
     suite.execute
     val htmlReporter=new HtmlReporter("target/reports/", false, None, None)
     val junitXml=new JUnitXmlReporter("target/reports/")
-    suite.run(testName = Some("demo3"), reporter = htmlReporter,
+    suite.run(Some("demo3"), Args(reporter = htmlReporter,
       stopper=Stopper.default, tracker = Tracker.default, filter = Filter.default,
-      distributor = None, configMap = Map())
+      distributor = None))
 
   }
 

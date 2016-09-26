@@ -4,6 +4,7 @@ import java.awt.{Color, BasicStroke}
 import java.util.Date
 import javax.imageio.ImageIO
 
+import io.appium.java_client.remote.MobileCapabilityType
 import io.appium.java_client.{TouchAction, AppiumDriver}
 import org.apache.commons.io.FileUtils
 import org.apache.log4j._
@@ -25,7 +26,6 @@ import scala.util.{Failure, Success, Try}
 class Crawler extends CommonLog {
   implicit var driver: AppiumDriver[WebElement] = _
   var conf = new CrawlerConf()
-  val capabilities = new DesiredCapabilities()
 
   /** 存放插件类 */
   val pluginClasses = ListBuffer[Plugin]()
@@ -40,8 +40,11 @@ class Crawler extends CommonLog {
   private var screenHeight = 0
 
   var appName = ""
-  var pageSource = ""
-  private var pageDom: Document = null
+  var currentPageSource = ""
+  private var currentPageDom: Document = null
+  /** 当前的url路径 */
+  var currentUrl = ""
+
   private var backRetry = 0
   //最大重试次数
   var backMaxRetry = 5
@@ -52,8 +55,6 @@ class Crawler extends CommonLog {
   var signalInt = 0
   private val startTime = new Date().getTime
 
-  /** 当前的url路径 */
-  var currentUrl = ""
   val urlStack = mutable.Stack[String]()
 
   protected val backDistance = new DataRecord()
@@ -152,15 +153,25 @@ class Crawler extends CommonLog {
 
     GA.log("crawler")
     runStartupScript()
-    refreshPage()
     conf.appWhiteList.append(appNameRecord.last().toString)
 
-    Try(crawl()) match {
-      case Success(v) => log.info("crawl finish")
-      case Failure(e) => {
-        log.error("crawl not finish, return with exception")
-        log.error(e.getMessage)
-        e.getStackTrace.foreach(log.error)
+    var keepSession=true
+    while(keepSession) {
+      Try(crawl()) match {
+        case Success(v) => {
+          log.info("crawl finish")
+          keepSession=false
+        }
+        case Failure(e) => {
+          log.error("crawl not finish, return with exception")
+          log.error(e.getMessage)
+          log.error(e.getCause)
+          e.getStackTrace.foreach(log.error)
+          log.error("create new session")
+
+          conf.capability ++= Map("app"->"", MobileCapabilityType.NO_RESET->true)
+          setupAppium()
+        }
       }
     }
     //爬虫结束
@@ -191,7 +202,6 @@ class Crawler extends CommonLog {
   }
 
   def setupAppium(): Unit = {
-    conf.capability.foreach(kv => capabilities.setCapability(kv._1, kv._2))
     //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
     //PageFactory.initElements(new AppiumFieldDecorator(driver, 10, TimeUnit.SECONDS), this)
     //implicitlyWait(Span(10, Seconds))
@@ -236,7 +246,7 @@ class Crawler extends CommonLog {
     * @return
     */
   def getAllElements(xpath: String): List[immutable.Map[String, Any]] = {
-    RichData.getListFromXPath(xpath, pageDom)
+    RichData.getListFromXPath(xpath, currentPageDom)
   }
 
   /**
@@ -405,12 +415,12 @@ class Crawler extends CommonLog {
     * @return
     */
   def isBlack(uid: immutable.Map[String, Any]): Boolean = {
-    conf.blackList.foreach(b => {
-      if (List(uid("name"), uid("label"), uid("value")).exists(_.toString.matches(b))) {
-        return true
-      }
-    })
-    false
+    conf.blackList.toStream.filter(b =>
+      List(uid("name"), uid("label"), uid("value")).exists(xx => xx.toString.matches(b))
+    ).headOption match {
+      case Some(v) => true
+      case None => false
+    }
   }
 
 
@@ -501,21 +511,19 @@ class Crawler extends CommonLog {
 
   def refreshPage(): Boolean = {
     log.info("refresh page")
+    currentPageSource=""
+    currentPageDom=null
 
-    if (pageSource.nonEmpty) {
-      hideKeyBoard()
-    }
+    currentPageSource = MiniAppium.getPageSource()
 
-    pageSource = MiniAppium.getPageSource()
-
-    if (pageSource != null) {
-      Try(RichData.toXML(pageSource)) match {
+    if (currentPageSource.nonEmpty) {
+      Try(RichData.toXML(currentPageSource)) match {
         case Success(v) => {
-          pageDom = v
+          currentPageDom = v
         }
         case Failure(e) => {
           log.warn("convert to xml fail")
-          log.warn(pageSource)
+          log.warn(currentPageSource)
         }
       }
       parsePageContext()
@@ -743,7 +751,7 @@ class Crawler extends CommonLog {
           skipBeforeElementAction = false
         }
         case None => {
-          log.warn("all elements had be clicked")
+          log.warn(s"${currentUrl} all elements had be clicked")
           setElementAction("back")
           nextElement = getBackButton()
           conf.afterUrlFinished.foreach(Runtimes.eval)
@@ -791,30 +799,25 @@ class Crawler extends CommonLog {
   def getActionFromNormalActions(element: UrlElement): String = {
     val normalActions = conf.triggerActions.filter(_.getOrElse("pri", 1).toString.toInt == 0)
     log.info(s"normal actions size = ${normalActions.size}")
-    normalActions.foreach(r => {
+    normalActions.toStream.map(r => {
       val xpath = r("xpath").toString
       val action = r("action").toString
 
-      val allMap = if (xpath.matches("/.*")) {
+      (if (xpath.matches("/.*")) {
         //支持xpath
         getAllElements(xpath)
       } else {
         //支持正则通配
         val all = getRuleMatchNodes()
         (all.filter(_ ("name").toString.matches(xpath)) ++ all.filter(_ ("value").toString.matches(xpath))).distinct
+      }).toStream.filter(element==getUrlElementByMap(_)).headOption match {
+        case Some(v)=>Some(action)
+        case None => None
       }
-
-      allMap.foreach(m => {
-        val item = getUrlElementByMap(m)
-        if (item == element) {
-          log.info(s"find action ${action} for ${element.loc}")
-          return action
-        } else {
-          log.trace(s"not find,  ${item} not equal ${element}")
-        }
-      })
-    })
-    "click"
+    }).filter(_!=None).headOption match {
+      case Some(action) => action.get
+      case None => "click"
+    }
   }
 
 
@@ -982,7 +985,7 @@ class Crawler extends CommonLog {
     val domPath = getBasePathName() + ".dom"
     //感谢QQ:434715737的反馈
     log.info(s"save to ${domPath}")
-    Try(File(domPath).writeAll(pageSource)) match {
+    Try(File(domPath).writeAll(currentPageSource)) match {
       case Success(v) => {
         log.trace(s"save to ${domPath}")
       }
@@ -1135,6 +1138,7 @@ class Crawler extends CommonLog {
   }
 
   def back(): Unit = {
+    pluginClasses.foreach(_.beforeBack())
     if (conf.currentDriver.toLowerCase == "android") {
       if (backDistance.intervalMS() < 4000) {
         log.warn("two back action too close")
@@ -1202,7 +1206,14 @@ class Crawler extends CommonLog {
   def stop(): Unit = {
     stopAll = true
     if (signalInt < 2) {
-      pluginClasses.foreach(_.stop())
+      Try(pluginClasses.foreach(_.stop())) match {
+        case Success(v)=> {}
+        case Failure(e) => {
+          log.error(e.getMessage)
+          log.error(e.getCause)
+          e.getStackTrace.foreach(log.error)
+        }
+      }
       log.info("generate report finish")
       sys.exit()
     }

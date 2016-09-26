@@ -6,9 +6,8 @@ libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-compiler" % scalaVersion.value,
   "org.scala-lang" % "scala-library" % scalaVersion.value,
   //"org.scala-lang" % "scala-reflect" % scalaVersion.value,
-  "org.scalatest" %% "scalatest" % "2.2.6",
-  "io.appium" % "java-client" % "3.4.1",
-  "org.seleniumhq.selenium" % "selenium-java" % "2.35.0" % "test",
+  "io.appium" % "java-client" % "4.1.2",
+  "org.seleniumhq.selenium" % "selenium-java" % "2.53.1" % "test",
   //"io.selendroid" % "selendroid" % "0.16.0",
   "io.selendroid" % "selendroid-client" % "0.16.0",
   //"com.propensive" %% "rapture" % "2.0.0-M1",
@@ -28,11 +27,20 @@ libraryDependencies ++= Seq(
   "net.lightbody.bmp" % "browsermob-core" % "2.1.2",
   "org.lucee" % "commons-codec" % "1.10.L001",
   "com.twitter" %% "util-eval" % "6.35.0",
-  "net.sourceforge.tess4j" % "tess4j" % "3.2.1",
+  "net.sourceforge.tess4j" % "tess4j" % "3.2.1" exclude("asm", "asm"),
+  "org.jsoup" % "jsoup" % "1.9.2",
+  "org.scalactic" %% "scalactic" % "3.0.0" ,
+  "org.scalatest" %% "scalatest" % "3.0.0" ,
   "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 
+libraryDependencies += "bouncycastle" % "bctsp-jdk14" % "1.38" from "http://central.maven.org/maven2/bouncycastle/bcmail-jdk14/138/bcmail-jdk14-138.jar"
+
 libraryDependencies ~= { _.map(_.exclude("ch.qos.logback", "logback-classic")) }
+
+
+
+enablePlugins(JavaAppPackaging)
 
 proguardSettings
 ProguardKeys.proguardVersion in Proguard := "5.2.1"
@@ -63,13 +71,14 @@ assemblyMergeStrategy in assembly := {
     }
 }
 
-
-
-//resolvers += "oschina" at "http://maven.oschina.net/content/groups/public/"
-resolvers += Resolver.sonatypeRepo("public")
+resolvers += "oschina" at "http://maven.oschina.net/content/groups/public/"
 resolvers += "spring-snapshots" at "http://repo.spring.io/snapshot"
+resolvers += "central" at "http://central.maven.org/maven2"
+resolvers += "central2" at "http://central.maven.org"
+resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases"
+resolvers += Resolver.sonatypeRepo("public")
 resolvers += Resolver.mavenLocal
-externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral = true)
+//externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral =false)
 
 
 parallelExecution in Test := false

@@ -4,6 +4,7 @@ import java.net.URL
 
 import io.appium.java_client.android.AndroidDriver
 import org.openqa.selenium.WebElement
+import org.openqa.selenium.remote.DesiredCapabilities
 
 import scala.collection.immutable
 import scala.collection.mutable.ListBuffer
@@ -23,17 +24,16 @@ class AndroidCrawler extends Crawler {
   }
 
   override def setupAppium(): Unit = {
-    super.setupAppium()
+    val capabilities = new DesiredCapabilities()
+    conf.capability.foreach(kv => capabilities.setCapability(kv._1, kv._2))
+
     //todo:主要做遍历测试和异常测试. 所以暂不使用selendroid. 兼容性测试需要使用selendroid
     //capabilities.setCapability("automationName", "Selendroid")
     //todo: Appium模式太慢
     capabilities.setCapability("automationName", "Appium")
     capabilities.setCapability("unicodeKeyboard", "true")
-    conf.capability.foreach(kv=>capabilities.setCapability(kv._1, kv._2))
 
     val url=conf.capability("appium").toString
-    log.info(s"url=${url}")
-    log.info(capabilities)
     driver = new AndroidDriver[WebElement](new URL(url), capabilities)
     //driver.launchAp
     log.info(s"driver=${driver}")

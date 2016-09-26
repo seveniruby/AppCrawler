@@ -22,6 +22,10 @@ abstract class Plugin extends CommonLog{
   def afterUrlRefresh(url:String): Unit ={
 
   }
+
+  def beforeBack(): Unit ={
+
+  }
   def beforeElementAction(element: UrlElement): Unit ={
 
   }
