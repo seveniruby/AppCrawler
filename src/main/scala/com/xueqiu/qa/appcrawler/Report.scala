@@ -93,7 +93,7 @@ trait Report extends CommonLog {
 
   def runTestCase(): Unit = {
     var cmdArgs = Array("-R", testcaseDir,
-      "-o", "-u", reportPath, "-h", reportPath)
+      "-oF", "-u", reportPath, "-h", reportPath)
 
     val suites = new java.io.File(testcaseDir).list().filter(_.endsWith(".scala")).map(_.split(".scala").head).toList
     suites.map(suite => Array("-s", s"${suite}")).foreach(array => {

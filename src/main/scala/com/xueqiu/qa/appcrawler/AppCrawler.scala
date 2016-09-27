@@ -126,7 +126,7 @@ object AppCrawler extends CommonLog{
           |#从已经结束的结果中重新生成报告
           |appcrawler --report result/
           |#新老版本对比
-          |appcrawler --diff --candidate pre/diff.yml --master master/diff.yml
+          |appcrawler --diff --candidate pre/ --master master/ --report ./
         """.stripMargin)
     }
     // parser.parse returns Option[C]
