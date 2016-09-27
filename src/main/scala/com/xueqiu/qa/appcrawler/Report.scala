@@ -1,5 +1,6 @@
 package com.xueqiu.qa.appcrawler
 
+import org.apache.commons.io.FileUtils
 import org.scalatest.tools.Runner
 
 import scala.collection.mutable
@@ -51,6 +52,7 @@ trait Report extends CommonLog {
     }
 
   }
+  //todo: 用原生类替换掉
   def genTestCase(index: Int, suite: String, elementStore: scala.collection.mutable.Map[String, ElementInfo]): String = {
 
     val codeTestCase = new StringBuilder
@@ -91,19 +93,26 @@ trait Report extends CommonLog {
     s
   }
 
-  def runTestCase(): Unit = {
+  def runTestCase(namespace: String=""): Unit = {
     var cmdArgs = Array("-R", testcaseDir,
       "-oF", "-u", reportPath, "-h", reportPath)
+    val testcaseDirFile=new java.io.File(testcaseDir)
 
-    val suites = new java.io.File(testcaseDir).list().filter(_.endsWith(".scala")).map(_.split(".scala").head).toList
-    suites.map(suite => Array("-s", s"${suite}")).foreach(array => {
+    val suites=if(testcaseDirFile.list().exists(_.matches(".*\\.scala"))) {
+      val suites = testcaseDirFile.list().filter(_.endsWith(".scala")).map(_.split(".scala").head).toList
+      val sourceFiles = suites.map(name => s"${testcaseDir}/${name}.scala")
+
+      log.info(s"compile testcase ${sourceFiles} into ${testcaseDir}")
+      Runtimes.init(testcaseDir)
+      Runtimes.compile(sourceFiles)
+      suites
+    }else{
+      testcaseDirFile.list().filter(_.endsWith(".class")).map(_.split(".class").head).toList
+    }
+
+    suites.map(suite => Array("-s", s"${namespace}${suite}")).foreach(array => {
       cmdArgs = cmdArgs ++ array
     })
-
-    val sourceFiles = suites.map(name => s"${testcaseDir}/${name}.scala")
-    log.info(s"compile testcase ${sourceFiles} into ${testcaseDir}")
-    Runtimes.init(testcaseDir)
-    Runtimes.compile(sourceFiles)
 
     if (suites.size > 0) {
       log.info(s"run ${cmdArgs.toList}")
@@ -125,4 +134,13 @@ trait Report extends CommonLog {
 object Report extends Report{
   var showCancel=false
   var title="AppCrawler"
+  var master=""
+  var candidate=""
+  var reportDir=""
+
+
+  def generateTestCase(): Unit ={
+    val templateClass=getClass.getResourceAsStream("/com/xueqiu/qa/appcrawler/DiffSuite.class")
+    FileUtils.copyToFile(templateClass, new java.io.File(reportDir+"/DiffSuite.class"))
+  }
 }

@@ -1,6 +1,5 @@
 package org.scalatest.tools
 
-import com.xueqiu.qa.appcrawler.CrawlerSuite
 import org.scalatest.{Args, Tracker, Filter, Stopper}
 
 /**

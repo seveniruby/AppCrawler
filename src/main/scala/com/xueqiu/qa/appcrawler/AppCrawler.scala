@@ -126,7 +126,7 @@ object AppCrawler extends CommonLog{
           |#从已经结束的结果中重新生成报告
           |appcrawler --report result/
           |#新老版本对比
-          |appcrawler --diff --candidate pre/ --master master/ --report ./
+          |appcrawler --candidate result/ --master pre/ --report ./
         """.stripMargin)
     }
     // parser.parse returns Option[C]
@@ -246,18 +246,18 @@ object AppCrawler extends CommonLog{
         log.trace("yaml config")
         log.trace(DataObject.toYaml(crawlerConf))
 
-        if(config.report!="" && config.diff==false){
+        if(config.report!="" && config.candidate.isEmpty){
           val store=DataObject.fromYaml[UrlElementStore](Source.fromFile(s"${config.report}/elements.yml").mkString)
           Report.saveTestCase(store, config.report)
           Report.runTestCase()
-        } else if(config.diff){
-          FlowDiff.candidate=config.candidate
-          FlowDiff.master=config.master
-          FlowDiff.reportDir=config.report
-          FlowDiff.generateTestCase()
+        } else if(config.candidate.nonEmpty){
+          Report.candidate=config.candidate
+          Report.master=config.master
+          Report.reportDir=config.report
+          Report.generateTestCase()
           Report.reportPath=config.report
           Report.testcaseDir=config.report
-          Report.runTestCase()
+          Report.runTestCase("com.xueqiu.qa.appcrawler.")
         }else {
           startCrawl(crawlerConf)
         }

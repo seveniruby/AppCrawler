@@ -515,6 +515,8 @@ class Crawler extends CommonLog {
     currentPageDom=null
 
     currentPageSource = MiniAppium.getPageSource()
+    log.trace("currentPageSource=")
+    log.trace(currentPageSource)
 
     if (currentPageSource.nonEmpty) {
       Try(RichData.toXML(currentPageSource)) match {
@@ -635,8 +637,14 @@ class Crawler extends CommonLog {
       case Some(v) if appNameRecord.isDiff() == false => {
         //app相同并且找到back控件才点击. 否则就默认back
         val element = getUrlElementByMap(v)
+        val backElement=UrlElement(
+          element.url,
+          element.tag,
+          element.name,
+          element.name+store.getClickedElementsList.size.toString,
+          element.loc)
         setElementAction("click")
-        return Some(element)
+        return Some(backElement)
       }
       case _ => {
         log.warn("find back button error")

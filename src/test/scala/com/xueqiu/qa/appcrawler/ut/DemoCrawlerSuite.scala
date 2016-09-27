@@ -1,6 +1,5 @@
 package com.xueqiu.qa.appcrawler.ut
 
-import com.xueqiu.qa.appcrawler.CrawlerSuite
 import org.scalatest.FunSuite
 
 /**

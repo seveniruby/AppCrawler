@@ -1,6 +1,6 @@
 package org.scalatest.tools
 
-import com.xueqiu.qa.appcrawler.{CrawlerSuite, CommonLog}
+import com.xueqiu.qa.appcrawler.CommonLog
 import org.scalatest._
 
 /**
