@@ -8,7 +8,7 @@ import org.scalatest.FunSuite
   */
 class TestUrlElement extends FunSuite {
   test("windows file name"){
-    val element=UrlElement("", "", "", "", "//xxfxx[@text=\"fff<xxx->>>dddff\"]")
+    val element=UrlElement("", "", "", "", "//xxfxx[@index=\"11\" and @text=\"fff<xxx->>>dddff\"]")
     println(element.toFileName())
   }
 
