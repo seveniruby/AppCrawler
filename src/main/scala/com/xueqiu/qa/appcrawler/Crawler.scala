@@ -246,7 +246,11 @@ class Crawler extends CommonLog {
     * @return
     */
   def getAllElements(xpath: String): List[immutable.Map[String, Any]] = {
-    RichData.getListFromXPath(xpath, currentPageDom)
+    log.trace(s"xpath=${xpath}")
+    log.trace("get list")
+    val elementList=RichData.getListFromXPath(xpath, currentPageDom)
+    elementList.foreach(log.trace)
+    elementList
   }
 
   /**
@@ -332,8 +336,8 @@ class Crawler extends CommonLog {
   }
 
   def isBackApp(): Boolean = {
-    //跳到了其他app
-    if (conf.appWhiteList.forall(appNameRecord.last().toString != _)) {
+    //跳到了其他app. 排除点一次就没有的弹框
+    if (conf.appWhiteList.forall(appNameRecord.last().toString.matches(_)==false) && appNameRecord.last(2).distinct.size>1) {
       log.warn(s"not in app white list ${conf.appWhiteList}")
       log.warn(s"jump to other app appName=${appNameRecord.last()} lastAppName=${appNameRecord.pre()}")
       setElementAction("backApp")
