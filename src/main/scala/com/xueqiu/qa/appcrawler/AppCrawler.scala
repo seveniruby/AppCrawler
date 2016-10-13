@@ -62,7 +62,7 @@ object AppCrawler extends CommonLog{
     val parser = new scopt.OptionParser[Param]("appcrawler") {
       head(
         """
-          |AppCrawler 1.7.0
+          |AppCrawler 1.7.1
           |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
           |帮助文档: http://seveniruby.gitbooks.io/appcrawler
           |移动测试技术交流: https://testerhome.com
@@ -187,7 +187,7 @@ object AppCrawler extends CommonLog{
 
         //设定app
         config.app match {
-          case file if file.exists() && file.isFile =>{
+          case file if file.exists() =>{
             //支持相对路径
             crawlerConf.capability ++= Map("app" -> config.app.getCanonicalPath)
           }

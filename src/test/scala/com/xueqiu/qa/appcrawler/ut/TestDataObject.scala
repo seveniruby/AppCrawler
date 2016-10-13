@@ -301,4 +301,12 @@ class TestDataObject extends FunSuite with CommonLog with Matchers{
     fm.toSeq.sortBy(_._1).foreach(println)
 
   }
+  test("from json"){
+    val str=
+      """
+        |
+        |{"status":0,"value":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<AppiumAUT>\n    <XCUIElementTypeApplication name=\"雪球\" label=\"雪球\" value=\"\" dom=\"\" enabled=\"true\" valid=\"true\" visible=\"true\" hint=\"\" path=\"/0\" x=\"0\" y=\"0\" width=\"375\" height=\"667\">\n</XCUIElementTypeApplication>\n</AppiumAUT>","sessionId":"6a137283-8ceb-4df4-8a48-bf9d5de32659"}
+      """.stripMargin
+    log.info(DataObject.fromJson[Map[String, String]](str).getOrElse("value", ""))
+  }
 }

@@ -439,7 +439,18 @@ trait MiniAppium extends CommonLog with WebBrowser {
       MiniAppium.asyncTask(60)(driver.getPageSource) match {
         case Some(v) => {
           log.trace("get page source success")
-          source = RichData.toPrettyXML(v)
+          //todo: wda返回的不是标准的xml
+          val xmlStr=v match {
+            case json if json.trim.charAt(0)=='{' => {
+              log.info("json format maybe from wda")
+              DataObject.fromJson[Map[String, String]](v).getOrElse("value", "")
+            }
+            case xml if xml.trim.charAt(0)=='<' =>{
+              log.info("xml format ")
+              xml
+            }
+          }
+          source = RichData.toPrettyXML(xmlStr)
           return source
         }
         case None => {

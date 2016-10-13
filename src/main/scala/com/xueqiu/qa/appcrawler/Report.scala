@@ -141,6 +141,6 @@ object Report extends Report{
 
   def generateTestCase(): Unit ={
     val templateClass=getClass.getResourceAsStream("/com/xueqiu/qa/appcrawler/DiffSuite.class")
-    FileUtils.copyToFile(templateClass, new java.io.File(reportDir+"/DiffSuite.class"))
+    FileUtils.copyInputStreamToFile(templateClass, new java.io.File(reportDir+"/DiffSuite.class"))
   }
 }

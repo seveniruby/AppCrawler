@@ -6,6 +6,8 @@ import io.appium.java_client.ios.IOSDriver
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.DesiredCapabilities
 
+import scala.util.{Failure, Try, Success}
+
 /**
   * Created by seveniruby on 15/12/10.
   */
@@ -34,7 +36,17 @@ class IOSCrawler extends Crawler {
     //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")
     //driver = new XueqiuDriver[WebElement](new URL("http://127.0.0.1:4729/wd/hub"), capabilities)
     val url=conf.capability("appium").toString
-    driver = new IOSDriver[WebElement](new URL(url), capabilities)
+    Try(driver=new IOSDriver[WebElement](new URL(url), capabilities)) match {
+      case Success(v)=> {
+        log.info("success")
+      }
+      case Failure(e)=>{
+        log.error("error")
+        log.error(e.getMessage)
+        log.error(e.getCause)
+      }
+
+    }
     //driver.launchApp()
   }
 
@@ -45,13 +57,11 @@ class IOSCrawler extends Crawler {
     */
   override def getUrl(): String = {
     val superUrl=super.getUrl()
-
-    log.trace(getAllElements("//UIAApplication").head)
-    val title=getAllElements("//UIANavigationBar").map(_.getOrElse("name", "").toString).mkString("")
+    val title=getAllElements("//*[contains(name(), 'NavigationBar')]").map(_.getOrElse("name", "").toString).mkString("")
     List(appName, title, superUrl).distinct.filter(_.nonEmpty).mkString("-")
   }
 
   override def getAppName(): String ={
-    getAllElements("//UIAApplication").head.getOrElse("name", "").toString
+    getAllElements("//*[contains(name(), 'Application')]").head.getOrElse("name", "").toString
   }
 }

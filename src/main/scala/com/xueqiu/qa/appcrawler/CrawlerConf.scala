@@ -75,8 +75,6 @@ class CrawlerConf {
 
   /** 优先遍历元素 */
   var firstList = ListBuffer[String](
-    "//*[@text='高手理财']",
-    "//*[@text='港股高手']"
   )
   /** 默认遍历列表 */
   var selectedList = ListBuffer[String](
