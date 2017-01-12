@@ -306,7 +306,7 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
       |
     """.stripMargin
 
-  val domAndroid=RichData.toXML(xmlAndroid)
+  val domAndroid=RichData.toDocument(xmlAndroid)
 
 
   val xmlIOS=
@@ -645,7 +645,7 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
     """.stripMargin
 
 
-  val domIOS=RichData.toXML(xmlIOS)
+  val domIOS=RichData.toDocument(xmlIOS)
 
 
   test("parse xpath"){

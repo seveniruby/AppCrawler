@@ -13,62 +13,66 @@ import scala.io.Source
 /**
   * Created by seveniruby on 16/4/24.
   */
-object AppCrawler extends CommonLog{
-  var logPath=""
-  var crawler=new Crawler
-  val startTime=new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
+object AppCrawler extends CommonLog {
+  var logPath = ""
+  var crawler = new Crawler
+  val startTime = new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
+
   case class Param(
-                           app: File = new File(""),
-                           conf: File = new File(""),
-                           verbose: Boolean = false,
-                           mode:String="",
-                           sbt_params: Seq[String]=Seq(),
-                           platform: String = "",
-                           appium:String = "",
-                           resultDir: String = "",
-                           maxTime:Int = 0,
-                           report:String="",
-                           candidate:String="",
-                           master:String="",
-                           diff:Boolean=false,
-                           capability: Map[String, String] = Map[String, String]()
-                         )
-    def sbt(args: Seq[String]): Unit = {
-      import scala.sys.process._
-      //val sbt="/usr/local/Cellar/sbt/0.13.11/libexec/sbt-launch.jar"
-      val project_dir=getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath.
-        split("/").dropRight(2).mkString("/")
-      val launcherJar = s"${project_dir}/lib/sbt-launch.jar"
-      val cmd = Seq("java", "-jar", launcherJar)++args // You
-      log.trace(cmd)
-      cmd ! ProcessLogger(stdout append _ + "\n", stderr append _ + "\n")
-    }
+                    app: File = new File(""),
+                    conf: File = new File(""),
+                    verbose: Boolean = false,
+                    mode: String = "",
+                    sbt_params: Seq[String] = Seq(),
+                    platform: String = "",
+                    appium: String = "",
+                    resultDir: String = "",
+                    maxTime: Int = 0,
+                    report: String = "",
+                    candidate: String = "",
+                    master: String = "",
+                    diff: Boolean = false,
+                    template: String = "",
+                    capability: Map[String, String] = Map[String, String]()
+                  )
+
+  def sbt(args: Seq[String]): Unit = {
+    import scala.sys.process._
+    //val sbt="/usr/local/Cellar/sbt/0.13.11/libexec/sbt-launch.jar"
+    val project_dir = getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath.
+      split("/").dropRight(2).mkString("/")
+    val launcherJar = s"${project_dir}/lib/sbt-launch.jar"
+    val cmd = Seq("java", "-jar", launcherJar) ++ args // You
+    log.trace(cmd)
+    cmd ! ProcessLogger(stdout append _ + "\n", stderr append _ + "\n")
+  }
 
 
-  def setGlobalEncoding(): Unit ={
+  def setGlobalEncoding(): Unit = {
     log.info("set file.encoding to UTF-8")
-    System.setProperty("file.encoding","UTF-8");
+    System.setProperty("file.encoding", "UTF-8");
 
     val charset = classOf[Charset].getDeclaredField("defaultCharset")
     charset.setAccessible(true)
-    charset.set(null,null)
+    charset.set(null, null)
     log.info("Default Charset=" + Charset.defaultCharset())
     log.info("file.encoding=" + System.getProperty("file.encoding"))
     log.info("Default Charset=" + Charset.defaultCharset())
-    log.info("project directory="+ (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
+    log.info("project directory=" + (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
 
   }
+
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[Param]("appcrawler") {
       head(
         """
-          |AppCrawler 1.7.1
+          |AppCrawler 1.8.0
           |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
           |帮助文档: http://seveniruby.gitbooks.io/appcrawler
           |移动测试技术交流: https://testerhome.com
           |感谢: 晓光 泉龙 杨榕 恒温 mikezhou yaming116
         """.stripMargin)
-      opt[File]('a', "app") action { (x, c) =>{
+      opt[File]('a', "app") action { (x, c) => {
         c.copy(app = x)
       }
       } text ("Android或者iOS的文件地址, 可以是网络地址, 赋值给appium的app选项")
@@ -97,18 +101,21 @@ object AppCrawler extends CommonLog{
       opt[Map[String, String]]("capability") valueName ("k1=v1,k2=v2...") action { (x, c) =>
         c.copy(capability = x)
       } text ("appium capability选项, 这个参数会覆盖-c指定的配置模板参数, 用于在模板配置之上的参数微调")
-      opt[String]('r', "report") action { (x, c)=>
+      opt[String]('r', "report") action { (x, c) =>
         c.copy(report = x)
-      } text("输出html和xml报告")
-      opt[String]("master") action { (x, c)=>
+      } text ("输出html和xml报告")
+      opt[String]("template") action { (x, c) =>
+        c.copy(template = x)
+      } text ("输出代码模板")
+      opt[String]("master") action { (x, c) =>
         c.copy(master = x)
-      } text("master的diff.yml文件地址")
-      opt[String]("candidate") action { (x, c)=>
+      } text ("master的diff.yml文件地址")
+      opt[String]("candidate") action { (x, c) =>
         c.copy(candidate = x)
-      } text("candidate环境的diff.yml文件")
-      opt[Unit]("diff") action { (x, c)=>
+      } text ("candidate环境的diff.yml文件")
+      opt[Unit]("diff") action { (x, c) =>
         c.copy(diff = true)
-      } text("执行diff对比")
+      } text ("执行diff对比")
       opt[Unit]("verbose").abbr("vv") action { (_, c) =>
         c.copy(verbose = true)
       } text ("是否展示更多debug信息")
@@ -121,12 +128,22 @@ object AppCrawler extends CommonLog{
           |appcrawler -c xueqiu.json --capability udid=[你的udid] -a Snowball.app
           |appcrawler -c xueqiu.json -a Snowball.app -u 4730
           |appcrawler -c xueqiu.json -a Snowball.app -u http://127.0.0.1:4730/wd/hub
+          |
           |#启动已经安装过的app
           |appcrawler --capability appPackage=com.xueqiu.android,appActivity=.welcomeActivity
+          |
           |#从已经结束的结果中重新生成报告
           |appcrawler --report result/
+          |
           |#新老版本对比
           |appcrawler --candidate result/ --master pre/ --report ./
+          |
+          |#自动生成Page Object代码模板文件
+          |appcrawler --template PageObjectDemo.ssp --output result/
+          |
+          |#根据wda的inspector生成测试用例代码
+          |appcrawler --template PageObjectDemo.ssp -u http://localhost:8100
+          |
         """.stripMargin)
     }
     // parser.parse returns Option[C]
@@ -138,37 +155,37 @@ object AppCrawler extends CommonLog{
     }
     parser.parse(args_new, Param()) match {
       case Some(config) => {
-        if(config.verbose){
-          GA.logLevel=Level.TRACE
+        if (config.verbose) {
+          GA.logLevel = Level.TRACE
           log.info(s"verbose=${config.verbose}")
           log.info(s"set global log level to ${GA.logLevel}")
           RichData.initLog()
         }
         log.trace("config=")
         log.trace(config)
-        if(config.sbt_params.nonEmpty){
+        if (config.sbt_params.nonEmpty) {
           sbt(config.sbt_params)
-          return()
+          return ()
         }
         var crawlerConf = new CrawlerConf
         //获取配置模板文件
         if (config.conf.isFile) {
           log.info(s"Find Conf ${config.conf.getAbsolutePath}")
-          crawlerConf=crawlerConf.load(config.conf).get
+          crawlerConf = crawlerConf.load(config.conf).get
         }
 
         //判断平台
         config.app.getName match {
-          case androidApp if androidApp.matches(".*\\.apk$") =>{
+          case androidApp if androidApp.matches(".*\\.apk$") => {
             crawlerConf.currentDriver = "Android"
           }
-          case iosApp if iosApp.matches(".*\\.ipa$") || iosApp.matches(".*\\.app$") =>{
+          case iosApp if iosApp.matches(".*\\.ipa$") || iosApp.matches(".*\\.app$") => {
             crawlerConf.currentDriver = "iOS"
           }
-          case ios if config.platform.toLowerCase=="ios"=>
-            crawlerConf.currentDriver="iOS"
-          case android if config.platform.toLowerCase=="android"=>
-            crawlerConf.currentDriver="Android"
+          case ios if config.platform.toLowerCase == "ios" =>
+            crawlerConf.currentDriver = "iOS"
+          case android if config.platform.toLowerCase == "android" =>
+            crawlerConf.currentDriver = "Android"
           case _ =>
             log.warn("can not know what platform, will use default android, please use -p to set the platform")
         }
@@ -176,30 +193,30 @@ object AppCrawler extends CommonLog{
 
         //合并capability, 命令行>特定平台的capability>通用capability
         crawlerConf.currentDriver.toLowerCase match {
-          case "android"=> {
-            crawlerConf.capability++=crawlerConf.androidCapability
+          case "android" => {
+            crawlerConf.capability ++= crawlerConf.androidCapability
           }
           case "ios" => {
-            crawlerConf.capability++=crawlerConf.iosCapability
+            crawlerConf.capability ++= crawlerConf.iosCapability
           }
         }
         crawlerConf.capability ++= config.capability
 
         //设定app
         config.app match {
-          case file if file.exists() =>{
+          case file if file.exists() => {
             //支持相对路径
             crawlerConf.capability ++= Map("app" -> config.app.getCanonicalPath)
           }
-          case fileNotExist if fileNotExist.getPath.nonEmpty && fileNotExist.exists()==false && fileNotExist.getPath.contains(":/")==false =>{
+          case fileNotExist if fileNotExist.getPath.nonEmpty && fileNotExist.exists() == false && fileNotExist.getPath.contains(":/") == false => {
             log.warn(s"app not exist ${fileNotExist.getPath}")
             System.exit(1)
           }
-          case network if network.getPath.contains(":/") =>{
+          case network if network.getPath.contains(":/") => {
             //支持http:// https:// ftp:// file://
             crawlerConf.capability ++= Map("app" -> config.app.getPath.replace(":/", "://"))
           }
-          case _ =>{
+          case _ => {
             log.info("use app in the config file")
           }
         }
@@ -207,75 +224,86 @@ object AppCrawler extends CommonLog{
 
         //设定appium的端口
         config.appium match {
-          case port if port.matches("[0-9]+")=>
-            crawlerConf.capability++=Map("appium" -> s"http://127.0.0.1:${config.appium}/wd/hub")
+          case port if port.matches("[0-9]+") =>
+            crawlerConf.capability ++= Map("appium" -> s"http://127.0.0.1:${config.appium}/wd/hub")
           case url if url.contains(":/") =>
-            crawlerConf.capability++=Map("appium" -> config.appium)
+            crawlerConf.capability ++= Map("appium" -> config.appium)
           case _ => {
-            if(!crawlerConf.capability.contains("appium")){
+            if (!crawlerConf.capability.contains("appium")) {
               log.info("use default appium address 4723")
-              crawlerConf.capability++=Map("appium" -> s"http://127.0.0.1:4723/wd/hub")
-            }else{
+              crawlerConf.capability ++= Map("appium" -> s"http://127.0.0.1:4723/wd/hub")
+            } else {
               log.info(s"use appium in the config file ${crawlerConf.capability("appium")}")
             }
           }
         }
         log.info(s"appium address = ${crawlerConf.capability.get("appium")}")
 
-        if(config.maxTime>0){
-          crawlerConf.maxTime=config.maxTime
+        if (config.maxTime > 0) {
+          crawlerConf.maxTime = config.maxTime
         }
 
         config.resultDir match {
-          case param if param.nonEmpty => crawlerConf.resultDir=param
+          case param if param.nonEmpty => crawlerConf.resultDir = param
           case conf if crawlerConf.resultDir.nonEmpty => log.info("use conf in config file")
           case _ =>
             crawlerConf.resultDir = s"${crawlerConf.currentDriver}_${startTime}"
         }
         log.info(s"result directory = ${crawlerConf.resultDir}")
 
-        Report.showCancel=crawlerConf.showCancel
-        if(crawlerConf.reportTitle.nonEmpty){
-          Report.title=crawlerConf.reportTitle
+        Report.showCancel = crawlerConf.showCancel
+        if (crawlerConf.reportTitle.nonEmpty) {
+          Report.title = crawlerConf.reportTitle
         }
 
         setGlobalEncoding()
 
-        log.trace("json config")
-        log.trace(crawlerConf.toJson)
         log.trace("yaml config")
         log.trace(DataObject.toYaml(crawlerConf))
 
-        if(config.report!="" && config.candidate.isEmpty){
-          val store=DataObject.fromYaml[UrlElementStore](Source.fromFile(s"${config.report}/elements.yml").mkString)
+        if (config.report != "" && config.candidate.isEmpty && config.template=="") {
+          val store = DataObject.fromYaml[UrlElementStore](Source.fromFile(s"${config.report}/elements.yml").mkString)
           Report.saveTestCase(store, config.report)
           Report.runTestCase()
-        } else if(config.candidate.nonEmpty){
-          Report.candidate=config.candidate
-          Report.master=config.master
-          Report.reportDir=config.report
+          return
+        } else if (config.candidate.nonEmpty) {
+          Report.candidate = config.candidate
+          Report.master = config.master
+          Report.reportDir = config.report
           Report.generateTestCase()
-          Report.reportPath=config.report
-          Report.testcaseDir=config.report
+          Report.reportPath = config.report
+          Report.testcaseDir = config.report
           Report.runTestCase("com.xueqiu.qa.appcrawler.")
-        }else {
-          startCrawl(crawlerConf)
+          return
         }
+
+        if(config.template!=""){
+          val template=new Template
+          if(config.appium.nonEmpty){
+            template.getPageSource(config.appium)
+          }else {
+            template.read(s"${crawlerConf.resultDir}/elements.yml")
+          }
+          template.write(config.template, crawlerConf.resultDir+"/template/")
+          return
+        }
+
+        startCrawl(crawlerConf)
       }
       case None => {}
     }
   }
 
 
-  def startCrawl(conf:CrawlerConf): Unit ={
+  def startCrawl(conf: CrawlerConf): Unit = {
     conf.currentDriver.toLowerCase match {
-      case "android"=>{
-        crawler=new AndroidCrawler
+      case "android" => {
+        crawler = new AndroidCrawler
       }
       case "ios" => {
-        crawler=new IOSCrawler
+        crawler = new IOSCrawler
       }
-      case _ =>{
+      case _ => {
         log.info("请指定currentDriver为Android或者iOS")
       }
     }

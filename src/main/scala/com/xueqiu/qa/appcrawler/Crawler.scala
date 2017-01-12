@@ -148,7 +148,8 @@ class Crawler extends CommonLog {
     MiniAppium.setPlatformName(conf.currentDriver)
 
 
-    driver.manage().logs().getAvailableLogTypes().toArray.foreach(log.info)
+    //todo: 不是所有的实现都支持
+    //driver.manage().logs().getAvailableLogTypes().toArray.foreach(log.info)
     //设定结果目录
 
     GA.log("crawler")
@@ -368,7 +369,7 @@ class Crawler extends CommonLog {
 
   def isReturn(): Boolean = {
     //url黑名单
-    if (conf.urlBlackList.filter(urlStack.head.matches(_)).nonEmpty) {
+    if (conf.urlBlackList.exists(urlStack.head.matches(_))) {
       log.warn(s"${urlStack.head} in urlBlackList should return")
       return true
     }
@@ -415,16 +416,17 @@ class Crawler extends CommonLog {
   /**
     * 黑名单过滤. 通过正则匹配, 判断name和value是否包含黑名单
     *
-    * @param uid
+    * @param elementMap
     * @return
     */
-  def isBlack(uid: immutable.Map[String, Any]): Boolean = {
+  def isBlack(elementMap: immutable.Map[String, Any]): Boolean = {
     conf.blackList.toStream.filter(b =>
-      List(uid("name"), uid("label"), uid("value")).exists(xx => xx.toString.matches(b))
+      List(elementMap("name"), elementMap("label"), elementMap("value")).exists(xx => xx.toString.matches(b))
     ).headOption match {
       case Some(v) => true
       case None => false
     }
+    false
   }
 
 
@@ -523,7 +525,7 @@ class Crawler extends CommonLog {
     log.trace(currentPageSource)
 
     if (currentPageSource.nonEmpty) {
-      Try(RichData.toXML(currentPageSource)) match {
+      Try(RichData.toDocument(currentPageSource)) match {
         case Success(v) => {
           currentPageDom = v
         }
@@ -1122,9 +1124,12 @@ class Crawler extends CommonLog {
             val w = size.getWidth
             val h = size.getHeight
 
+
             val originImageName = getBasePathName() + ".ori.jpg"
             val newImageName = getBasePathName() + ".ps.jpg"
-            val newImageFile = MiniAppium.mark(originImageName, newImageName, x, y, w, h)
+            if(conf.saveScreen) {
+              MiniAppium.mark(originImageName, newImageName, x, y, w, h)
+            }
 
             MiniAppium.asyncTask() {
               if (str == "click") {
@@ -1181,8 +1186,8 @@ class Crawler extends CommonLog {
     //先判断是否在期望的界面里. 提升速度
     conf.triggerActions.filter(_.getOrElse("pri", 1).toString.toInt == 1).foreach(r => {
       val xpath = r("xpath").toString
-      val action = r("action").toString
-      val times = r("times").toString.toInt
+      val action = r.getOrElse("action", "click").toString
+      val times = r.getOrElse("times", 0).toString.toInt
 
       val allMap = if (xpath.matches("/.*")) {
         //支持xpath

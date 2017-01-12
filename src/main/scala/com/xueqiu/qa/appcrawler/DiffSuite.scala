@@ -21,9 +21,9 @@ class DiffSuite extends FunSuite with Matchers {
   val masterStore = DataObject.fromYaml[UrlElementStore](Source.fromFile(s"${Report.master}/elements.yml").mkString).elementStore
   val candidateStore = DataObject.fromYaml[UrlElementStore](Source.fromFile(s"${Report.candidate}/elements.yml").mkString).elementStore
 
-  val intersectkeys = masterStore.keys.toList.intersect(candidateStore.keys.toList)
-  println(intersectkeys.size)
-  addTestCase("intersect", intersectkeys)
+  val intersectKeys = masterStore.keys.toList.intersect(candidateStore.keys.toList)
+  println(intersectKeys.size)
+  addTestCase("intersect", intersectKeys)
 
   override def suiteName="Intersect"
   def addTestCase(name: String, keys: List[String]): Unit = {
@@ -31,7 +31,8 @@ class DiffSuite extends FunSuite with Matchers {
 
       val masterReport = DataObject.flatten(DataObject.fromXML(masterStore(key).resDom))
       val candidateReport = DataObject.flatten(DataObject.fromXML(candidateStore(key).resDom))
-      val testcase = s"${name} clicked=${masterStore(key).clickedIndex} xpath=${candidateStore(key).element.loc}"
+      val testcase = s"${name} url=${masterStore(key).element.url} clicked=${masterStore(key).clickedIndex} xpath=${candidateStore(key).element.loc}"
+      println(s"testcase = ${testcase}")
 
       test(testcase) {
         val subKeys = (masterReport.keys ++ candidateReport.keys).filter(key => blackList.exists(b => key.matches(b)) == false)

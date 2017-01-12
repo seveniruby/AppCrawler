@@ -1,5 +1,5 @@
 name := "AppCrawler"
-version := "1.7.0"
+version := "1.8.0"
 scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
@@ -26,11 +26,12 @@ libraryDependencies ++= Seq(
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.5.4",
   "net.lightbody.bmp" % "browsermob-core" % "2.1.2",
   "org.lucee" % "commons-codec" % "1.10.L001",
-  "com.twitter" %% "util-eval" % "6.35.0",
+  "com.twitter" %% "util-eval" % "6.35.0" % "test",
   "org.jsoup" % "jsoup" % "1.9.2",
   "org.scalactic" %% "scalactic" % "3.0.0" ,
   "org.scalatest" %% "scalatest" % "3.0.0" ,
   "org.apache.directory.studio" % "org.apache.commons.io" % "2.4",
+  "org.scalatra.scalate" %% "scalate-core" % "1.7.1",
   "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 
@@ -39,6 +40,7 @@ libraryDependencies ++= Seq(
 
 
 enablePlugins(JavaAppPackaging)
+enablePlugins(SbtTwirl)
 
 /*
 proguardSettings

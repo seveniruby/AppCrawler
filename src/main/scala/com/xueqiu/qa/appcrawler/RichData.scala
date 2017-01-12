@@ -18,7 +18,7 @@ import scala.collection.mutable.ListBuffer
   */
 object RichData extends CommonLog {
   var xpathExpr=List("name", "label", "value", "resource-id", "content-desc", "index", "text")
-  def toXML(raw: String): Document = {
+  def toDocument(raw: String): Document = {
     val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
     val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
     //todo: appium有bug, 会返回&#非法字符. 需要给appium打补丁
@@ -30,7 +30,7 @@ object RichData extends CommonLog {
   }
 
   def toPrettyXML(raw: String): String = {
-    val document = toXML(raw)
+    val document = toDocument(raw)
     val format = new OutputFormat(document); //document is an instance of org.w3c.dom.Document
     format.setLineWidth(65)
     format.setIndenting(true)
@@ -151,6 +151,11 @@ object RichData extends CommonLog {
       case nodeList: NodeList => {
         0 until nodeList.getLength foreach (i => {
           val nodeMap = mutable.Map[String, Any]()
+          //初始化必须的字段
+          nodeMap("name") = ""
+          nodeMap("value") = ""
+          nodeMap("label") = ""
+
           val node = nodeList.item(i)
           //如果node为.可能会异常. 不过目前不会
           nodeMap("tag") = node.getNodeName
@@ -167,12 +172,6 @@ object RichData extends CommonLog {
             })
           }
 
-          //保持根元素兼容
-          if (nodeMap.contains("resource-id") == false && nodeMap.contains("name") == false) {
-            nodeMap("name") = ""
-            nodeMap("value") = ""
-            nodeMap("label") = ""
-          }
           //todo: 支持selendroid
           //如果是android 转化为和iOS相同的结构
           //name=resource-id label=content-desc value=text

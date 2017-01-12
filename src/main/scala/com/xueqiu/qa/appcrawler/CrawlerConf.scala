@@ -94,15 +94,7 @@ class CrawlerConf {
   )
   /** 引导规则. name, value, times三个元素组成 */
   var triggerActions = ListBuffer[scala.collection.mutable.Map[String, Any]]()
-  triggerActions += mutable.Map("xpath" -> ".*seveniruby.*", "action" -> "click", "times" -> 0, "pri" -> 1)
-  var startupActions = ListBuffer[String](
-    "Thread.sleep(3000)",
-    "swipe(\"left\")",
-    "swipe(\"left\")",
-    "swipe(\"left\")",
-    "swipe(\"left\")",
-    "swipe(\"left\")"
-  )
+  var startupActions = ListBuffer[String]()
   startupActions ++= List("println(\"startupAction call use scala code\")")
 
   var beforeElementAction = ListBuffer[Map[String, String]]()

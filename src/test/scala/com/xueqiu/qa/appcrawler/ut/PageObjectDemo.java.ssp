@@ -1,0 +1,29 @@
+/**
+* Created by seveniruby on 2017/1/10.
+*/
+
+<%@ val elements: scala.collection.mutable.ListBuffer[Map[String, Any]] %>
+<%@ val file:String %>
+
+import org.openqa.selenium.remote.RemoteWebElement;
+import io.appium.java_client.pagefactory.*;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.FindAll;
+
+import io.appium.java_client.android.AndroidElement;
+import org.openqa.selenium.remote.RemoteWebElement;
+import io.appium.java_client.pagefactory.*;
+
+
+import java.util.List;
+
+
+public class PageObjectDemo_${file} {
+<% elements.foreach(element => {%>
+    @FindBy(xpath = "${unescape(element("xpath").toString.replace("\"", "\\\""))}")
+    private RemoteWebElement ${List(element("name"), element("content-desc"), element("text"))
+    .filter(_.toString.nonEmpty)
+    .mkString("_").replaceAll("[^a-zA-Z0-9_\\u4e00-\\u9fa5]", "")};
+
+<% }) %>
+}

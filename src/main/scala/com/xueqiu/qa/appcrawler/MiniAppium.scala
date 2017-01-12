@@ -135,7 +135,7 @@ trait MiniAppium extends CommonLog with WebBrowser {
   }
 
   def nodes(): List[Map[String, Any]] = {
-    RichData.getListFromXPath(keyToXPath(loc), RichData.toXML(getPageSource))
+    RichData.getListFromXPath(keyToXPath(loc), RichData.toDocument(getPageSource))
   }
 
 
@@ -212,7 +212,7 @@ trait MiniAppium extends CommonLog with WebBrowser {
     */
   def tree(key: String = "//*", index: Int = 0): Map[String, Any] = {
     log.info(s"find by key = ${key} index=${index}")
-    val nodes = RichData.getListFromXPath(keyToXPath(key), RichData.toXML(getPageSource))
+    val nodes = RichData.getListFromXPath(keyToXPath(key), RichData.toDocument(getPageSource))
     nodes.foreach(node => {
       log.debug(s"index=${nodes.indexOf(node)}")
       node.foreach(kv => {
@@ -303,6 +303,11 @@ trait MiniAppium extends CommonLog with WebBrowser {
   }
 
   def swipe(startX: Double = 0.9, endX: Double = 0.1, startY: Double = 0.9, endY: Double = 0.1): Option[_] = {
+    if(screenHeight<=0){
+      val size = driver.manage().window().getSize
+      screenHeight = size.getHeight
+      screenWidth = size.getWidth
+    }
     retry(driver.swipe(
       (screenWidth * startX).toInt, (screenHeight * startY).toInt,
       (screenWidth * endX).toInt, (screenHeight * endY).toInt, 1000

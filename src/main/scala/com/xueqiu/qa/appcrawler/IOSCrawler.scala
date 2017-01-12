@@ -31,6 +31,7 @@ class IOSCrawler extends Crawler {
   override def setupAppium():Unit={
     val capabilities = new DesiredCapabilities()
     capabilities.setCapability("platformName", "iOS")
+    capabilities.setCapability("autoAcceptAlerts", true)
     conf.capability.foreach(kv => capabilities.setCapability(kv._1, kv._2))
 
     //capabilities.setCapability(MobileCapabilityType.APP, "http://xqfile.imedao.com/android-release/xueqiu_681_10151900.apk")

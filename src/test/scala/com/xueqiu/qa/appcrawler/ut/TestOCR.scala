@@ -1,3 +1,4 @@
+/*
 package com.xueqiu.qa.appcrawler.ut
 
 import java.awt.BasicStroke
@@ -53,3 +54,4 @@ class TestOCR extends FunSuite{
   }
 
 }
+*/
