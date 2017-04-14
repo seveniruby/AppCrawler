@@ -1,5 +1,5 @@
 name := "AppCrawler"
-version := "1.8.0"
+version := "1.9.0"
 scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
@@ -20,6 +20,7 @@ libraryDependencies ++= Seq(
   "com.brsanthu" % "google-analytics-java" % "1.1.2",
   "org.slf4j" % "slf4j-api" % "1.7.18",
   "org.slf4j" % "slf4j-log4j12" % "1.7.18",
+  //"org.slf4j" % "slf4j-simple" % "1.7.18",
   //"org.apache.logging.log4j" % "log4j" % "2.5",
   //"com.android.tools.ddms" % "ddmlib" % "24.5.0",
   //"org.lucee" % "xml-xerces" % "2.11.0",
@@ -32,6 +33,10 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.0" ,
   "org.apache.directory.studio" % "org.apache.commons.io" % "2.4",
   "org.scalatra.scalate" %% "scalate-core" % "1.7.1",
+  "com.sksamuel.elastic4s" %% "elastic4s-core" % "5.1.5",
+  "com.sksamuel.elastic4s" %% "elastic4s-xpack-security" % "5.1.5",
+  "org.elasticsearch.client" % "transport" % "5.1.2",
+  "org.apache.logging.log4j" % "log4j-core" % "2.7",
   "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 
@@ -73,10 +78,11 @@ assemblyMergeStrategy in assembly := {
     }
 }
 
-resolvers += "oschina" at "http://maven.oschina.net/content/groups/public/"
+//resolvers += "oschina" at "http://maven.oschina.net/content/groups/public/"
 resolvers += "spring-snapshots" at "http://repo.spring.io/snapshot/"
 resolvers += "central" at "http://central.maven.org/maven2/"
 resolvers += "central2" at "http://central.maven.org/"
+resolvers += "elk" at "https://artifacts.elastic.co/maven"
 resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases/"
 resolvers += Resolver.sonatypeRepo("public")
 resolvers += Resolver.mavenLocal

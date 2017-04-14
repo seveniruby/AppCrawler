@@ -5,3 +5,4 @@ target/
 conf.json
 xueqiu.json
 *.apk
+*.swp

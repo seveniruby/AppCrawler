@@ -26,12 +26,8 @@ class AndroidCrawler extends Crawler {
   override def setupAppium(): Unit = {
     val capabilities = new DesiredCapabilities()
     conf.capability.foreach(kv => capabilities.setCapability(kv._1, kv._2))
-
-    //todo:主要做遍历测试和异常测试. 所以暂不使用selendroid. 兼容性测试需要使用selendroid
-    //capabilities.setCapability("automationName", "Selendroid")
+    //todo: 主要做遍历测试和异常测试. 所以暂不使用selendroid
     //todo: Appium模式太慢
-    capabilities.setCapability("automationName", "Appium")
-    capabilities.setCapability("unicodeKeyboard", "true")
 
     val url=conf.capability("appium").toString
     driver = new AndroidDriver[WebElement](new URL(url), capabilities)
@@ -41,16 +37,14 @@ class AndroidCrawler extends Crawler {
 
   override def getUrl(): String = {
     //todo:selendroid和appium在这块上不一致. api不一样.  appium不遵从标准. 需要改进
-    val screenName = automationName.toLowerCase() match {
-      case "appium" => {
-        (MiniAppium.asyncTask() {
-          val name=driver.asInstanceOf[AndroidDriver[WebElement]].currentActivity()
-          log.info(s"get activity name ${name}")
-          name
-        }).getOrElse("").split('.').last
-      }
+    val screenName = conf.capability.getOrElse("automationName", "").toString.toLowerCase() match {
       case "selendroid" => {
         driver.getCurrentUrl.split('.').last
+      }
+      case _ => {
+        (MiniAppium.asyncTask() {
+          driver.asInstanceOf[AndroidDriver[WebElement]].currentActivity()
+        }).getOrElse("").split('.').last
       }
     }
     val baseUrl=super.getUrl()

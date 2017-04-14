@@ -40,8 +40,13 @@ class Template {
         if (elements.contains(url) == false) {
           elements.put(url, ListBuffer[Map[String, Any]]())
         }
-        elements(url) ++= RichData.getListFromXPath("//*[@content-desc!='' or @resource-id != '' or @text!='']", doc)
-        elements(url) = elements(url).distinct
+        elements(url) ++= RichData.getListFromXPath("//*", doc)
+        val tagsLimit=List("Image", "Button", "Text")
+        elements(url) = elements(url)
+          .filter(_.getOrElse("visible", "true")=="true")
+          .filter(_.getOrElse("tag", "").toString.contains("StatusBar")==false)
+          .filter(e=>tagsLimit.exists(t=>e.getOrElse("tag", "").toString.contains(t)))
+          .distinct
       }
 
     })

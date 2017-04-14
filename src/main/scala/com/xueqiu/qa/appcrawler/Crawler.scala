@@ -35,7 +35,6 @@ class Crawler extends CommonLog {
   /** 元素的默认操作 */
   private var currentElementAction = "click"
 
-  protected var automationName = "appium"
   private var screenWidth = 0
   private var screenHeight = 0
 
@@ -420,11 +419,19 @@ class Crawler extends CommonLog {
     * @return
     */
   def isBlack(elementMap: immutable.Map[String, Any]): Boolean = {
-    conf.blackList.toStream.filter(b =>
+    log.debug(elementMap)
+    conf.blackList.toStream.filter(b => {
+      log.debug(b)
       List(elementMap("name"), elementMap("label"), elementMap("value")).exists(xx => xx.toString.matches(b))
-    ).headOption match {
-      case Some(v) => true
-      case None => false
+    }).headOption match {
+      case Some(v) => {
+        log.debug("true")
+        true
+      }
+      case None => {
+        log.debug("false")
+        false
+      }
     }
     false
   }
@@ -616,6 +623,7 @@ class Crawler extends CommonLog {
     }
 
     log.info("afterElementAction eval")
+    log.debug(conf.afterElementAction)
     conf.afterElementAction.foreach(Runtimes.eval)
     pluginClasses.foreach(p => p.afterElementAction(element))
   }
@@ -650,6 +658,7 @@ class Crawler extends CommonLog {
           element.name+store.getClickedElementsList.size.toString,
           element.loc)
         setElementAction("click")
+        backDistance.append("back")
         return Some(backElement)
       }
       case _ => {
@@ -822,7 +831,7 @@ class Crawler extends CommonLog {
         getAllElements(xpath)
       } else {
         //支持正则通配
-        val all = getRuleMatchNodes()
+        val all = getAllElements("//*").filter(isValid)
         (all.filter(_ ("name").toString.matches(xpath)) ++ all.filter(_ ("value").toString.matches(xpath))).distinct
       }).toStream.filter(element==getUrlElementByMap(_)).headOption match {
         case Some(v)=>Some(action)
@@ -913,72 +922,6 @@ class Crawler extends CommonLog {
         log.warn("find by xpath error")
       }
     }
-
-
-    /*
-    platformName.toLowerCase() match {
-      case "ios" => {
-        //照顾iOS android会在findByName的时候自动找text属性.
-        MiniAppium.doAppium(driver.findElementByXPath(
-          //s"//${uid.tag}[@name='${uid.id}' and @value='${uid.name}' and @x='${uid.loc.split(',').head}' and @y='${uid.loc.split(',').last}']"
-          s"//${element.tag}[@path='${element.loc}']"
-        )) match {
-          case Some(v) => {
-            log.trace("find by xpath success")
-            return Some(v)
-          }
-          case None => {
-            log.warn("find by xpath error")
-          }
-        }
-      }
-      case "android" => {
-        //findElementByName在appium1.5中被废弃 https://github.com/appium/appium/issues/6186
-        /*
-        if (uid.name != "") {
-          log.info(s"find by name=${uid.name}")
-          MiniAppium.doAppium(driver.findElementsByName(uid.name)) match {
-            case Some(v) => {
-              val arr=v.toArray().distinct
-              if (arr.length == 1) {
-                log.info("find by name success")
-                return Some(arr.head.asInstanceOf[WebElement])
-              } else {
-                //有些公司可能存在重名name
-                arr.foreach(log.info)
-                log.info(s"find count ${arr.size}, change to find by xpath")
-              }
-            }
-            case None => {
-            }
-          }
-        }
-        */
-        //xpath会较慢
-        MiniAppium.doAppium(driver.findElementsByXPath(element.loc)) match {
-          case Some(v) => {
-            val arr = v.toArray().distinct
-            if (arr.length == 1) {
-              log.trace("find by xpath success")
-              return Some(arr.head.asInstanceOf[WebElement])
-            } else {
-              //有些公司可能存在重名id
-              arr.foreach(log.info)
-              log.warn(s"find count ${v.size()}, you should check your dom file")
-              if (arr.size > 0) {
-                log.info("just use the first one")
-                return Some(arr.head.asInstanceOf[WebElement])
-              }
-            }
-          }
-          case None => {
-            log.warn("find by xpath error")
-          }
-        }
-
-      }
-    }
-    */
     None
   }
 
@@ -1110,6 +1053,7 @@ class Crawler extends CommonLog {
         //todo: tap和click的行为不一致. 在ipad上有时候click会点错位置, 而tap不会
         //todo: tap的缺点就是点击元素的时候容易点击到元素上层的控件
 
+        log.info(s"need input ${str}")
         findElementByUrlElement(element) match {
           case Some(webElement) => {
             saveDom()
@@ -1171,14 +1115,6 @@ class Crawler extends CommonLog {
     }
   }
 
-  /**
-    * 子类重载
-    *
-    * @return
-    */
-  def getRuleMatchNodes(): List[immutable.Map[String, Any]] = {
-    getAllElements("//*").filter(isValid)
-  }
 
   //通过规则实现操作. 不管元素是否被点击过
   def getElementByElementActions(): Option[UrlElement] = {
@@ -1188,13 +1124,15 @@ class Crawler extends CommonLog {
       val xpath = r("xpath").toString
       val action = r.getOrElse("action", "click").toString
       val times = r.getOrElse("times", 0).toString.toInt
+      log.debug(s"finding ${r}")
+      log.debug(s"current source ${currentPageSource}")
 
       val allMap = if (xpath.matches("/.*")) {
         //支持xpath
         getAllElements(xpath)
       } else {
         //支持正则通配
-        val all = getRuleMatchNodes()
+        val all = getAllElements("//*").filter(isValid)
         (all.filter(_ ("name").toString.matches(xpath)) ++ all.filter(_ ("value").toString.matches(xpath))).distinct
       }
       allMap.headOption match {

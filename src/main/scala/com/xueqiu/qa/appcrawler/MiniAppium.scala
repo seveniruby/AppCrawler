@@ -389,6 +389,7 @@ trait MiniAppium extends CommonLog with WebBrowser {
   }
 
   def back(): Unit = {
+    log.info("navigate back")
     driver.navigate().back()
   }
 
@@ -438,10 +439,9 @@ trait MiniAppium extends CommonLog with WebBrowser {
 
   def getPageSource(): String = {
     var source: String = ""
-    //获取页面结构, 最多重试10次
-
+    //获取页面结构, 最多重试3次
     1 to 3 foreach (i => {
-      MiniAppium.asyncTask(60)(driver.getPageSource) match {
+      MiniAppium.asyncTask(20)(driver.getPageSource) match {
         case Some(v) => {
           log.trace("get page source success")
           //todo: wda返回的不是标准的xml

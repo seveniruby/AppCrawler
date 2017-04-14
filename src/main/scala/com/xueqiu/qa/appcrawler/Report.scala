@@ -43,7 +43,7 @@ trait Report extends CommonLog {
   def genImg(elementInfo: ElementInfo): String ={
     if (elementInfo.action==ElementStatus.Clicked) {
       s"""
-         |    markup("<img src='${File(elementInfo.reqImg).name}' width='400' /><br></br><p>after clicked</p><img src='${File(elementInfo.resImg).name}' width='400' />")
+         |    markup("<img src='${File(elementInfo.reqImg).name}' width='300' /><br></br><p>after clicked</p><img src='${File(elementInfo.resImg).name}' width='400' />")
          |""".stripMargin}
     else {
       """
