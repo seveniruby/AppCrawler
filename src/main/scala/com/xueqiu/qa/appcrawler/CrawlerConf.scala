@@ -95,6 +95,7 @@ class CrawlerConf {
   /** 引导规则. name, value, times三个元素组成 */
   var triggerActions = ListBuffer[scala.collection.mutable.Map[String, Any]]()
   var startupActions = ListBuffer[String]()
+  var asserts = ListBuffer[Map[String, Any]]()
   startupActions ++= List("println(\"startupAction call use scala code\")")
 
   var beforeElementAction = ListBuffer[Map[String, String]]()

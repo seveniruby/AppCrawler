@@ -262,8 +262,10 @@ object AppCrawler extends CommonLog {
         log.trace(DataObject.toYaml(crawlerConf))
 
         if (config.report != "" && config.candidate.isEmpty && config.template=="") {
-          val store = DataObject.fromYaml[UrlElementStore](Source.fromFile(s"${config.report}/elements.yml").mkString)
+          val store = Report.loadResult(s"${config.report}/elements.yml")
           Report.saveTestCase(store, config.report)
+
+          Report.store=store
           Report.runTestCase()
           return
         } else if (config.candidate.nonEmpty) {

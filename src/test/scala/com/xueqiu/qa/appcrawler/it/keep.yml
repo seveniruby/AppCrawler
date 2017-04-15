@@ -102,6 +102,17 @@ triggerActions:
 - xpath: //*[contains(@resource-id, "layout_right_second_button")]//*[contains(@resource-id, "right_second_button")]
   action: yoga
   times: 1
+- xpath: //*[contains(@text, "微信朋友圈")]
+- xpath: //*[contains(@text, "发送")]
+asserts:
+- given:
+  - //*[@name="结束训练"]
+  when: []
+  then:
+  - //*[contain(@text, "success")]
+  - //*[@package="com.gotokeep.keep"]
+
+
 #所有view的叶子节点 一般表示游戏
 #- action: monkey
 #  xpath: //android.view.View[not(*) and contains(@bounds, "[0,0]") ]

@@ -1,17 +1,18 @@
 package com.xueqiu.qa.appcrawler
 
-import java.awt.{Color, BasicStroke}
+import java.awt.{BasicStroke, Color}
 import java.util.Date
 import javax.imageio.ImageIO
 
+import io.appium.java_client.android.AndroidElement
 import io.appium.java_client.remote.MobileCapabilityType
-import io.appium.java_client.{TouchAction, AppiumDriver}
+import io.appium.java_client.{AppiumDriver, TouchAction}
 import org.apache.commons.io.FileUtils
 import org.apache.log4j._
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
 import org.w3c.dom.Document
-import sun.misc.{SignalHandler, Signal}
+import sun.misc.{Signal, SignalHandler}
 
 import scala.annotation.tailrec
 import scala.collection.mutable.{ListBuffer, Map}
@@ -155,8 +156,11 @@ class Crawler extends CommonLog {
     runStartupScript()
     conf.appWhiteList.append(appNameRecord.last().toString)
 
+    crawl()
+    /*
     var keepSession=true
     while(keepSession) {
+
       Try(crawl()) match {
         case Success(v) => {
           log.info("crawl finish")
@@ -164,6 +168,7 @@ class Crawler extends CommonLog {
         }
         case Failure(e) => {
           log.error("crawl not finish, return with exception")
+          log.error(e.getLocalizedMessage)
           log.error(e.getMessage)
           log.error(e.getCause)
           e.getStackTrace.foreach(log.error)
@@ -173,7 +178,9 @@ class Crawler extends CommonLog {
           setupAppium()
         }
       }
+
     }
+    */
     //爬虫结束
     stop()
   }
@@ -194,6 +201,7 @@ class Crawler extends CommonLog {
         s"startupActions-${action}-${store.clickedElementsList.size}"))
       store.saveHash(contentHash.last().toString)
       store.saveImg(getBasePathName() + ".ps.jpg")
+      store.saveDom(currentPageSource)
       log.info(s"index = ${store.clickedElementsList.size} current =  ${store.clickedElementsList.last.loc}")
       saveDom()
       saveScreen(true)
@@ -566,6 +574,9 @@ class Crawler extends CommonLog {
       }
     } else {
       urlStack.push(currentUrl)
+      if(urlStack.size>2) {
+        saveLog()
+      }
     }
     //判断新的url堆栈中是否包含baseUrl, 如果有就清空栈记录并从新计数
     if (conf.baseUrl.map(urlStack.head.matches(_)).contains(true)) {
@@ -658,7 +669,7 @@ class Crawler extends CommonLog {
           element.name+store.getClickedElementsList.size.toString,
           element.loc)
         setElementAction("click")
-        backDistance.append("back")
+        backRetry+=1
         return Some(backElement)
       }
       case _ => {
@@ -701,7 +712,8 @@ class Crawler extends CommonLog {
     * 优化后的递归方法. 尾递归.
     * 刷新->找元素->点击第一个未被点击的元素->刷新
     */
-  @tailrec final def crawl(): Unit = {
+  @tailrec
+  final def crawl(): Unit = {
     log.info("crawl next")
     //刷新页面
     var isRefreshSuccess = true
@@ -743,6 +755,7 @@ class Crawler extends CommonLog {
 
     //先应用优先规则
     if (nextElement == None) {
+      //todo: 优化结构
       getElementByElementActions() match {
         case Some(e) => {
           log.info(s"found ${e} by ElementActions")
@@ -787,17 +800,15 @@ class Crawler extends CommonLog {
       case Some(element) => {
         //找到了要点击的元素或者其他的状态标记比如back swipe
         store.setElementClicked(element)
-        store.saveHash(contentHash.last().toString)
-        store.saveImg(getBasePathName() + ".ps.jpg")
 
-        //加载插件分析
-        if (skipBeforeElementAction == true) {
-          //直接后退即可
-          log.info("skip beforeElementActionAction to back")
-        } else {
+        //todo: 输入情况 长按 需要考虑
+        if(skipBeforeElementAction==false) {
           beforeElementAction(element)
+        }else{
+          log.info("skip beforeElementAction")
         }
 
+        //不可和之前的判断合并
         if (getElementAction() == "skip") {
           store.setElementSkip(element)
         } else {
@@ -928,7 +939,6 @@ class Crawler extends CommonLog {
 
   def saveLog(): Unit = {
     //记录点击log
-    var index = 0
     File(s"${conf.resultDir}/elements.yml").writeAll(DataObject.toYaml(store))
   }
 
@@ -1012,25 +1022,21 @@ class Crawler extends CommonLog {
     log.info(s"current file name = ${element.toFileName()}")
     log.info(s"current uri = ${element.toLoc()}")
 
+    store.saveHash(contentHash.last().toString)
+    store.saveImg(getBasePathName() + ".ps.jpg")
+    store.saveDom(currentPageSource)
+
+    saveDom()
+    saveScreen()
+
     action match {
       case "tap" => {
-        saveDom()
-        saveScreen()
-
         MiniAppium.tap()
       }
       case "back" => {
-
-        saveDom()
-        saveScreen()
-
         back()
-        saveLog()
       }
       case "backApp" => {
-
-        saveDom()
-        saveScreen()
         if (conf.defaultBackAction.size > 0) {
           conf.defaultBackAction.foreach(Runtimes.eval)
         } else {
@@ -1038,15 +1044,9 @@ class Crawler extends CommonLog {
         }
       }
       case "monkey" => {
-        saveDom()
-        saveScreen()
         MiniAppium.event(element.name.toInt)
       }
       case event if event.matches(".*\\(.*\\).*") => {
-
-        saveDom()
-        saveScreen()
-
         Runtimes.eval(event)
       }
       case str: String => {
@@ -1056,9 +1056,6 @@ class Crawler extends CommonLog {
         log.info(s"need input ${str}")
         findElementByUrlElement(element) match {
           case Some(webElement) => {
-            saveDom()
-            saveScreen()
-
             log.info("getLocation")
             val location = webElement.getLocation
             val x = location.getX
@@ -1076,19 +1073,21 @@ class Crawler extends CommonLog {
             }
 
             MiniAppium.asyncTask() {
-              if (str == "click") {
-                log.info("click element")
-                webElement.click()
-              } else {
-                log.info(s"input ${str}")
-                webElement.sendKeys(str)
+              //支持各种动作
+              str match {
+                case "click" => {
+                  log.info("click element")
+                  webElement.click()
+                }
+                case str => {
+                  log.info(s"input ${str}")
+                  webElement.sendKeys(str)
+                }
               }
             }
           }
           case None => {
             log.warn(s"not found by ${element}")
-            saveDom()
-            saveScreen()
           }
         }
         if (List("UIATextField", "UIATextView", "EditText").map(element.tag.contains(_)).contains(true)) {

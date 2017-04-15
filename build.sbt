@@ -37,16 +37,13 @@ libraryDependencies ++= Seq(
   "com.sksamuel.elastic4s" %% "elastic4s-xpack-security" % "5.1.5",
   "org.elasticsearch.client" % "transport" % "5.1.2",
   "org.apache.logging.log4j" % "log4j-core" % "2.7",
+  "org.javassist" % "javassist" % "3.22.0-CR1",
   "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 
 //libraryDependencies ~= { _.map(_.exclude("ch.qos.logback", "logback-classic")) }
 
-
-
 enablePlugins(JavaAppPackaging)
-enablePlugins(SbtTwirl)
-
 /*
 proguardSettings
 ProguardKeys.proguardVersion in Proguard := "5.2.1"

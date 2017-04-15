@@ -18,8 +18,8 @@ class DiffSuite extends FunSuite with Matchers {
   if (Report.candidate.isEmpty) {
     Report.candidate = "/Volumes/RamDisk/xueqiu_2"
   }
-  val masterStore = DataObject.fromYaml[UrlElementStore](Source.fromFile(s"${Report.master}/elements.yml").mkString).elementStore
-  val candidateStore = DataObject.fromYaml[UrlElementStore](Source.fromFile(s"${Report.candidate}/elements.yml").mkString).elementStore
+  val masterStore = Report.loadResult(s"${Report.master}/elements.yml").elementStore
+  val candidateStore = Report.loadResult(s"${Report.candidate}/elements.yml").elementStore
 
   val intersectKeys = masterStore.keys.toList.intersect(candidateStore.keys.toList)
   println(intersectKeys.size)
@@ -50,11 +50,11 @@ class DiffSuite extends FunSuite with Matchers {
                 s"""
                   |candidate image
                   |-------
-                  |<img src='${candidateStore(key).resImg}' width='400' />
+                  |<img src='${candidateStore(key).resImg}' width='100%' />
                   |
                   |master image
                   |--------
-                  |<img src='${masterStore(key).resImg}' width='400' />
+                  |<img src='${masterStore(key).resImg}' width='100%' />
                   |
                 """.stripMargin)
             }

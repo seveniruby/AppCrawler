@@ -29,8 +29,9 @@ class TestReportPlugin extends FunSuite with CommonLog{
       element_1.toString->info_1,
       element_2.toString->info_2
     )
-    val code=report.genTestCase(1, "demo", elementsStore)
-    log.info(code)
+    val store=new UrlElementStore
+    store.elementStore ++= elementsStore
+    report.saveTestCase(store, "/tmp/")
 
   }
 
