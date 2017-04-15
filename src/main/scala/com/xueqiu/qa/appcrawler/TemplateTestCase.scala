@@ -10,7 +10,7 @@ import scala.reflect.io.File
 /**
   * Created by seveniruby on 2017/3/25.
   */
-class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Matchers {
+class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Matchers with CommonLog{
   var name = "template"
   var uri = ""
 
@@ -49,6 +49,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
             stripMargin
           )
 
+          /*
           markup(
             s"""
             |
@@ -59,29 +60,28 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
             |</pre>
           """.stripMargin
           )
-          val req = RichData.
-            toDocument(ele.reqDom)
+          */
+          val req = RichData.toDocument(ele.reqDom)
           val res = RichData.toDocument(ele.resDom)
+          log.debug(ele.reqDom)
           AppCrawler.crawler.conf.asserts.foreach(assert => {
-            val given
-            = assert.getOrElse("given", Array[String]()).asInstanceOf[Array[String]]
+            val given = assert.getOrElse("given", List[String]()).asInstanceOf[List[String]]
+            log.info(given.map(g=>RichData.getListFromXPath(g, req).size))
             if (given.forall(g => RichData.getListFromXPath(g, req).size > 0) == true) {
-              val existAsserts = assert.getOrElse("then", Array[String]()).
-                asInstanceOf[Array[String]]
-              val cp
-              = new
-                  scalatest.Checkpoints.
-                  Checkpoint
+              log.info("match")
+              val existAsserts = assert.getOrElse("then", List[String]()).asInstanceOf[List[String]]
+              val cp = new scalatest.Checkpoints.Checkpoint
               existAsserts.foreach(existAssert => {
+                log.debug(existAssert)
                 cp {
-                  withClue(existAssert
-                  ) {
-                    RichData.
-                      getListFromXPath(existAssert, res).size should be > 0
+                  withClue(s"${existAssert} 不存在\n") {
+                    RichData.getListFromXPath(existAssert, res).size should be > 0
                   }
                 }
               })
               cp.reportAll()
+            }else{
+              log.info("not match")
             }
           })
         }

@@ -266,6 +266,7 @@ object AppCrawler extends CommonLog {
           Report.saveTestCase(store, config.report)
 
           Report.store=store
+          crawler.conf=crawlerConf
           Report.runTestCase()
           return
         } else if (config.candidate.nonEmpty) {

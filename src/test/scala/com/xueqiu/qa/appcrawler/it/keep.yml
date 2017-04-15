@@ -106,10 +106,10 @@ triggerActions:
 - xpath: //*[contains(@text, "发送")]
 asserts:
 - given:
-  - //*[@name="结束训练"]
+  - //*[@text="胸部"]
   when: []
   then:
-  - //*[contain(@text, "success")]
+  - //*[contains(@text, "success")]
   - //*[@package="com.gotokeep.keep"]
 
 
