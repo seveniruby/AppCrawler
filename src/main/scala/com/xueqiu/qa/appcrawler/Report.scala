@@ -43,6 +43,10 @@ trait Report extends CommonLog {
     var cmdArgs = Array("-R", testcaseDir,
       "-oF", "-u", reportPath, "-h", reportPath)
 
+    if(namespace.nonEmpty){
+      cmdArgs++=Array("-s", namespace)
+    }
+
     /*
     val testcaseDirFile=new java.io.File(testcaseDir)
     FileUtils.listFiles(testcaseDirFile, Array(".class"), true).map(_.split(".class").head)

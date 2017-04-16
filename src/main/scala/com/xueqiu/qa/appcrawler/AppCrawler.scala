@@ -273,10 +273,10 @@ object AppCrawler extends CommonLog {
           Report.candidate = config.candidate
           Report.master = config.master
           Report.reportDir = config.report
-          Report.generateTestCase()
           Report.reportPath = config.report
-          Report.testcaseDir = config.report
-          Report.runTestCase("com.xueqiu.qa.appcrawler.")
+          Report.testcaseDir = config.report+"/tmp/"
+          DiffSuite.saveTestCase()
+          Report.runTestCase()
           return
         }
 

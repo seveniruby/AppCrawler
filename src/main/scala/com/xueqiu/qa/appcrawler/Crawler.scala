@@ -340,7 +340,6 @@ class Crawler extends CommonLog {
     val id = x.getOrElse("name", "").toString.split('/').last
     val loc = x.getOrElse("xpath", "").toString
     UrlElement(currentUrl, tag, id, name, loc)
-
   }
 
   def isBackApp(): Boolean = {
@@ -666,7 +665,7 @@ class Crawler extends CommonLog {
           element.url,
           element.tag,
           element.name,
-          element.name+store.getClickedElementsList.size.toString,
+          element.name+store.getClickedElementsList.map(_.loc==element.loc).size.toString,
           element.loc)
         setElementAction("click")
         backRetry+=1

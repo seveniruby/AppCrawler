@@ -18,6 +18,7 @@ import scala.collection.mutable.ListBuffer
   */
 object RichData extends CommonLog {
   var xpathExpr=List("name", "label", "value", "resource-id", "content-desc", "index", "text")
+
   def toDocument(raw: String): Document = {
     val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
     val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
@@ -73,12 +74,23 @@ object RichData extends CommonLog {
       var xpathSingle = newAttribute.map(kv => {
         //todo: appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
         //todo: 需要帮appium打补丁
+
+        kv._1 match {
+          case "tag" => ""
+          case "index" => ""
+          case "name" if kv._2.size>50 => ""
+          case "text" if newAttribute("tag").contains("Button")==false => ""
+          case key if xpathExpr.contains(key) && kv._2.nonEmpty => s"@${kv._1}=" + "\"" + kv._2.replace("\"", "\\\"") + "\""
+          case _ => ""
+        }
+        /*
         if (kv._1 != "tag") {
           if (kv._1 == "name" && kv._2.size > 50) {
             log.trace(s"name size too long ${kv._2.size}>20")
             ""
           }
-          else if (kv._1 == "text" && kv._2.size > 10) {
+          //只有按钮才需要记录文本, 文本框很容易变化, 不需要记录
+          else if (kv._1 == "text" && kv._2.size > 10 && newAttribute("tag").contains("Button") ) {
             log.trace(s"text size too long ${kv._2.size}>10")
             s"contains(@text, '${kv._2.split("&")(0).take(10)}')"
           }
@@ -88,6 +100,7 @@ object RichData extends CommonLog {
         } else {
           ""
         }
+        */
       }).filter(x => x.nonEmpty).mkString(" and ")
 
       xpathSingle = if (xpathSingle.isEmpty) {
@@ -116,11 +129,7 @@ object RichData extends CommonLog {
 
         0 until attributes.getLength foreach (i => {
           val kv = attributes.item(i).asInstanceOf[Attr]
-          if (xpathExpr.contains(kv.getName)
-            && kv.getValue.nonEmpty
-          ) {
-            attributeMap ++= Map(kv.getName -> kv.getValue)
-          }
+          attributeMap ++= Map(kv.getName -> kv.getValue)
         })
         attributeMap ++= Map("tag" -> node.getNodeName)
         path += attributeMap
