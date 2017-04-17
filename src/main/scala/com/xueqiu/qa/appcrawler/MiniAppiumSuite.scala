@@ -29,7 +29,6 @@ class MiniAppiumSuite extends FunSuite
   with WebBrowser
   with BeforeAndAfterAll
   with BeforeAndAfterEach
-  with MiniAppium
   with CommonLog {
 
 }

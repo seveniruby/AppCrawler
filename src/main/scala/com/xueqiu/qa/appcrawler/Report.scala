@@ -15,13 +15,11 @@ import collection.JavaConversions._
 trait Report extends CommonLog {
   var reportPath = ""
   var testcaseDir = ""
-  var clickedElementsList = mutable.Stack[UrlElement]()
 
   def saveTestCase(store: UrlElementStore, resultDir: String): Unit = {
     log.info("save testcase")
     reportPath = resultDir
     testcaseDir = reportPath + "/tmp/"
-    this.clickedElementsList = clickedElementsList
     //为了保持独立使用
     val path = new java.io.File(resultDir).getCanonicalPath
 
@@ -84,11 +82,6 @@ object Report extends Report{
   var reportDir=""
   var store=new UrlElementStore
 
-
-  def generateTestCase(): Unit ={
-    val templateClass=getClass.getResourceAsStream("/com/xueqiu/qa/appcrawler/DiffSuite.class")
-    FileUtils.copyInputStreamToFile(templateClass, new java.io.File(reportDir+"/DiffSuite.class"))
-  }
 
   def loadResult(elementsFile: String): UrlElementStore ={
     DataObject.fromYaml[UrlElementStore](Source.fromFile(elementsFile).mkString)

@@ -299,17 +299,7 @@ object AppCrawler extends CommonLog {
 
 
   def startCrawl(conf: CrawlerConf): Unit = {
-    conf.currentDriver.toLowerCase match {
-      case "android" => {
-        crawler = new AndroidCrawler
-      }
-      case "ios" => {
-        crawler = new IOSCrawler
-      }
-      case _ => {
-        log.info("请指定currentDriver为Android或者iOS")
-      }
-    }
+    crawler = new Crawler
     crawler.loadConf(conf)
     crawler.start()
   }

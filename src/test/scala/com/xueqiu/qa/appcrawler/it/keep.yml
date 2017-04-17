@@ -18,7 +18,7 @@ capability:
   newCommandTimeout: 120
   launchTimeout: 120000
   platformVersion: ""
-  platformName: ""
+  platformName: "Android"
   autoWebview: "false"
   autoLaunch: "true"
   noReset: "true"
@@ -29,7 +29,9 @@ androidCapability:
   appActivity: ".activity.SplashActivity"
   app: ""
   appium: "http://127.0.0.1:4723/wd/hub"
-  automationName: uiautomator2
+#  automationName: uiautomator2
+  automationName: macaca
+  reuse: 3
 #  nativeWebScreenshot: "true"
 defineUrl:
 - //*[@selected='true' and contains(name(), 'TextView')]/@text

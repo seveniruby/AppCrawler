@@ -3,37 +3,33 @@ package com.xueqiu.qa.appcrawler
 import java.awt.{BasicStroke, Color}
 import java.io.File
 import java.net.URL
-import java.util.concurrent.{Callable, Executors, TimeUnit, TimeoutException}
 import javax.imageio.ImageIO
 
-import com.thoughtworks.selenium.webdriven.commands.KeyEvent
-import io.appium.java_client.{AppiumDriver, MobileCommand}
+import com.alibaba.fastjson.JSONObject
+import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
-import org.apache.commons.io.FileUtils
+import macaca.client.MacacaClient
 import org.apache.log4j.Level
-import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.{OutputType, Rectangle, TakesScreenshot, WebElement}
 import org.scalatest.selenium.WebBrowser
 import org.scalatest.time.{Seconds, Span}
-import org.w3c.dom.Document
+import collection.JavaConverters._
 
-import scala.io.Source
-import scala.sys.process.{ProcessLogger, _}
-import scala.util.{Failure, Success, Try}
+import scala.sys.process._
 
 /**
   * Created by seveniruby on 16/8/9.
   */
-class MiniAppium extends CommonLog with WebBrowser with WebDriver{
+class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
   Runtimes.init()
   var conf: CrawlerConf = _
 
-  implicit var driver: AppiumDriver[WebElement] = _
+  implicit var driver: MacacaClient = _
   var appiumProcess: Process = null
   var loc = ""
   var index = 0
-  var currentElement:WebElement=_
+  var currentElement: macaca.client.commands.Element =_
 
   private var platformName = ""
 
@@ -72,9 +68,8 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
   }
 
   override def hideKeyboard(): Unit = {
-    driver.hideKeyboard()
+    //todo:
   }
-
 
   /**
     * 在5s的时间内确定元素存在并且位置是固定的
@@ -86,7 +81,7 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
     1 to 10 foreach (i => {
       if (isFound == false) {
         log.info(s"find by xpath ${keyToXPath(key)}")
-        val elements = driver.findElementsByXPath(keyToXPath(key))
+        val elements = driver.elementsByXPath(keyToXPath(key))
         if (elements.size() > 0) {
           isFound = true
         } else {
@@ -110,12 +105,6 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
     this
   }
 */
-
-  def send(keys: String): this.type = {
-    tap()
-    driver.getKeyboard.sendKeys(keys)
-    this
-  }
 
   override def event(keycode: Int): Unit = {
     driver match {
@@ -142,37 +131,18 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
   }
 
 
-  def save(): Unit = {
-    index += 1
-    captureTo(s"${index}.jpg")
-  }
-
-
   def appium(url: String = "http://127.0.0.1:4723/wd/hub", configMap: Map[String, Any]=Map[String, Any]()): Unit = {
-    configMap.foreach(c=>config(c._1, c._2))
-    //todo: 无法通过url来确定是否是android, 需要改进
-    if (capabilities.getCapability("app") == null) {
-      config("app", "")
-    }
-    if (capabilities.getCapability("deviceName") == null || capabilities.getCapability("deviceName").toString.isEmpty) {
-      config("deviceName", "demo")
-    }
-    if (
-      capabilities.getCapability("app").toString.matches(".*\\.apk$") ||
-        capabilities.getCapability("appActivity") != null ||
-        capabilities.getCapability("appPackage") != null
-    ) {
-      driver = new AndroidDriver[WebElement](new URL(url), capabilities)
-      setPlatformName("android")
-    } else {
-      driver = new IOSDriver[WebElement](new URL(url), capabilities)
-      setPlatformName("ios")
-    }
+    driver=new MacacaClient()
+    val porps = new JSONObject()
+    configMap.foreach(m=>porps.put(m._1,  m._2))
+    porps.put("package", configMap("appPackage"))
+    porps.put("activity", configMap("appActivity"))
+
+    val desiredCapabilities = new JSONObject()
+    desiredCapabilities.put("desiredCapabilities", porps)
+    driver.initDriver(desiredCapabilities)
 
     getDeviceInfo
-    log.info(s"capture dir = ${new File(".").getAbsolutePath}")
-    setCaptureDir(".")
-    implicitlyWait(Span(10, Seconds))
   }
 
   /**
@@ -214,9 +184,10 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
   }
 
   override def getDeviceInfo(): Unit = {
-    val size = driver.manage().window().getSize
-    screenHeight = size.getHeight
-    screenWidth = size.getWidth
+    val size=driver.getWindowSize
+    log.info(s"size=${size}")
+    screenHeight = size.get("height").toString.toInt
+    screenWidth = size.get("width").toString.toInt
     log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
   }
 
@@ -263,11 +234,6 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
   }
 
   def swipe(startX: Double = 0.9, endX: Double = 0.1, startY: Double = 0.9, endY: Double = 0.1): Option[_] = {
-    if(screenHeight<=0){
-      val size = driver.manage().window().getSize
-      screenHeight = size.getHeight
-      screenWidth = size.getWidth
-    }
     retry(driver.swipe(
       (screenWidth * startX).toInt, (screenHeight * startY).toInt,
       (screenWidth * endX).toInt, (screenHeight * endY).toInt, 1000
@@ -277,7 +243,9 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
 
 
   override def screenshot(): File = {
-    (driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)
+    val location="/tmp/1.png"
+    driver.saveScreenshot(location)
+    new File(location)
   }
 
   //todo: 重构到独立的trait中
@@ -320,18 +288,18 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
   }*/
 
   override def tap(): this.type = {
-    driver.tap(1, currentElement, 100)
+    currentElement.click()
     this
   }
 
   override def longTap(): this.type = {
-    driver.tap(1, currentElement, 3000)
+    currentElement.click()
     this
   }
 
   override def back(): Unit = {
     log.info("navigate back")
-    driver.navigate().back()
+    driver.back()
   }
 
   override def backApp(): Unit = {
@@ -348,7 +316,7 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
     var source: String = ""
     //获取页面结构, 最多重试3次
     1 to 3 foreach (i => {
-      asyncTask(20)(driver.getPageSource) match {
+      asyncTask(20)(driver.source()) match {
         case Some(v) => {
           log.trace("get page source success")
           //todo: wda返回的不是标准的xml
@@ -363,6 +331,7 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
             }
           }
           source = RichData.toPrettyXML(xmlStr)
+          currentPageDom=RichData.toDocument(source)
           return source
         }
         case None => {
@@ -419,21 +388,24 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
     */
     //todo: 用其他定位方式优化
     log.info(s"find by xpath= ${element.loc}")
-    retry(driver.findElementsByXPath(element.loc)) match {
+    retry{
+      val s=driver.elementsByXPath(element.loc)
+      0 until s.size() map(s.getIndex(_))
+    } match {
       case Some(v) => {
-        val arr = v.toArray().distinct
+        val arr = v.toList.distinct
         arr.length match {
           case len if len == 1 => {
             log.info("find by xpath success")
-            currentElement=arr.head.asInstanceOf[WebElement]
+            currentElement=arr.head
             return true
           }
           case len if len > 1 => {
-            log.warn(s"find count ${v.size()}, you should check your dom file")
+            log.warn(s"find count ${v.size}, you should check your dom file")
             //有些公司可能存在重名id
             arr.foreach(log.info)
             log.warn("just use the first one")
-            currentElement=arr.head.asInstanceOf[WebElement]
+            currentElement=arr.head
             return true
           }
           case len if len == 0 => {
@@ -450,37 +422,19 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
 
 
   override def getAppName(): String = {
-    driver match {
-      case android: AndroidDriver[_] => {
-        val xpath="(//*[@package!=''])[1]"
-        RichData.getListFromXPath(xpath, currentPageDom).head.getOrElse("package", "").toString
-      }
-      case ios: IOSDriver[_] => {
-        val xpath="//*[contains(name(), 'Application')]"
-        RichData.getListFromXPath(xpath, currentPageDom).head.getOrElse("name", "").toString
-      }
-    }
-
+    val xpath="(//*[@package!=''])[1]"
+    RichData.getListFromXPath(xpath, currentPageDom).head.getOrElse("package", "").toString
   }
 
   override def getUrl(): String = {
-    driver match {
-      case android: AndroidDriver[_] => {
-        (asyncTask() {
-          driver.asInstanceOf[AndroidDriver[WebElement]].currentActivity()
-        }).getOrElse("").split('.').last
-      }
-      case ios: IOSDriver[_] => {
-        val xpath="//*[contains(name(), 'NavigationBar')]"
-        RichData.getListFromXPath(xpath, currentPageDom).map(_.getOrElse("name", "").toString).mkString("")
-      }
-    }
+    //todo: macaca的url没设定
+    //driver.title()
+    ""
   }
 
   override def getRect(): Rectangle ={
-    val location=currentElement.getLocation
-    val size=currentElement.getSize
-    new Rectangle(location.x, location.y, size.height, size.width)
+    val rect=currentElement.getRect.asInstanceOf[JSONObject]
+    new Rectangle(rect.getIntValue("x"), rect.getIntValue("y"), rect.getIntValue("height"), rect.getIntValue("width"))
   }
 
 
@@ -491,4 +445,4 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
 
 
 }
-object MiniAppium extends MiniAppium
+

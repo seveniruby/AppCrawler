@@ -38,6 +38,7 @@ libraryDependencies ++= Seq(
   "org.elasticsearch.client" % "transport" % "5.1.2",
   "org.apache.logging.log4j" % "log4j-core" % "2.7",
   "org.javassist" % "javassist" % "3.22.0-CR1",
+  "macaca.webdriver.client" % "macacaclient" % "2.0.7",
   "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 
@@ -81,6 +82,7 @@ resolvers += "central" at "http://central.maven.org/maven2/"
 resolvers += "central2" at "http://central.maven.org/"
 resolvers += "elk" at "https://artifacts.elastic.co/maven"
 resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases/"
+resolvers += "bintray" at "http://dl.bintray.com/xudafeng/maven/"
 resolvers += Resolver.sonatypeRepo("public")
 resolvers += Resolver.mavenLocal
 //externalResolvers := Resolver.withDefaultResolvers(resolvers.value, mavenCentral =false)

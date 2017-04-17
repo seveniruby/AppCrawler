@@ -1,17 +1,9 @@
 package com.xueqiu.qa.appcrawler
 
-import java.awt.{BasicStroke, Color}
 import java.util.Date
-import javax.imageio.ImageIO
 
-import io.appium.java_client.android.AndroidElement
-import io.appium.java_client.remote.MobileCapabilityType
-import io.appium.java_client.{AppiumDriver, TouchAction}
 import org.apache.commons.io.FileUtils
 import org.apache.log4j._
-import org.openqa.selenium.remote.DesiredCapabilities
-import org.openqa.selenium.{OutputType, TakesScreenshot, WebElement}
-import org.w3c.dom.Document
 import sun.misc.{Signal, SignalHandler}
 
 import scala.annotation.tailrec
@@ -25,7 +17,7 @@ import scala.util.{Failure, Success, Try}
   * Created by seveniruby on 15/11/28.
   */
 class Crawler extends CommonLog {
-  implicit var driver: AppiumDriver[WebElement] = _
+  var driver:WebDriver=_
   var conf = new CrawlerConf()
 
   /** 存放插件类 */
@@ -36,12 +28,8 @@ class Crawler extends CommonLog {
   /** 元素的默认操作 */
   private var currentElementAction = "click"
 
-  private var screenWidth = 0
-  private var screenHeight = 0
-
   var appName = ""
   var currentPageSource = ""
-  private var currentPageDom: Document = null
   /** 当前的url路径 */
   var currentUrl = ""
 
@@ -120,11 +108,10 @@ class Crawler extends CommonLog {
   /**
     * 启动爬虫
     */
-  def start(existDriver: AppiumDriver[WebElement] = null): Unit = {
+  def start(existDriver: WebDriver = null): Unit = {
     addLogFile()
     loadPlugins()
     handleCtrlC()
-    GA.log("start")
     if (existDriver == null) {
       log.info("prepare setup Appium")
       setupAppium()
@@ -133,26 +120,18 @@ class Crawler extends CommonLog {
       log.info("use existed driver")
       this.driver = existDriver
     }
-    log.info("init MiniAppium")
     log.info(s"platformName=${conf.currentDriver} driver=${driver}")
 
     log.info("waiting for app load")
     Thread.sleep(8000)
     log.info(s"driver=${existDriver}")
     log.info("get screen info")
-    getDeviceInfo()
-
-    MiniAppium.driver = driver
-    MiniAppium.screenHeight = screenHeight
-    MiniAppium.screenWidth = screenWidth
-    MiniAppium.setPlatformName(conf.currentDriver)
+    driver.getDeviceInfo()
 
 
     //todo: 不是所有的实现都支持
     //driver.manage().logs().getAvailableLogTypes().toArray.foreach(log.info)
     //设定结果目录
-
-    GA.log("crawler")
     runStartupScript()
     conf.appWhiteList.append(appNameRecord.last().toString)
 
@@ -188,14 +167,13 @@ class Crawler extends CommonLog {
   def restart(): Unit = {
     log.info("restart appium")
     setupAppium()
-    MiniAppium.driver = driver
   }
 
   def runStartupScript(): Unit = {
     log.info("run startup script")
     log.info(conf.startupActions)
     conf.startupActions.foreach(action => {
-      MiniAppium.dsl(action)
+      driver.dsl(action)
       refreshPage()
       store.setElementClicked(UrlElement(s"${currentUrl}", "", "", "",
         s"startupActions-${action}-${store.clickedElementsList.size}"))
@@ -213,15 +191,25 @@ class Crawler extends CommonLog {
     //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
     //PageFactory.initElements(new AppiumFieldDecorator(driver, 10, TimeUnit.SECONDS), this)
     //implicitlyWait(Span(10, Seconds))
-  }
 
-  def getDeviceInfo(): Unit = {
-    val size = driver.manage().window().getSize
-    screenHeight = size.getHeight
-    screenWidth = size.getWidth
-    log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
-  }
+    //todo: 主要做遍历测试和异常测试. 所以暂不使用selendroid
+    //todo: Appium模式太慢
 
+    val url=conf.capability("appium").toString
+    conf.capability.getOrElse("automationName", "").toString match {
+      case "macaca" => {
+        log.info("use macaca")
+        driver=new MacacaDriver(url, conf.capability)
+      }
+      case _ => {
+        log.info("use MiniAppium")
+        driver=new MiniAppium(url, conf.capability)
+      }
+    }
+
+    GA.log(conf.capability.getOrElse("appPackage", "")+conf.capability.getOrElse("bundleId", "").toString)
+
+  }
 
   def black(keys: String*): Unit = {
     keys.foreach(conf.blackList.append(_))
@@ -256,7 +244,7 @@ class Crawler extends CommonLog {
   def getAllElements(xpath: String): List[immutable.Map[String, Any]] = {
     log.trace(s"xpath=${xpath}")
     log.trace("get list")
-    val elementList=RichData.getListFromXPath(xpath, currentPageDom)
+    val elementList=RichData.getListFromXPath(xpath, driver.currentPageDom)
     elementList.foreach(log.trace)
     elementList
   }
@@ -294,16 +282,10 @@ class Crawler extends CommonLog {
     md5(nodeList.map(getUrlElementByMap(_).toTagPath()).distinct.mkString("\n"))
   }
 
-  def getAppName(): String = {
-    return ""
-  }
-
-
   def getUrl(): String = {
-    if (conf.defineUrl.nonEmpty) {
+    val baseUrl=if (conf.defineUrl.nonEmpty) {
       val urlString = conf.defineUrl.flatMap(getAllElements(_)).distinct.map(x => {
         //按照attribute, label, name顺序挨个取第一个非空的指
-        log.info("getUrl")
         log.info(x)
         if (x.contains("attribute")) {
           x.getOrElse("attribute", "")
@@ -316,9 +298,12 @@ class Crawler extends CommonLog {
         }
       }).filter(_.toString.nonEmpty).mkString("-")
       log.info(s"defineUrl=$urlString")
-      return urlString
+      urlString
+    }else{
+      ""
     }
-    ""
+    List(driver.getAppName(), driver.getUrl(), baseUrl).distinct.filter(_.nonEmpty).mkString("-")
+
   }
 
   /**
@@ -525,23 +510,23 @@ class Crawler extends CommonLog {
     //iOS键盘隐藏
     if (getAllElements("//UIAKeyboard").size >= 1) {
       log.info("find keyboard , just hide")
-      MiniAppium.retry(driver.hideKeyboard())
+      driver.hideKeyboard()
     }
   }
 
   def refreshPage(): Boolean = {
     log.info("refresh page")
     currentPageSource=""
-    currentPageDom=null
+    driver.currentPageDom=null
 
-    currentPageSource = MiniAppium.getPageSource()
+    currentPageSource = driver.getPageSource()
     log.trace("currentPageSource=")
     log.trace(currentPageSource)
 
     if (currentPageSource.nonEmpty) {
       Try(RichData.toDocument(currentPageSource)) match {
         case Success(v) => {
-          currentPageDom = v
+          driver.currentPageDom = v
         }
         case Failure(e) => {
           log.warn("convert to xml fail")
@@ -560,7 +545,7 @@ class Crawler extends CommonLog {
   }
 
   def parsePageContext(): Unit = {
-    appName = getAppName()
+    appName = driver.getAppName()
     log.info(s"appName = ${appName}")
     appNameRecord.append(appName)
 
@@ -812,7 +797,7 @@ class Crawler extends CommonLog {
           store.setElementSkip(element)
         } else {
           //处理控件
-          MiniAppium.asyncTask(120){
+          driver.asyncTask(120){
             doElementAction(element, getElementAction())
           }
           //插件处理
@@ -879,61 +864,6 @@ class Crawler extends CommonLog {
   }
 
 
-  //todo:优化查找方法
-  //找到统一的定位方法就在这里定义, 找不到就分别在子类中重载定义
-  def findElementByUrlElement(element: UrlElement): Option[WebElement] = {
-    //为了加速去掉id定位, 测试表明比xpath竟然还慢
-    /*
-    log.info(s"find element by uid ${element}")
-    if (element.id != "") {
-      log.info(s"find by id=${element.id}")
-      MiniAppium.doAppium(driver.findElementsById(element.id)) match {
-        case Some(v) => {
-          val arr = v.toArray().distinct
-          if (arr.length == 1) {
-            log.trace("find by id success")
-            return Some(arr.head.asInstanceOf[WebElement])
-          } else {
-            //有些公司可能存在重名id
-            arr.foreach(log.info)
-            log.info(s"find count ${arr.size}, change to find by xpath")
-          }
-        }
-        case None => {
-          log.warn("find by id error")
-        }
-      }
-    }
-    */
-    //todo: 用其他定位方式优化
-    log.info(s"find by xpath= ${element.loc}")
-    MiniAppium.retry(driver.findElementsByXPath(element.loc)) match {
-      case Some(v) => {
-        val arr = v.toArray().distinct
-        arr.length match {
-          case len if len == 1 => {
-            log.info("find by xpath success")
-            return Some(arr.head.asInstanceOf[WebElement])
-          }
-          case len if len > 1 => {
-            log.warn(s"find count ${v.size()}, you should check your dom file")
-            //有些公司可能存在重名id
-            arr.foreach(log.info)
-            log.warn("just use the first one")
-            return Some(arr.head.asInstanceOf[WebElement])
-          }
-          case len if len == 0 => {
-            log.warn("find by xpath error no element found")
-          }
-        }
-
-      }
-      case None => {
-        log.warn("find by xpath error")
-      }
-    }
-    None
-  }
 
 
   def saveLog(): Unit = {
@@ -964,7 +894,7 @@ class Crawler extends CommonLog {
     }
   }
 
-  def saveScreen(force: Boolean = false, element: WebElement = null): Unit = {
+  def saveScreen(force: Boolean = false): Unit = {
     //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
     val markPath = getBasePathName() + ".ps.jpg"
     val originPath = getBasePathName() + ".ori.jpg"
@@ -975,10 +905,10 @@ class Crawler extends CommonLog {
     if (conf.saveScreen || force) {
       Thread.sleep(100)
       log.info("start screenshot")
-      MiniAppium.asyncTask(60) {
+      driver.asyncTask(60) {
         val imgFile = if (store.isDiff()) {
           log.info("ui change screenshot again")
-          MiniAppium.screenshot()
+          driver.screenshot()
         } else {
           log.info("ui no change")
           val preImageFileName = getBasePathName(store.clickedElementsList.takeRight(2).head) + ".ori.jpg"
@@ -988,7 +918,7 @@ class Crawler extends CommonLog {
             //FileUtils.copyFile(preImageFile, markImageFile)
             preImageFile
           } else {
-            MiniAppium.screenshot()
+            driver.screenshot()
           }
         }
         if(imgFile.getAbsolutePath==new java.io.File(originPath).getAbsolutePath){
@@ -1029,9 +959,6 @@ class Crawler extends CommonLog {
     saveScreen()
 
     action match {
-      case "tap" => {
-        MiniAppium.tap()
-      }
       case "back" => {
         back()
       }
@@ -1039,11 +966,11 @@ class Crawler extends CommonLog {
         if (conf.defaultBackAction.size > 0) {
           conf.defaultBackAction.foreach(Runtimes.eval)
         } else {
-          MiniAppium.backApp()
+          driver.backApp()
         }
       }
       case "monkey" => {
-        MiniAppium.event(element.name.toInt)
+        driver.event(element.name.toInt)
       }
       case event if event.matches(".*\\(.*\\).*") => {
         Runtimes.eval(event)
@@ -1053,44 +980,38 @@ class Crawler extends CommonLog {
         //todo: tap的缺点就是点击元素的时候容易点击到元素上层的控件
 
         log.info(s"need input ${str}")
-        findElementByUrlElement(element) match {
-          case Some(webElement) => {
-            log.info("getLocation")
-            val location = webElement.getLocation
-            val x = location.getX
-            val y = location.getY
-
-            val size = webElement.getSize
-            val w = size.getWidth
-            val h = size.getHeight
-
-
+        driver.findElementByUrlElement(element) match {
+          case true => {
+            val rect = driver.getRect()
             val originImageName = getBasePathName() + ".ori.jpg"
             val newImageName = getBasePathName() + ".ps.jpg"
             if(conf.saveScreen) {
-              MiniAppium.mark(originImageName, newImageName, x, y, w, h)
+              driver.mark(originImageName, newImageName, rect.x, rect.y, rect.width, rect.height)
             }
 
-            MiniAppium.asyncTask() {
+            driver.asyncTask() {
               //支持各种动作
               str match {
                 case "click" => {
                   log.info("click element")
-                  webElement.click()
+                  driver.tap()
+                }
+                case "tap" => {
+                  driver.longTap()
                 }
                 case str => {
                   log.info(s"input ${str}")
-                  webElement.sendKeys(str)
+                  driver.sendKeys(str)
                 }
               }
             }
           }
-          case None => {
-            log.warn(s"not found by ${element}")
+          case false => {
+            log.warn(s"not found by ${element.loc}")
           }
         }
         if (List("UIATextField", "UIATextView", "EditText").map(element.tag.contains(_)).contains(true)) {
-          MiniAppium.retry(driver.hideKeyboard())
+          driver.retry(driver.hideKeyboard())
         }
       }
     }
@@ -1103,8 +1024,8 @@ class Crawler extends CommonLog {
         log.warn("two back action too close")
         Thread.sleep(4000)
       }
-      MiniAppium.asyncTask() {
-        MiniAppium.back()
+      driver.asyncTask() {
+        driver.back()
       }
       backDistance.append("back")
       appNameRecord.pop()

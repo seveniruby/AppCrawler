@@ -16,10 +16,11 @@ import scala.io.Source
   * Created by seveniruby on 16/9/24.
   */
 class TestMiniAppium extends FunSuite{
+  val a=new MiniAppium()
   test("appium success"){
-    MiniAppium.start()
+    a.start()
     println(Source.fromURL("http://127.0.0.1:4723/wd/hub/sessions").mkString)
-    MiniAppium.stop()
+    a.stop()
   }
 
   test("single session"){

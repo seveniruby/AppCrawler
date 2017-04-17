@@ -48,10 +48,4 @@ class TestGetClassFile extends FunSuite with Matchers{
 
     println(getClass.getClassLoader.getResources("com/xueqiu/qa/appcrawler/ut/TestDiffReport.class"))
   }
-
-  test("test generate template class"){
-    Report.reportDir="/tmp/"
-    Report.generateTestCase()
-  }
-
 }

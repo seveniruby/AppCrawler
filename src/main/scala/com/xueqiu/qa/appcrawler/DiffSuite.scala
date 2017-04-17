@@ -70,7 +70,9 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
           val message =
             s"""
                |key=${subKey}
+               |
                |candidate=${candidateElement.loc}
+               |
                |master=${masterElement.loc}
                |________________
                |
@@ -83,11 +85,11 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
               s"""
                  |candidate image
                  |-------
-                 |<img src='${DiffSuite.candidateStore.getOrElse(key, ElementInfo()).resImg}' width='100%' />
+                 |<img src='${DiffSuite.candidateStore.getOrElse(key, ElementInfo()).resImg}' width='40%' />
                  |
                  |master image
                  |--------
-                 |<img src='${DiffSuite.masterStore.getOrElse(key, ElementInfo()).resImg}' width='100%' />
+                 |<img src='${DiffSuite.masterStore.getOrElse(key, ElementInfo()).resImg}' width='40%' />
                  |
                 """.stripMargin)
           }

@@ -9,8 +9,7 @@ class IDeviceScreenshot extends Plugin{
 
   var use=false
   override def start(): Unit ={
-    val udid=getCrawler().driver.getCapabilities.getCapability("udid")
-    udid match {
+    getCrawler().conf.capability("udid") match {
       case null=> {
         use=false
         log.info("udid=null use simulator")

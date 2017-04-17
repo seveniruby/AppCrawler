@@ -89,3 +89,26 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
     })
   }
 }
+
+object TemplateTestCase extends CommonLog{
+  def saveTestCase(store: UrlElementStore, resultDir: String): Unit = {
+    log.info("save testcase")
+    Report.reportPath = resultDir
+    Report.testcaseDir = Report.reportPath + "/tmp/"
+    //为了保持独立使用
+    val path = new java.io.File(resultDir).getCanonicalPath
+
+    val suites = store.elementStore.map(x => x._2.element.url).toList.distinct
+    suites.foreach(suite => {
+      log.info(s"gen testcase class ${suite}")
+      //todo: 基于规则的多次点击事件只会被保存到一个状态中. 需要区分
+      TemplateClass.genTestCaseClass(
+        suite,
+        "com.xueqiu.qa.appcrawler.TemplateTestCase",
+        Map("uri"->suite, "name"->suite),
+        Report.testcaseDir
+      )
+    })
+  }
+
+}

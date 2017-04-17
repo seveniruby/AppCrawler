@@ -103,10 +103,11 @@ object RichData extends CommonLog {
         */
       }).filter(x => x.nonEmpty).mkString(" and ")
 
+      //todo: macaca的source有问题
       xpathSingle = if (xpathSingle.isEmpty) {
-        s"/${attribute("tag")}"
+        s"/${attribute.getOrElse("class", attribute.getOrElse("tag", "*"))}"
       } else {
-        s"/${attribute("tag")}[${xpathSingle}]"
+        s"/${attribute.getOrElse("class", attribute.getOrElse("tag", "*"))}[${xpathSingle}]"
       }
       xpathSingle
     }

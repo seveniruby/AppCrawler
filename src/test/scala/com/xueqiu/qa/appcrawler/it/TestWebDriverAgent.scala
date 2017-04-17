@@ -12,21 +12,6 @@ import scala.collection.JavaConversions._
   * Created by seveniruby on 16/6/3.
   */
 class TestWebDriverAgent extends MiniAppiumSuite{
-  test("test facebook webdriver"){
-    config("app", "/Users/seveniruby/projects/snowball-ios/DerivedData/Snowball/Build/Products/Debug-iphonesimulator/Snowball.app")
-    config("bundleId", "com.xueqiu")
-    config("fullReset", "true")
-    config("noReset", "true")
-    config("udid", "4F05E384-FE32-43DE-8539-4DC3E2EBC117")
-    config("automationName", "XCUITest")
-    //appium("http://192.168.100.65:8100")
-    appium("http://127.0.0.1:4723/wd/hub/")
-
-    println(driver.getPageSource)
-    see("选股策略").tap()
-    quit()
-  }
-
   test("use remote webdriver"){
     val capability=new DesiredCapabilities()
     capability.setCapability("app", "/Users/seveniruby/projects/snowball-ios/DerivedData/Snowball/Build/Products/Debug-iphonesimulator/Snowball.app")
