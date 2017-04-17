@@ -4,6 +4,8 @@ import java.util.Date
 
 import org.apache.commons.io.FileUtils
 import org.apache.log4j._
+import org.scalatest
+import org.scalatest.ConfigMap
 import sun.misc.{Signal, SignalHandler}
 
 import scala.annotation.tailrec
@@ -185,6 +187,12 @@ class Crawler extends CommonLog {
       saveScreen(true)
       Thread.sleep(1000)
     })
+    runSteps()
+  }
+
+  def runSteps(): Unit ={
+    log.info("run testcases")
+    new AutomationTestCase().execute("run steps", ConfigMap("crawler"->this))
   }
 
   def setupAppium(): Unit = {

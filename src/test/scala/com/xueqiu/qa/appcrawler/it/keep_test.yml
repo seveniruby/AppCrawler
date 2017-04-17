@@ -30,7 +30,7 @@ androidCapability:
   app: ""
   appium: "http://127.0.0.1:4723/wd/hub"
 #  automationName: uiautomator2
-  automationName: macaca
+  automationName: uiautomator2
   reuse: 3
 #  nativeWebScreenshot: "true"
 defineUrl:
@@ -50,16 +50,6 @@ urlBlackList:
 - .*Training.*
 - .*FriendRank.*
 - .*\\.base\\.Container.*
-- ".*球友.*"
-- ".*png.*"
-- ".*Talk.*"
-- ".*Chat.*"
-- ".*Safari.*"
-- "WriteStatus.*"
-- "Browser.*"
-- "MyselfUser"
-- ".*MyselfUser.*"
-- ".*股市直播.*"
 #urlWhiteList:
 #- ".*Main.*"
 backButton:
@@ -106,15 +96,24 @@ triggerActions:
   times: 1
 - xpath: //*[contains(@text, "微信朋友圈")]
 - xpath: //*[contains(@text, "发送")]
-- xpath:
 asserts:
 - given:
   - //*[@text="胸部"]
-  when: []
   then:
   - //*[contains(@text, "success")]
   - //*[@package="com.gotokeep.keep"]
-
+steps:
+- when:
+    xpath: //*[@text='马甲线养成']
+    action: tap
+  then:
+  - //*[contains(@text, "退出")]
+- when:
+    xpath: //*[@text='退出训练']
+    action: click
+  then:
+  - //*[contains(@text, "添加训练")]
+  - //*[contains(@text, "故意错误")]
 
 #所有view的叶子节点 一般表示游戏
 #- action: monkey
