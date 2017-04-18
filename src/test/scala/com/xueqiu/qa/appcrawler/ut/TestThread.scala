@@ -1,6 +1,6 @@
 package com.xueqiu.qa.appcrawler.ut
 
-import com.xueqiu.qa.appcrawler.MiniAppium
+import com.xueqiu.qa.appcrawler.AppiumClient
 import org.scalatest.FunSuite
 
 import scala.sys.process.Process
@@ -130,7 +130,7 @@ class TestThread extends FunSuite{
   test("executor service default"){
 
     val pre=System.currentTimeMillis()
-    val r=MiniAppium.asyncTask(5){
+    val r=AppiumClient.asyncTask(5){
       Thread.sleep(100000)
       "xxxx"
     }
@@ -144,7 +144,7 @@ class TestThread extends FunSuite{
   test("executor service expect"){
 
     val pre=System.currentTimeMillis()
-    val r=MiniAppium.asyncTask(5){
+    val r=AppiumClient.asyncTask(5){
       Thread.sleep(1000)
       "xxxx"
     }
@@ -157,7 +157,7 @@ class TestThread extends FunSuite{
   test("executor service Int expect"){
 
     val pre=System.currentTimeMillis()
-    val r=MiniAppium.asyncTask(5) {
+    val r=AppiumClient.asyncTask(5) {
       Thread.sleep(100000)
       1
     }
@@ -170,7 +170,7 @@ class TestThread extends FunSuite{
   test("executor service Int"){
 
     val pre=System.currentTimeMillis()
-    val r=MiniAppium.asyncTask(5){
+    val r=AppiumClient.asyncTask(5){
       Thread.sleep(1000)
       1
     }
@@ -181,7 +181,7 @@ class TestThread extends FunSuite{
   }
 
   test("-1 async"){
-    val x=MiniAppium.asyncTask(-1){
+    val x=AppiumClient.asyncTask(-1){
       println("start")
       Thread.sleep(6000)
       3
@@ -195,7 +195,7 @@ class TestThread extends FunSuite{
   test("appium start"){
     val process=Process("appium -p 4445")
     val pb=process.run()
-    val x=MiniAppium.asyncTask(10){
+    val x=AppiumClient.asyncTask(10){
       pb.exitValue()
     }
     println(x)

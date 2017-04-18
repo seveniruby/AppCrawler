@@ -32,7 +32,7 @@ class TestDataObject extends FunSuite with CommonLog with Matchers{
 
   test("read clickedElementsList"){
     val yaml=scala.io.Source.fromFile("iOS_20160813165030/clickedList.yml").getLines().mkString("\n")
-    val elementList=DataObject.fromYaml[List[UrlElement]](yaml)
+    val elementList=DataObject.fromYaml[List[URIElement]](yaml)
     log.info(elementList.head)
     log.info(elementList.last)
 
@@ -60,8 +60,8 @@ class TestDataObject extends FunSuite with CommonLog with Matchers{
     log.info(conf.saveScreen)
   }
   test("map yaml"){
-    val url1=UrlElement("a", "b", "c", "d", "e")
-    val url2=UrlElement("a", "b", "c", "d", "e")
+    val url1=URIElement("a", "b", "c", "d", "e")
+    val url2=URIElement("a", "b", "c", "d", "e")
 
     val u1=Map(2->url1)
     val u2=Map(url2->2)
@@ -71,7 +71,7 @@ class TestDataObject extends FunSuite with CommonLog with Matchers{
     log.info(d1)
 
     val d2=DataObject.fromYaml[Map[String,Map[String, String]]](d1)
-    val u22=UrlElement(d2.get("2").get("url"), d2.get("2").get("tag"),
+    val u22=URIElement(d2.get("2").get("url"), d2.get("2").get("tag"),
       d2.get("2").get("id"), d2.get("2").get("name"), d2.get("2").get("loc"))
     assert(u22.loc==u1(2).loc)
 

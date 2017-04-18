@@ -2,7 +2,7 @@ package com.xueqiu.qa.appcrawler.plugin
 
 import java.util.logging.Level
 
-import com.xueqiu.qa.appcrawler.{MiniAppium, Plugin, UrlElement}
+import com.xueqiu.qa.appcrawler.{AppiumClient, Plugin, URIElement}
 
 import scala.collection.mutable.ListBuffer
 import scala.reflect.io.File
@@ -14,9 +14,9 @@ import scala.reflect.io.File
   */
 class LogPlugin extends Plugin {
   private var logs = ListBuffer[String]()
-  val driver = getCrawler().driver.asInstanceOf[MiniAppium].driver
+  val driver = getCrawler().driver.asInstanceOf[AppiumClient].driver
 
-  override def afterElementAction(element: UrlElement): Unit = {
+  override def afterElementAction(element: URIElement): Unit = {
     //第一次先试验可用的log 后续就可以跳过从而加速
     if (logs.isEmpty) {
       driver.manage().logs().getAvailableLogTypes.toArray().foreach(logName => {

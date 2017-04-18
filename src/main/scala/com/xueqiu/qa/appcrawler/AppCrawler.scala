@@ -14,10 +14,23 @@ import scala.io.Source
   * Created by seveniruby on 16/4/24.
   */
 object AppCrawler extends CommonLog {
+  val banner=
+    """
+      |________________
+      |
+      |AppCrawler 1.9.0
+      |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
+      |帮助文档: http://seveniruby.gitbooks.io/appcrawler
+      |移动测试技术交流: https://testerhome.com
+      |感谢: 晓光 泉龙 杨榕 恒温 mikezhou yaming116
+      |感谢提供商业支持的优秀公司: Keep
+      |____________________________
+    """.stripMargin
+
+
   var logPath = ""
   var crawler = new Crawler
   val startTime = new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
-
   case class Param(
                     app: File = new File(""),
                     conf: File = new File(""),
@@ -49,29 +62,22 @@ object AppCrawler extends CommonLog {
 
 
   def setGlobalEncoding(): Unit = {
-    log.info("set file.encoding to UTF-8")
+    log.debug("set file.encoding to UTF-8")
     System.setProperty("file.encoding", "UTF-8");
 
     val charset = classOf[Charset].getDeclaredField("defaultCharset")
     charset.setAccessible(true)
     charset.set(null, null)
-    log.info("Default Charset=" + Charset.defaultCharset())
-    log.info("file.encoding=" + System.getProperty("file.encoding"))
-    log.info("Default Charset=" + Charset.defaultCharset())
-    log.info("project directory=" + (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
+    log.debug("Default Charset=" + Charset.defaultCharset())
+    log.debug("file.encoding=" + System.getProperty("file.encoding"))
+    log.debug("Default Charset=" + Charset.defaultCharset())
+    log.debug("project directory=" + (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
 
   }
 
   def main(args: Array[String]) {
     val parser = new scopt.OptionParser[Param]("appcrawler") {
-      head(
-        """
-          |AppCrawler 1.8.0
-          |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
-          |帮助文档: http://seveniruby.gitbooks.io/appcrawler
-          |移动测试技术交流: https://testerhome.com
-          |感谢: 晓光 泉龙 杨榕 恒温 mikezhou yaming116
-        """.stripMargin)
+      head(banner)
       opt[File]('a', "app") action { (x, c) => {
         c.copy(app = x)
       }
@@ -148,11 +154,15 @@ object AppCrawler extends CommonLog {
     }
     // parser.parse returns Option[C]
 
+    log.info(banner)
     val args_new = if (args.length == 0) {
       Array("--help")
     } else {
       args
     }
+
+
+
     parser.parse(args_new, Param()) match {
       case Some(config) => {
         if (config.verbose) {
@@ -264,7 +274,6 @@ object AppCrawler extends CommonLog {
         if (config.report != "" && config.candidate.isEmpty && config.template=="") {
           val store = Report.loadResult(s"${config.report}/elements.yml")
           Report.saveTestCase(store, config.report)
-
           Report.store=store
           crawler.conf=crawlerConf
           Report.runTestCase()

@@ -25,7 +25,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by seveniruby on 16/8/9.
   */
-class MiniAppium extends CommonLog with WebBrowser with WebDriver{
+class AppiumClient extends CommonLog with WebBrowser with WebDriver{
   Runtimes.init()
   var conf: CrawlerConf = _
 
@@ -385,7 +385,7 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
       val code = monkeyEvents(number)
       event(code)
       record.append(code)
-      val element = UrlElement(crawl.currentUrl + "_Monkey", "", "", "", s"monkey_${code}")
+      val element = URIElement(crawl.currentUrl + "_Monkey", "", "", "", s"monkey_${code}")
       crawl.store.setElementClicked(element)
     }
   }
@@ -393,7 +393,7 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
 
   //todo:优化查找方法
   //找到统一的定位方法就在这里定义, 找不到就分别在子类中重载定义
-  override def findElementByUrlElement(element: UrlElement): Boolean = {
+  override def findElementByUrlElement(element: URIElement): Boolean = {
     //为了加速去掉id定位, 测试表明比xpath竟然还慢
     /*
     log.info(s"find element by uid ${element}")
@@ -491,4 +491,4 @@ class MiniAppium extends CommonLog with WebBrowser with WebDriver{
 
 
 }
-object MiniAppium extends MiniAppium
+object AppiumClient extends AppiumClient

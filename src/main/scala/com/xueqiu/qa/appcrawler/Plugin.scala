@@ -26,10 +26,10 @@ abstract class Plugin extends CommonLog{
   def beforeBack(): Unit ={
 
   }
-  def beforeElementAction(element: UrlElement): Unit ={
+  def beforeElementAction(element: URIElement): Unit ={
 
   }
-  def afterElementAction(element: UrlElement): Unit ={
+  def afterElementAction(element: URIElement): Unit ={
 
   }
 

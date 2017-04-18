@@ -7,15 +7,15 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by seveniruby on 16/9/8.
   */
-class UrlElementStore {
+class URIElementStore {
   //todo: 用枚举替代  0表示未遍历 1表示已遍历 -1表示跳过
   @BeanProperty
-  val elementStore = scala.collection.mutable.Map[String, ElementInfo]()
+  var elementStore = scala.collection.mutable.Map[String, ElementInfo]()
   /** 点击顺序, 留作画图用 */
   @BeanProperty
-  val clickedElementsList = ListBuffer[UrlElement]()
+  var clickedElementsList = ListBuffer[URIElement]()
 
-  def setElementSkip(element: UrlElement): Unit = {
+  def setElementSkip(element: URIElement): Unit = {
     clickedElementsList.remove(clickedElementsList.size - 1)
     if(elementStore.contains(element.toString)==false){
       elementStore(element.toString)=ElementInfo()
@@ -24,7 +24,7 @@ class UrlElementStore {
     elementStore(element.toString).action=ElementStatus.Skiped
   }
 
-  def setElementClicked(element: UrlElement): Unit = {
+  def setElementClicked(element: URIElement): Unit = {
     if(elementStore.contains(element.toString)==false){
       elementStore(element.toString)=ElementInfo()
       elementStore(element.toString).element=element
@@ -34,7 +34,7 @@ class UrlElementStore {
     elementStore(element.toString).clickedIndex=clickedElementsList.indexOf(element)
   }
 
-  def saveElement(element: UrlElement): Unit = {
+  def saveElement(element: URIElement): Unit = {
     if(elementStore.contains(element.toString)==false){
       elementStore(element.toString)=ElementInfo()
       elementStore(element.toString).element=element
@@ -45,45 +45,59 @@ class UrlElementStore {
     }
   }
 
-  def saveHash(hash: String = ""): Unit = {
-    val head = clickedElementsList.last
-    if(elementStore(head.toString).reqHash.isEmpty){
+
+  def saveReqHash(hash: String = ""): Unit = {
+    val head = clickedElementsList.last.toString
+    if(elementStore(head).reqHash.isEmpty){
       AppCrawler.log.info(s"save reqHash to ${clickedElementsList.size-1}")
-      elementStore(head.toString).reqHash=hash
+      elementStore(head).reqHash=hash
     }
+  }
 
-    if(clickedElementsList.size>1) {
-      val pre = clickedElementsList.takeRight(2).head
-      elementStore(pre.toString).resHash = hash
+  def saveResHash(hash: String = ""): Unit = {
+    val head = clickedElementsList.last.toString
+    if(elementStore(head).resHash.isEmpty){
+      AppCrawler.log.info(s"save resHash to ${clickedElementsList.size-1}")
+      elementStore(head).resHash=hash
     }
   }
 
 
-  def saveDom(dom: String = ""): Unit = {
-    val head = clickedElementsList.last
-    if(elementStore(head.toString).reqDom.isEmpty){
+  def saveReqDom(dom: String = ""): Unit = {
+    val head = clickedElementsList.last.toString
+    if(elementStore(head).reqDom.isEmpty){
       AppCrawler.log.info(s"save reqDom to ${clickedElementsList.size-1}")
-      elementStore(head.toString).reqDom=dom
+      elementStore(head).reqDom=dom
     }
+  }
 
-    if(clickedElementsList.size>1) {
-      val pre = clickedElementsList.takeRight(2).head
-      elementStore(pre.toString).resDom = dom
+  def saveResDom(dom: String = ""): Unit = {
+    val head = clickedElementsList.last.toString
+    if(elementStore(head).resDom.isEmpty){
+      AppCrawler.log.info(s"save resDom to ${clickedElementsList.size-1}")
+      elementStore(head).resDom=dom
     }
   }
 
 
-  def saveImg(imgName:String): Unit = {
-    val head = clickedElementsList.last
-    if (elementStore(head.toString).reqImg.isEmpty) {
+
+  def saveReqImg(imgName:String): Unit = {
+    val head = clickedElementsList.last.toString
+    if (elementStore(head).reqImg.isEmpty) {
       AppCrawler.log.info(s"save reqImg ${imgName} to ${clickedElementsList.size - 1}")
       elementStore(head.toString).reqImg = imgName
     }
-    if(clickedElementsList.size>1) {
-      val pre = clickedElementsList.takeRight(2).head
-      elementStore(pre.toString).resImg = imgName.split('.').dropRight(2).mkString(".")+".ori.jpg"
+  }
+
+
+  def saveResImg(imgName:String): Unit = {
+    val head = clickedElementsList.last.toString
+    if (elementStore(head).reqImg.isEmpty) {
+      AppCrawler.log.info(s"save reqImg ${imgName} to ${clickedElementsList.size - 1}")
+      elementStore(head.toString).reqImg = imgName.split('.').dropRight(2).mkString(".")+".ori.jpg"
     }
   }
+
   def getLastResponseImage(): Unit ={
 
   }
@@ -95,7 +109,7 @@ class UrlElementStore {
   }
 
 
-  def isClicked(ele: UrlElement): Boolean = {
+  def isClicked(ele: URIElement): Boolean = {
     if (elementStore.contains(ele.toString)) {
       elementStore(ele.toString).action == ElementStatus.Clicked
     } else {
@@ -104,7 +118,7 @@ class UrlElementStore {
     }
   }
 
-  def isSkiped(ele: UrlElement): Boolean = {
+  def isSkiped(ele: URIElement): Boolean = {
     if (elementStore.contains(ele.toString)) {
       elementStore(ele.toString).action == ElementStatus.Skiped
     } else {
@@ -129,5 +143,5 @@ case class ElementInfo(
                         var resImg:String="",
                         var clickedIndex: Int = -1,
                         var action: ElementStatus.Value = ElementStatus.Ready,
-                        var element: UrlElement = UrlElement("Init", "", "", "", "")
+                        var element: URIElement = URIElement("Init", "", "", "", "")
                       )

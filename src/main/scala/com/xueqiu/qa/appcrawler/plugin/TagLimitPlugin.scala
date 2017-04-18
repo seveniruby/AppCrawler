@@ -1,6 +1,6 @@
 package com.xueqiu.qa.appcrawler.plugin
 
-import com.xueqiu.qa.appcrawler.{ElementStatus, Plugin, UrlElement}
+import com.xueqiu.qa.appcrawler.{ElementStatus, Plugin, URIElement}
 
 /**
   * Created by seveniruby on 16/1/21.
@@ -15,7 +15,7 @@ class TagLimitPlugin extends Plugin {
     tagLimitMax = getCrawler().conf.tagLimitMax
   }
 
-  override def beforeElementAction(element: UrlElement): Unit = {
+  override def beforeElementAction(element: URIElement): Unit = {
     val key = element.toTagPath()
     log.trace(s"tag path = ${key}")
     if (!tagLimit.contains(key)) {
@@ -34,7 +34,7 @@ class TagLimitPlugin extends Plugin {
     }
   }
 
-  override def afterElementAction(element: UrlElement): Unit = {
+  override def afterElementAction(element: URIElement): Unit = {
     val key = element.toTagPath()
     if (tagLimit.contains(key)) {
       tagLimit(key) -= 1

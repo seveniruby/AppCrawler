@@ -33,7 +33,7 @@ trait WebDriver extends CommonLog {
 
   }
 
-  def findElementByUrlElement(element: UrlElement): Boolean= {
+  def findElementByUrlElement(element: URIElement): Boolean= {
     false
   }
 

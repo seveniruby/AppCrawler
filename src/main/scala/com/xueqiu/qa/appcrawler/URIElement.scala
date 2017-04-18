@@ -1,11 +1,13 @@
 package com.xueqiu.qa.appcrawler
 
+import org.apache.commons.lang3.StringUtils
+
 import scala.collection.immutable
 
 /**
   * Created by seveniruby on 15/12/18.
   */
-case class UrlElement(url: String="", tag: String="", id: String="", name: String="", loc:String="") {
+case class URIElement(url: String="", tag: String="", id: String="", name: String="", loc:String="") {
   //用来代表唯一的控件, 每个特定的命名控件只被点击一次. 所以这个element的构造决定了控件是否可被点击多次.
   //比如某个输入框被命名为url=xueqiu id=input, 那么就只能被点击一次
   //如果url修改为url=xueqiu/xxxActivity id=input 就可以被点击多次
@@ -34,21 +36,28 @@ case class UrlElement(url: String="", tag: String="", id: String="", name: Strin
     * @return
     */
   def toTagPath(): String ={
+    //todo: 将来保存到URIElement中
     //相同url下的相同元素类型控制点击额度
-    //s"${element.url}_${element.tag}_${element.loc}".replaceAll("@index=[^ ]*", "") //replaceAll("\\[[^\\[]*$", "")
-    s"${url}-${"(/[a-zA-Z][a-zA-Z\\.]*)".r.findAllMatchIn(loc.replaceAll(":id/", "").replaceAll("android\\.[a-z]*\\.", "")).map(_.subgroups).toList.flatten.mkString("")}"
+    s"${url}_${loc.replaceAll("@index=\"[0-9]*\"", "")}"
   }
 
   override def toString: String = {
     s"${this.url}_${this.loc}"
   }
 
+  def hash(s:String)={
+    val m = java.security.MessageDigest.getInstance("MD5")
+    val b = s.getBytes("UTF-8")
+    m.update(b,0,b.length)
+    new java.math.BigInteger(1,m.digest()).toString(16)
+  }
+
 }
 
-object UrlElement {
+object URIElement {
   //def apply(url: String, tag: String, id: String, name: String, loc: String = ""): UrlElement = new UrlElement(url, tag, id, name, loc)
 
-  def apply(x:scala.collection.Map[String, Any], uri:String): UrlElement = {
+  def apply(x:scala.collection.Map[String, Any], uri:String): URIElement = {
     val tag = x.getOrElse("tag", "NoTag").toString
 
     //name为Android的description/text属性, 或者iOS的value属性
@@ -59,7 +68,7 @@ object UrlElement {
     //id表示android的resource-id或者iOS的name属性
     val id = x.getOrElse("name", "").toString.split('/').last
     val loc = x.getOrElse("xpath", "").toString
-    UrlElement(uri, tag, id, name, loc)
+    URIElement(uri, tag, id, name, loc)
   }
 
 /*  def apply(x: scala.collection.immutable.Map[String, Any], uri:String=""): UrlElement = {

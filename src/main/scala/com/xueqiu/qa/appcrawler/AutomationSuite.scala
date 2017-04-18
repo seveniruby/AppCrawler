@@ -6,7 +6,7 @@ import org.scalatest.{BeforeAndAfterAllConfigMap, ConfigMap, FunSuite, Matchers}
 /**
   * Created by seveniruby on 2017/4/17.
   */
-class AutomationTestCase extends FunSuite with Matchers with BeforeAndAfterAllConfigMap with CommonLog {
+class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfigMap with CommonLog {
   var crawler :Crawler=_
   override def beforeAll(configMap: ConfigMap): Unit = {
     log.info("beforeAll")
@@ -26,14 +26,19 @@ class AutomationTestCase extends FunSuite with Matchers with BeforeAndAfterAllCo
 
       RichData.getListFromXPath(xpath, driver.currentPageDom).headOption match {
         case Some(v)=> {
-          crawler.doElementAction(UrlElement(v, crawler.currentUrl), action)
+          val ele=URIElement(v, "Steps")
+          crawler.store.setElementClicked(ele)
+          crawler.doElementAction(ele, action)
           crawler.refreshPage()
         }
-        case None=>{log.info("not found")}
+        case None=>{
+          log.info("not found")
+          val ele=URIElement("Steps", "", "", "NOT_FOUND", xpath)
+          crawler.store.setElementClicked(ele)
+        }
       }
 
-      val then=step.getOrElse("then", List[String]()).asInstanceOf[List[String]]
-      then.foreach(existAssert=>{
+      step.getOrElse("then", List[String]()).asInstanceOf[List[String]].foreach(existAssert=>{
         log.debug(existAssert)
         cp {
           withClue(s"${existAssert} 不存在\n") {

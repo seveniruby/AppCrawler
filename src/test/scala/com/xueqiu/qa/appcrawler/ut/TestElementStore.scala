@@ -8,15 +8,15 @@ import org.scalatest.{Matchers, FunSuite}
   */
 class TestElementStore extends FunSuite with Matchers with CommonLog{
   test("save to yaml"){
-    val store=new UrlElementStore
+    val store=new URIElementStore
 
-    val element_1=UrlElement("a", "b", "c", "d", "e")
+    val element_1=URIElement("a", "b", "c", "d", "e")
     val info_1=new ElementInfo()
     info_1.element=element_1
     info_1.action=ElementStatus.Skiped
 
 
-    val element_2=UrlElement("aa", "bb", "cc", "dd", "ee")
+    val element_2=URIElement("aa", "bb", "cc", "dd", "ee")
     val info_2=new ElementInfo()
     info_2.element=element_2
     info_2.action=ElementStatus.Clicked
@@ -31,7 +31,7 @@ class TestElementStore extends FunSuite with Matchers with CommonLog{
     log.info(store)
     val str=DataObject.toYaml(store)
     log.info(str)
-    val store2=DataObject.fromYaml[UrlElementStore](str)
+    val store2=DataObject.fromYaml[URIElementStore](str)
     log.info(store2)
     val str2=DataObject.toYaml(store2)
 

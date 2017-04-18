@@ -58,8 +58,8 @@ object Runtimes extends CommonLog{
   def eval(code:String): Unit ={
     if(isLoaded==false){
       log.info("first import")
-      instance.eval("import com.xueqiu.qa.appcrawler.MiniAppium")
-      instance.eval("import com.xueqiu.qa.appcrawler.MiniAppium._")
+      instance.eval("import com.xueqiu.qa.appcrawler.AppiumClient")
+      instance.eval("import com.xueqiu.qa.appcrawler.AppiumClient._")
       isLoaded=true
     }
     log.info(code)

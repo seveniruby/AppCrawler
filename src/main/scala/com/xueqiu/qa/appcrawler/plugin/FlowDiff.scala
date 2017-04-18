@@ -2,7 +2,7 @@ package com.xueqiu.qa.appcrawler.plugin
 
 import java.io
 
-import com.xueqiu.qa.appcrawler.{DataObject, UrlElement, Plugin}
+import com.xueqiu.qa.appcrawler.{DataObject, URIElement, Plugin}
 import org.apache.commons.io.FileUtils
 
 import scala.reflect.io.File
@@ -14,7 +14,7 @@ class FlowDiff extends Plugin{
   override def start(): Unit ={
   }
 
-  override def afterElementAction(element: UrlElement): Unit ={
-    getCrawler().store.saveDom(getCrawler().currentPageSource)
+  override def afterElementAction(element: URIElement): Unit ={
+    getCrawler().store.saveResDom(getCrawler().currentPageSource)
   }
 }

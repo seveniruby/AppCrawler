@@ -4,7 +4,7 @@ import java.net.URL
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 
-import com.xueqiu.qa.appcrawler.{MiniAppium, RichData}
+import com.xueqiu.qa.appcrawler.{AppiumClient, RichData}
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.remote.MobileCapabilityType
 import org.openqa.selenium.chrome.ChromeOptions
@@ -49,8 +49,8 @@ class TestWeixin extends FunSuite {
     driver.findElement(By.xpath("//*[contains(@text, 'BQConf')]")).click()
     driver.findElement(By.xpath("//*[contains(@content-desc, '聊天信息')]")).click()
 
-    MiniAppium.driver = driver
-    MiniAppium.swipe(0.5, 0.9, 0.5, 0.1)
+    AppiumClient.driver = driver
+    AppiumClient.swipe(0.5, 0.9, 0.5, 0.1)
     driver.findElement(By.xpath("//*[contains(@text, '查看全部群成员')]")).click()
     Thread.sleep(3000)
 
@@ -69,7 +69,7 @@ class TestWeixin extends FunSuite {
           }
           driver.navigate().back()
         })
-        MiniAppium.swipe(0.5, 0.9, 0.5, 0.1)
+        AppiumClient.swipe(0.5, 0.9, 0.5, 0.1)
       } catch {
         case e: Exception => {
           println(e.getMessage)

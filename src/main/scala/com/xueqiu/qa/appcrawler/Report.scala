@@ -16,7 +16,7 @@ trait Report extends CommonLog {
   var reportPath = ""
   var testcaseDir = ""
 
-  def saveTestCase(store: UrlElementStore, resultDir: String): Unit = {
+  def saveTestCase(store: URIElementStore, resultDir: String): Unit = {
     log.info("save testcase")
     reportPath = resultDir
     testcaseDir = reportPath + "/tmp/"
@@ -80,10 +80,10 @@ object Report extends Report{
   var master=""
   var candidate=""
   var reportDir=""
-  var store=new UrlElementStore
+  var store=new URIElementStore
 
 
-  def loadResult(elementsFile: String): UrlElementStore ={
-    DataObject.fromYaml[UrlElementStore](Source.fromFile(elementsFile).mkString)
+  def loadResult(elementsFile: String): URIElementStore ={
+    DataObject.fromYaml[URIElementStore](Source.fromFile(elementsFile).mkString)
   }
 }

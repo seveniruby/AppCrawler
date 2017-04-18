@@ -3,7 +3,7 @@ package com.xueqiu.qa.appcrawler.it
 import java.net.URL
 
 import com.sun.jdi.connect.spi.TransportService.Capabilities
-import com.xueqiu.qa.appcrawler.MiniAppium
+import com.xueqiu.qa.appcrawler.AppiumClient
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.remote.{AndroidMobileCapabilityType, MobileCapabilityType}
 import org.openqa.selenium.WebElement
@@ -15,8 +15,8 @@ import scala.io.Source
 /**
   * Created by seveniruby on 16/9/24.
   */
-class TestMiniAppium extends FunSuite{
-  val a=new MiniAppium()
+class TestAppium extends FunSuite{
+  val a=new AppiumClient()
   test("appium success"){
     a.start()
     println(Source.fromURL("http://127.0.0.1:4723/wd/hub/sessions").mkString)

@@ -319,9 +319,9 @@ class TestCrawler extends FunSuite{
 
   test("elements equal"){
     val crawler=new Crawler()
-    val u1=UrlElement("a", "b", "c", "d","")
-    val u2=UrlElement("a", "b", "c", "d","")
-    val u3=UrlElement("a", "b", "c", "d","e")
+    val u1=URIElement("a", "b", "c", "d","")
+    val u2=URIElement("a", "b", "c", "d","")
+    val u3=URIElement("a", "b", "c", "d","e")
     assert(u1==u2)
     crawler.store.setElementClicked(u1)
     assert(crawler.store.isClicked(u2)==true)

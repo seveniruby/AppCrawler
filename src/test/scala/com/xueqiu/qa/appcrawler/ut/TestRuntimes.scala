@@ -38,12 +38,12 @@ class TestRuntimes extends FunSuite with CommonLog{
   }
 
   test("MiniAppium dsl"){
-    MiniAppium.dsl("hello(\"seveniruby\", 30000)")
-    MiniAppium.dsl("hello(\"ruby\", 30000)")
-    MiniAppium.dsl(" hello(\"seveniruby\", 30000)")
-    MiniAppium.dsl("hello(\"seveniruby\", 30000 )  ")
-    MiniAppium.dsl("sleep(3)")
-    MiniAppium.dsl("hello(\"xxxxx\")")
+    AppiumClient.dsl("hello(\"seveniruby\", 30000)")
+    AppiumClient.dsl("hello(\"ruby\", 30000)")
+    AppiumClient.dsl(" hello(\"seveniruby\", 30000)")
+    AppiumClient.dsl("hello(\"seveniruby\", 30000 )  ")
+    AppiumClient.dsl("sleep(3)")
+    AppiumClient.dsl("hello(\"xxxxx\")")
   }
 
   test("compile"){

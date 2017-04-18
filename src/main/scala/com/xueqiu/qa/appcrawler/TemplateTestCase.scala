@@ -22,7 +22,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
       .map(_._2).toList
       .sortBy(_.clickedIndex)
 
-    println(sortedElements.size)
+    log.info(sortedElements.size)
     //把未遍历的放到后面
     val selected = if (Report.showCancel) {
       sortedElements.filter(_.action == ElementStatus.Clicked) ++ sortedElements.filter(_.action == ElementStatus.Skiped)
@@ -41,10 +41,10 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
           markup(
             s"""
              |
-             |<img src='${File(ele.reqImg).name}' width='100%' />
+             |<img src='${File(ele.reqImg).name}' width='80%' />
              |<br></br>
              |<p>after clicked</p>
-             |<img src='${File(ele.resImg).name}' width='100%' />
+             |<img src='${File(ele.resImg).name}' width='80%' />
           """.
             stripMargin
           )
@@ -91,7 +91,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
 }
 
 object TemplateTestCase extends CommonLog{
-  def saveTestCase(store: UrlElementStore, resultDir: String): Unit = {
+  def saveTestCase(store: URIElementStore, resultDir: String): Unit = {
     log.info("save testcase")
     Report.reportPath = resultDir
     Report.testcaseDir = Report.reportPath + "/tmp/"

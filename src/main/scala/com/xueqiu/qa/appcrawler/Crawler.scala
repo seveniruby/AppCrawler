@@ -26,7 +26,7 @@ class Crawler extends CommonLog {
   val pluginClasses = ListBuffer[Plugin]()
   var fileAppender: FileAppender = _
 
-  val store = new UrlElementStore
+  val store = new URIElementStore
   /** 元素的默认操作 */
   private var currentElementAction = "click"
 
@@ -34,6 +34,8 @@ class Crawler extends CommonLog {
   var currentPageSource = ""
   /** 当前的url路径 */
   var currentUrl = ""
+
+  var isRefreshSuccess = true
 
   private var backRetry = 0
   //最大重试次数
@@ -123,7 +125,7 @@ class Crawler extends CommonLog {
       this.driver = existDriver
     }
     log.info(s"platformName=${conf.currentDriver} driver=${driver}")
-
+    log.info(AppCrawler.banner)
     log.info("waiting for app load")
     Thread.sleep(8000)
     log.info(s"driver=${existDriver}")
@@ -174,25 +176,40 @@ class Crawler extends CommonLog {
   def runStartupScript(): Unit = {
     log.info("run startup script")
     log.info(conf.startupActions)
+
+
+    log.info("first refresh")
+    store.setElementClicked(URIElement(s"${currentUrl}", "", "", "",
+      s"startupActions-Main-${store.clickedElementsList.size}"))
+    refreshPage()
+    saveDom()
+    saveScreen(true)
+
     conf.startupActions.foreach(action => {
       driver.dsl(action)
-      refreshPage()
-      store.setElementClicked(UrlElement(s"${currentUrl}", "", "", "",
+
+      store.setElementClicked(URIElement(s"${currentUrl}", "", "", "",
         s"startupActions-${action}-${store.clickedElementsList.size}"))
-      store.saveHash(contentHash.last().toString)
-      store.saveImg(getBasePathName() + ".ps.jpg")
-      store.saveDom(currentPageSource)
+      store.saveReqHash(contentHash.last().toString)
+      store.saveReqImg(getBasePathName(store.clickedElementsList.takeRight(2).head) + ".ps.jpg")
+      store.saveReqDom(currentPageSource)
       log.info(s"index = ${store.clickedElementsList.size} current =  ${store.clickedElementsList.last.loc}")
+
+      refreshPage()
       saveDom()
       saveScreen(true)
-      Thread.sleep(1000)
+
+      store.saveResHash(contentHash.last().toString)
+      store.saveResImg(getBasePathName() + ".ps.jpg")
+      store.saveResDom(currentPageSource)
+
     })
     runSteps()
   }
 
   def runSteps(): Unit ={
     log.info("run testcases")
-    new AutomationTestCase().execute("run steps", ConfigMap("crawler"->this))
+    new AutomationSuite().execute("run steps", ConfigMap("crawler"->this))
   }
 
   def setupAppium(): Unit = {
@@ -210,8 +227,8 @@ class Crawler extends CommonLog {
         driver=new MacacaDriver(url, conf.capability)
       }
       case _ => {
-        log.info("use MiniAppium")
-        driver=new MiniAppium(url, conf.capability)
+        log.info("use AppiumClient")
+        driver=new AppiumClient(url, conf.capability)
       }
     }
 
@@ -320,7 +337,7 @@ class Crawler extends CommonLog {
     * @param x
     * @return
     */
-  def getUrlElementByMap(x: immutable.Map[String, Any]): UrlElement = {
+  def getUrlElementByMap(x: immutable.Map[String, Any]): URIElement = {
     //控件的类型
     val tag = x.getOrElse("tag", "NoTag").toString
 
@@ -332,7 +349,7 @@ class Crawler extends CommonLog {
     //id表示android的resource-id或者iOS的name属性
     val id = x.getOrElse("name", "").toString.split('/').last
     val loc = x.getOrElse("xpath", "").toString
-    UrlElement(currentUrl, tag, id, name, loc)
+    URIElement(currentUrl, tag, id, name, loc)
   }
 
   def isBackApp(): Boolean = {
@@ -597,7 +614,7 @@ class Crawler extends CommonLog {
   }
 
 
-  def beforeElementAction(element: UrlElement): Unit = {
+  def beforeElementAction(element: URIElement): Unit = {
     log.trace("beforeElementAction")
     conf.beforeElementAction.foreach(elementAction => {
       val xpath = elementAction.get("xpath").get
@@ -609,7 +626,7 @@ class Crawler extends CommonLog {
     pluginClasses.foreach(p => p.beforeElementAction(element))
   }
 
-  def afterElementAction(element: UrlElement): Unit = {
+  def afterElementAction(element: URIElement): Unit = {
     log.trace("afterElementAction")
     /*
     if (getElementAction() != "skip") {
@@ -647,14 +664,14 @@ class Crawler extends CommonLog {
     conf.backButton.flatMap(getAllElements(_).filter(isValid))
   }
 
-  def getBackButton(): Option[UrlElement] = {
+  def getBackButton(): Option[URIElement] = {
     log.info("go back")
     //找到可能的关闭按钮, 取第一个可用的关闭按钮
     getBackElements().headOption match {
       case Some(v) if appNameRecord.isDiff() == false => {
         //app相同并且找到back控件才点击. 否则就默认back
         val element = getUrlElementByMap(v)
-        val backElement=UrlElement(
+        val backElement=URIElement(
           element.url,
           element.tag,
           element.name,
@@ -667,14 +684,14 @@ class Crawler extends CommonLog {
       case _ => {
         log.warn("find back button error")
         setElementAction("back")
-        return Some(UrlElement(s"${currentUrl}", "", "", "",
+        return Some(URIElement(s"${currentUrl}", "", "", "",
           s"Back-${store.clickedElementsList.size}"))
       }
     }
   }
 
 
-  def getAvailableElement(): Seq[UrlElement] = {
+  def getAvailableElement(): Seq[URIElement] = {
     var all = getSelectedElements().getOrElse(List[immutable.Map[String, Any]]())
     log.info(s"all nodes size=${all.length}")
     //去掉黑名单, 这样rule优先级高于黑名单
@@ -708,18 +725,14 @@ class Crawler extends CommonLog {
   final def crawl(): Unit = {
     log.info("crawl next")
     //刷新页面
-    var isRefreshSuccess = true
     var skipBeforeElementAction = true
     //是否需要退出或者后退, 得到要做的动作
-    var nextElement: Option[UrlElement] = None
+    var nextElement: Option[URIElement] = None
 
     //todo: skip之后可以不用刷新
     if (getElementAction() == "skip") {
       log.info("skip refresh page because last action is skip")
       setElementAction("click")
-    } else {
-      Thread.sleep(200)
-      isRefreshSuccess = refreshPage()
     }
 
     //判断下一步动作
@@ -731,7 +744,7 @@ class Crawler extends CommonLog {
     }
     //页面刷新失败自动后退
     if (isRefreshSuccess == false) {
-      nextElement = Some(UrlElement(s"${currentUrl}", "", "", "",
+      nextElement = Some(URIElement(s"${currentUrl}", "", "", "",
         s"Back-${store.clickedElementsList.size}"))
       setElementAction("back")
     } else {
@@ -740,7 +753,7 @@ class Crawler extends CommonLog {
 
     //是否需要回退到app
     if (isBackApp()) {
-      nextElement = Some(UrlElement(s"${currentUrl}", "", "", "",
+      nextElement = Some(URIElement(s"${currentUrl}", "", "", "",
         s"backApp-${appNameRecord.last()}-${store.clickedElementsList.size}"))
       setElementAction("backApp")
     }
@@ -790,9 +803,6 @@ class Crawler extends CommonLog {
 
     nextElement match {
       case Some(element) => {
-        //找到了要点击的元素或者其他的状态标记比如back swipe
-        store.setElementClicked(element)
-
         //todo: 输入情况 长按 需要考虑
         if(skipBeforeElementAction==false) {
           beforeElementAction(element)
@@ -822,7 +832,7 @@ class Crawler extends CommonLog {
   }
 
 
-  def getActionFromNormalActions(element: UrlElement): String = {
+  def getActionFromNormalActions(element: URIElement): String = {
     val normalActions = conf.triggerActions.filter(_.getOrElse("pri", 1).toString.toInt == 0)
     log.info(s"normal actions size = ${normalActions.size}")
     normalActions.toStream.map(r => {
@@ -847,7 +857,7 @@ class Crawler extends CommonLog {
   }
 
 
-  def getTagLimitFromElementActions(element: UrlElement): Option[Int] = {
+  def getTagLimitFromElementActions(element: URIElement): Option[Int] = {
     conf.tagLimit.foreach(r => {
       val xpath = r.getOrElse("xpath", "").toString
       val action = r.getOrElse("count", 1).toString.toInt
@@ -860,7 +870,7 @@ class Crawler extends CommonLog {
         if (element.toTagPath().matches(xpath)) {
           List(element)
         } else {
-          List[UrlElement]()
+          List[URIElement]()
         }
       }
 
@@ -879,7 +889,7 @@ class Crawler extends CommonLog {
     File(s"${conf.resultDir}/elements.yml").writeAll(DataObject.toYaml(store))
   }
 
-  def getBasePathName(element: UrlElement = store.clickedElementsList.last): String = {
+  def getBasePathName(element: URIElement = store.clickedElementsList.last): String = {
     //序号_文件名
     s"${conf.resultDir}/${store.clickedElementsList.lastIndexOf(element)}_" + element.toFileName()
   }
@@ -949,7 +959,7 @@ class Crawler extends CommonLog {
   }
 
 
-  def doElementAction(element: UrlElement, action: String): Unit = {
+  def doElementAction(element: URIElement, action: String): Unit = {
     log.info(s"current element = ${element}")
     log.info(s"current index = ${store.clickedElementsList.size - 1}")
     log.info(s"current action = ${action}")
@@ -959,12 +969,11 @@ class Crawler extends CommonLog {
     log.info(s"current file name = ${element.toFileName()}")
     log.info(s"current uri = ${element.toLoc()}")
 
-    store.saveHash(contentHash.last().toString)
-    store.saveImg(getBasePathName() + ".ps.jpg")
-    store.saveDom(currentPageSource)
-
-    saveDom()
-    saveScreen()
+    //找到了要点击的元素或者其他的状态标记比如back swipe
+    store.setElementClicked(element)
+    store.saveReqHash(contentHash.last().toString)
+    store.saveReqImg(getBasePathName(store.clickedElementsList.takeRight(2).head) + ".ps.jpg")
+    store.saveReqDom(currentPageSource)
 
     action match {
       case "back" => {
@@ -991,9 +1000,10 @@ class Crawler extends CommonLog {
         driver.findElementByUrlElement(element) match {
           case true => {
             val rect = driver.getRect()
-            val originImageName = getBasePathName() + ".ori.jpg"
-            val newImageName = getBasePathName() + ".ps.jpg"
+            val originImageName = getBasePathName(store.clickedElementsList.takeRight(2).head) + ".ori.jpg"
+            val newImageName = getBasePathName(store.clickedElementsList.takeRight(2).head) + ".ps.jpg"
             if(conf.saveScreen) {
+              log.info(s"mark ${originImageName} to ${newImageName}")
               driver.mark(originImageName, newImageName, rect.x, rect.y, rect.width, rect.height)
             }
 
@@ -1023,6 +1033,15 @@ class Crawler extends CommonLog {
         }
       }
     }
+
+    isRefreshSuccess = refreshPage()
+    saveDom()
+    saveScreen()
+
+    store.saveResHash(contentHash.last().toString)
+    store.saveResImg(getBasePathName() + ".ps.jpg")
+    store.saveResDom(currentPageSource)
+
   }
 
   def back(): Unit = {
@@ -1044,7 +1063,7 @@ class Crawler extends CommonLog {
 
 
   //通过规则实现操作. 不管元素是否被点击过
-  def getElementByElementActions(): Option[UrlElement] = {
+  def getElementByElementActions(): Option[URIElement] = {
     log.trace("rule match start")
     //先判断是否在期望的界面里. 提升速度
     conf.triggerActions.filter(_.getOrElse("pri", 1).toString.toInt == 1).foreach(r => {
@@ -1074,7 +1093,7 @@ class Crawler extends CommonLog {
             val count = conf.monkeyEvents.size
             val random = util.Random.nextInt(count)
             val code = conf.monkeyEvents(random)
-            return Some(UrlElement("Monkey", "", "", s"${code}", s"event-${code}"))
+            return Some(URIElement("Monkey", "", "", s"${code}", s"event-${code}"))
           } else {
             return Some(getUrlElementByMap(e))
           }

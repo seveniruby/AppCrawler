@@ -30,12 +30,12 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
           log.debug(elementInfo.resDom)
           DiffSuite.range.map(RichData.getListFromXPath(_, RichData.toDocument(elementInfo.resDom)))
             .flatten.map(m=>{
-            val ele=UrlElement(m, key)
+            val ele=URIElement(m, key)
             ele.loc->ele
           }).toMap
         }
         case _ =>{
-          Map[String, UrlElement]()
+          Map[String, URIElement]()
         }
       }
 
@@ -44,12 +44,12 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
         case Some(elementInfo) if elementInfo.action==ElementStatus.Clicked && elementInfo.resDom.nonEmpty => {
           DiffSuite.range.map(RichData.getListFromXPath(_, RichData.toDocument(elementInfo.resDom)))
             .flatten.map(m=>{
-            val ele=UrlElement(m, key)
+            val ele=URIElement(m, key)
             ele.loc->ele
           }).toMap
         }
         case _ =>{
-          Map[String, UrlElement]()
+          Map[String, URIElement]()
         }
       }
 
@@ -65,8 +65,8 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
         val cp = new Checkpoints.Checkpoint()
         var markOnce=false
         allElementKeys.foreach(subKey => {
-          val masterElement = masterElements.getOrElse(subKey, UrlElement())
-          val candidateElement = candidateElements.getOrElse(subKey, UrlElement())
+          val masterElement = masterElements.getOrElse(subKey, URIElement())
+          val candidateElement = candidateElements.getOrElse(subKey, URIElement())
           val message =
             s"""
                |key=${subKey}

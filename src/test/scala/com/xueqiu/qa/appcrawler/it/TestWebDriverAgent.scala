@@ -2,7 +2,7 @@ package com.xueqiu.qa.appcrawler.it
 
 import java.net.URL
 
-import com.xueqiu.qa.appcrawler.MiniAppiumSuite
+import com.xueqiu.qa.appcrawler.AppiumSuite
 import org.openqa.selenium.Capabilities
 import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
 import org.scalatest.FunSuite
@@ -11,7 +11,7 @@ import scala.collection.JavaConversions._
 /**
   * Created by seveniruby on 16/6/3.
   */
-class TestWebDriverAgent extends MiniAppiumSuite{
+class TestWebDriverAgent extends AppiumSuite{
   test("use remote webdriver"){
     val capability=new DesiredCapabilities()
     capability.setCapability("app", "/Users/seveniruby/projects/snowball-ios/DerivedData/Snowball/Build/Products/Debug-iphonesimulator/Snowball.app")

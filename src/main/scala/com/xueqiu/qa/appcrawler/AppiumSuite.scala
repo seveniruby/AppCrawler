@@ -24,7 +24,7 @@ import scala.sys.process._
 /**
   * Created by seveniruby on 16/3/26.
   */
-class MiniAppiumSuite extends FunSuite
+class AppiumSuite extends FunSuite
   with Matchers
   with WebBrowser
   with BeforeAndAfterAll

@@ -3,7 +3,7 @@ package com.xueqiu.qa.appcrawler.plugin
 import java.io.File
 
 import com.brsanthu.googleanalytics.GoogleAnalytics
-import com.xueqiu.qa.appcrawler.{UrlElement, Plugin}
+import com.xueqiu.qa.appcrawler.{URIElement, Plugin}
 import net.lightbody.bmp.BrowserMobProxyServer
 import net.lightbody.bmp.proxy.{CaptureType}
 import org.apache.log4j.{Level, Logger, BasicConfigurator}
@@ -34,7 +34,7 @@ class ProxyPlugin extends Plugin {
     proxy.newHar("start")
   }
 
-  override def beforeElementAction(element: UrlElement): Unit = {
+  override def beforeElementAction(element: URIElement): Unit = {
     log.info("clear har")
     proxy.endHar()
     //创建新的har
@@ -42,7 +42,7 @@ class ProxyPlugin extends Plugin {
     proxy.newHar(harFileName)
   }
 
-  override def afterElementAction(element: UrlElement): Unit = {
+  override def afterElementAction(element: URIElement): Unit = {
     log.info("save har")
     val harFileName = getCrawler().getBasePathName() + ".har"
     val file = new File(harFileName)

@@ -1,6 +1,6 @@
 package com.xueqiu.qa.appcrawler.plugin
 
-import com.xueqiu.qa.appcrawler.{UrlElement, TreeNode, Plugin}
+import com.xueqiu.qa.appcrawler.{URIElement, TreeNode, Plugin}
 
 import scala.collection.mutable.ListBuffer
 import scala.reflect.io.File

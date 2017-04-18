@@ -14,13 +14,13 @@ class TestReportPlugin extends FunSuite with CommonLog{
     val crawler=new Crawler()
     report.setCrawer(crawler)
 
-    val element_1=UrlElement("a", "b", "c", "d", "e")
+    val element_1=URIElement("a", "b", "c", "d", "e")
     val info_1=new ElementInfo()
     info_1.element=element_1
     info_1.action=ElementStatus.Skiped
 
 
-    val element_2=UrlElement("aa", "bb", "cc", "dd", "ee")
+    val element_2=URIElement("aa", "bb", "cc", "dd", "ee")
     val info_2=new ElementInfo()
     info_2.element=element_2
     info_2.action=ElementStatus.Clicked
@@ -29,7 +29,7 @@ class TestReportPlugin extends FunSuite with CommonLog{
       element_1.toString->info_1,
       element_2.toString->info_2
     )
-    val store=new UrlElementStore
+    val store=new URIElementStore
     store.elementStore ++= elementsStore
     report.saveTestCase(store, "/tmp/")
 

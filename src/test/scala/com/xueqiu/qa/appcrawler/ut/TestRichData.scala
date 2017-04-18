@@ -1,6 +1,6 @@
 package com.xueqiu.qa.appcrawler.ut
 
-import com.xueqiu.qa.appcrawler.{CommonLog, RichData, UrlElement}
+import com.xueqiu.qa.appcrawler.{CommonLog, RichData, URIElement}
 import org.scalatest.{FunSuite, Matchers}
 
 /**
@@ -707,7 +707,7 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
         |
       """.stripMargin
 
-    val ele=UrlElement("", "", "", "", str)
+    val ele=URIElement("", "", "", "", str)
     println(ele.toTagPath())
     println(ele.toFileName())
 
@@ -717,7 +717,7 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
       """
         |//UIAApplication[@name="雪球" and @path="/0"]/UIAWindow[@path="/0/0"]/UIATableView[@path="/0/0/1"]/UIATableCell[@name="恒瑞医药业绩会，高管说了啥？" and @path="/0/0/1/10"]/UIAStaticText[@name="恒瑞医药业绩会，高管说了啥？" and @path="/0/0/1/10/0"]
       """.stripMargin
-    val ele=UrlElement("", "", "", "", str)
+    val ele=URIElement("", "", "", "", str)
     log.info(ele.toTagPath())
     log.info(ele.toFileName())
 

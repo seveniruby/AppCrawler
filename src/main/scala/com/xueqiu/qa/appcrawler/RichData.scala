@@ -17,7 +17,7 @@ import scala.collection.mutable.ListBuffer
   * Created by seveniruby on 16/3/26.
   */
 object RichData extends CommonLog {
-  var xpathExpr=List("name", "label", "value", "resource-id", "content-desc", "index", "text")
+  var xpathExpr=List("name", "label", "value", "resource-id", "content-desc", "class", "text", "index")
 
   def toDocument(raw: String): Document = {
     val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
@@ -70,6 +70,10 @@ object RichData extends CommonLog {
       if (newAttribute.getOrElse("content-desc", "") == newAttribute.getOrElse("resource-id", "")) {
         newAttribute = newAttribute - "content-desc"
       }
+      if(newAttribute.getOrElse("resource-id", "").nonEmpty){
+        newAttribute=Map("resource-id"-> newAttribute.getOrElse("resource-id", "") )
+      }
+
 
       var xpathSingle = newAttribute.map(kv => {
         //todo: appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
@@ -77,7 +81,7 @@ object RichData extends CommonLog {
 
         kv._1 match {
           case "tag" => ""
-          case "index" => ""
+          //case "index" => ""
           case "name" if kv._2.size>50 => ""
           case "text" if newAttribute("tag").contains("Button")==false => ""
           case key if xpathExpr.contains(key) && kv._2.nonEmpty => s"@${kv._1}=" + "\"" + kv._2.replace("\"", "\\\"") + "\""
@@ -107,7 +111,7 @@ object RichData extends CommonLog {
       xpathSingle = if (xpathSingle.isEmpty) {
         s"/${attribute.getOrElse("class", attribute.getOrElse("tag", "*"))}"
       } else {
-        s"/${attribute.getOrElse("class", attribute.getOrElse("tag", "*"))}[${xpathSingle}]"
+        s"/*[${xpathSingle}]"
       }
       xpathSingle
     }

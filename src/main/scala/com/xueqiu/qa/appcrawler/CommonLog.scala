@@ -2,6 +2,7 @@ package com.xueqiu.qa.appcrawler
 
 import java.io.OutputStreamWriter
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.apache.log4j._
 
 
@@ -11,7 +12,9 @@ import org.apache.log4j._
 trait CommonLog {
   BasicConfigurator.configure()
   Logger.getRootLogger.setLevel(Level.INFO)
+  @JsonIgnore
   val layout=new PatternLayout("%d{yyyy-MM-dd HH:mm:ss} %p [%c{1}.%M.%L] %m%n")
+  @JsonIgnore
   lazy val log = initLog()
 
   def initLog(): Logger ={

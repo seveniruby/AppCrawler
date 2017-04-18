@@ -1,11 +1,11 @@
 package com.xueqiu.qa.appcrawler.it
 
-import com.xueqiu.qa.appcrawler.MiniAppiumSuite
+import com.xueqiu.qa.appcrawler.AppiumSuite
 
 /**
   * Created by seveniruby on 16/5/21.
   */
-class TestAndroidSimulator extends MiniAppiumSuite {
+class TestAndroidSimulator extends AppiumSuite {
   override def beforeEach(): Unit = {
     config("appPackage", "com.xueqiu.android")
     config("appActivity", ".view.WelcomeActivityAlias")

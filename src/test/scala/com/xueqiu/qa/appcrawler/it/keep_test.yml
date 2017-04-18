@@ -1,14 +1,11 @@
 ---
-pluginList:
-- "com.xueqiu.qa.appcrawler.plugin.TagLimitPlugin"
-- "com.xueqiu.qa.appcrawler.plugin.ReportPlugin"
 logLevel: "TRACE"
 reportTitle: "Keep"
 saveScreen: true
 screenshotTimeout: 20
 currentDriver: "android"
 showCancel: true
-tagLimitMax: 3
+tagLimitMax: 5
 tagLimit:
 - xpath: //*[../*[@selected='true']]
   count: 12
@@ -27,6 +24,7 @@ androidCapability:
   deviceName: "192.168.0.102:5555"
   appPackage: "com.gotokeep.keep"
   appActivity: ".activity.SplashActivity"
+  dontStopAppOnReset: true
   app: ""
   appium: "http://127.0.0.1:4723/wd/hub"
 #  automationName: uiautomator2
@@ -35,6 +33,7 @@ androidCapability:
 #  nativeWebScreenshot: "true"
 defineUrl:
 - //*[@selected='true' and contains(name(), 'TextView')]/@text
+#- //*[contains(@resource-id, 'title')]/@text
 appWhiteList:
 - android
 - com.shafa.market
@@ -53,7 +52,7 @@ urlBlackList:
 #urlWhiteList:
 #- ".*Main.*"
 backButton:
-- //*[contains(@resource-id, "left_button")]
+- //*[contains(@resource-id, "left_button") and @clickable='true']
 #defaultBackAction:
 #- import sys.process._;
 #- Thread.sleep(5000)

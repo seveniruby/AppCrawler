@@ -7,7 +7,7 @@ class DynamicPlugin extends Plugin{
     log.info("hello from seveniruby")
   }
   //在每个element的动作执行前进行针对性的处理. 比如跳过
-  override def beforeElementAction(element: UrlElement): Unit ={
+  override def beforeElementAction(element: URIElement): Unit ={
     log.info("you can add some logic in here")
     log.info(element)
   }
