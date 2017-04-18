@@ -92,9 +92,9 @@ class URIElementStore {
 
   def saveResImg(imgName:String): Unit = {
     val head = clickedElementsList.last.toString
-    if (elementStore(head).reqImg.isEmpty) {
-      AppCrawler.log.info(s"save reqImg ${imgName} to ${clickedElementsList.size - 1}")
-      elementStore(head.toString).reqImg = imgName.split('.').dropRight(2).mkString(".")+".ori.jpg"
+    if (elementStore(head).resImg.isEmpty) {
+      AppCrawler.log.info(s"save resImg ${imgName} to ${clickedElementsList.size - 1}")
+      elementStore(head).resImg = imgName.split('.').dropRight(2).mkString(".")+".ori.jpg"
     }
   }
 

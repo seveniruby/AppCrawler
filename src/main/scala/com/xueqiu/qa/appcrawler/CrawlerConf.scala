@@ -96,7 +96,7 @@ class CrawlerConf {
   var triggerActions = ListBuffer[scala.collection.mutable.Map[String, Any]]()
   var startupActions = ListBuffer[String]()
   var asserts = ListBuffer[Map[String, Any]]()
-  var steps=ListBuffer[Map[String, Any]]()
+  var testcase=TestCase()
   startupActions ++= List("println(\"startupAction call use scala code\")")
 
   var beforeElementAction = ListBuffer[Map[String, String]]()
@@ -186,3 +186,8 @@ class CrawlerConf {
 
 
 }
+
+
+case class TestCase(name:String="", steps:List[Step]=List[Step]())
+case class Step(given: List[String], when: When, then:List[String])
+case class When(xpath:String, action:String)

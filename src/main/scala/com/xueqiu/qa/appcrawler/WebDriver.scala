@@ -8,6 +8,7 @@ import org.openqa.selenium.{Rectangle, WebElement}
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.w3c.dom.Document
 
+import scala.collection.mutable.ListBuffer
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -20,6 +21,7 @@ trait WebDriver extends CommonLog {
   var screenWidth = 0
   var screenHeight = 0
   var currentPageDom: Document = null
+  val appiumExecResults=ListBuffer[String]()
 
 
   def config(key: String, value: Any): Unit = {
@@ -86,17 +88,20 @@ trait WebDriver extends CommonLog {
     })  match {
       case Success(v) => {
         log.info(s"async task success")
+        appiumExecResults.append("success")
         Some(v)
       }
       case Failure(e) => {
         e match {
           case e: TimeoutException => {
             log.error(s"${timeout} seconds timeout")
+            appiumExecResults.append("timeout")
           }
           case _ => {
             log.error("exception")
             log.error(e.getMessage)
             log.error(e.getStackTrace.mkString("\n"))
+            appiumExecResults.append(e.getMessage)
           }
         }
         None

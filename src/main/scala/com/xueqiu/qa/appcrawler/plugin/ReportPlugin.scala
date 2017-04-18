@@ -14,7 +14,7 @@ import scala.reflect.io.File
   * Created by seveniruby on 16/8/12.
   */
 class ReportPlugin extends Plugin with Report {
-  var lastSize=10
+  var lastSize=0
   override def start(): Unit ={
     reportPath=new java.io.File(getCrawler().conf.resultDir).getCanonicalPath
     log.info(s"reportPath=${reportPath}")
@@ -34,7 +34,7 @@ class ReportPlugin extends Plugin with Report {
     val count=getCrawler().store.clickedElementsList.length
     log.info(s"clickedElementsList size = ${count}")
     if(getCrawler().store.clickedElementsList.size-lastSize > 10 ){
-      log.info("every 2 min to save test report ")
+      log.info("generate test report ")
       generateReport()
     }
   }

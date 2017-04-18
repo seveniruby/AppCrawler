@@ -10,7 +10,7 @@ import scala.reflect.io.File
 /**
   * Created by seveniruby on 2017/3/25.
   */
-class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Matchers with CommonLog{
+class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Matchers with CommonLog {
   var name = "template"
   var uri = ""
 
@@ -40,13 +40,13 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
         if (ele.action == ElementStatus.Clicked) {
           markup(
             s"""
-             |
+               |
              |<img src='${File(ele.reqImg).name}' width='80%' />
-             |<br></br>
-             |<p>after clicked</p>
-             |<img src='${File(ele.resImg).name}' width='80%' />
+               |<br></br>
+               |<p>after clicked</p>
+               |<img src='${File(ele.resImg).name}' width='80%' />
           """.
-            stripMargin
+              stripMargin
           )
 
           /*
@@ -66,7 +66,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
           log.debug(ele.reqDom)
           AppCrawler.crawler.conf.asserts.foreach(assert => {
             val given = assert.getOrElse("given", List[String]()).asInstanceOf[List[String]]
-            log.info(given.map(g=>RichData.getListFromXPath(g, req).size))
+            log.info(given.map(g => RichData.getListFromXPath(g, req).size))
             if (given.forall(g => RichData.getListFromXPath(g, req).size > 0) == true) {
               log.info("match")
               val existAsserts = assert.getOrElse("then", List[String]()).asInstanceOf[List[String]]
@@ -80,9 +80,32 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
                 }
               })
               cp.reportAll()
-            }else{
+            } else {
               log.info("not match")
             }
+          })
+
+          AppCrawler.crawler.conf.testcase.steps.foreach(step => {
+            if (RichData.getListFromXPath(step.when.xpath, req)
+              .map(_.getOrElse("xpath", ""))
+              .headOption == Some(ele.element.loc)
+            ) {
+              log.info("match")
+
+              val cp = new scalatest.Checkpoints.Checkpoint
+              step.then.foreach(existAssert => {
+                log.debug(existAssert)
+                cp {
+                  withClue(s"${existAssert} 不存在\n") {
+                    RichData.getListFromXPath(existAssert, res).size should be > 0
+                  }
+                }
+              })
+              cp.reportAll()
+            } else {
+              log.info("not match")
+            }
+
           })
         }
       }
@@ -90,7 +113,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
   }
 }
 
-object TemplateTestCase extends CommonLog{
+object TemplateTestCase extends CommonLog {
   def saveTestCase(store: URIElementStore, resultDir: String): Unit = {
     log.info("save testcase")
     Report.reportPath = resultDir
@@ -105,7 +128,7 @@ object TemplateTestCase extends CommonLog{
       TemplateClass.genTestCaseClass(
         suite,
         "com.xueqiu.qa.appcrawler.TemplateTestCase",
-        Map("uri"->suite, "name"->suite),
+        Map("uri" -> suite, "name" -> suite),
         Report.testcaseDir
       )
     })

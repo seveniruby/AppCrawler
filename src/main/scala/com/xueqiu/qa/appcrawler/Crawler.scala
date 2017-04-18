@@ -139,15 +139,20 @@ class Crawler extends CommonLog {
     runStartupScript()
     conf.appWhiteList.append(appNameRecord.last().toString)
 
-    crawl()
-    /*
     var keepSession=true
     while(keepSession) {
 
       Try(crawl()) match {
         case Success(v) => {
           log.info("crawl finish")
-          keepSession=false
+
+          //如果错误太多就重试, 错误少就认为是完成了
+          if(driver.appiumExecResults.takeRight(10).map(_=="success").size<2){
+            log.error("appium error, restart and continue to crawl ")
+            keepSession=true
+          }else{
+            keepSession=false
+          }
         }
         case Failure(e) => {
           log.error("crawl not finish, return with exception")
@@ -157,13 +162,13 @@ class Crawler extends CommonLog {
           e.getStackTrace.foreach(log.error)
           log.error("create new session")
 
-          conf.capability ++= Map("app"->"", MobileCapabilityType.NO_RESET->true)
+          conf.capability ++= Map("app"->"")
           setupAppium()
         }
       }
 
     }
-    */
+
     //爬虫结束
     stop()
   }
@@ -180,29 +185,14 @@ class Crawler extends CommonLog {
 
     log.info("first refresh")
     store.setElementClicked(URIElement(s"${currentUrl}", "", "", "",
-      s"startupActions-Main-${store.clickedElementsList.size}"))
+      s"startupActions-Start-${store.clickedElementsList.size}"))
     refreshPage()
     saveDom()
     saveScreen(true)
 
     conf.startupActions.foreach(action => {
-      driver.dsl(action)
-
-      store.setElementClicked(URIElement(s"${currentUrl}", "", "", "",
-        s"startupActions-${action}-${store.clickedElementsList.size}"))
-      store.saveReqHash(contentHash.last().toString)
-      store.saveReqImg(getBasePathName(store.clickedElementsList.takeRight(2).head) + ".ps.jpg")
-      store.saveReqDom(currentPageSource)
-      log.info(s"index = ${store.clickedElementsList.size} current =  ${store.clickedElementsList.last.loc}")
-
-      refreshPage()
-      saveDom()
-      saveScreen(true)
-
-      store.saveResHash(contentHash.last().toString)
-      store.saveResImg(getBasePathName() + ".ps.jpg")
-      store.saveResDom(currentPageSource)
-
+      doElementAction(URIElement(s"${currentUrl}", "", "", "",
+        s"startupActions-${action}-${store.clickedElementsList.size}"), action)
     })
     runSteps()
   }
@@ -976,6 +966,9 @@ class Crawler extends CommonLog {
     store.saveReqDom(currentPageSource)
 
     action match {
+      case "" => {
+
+      }
       case "back" => {
         back()
       }
@@ -989,8 +982,8 @@ class Crawler extends CommonLog {
       case "monkey" => {
         driver.event(element.name.toInt)
       }
-      case event if event.matches(".*\\(.*\\).*") => {
-        Runtimes.eval(event)
+      case code if code.matches(".*\\(.*\\).*") => {
+        driver.dsl(code)
       }
       case str: String => {
         //todo: tap和click的行为不一致. 在ipad上有时候click会点错位置, 而tap不会

@@ -101,19 +101,20 @@ asserts:
   then:
   - //*[contains(@text, "success")]
   - //*[@package="com.gotokeep.keep"]
-steps:
-- when:
-    xpath: //*[@text='马甲线养成']
-    action: tap
-  then:
-  - //*[contains(@text, "退出")]
-- when:
-    xpath: //*[@text='退出训练']
-    action: click
-  then:
-  - //*[contains(@text, "添加训练")]
-  - //*[contains(@text, "故意错误")]
-
+testcase:
+  name: demo1
+  steps:
+  - when:
+      xpath: //*[contains(@resource-id, 'text_home_train_collection_title')]
+      action: tap
+    then:
+    - //*[contains(@text, "置顶")]
+  - when:
+      xpath: //*[contains(@text, '置顶')]
+      action: click
+    then:
+    - //*[contains(@text, "添加训练")]
+    - //*[contains(@text, "故意错误")]
 #所有view的叶子节点 一般表示游戏
 #- action: monkey
 #  xpath: //android.view.View[not(*) and contains(@bounds, "[0,0]") ]

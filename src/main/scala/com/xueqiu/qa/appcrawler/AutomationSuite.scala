@@ -7,38 +7,39 @@ import org.scalatest.{BeforeAndAfterAllConfigMap, ConfigMap, FunSuite, Matchers}
   * Created by seveniruby on 2017/4/17.
   */
 class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfigMap with CommonLog {
-  var crawler :Crawler=_
+  var crawler: Crawler = _
+
   override def beforeAll(configMap: ConfigMap): Unit = {
     log.info("beforeAll")
-    crawler=configMap.get("crawler").get.asInstanceOf[Crawler]
+    crawler = configMap.get("crawler").get.asInstanceOf[Crawler]
   }
-  test("run steps"){
+
+  test("run steps") {
     log.info("testcase start")
-    val conf=crawler.conf
-    val driver=crawler.driver
+    val conf = crawler.conf
+    val driver = crawler.driver
 
     val cp = new scalatest.Checkpoints.Checkpoint
 
-    conf.steps.foreach(step=> {
-      val when=step.getOrElse("when", Map[String, Any]()).asInstanceOf[Map[String, Any]]
-      val xpath=when.getOrElse("xpath", "").toString
-      val action=when.getOrElse("action", "").toString
+    conf.testcase.steps.foreach(step => {
+      val when = step.when
+      val xpath = when.xpath
+      val action = when.action
 
       RichData.getListFromXPath(xpath, driver.currentPageDom).headOption match {
-        case Some(v)=> {
-          val ele=URIElement(v, "Steps")
-          crawler.store.setElementClicked(ele)
+        case Some(v) => {
+          val ele = URIElement(v, "Steps")
           crawler.doElementAction(ele, action)
-          crawler.refreshPage()
         }
-        case None=>{
+        case None => {
           log.info("not found")
-          val ele=URIElement("Steps", "", "", "NOT_FOUND", xpath)
-          crawler.store.setElementClicked(ele)
+          //用于生成steps的用例
+          val ele = URIElement("Steps", "", "", "NOT_FOUND", xpath)
+          crawler.doElementAction(ele, "")
         }
       }
 
-      step.getOrElse("then", List[String]()).asInstanceOf[List[String]].foreach(existAssert=>{
+      step.then.foreach(existAssert => {
         log.debug(existAssert)
         cp {
           withClue(s"${existAssert} 不存在\n") {
@@ -48,6 +49,7 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
 
       })
     })
+
 
     cp.reportAll()
     log.info("finish run steps")
