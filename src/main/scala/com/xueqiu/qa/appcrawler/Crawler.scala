@@ -139,19 +139,27 @@ class Crawler extends CommonLog {
     runStartupScript()
     conf.appWhiteList.append(appNameRecord.last().toString)
 
-    var keepSession=true
-    while(keepSession) {
+    var retryCount=1
+    while(retryCount>0) {
 
       Try(crawl()) match {
         case Success(v) => {
           log.info("crawl finish")
 
           //如果错误太多就重试, 错误少就认为是完成了
-          if(driver.appiumExecResults.takeRight(10).map(_=="success").size<2){
+
+
+          log.info("list last 10 exec results")
+          driver.appiumExecResults.takeRight(10).foreach(x=>log.info(x))
+
+          //todo: 需要继续过滤appium的报错
+          if(driver.appiumExecResults.takeRight(10).map(_!="success").size>10*0.3 &&
+            driver.appiumExecResults.takeRight(20).map(_!="success").size<20*0.6 ){
             log.error("appium error, restart and continue to crawl ")
-            keepSession=true
+            retryCount+=1
+            restart()
           }else{
-            keepSession=false
+            retryCount=0
           }
         }
         case Failure(e) => {
@@ -162,8 +170,8 @@ class Crawler extends CommonLog {
           e.getStackTrace.foreach(log.error)
           log.error("create new session")
 
-          conf.capability ++= Map("app"->"")
-          setupAppium()
+          retryCount+=1
+          restart()
         }
       }
 
@@ -175,12 +183,16 @@ class Crawler extends CommonLog {
 
   def restart(): Unit = {
     log.info("restart appium")
+    backRetry=0
+    currentPageSource=""
+    log.info("set app to null to restart appium")
+    conf.capability ++= Map("app"->"")
     setupAppium()
   }
 
   def runStartupScript(): Unit = {
-    log.info("run startup script")
-    log.info(conf.startupActions)
+    log.debug("run startup script")
+    log.debug(conf.startupActions)
 
 
     log.info("first refresh")
@@ -301,7 +313,7 @@ class Crawler extends CommonLog {
     val baseUrl=if (conf.defineUrl.nonEmpty) {
       val urlString = conf.defineUrl.flatMap(getAllElements(_)).distinct.map(x => {
         //按照attribute, label, name顺序挨个取第一个非空的指
-        log.info(x)
+        log.debug(x)
         if (x.contains("attribute")) {
           x.getOrElse("attribute", "")
         } else {
@@ -455,7 +467,8 @@ class Crawler extends CommonLog {
       val bounds="\\d+".r().findAllIn(m.get("bounds").get.toString).matchData.map(_.group(0)).toList
       val width=bounds(2).toInt-bounds(0).toInt
       val height=bounds(3).toInt-bounds(1).toInt
-      if(width<40 && height<40){
+      //高度小就跳过
+      if(height<50){
         true
       }else{
         false
@@ -734,11 +747,12 @@ class Crawler extends CommonLog {
     }
     //页面刷新失败自动后退
     if (isRefreshSuccess == false) {
+      log.warn("refresh fail")
       nextElement = Some(URIElement(s"${currentUrl}", "", "", "",
         s"Back-${store.clickedElementsList.size}"))
       setElementAction("back")
     } else {
-      log.info("refresh success")
+      log.debug("refresh success")
     }
 
     //是否需要回退到app
@@ -967,7 +981,7 @@ class Crawler extends CommonLog {
 
     action match {
       case "" => {
-
+        log.info("just recored")
       }
       case "back" => {
         back()

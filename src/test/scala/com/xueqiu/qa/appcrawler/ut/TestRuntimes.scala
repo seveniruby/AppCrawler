@@ -44,6 +44,8 @@ class TestRuntimes extends FunSuite with CommonLog{
     AppiumClient.dsl("hello(\"seveniruby\", 30000 )  ")
     AppiumClient.dsl("sleep(3)")
     AppiumClient.dsl("hello(\"xxxxx\")")
+    AppiumClient.dsl("println(com.xueqiu.qa.appcrawler.AppCrawler.crawler.driver)")
+
   }
 
   test("compile"){

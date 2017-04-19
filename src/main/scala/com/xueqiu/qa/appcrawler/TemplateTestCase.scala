@@ -68,7 +68,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
             val given = assert.getOrElse("given", List[String]()).asInstanceOf[List[String]]
             log.info(given.map(g => RichData.getListFromXPath(g, req).size))
             if (given.forall(g => RichData.getListFromXPath(g, req).size > 0) == true) {
-              log.info("match")
+              log.info(s"asserts match")
               val existAsserts = assert.getOrElse("then", List[String]()).asInstanceOf[List[String]]
               val cp = new scalatest.Checkpoints.Checkpoint
               existAsserts.foreach(existAssert => {
@@ -90,7 +90,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
               .map(_.getOrElse("xpath", ""))
               .headOption == Some(ele.element.loc)
             ) {
-              log.info("match")
+              log.info(s"match testcase ${ele.element.loc}")
 
               val cp = new scalatest.Checkpoints.Checkpoint
               step.then.foreach(existAssert => {

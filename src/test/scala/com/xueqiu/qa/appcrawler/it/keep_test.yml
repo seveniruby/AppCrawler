@@ -78,7 +78,7 @@ lastList:
 - //*[@resource-id='com.gotokeep.keep:id/layout_bottom']
 blackList:
 - ".*\\.[0-9].*"
-- ".*[0-9][0-9].*"
+- ".*[0-9]{2,}.*"
 - //*[contains(@resource-id, "wrapper_in_custom_title_bar")]//*[contains(@resource-id, "right_button")]
 - //*[contains(@resource-id, "share")]
 - //*[contains(@text, "开始第")]
@@ -88,22 +88,32 @@ triggerActions:
 - xpath: //*[contains(@resource-id, "layout_picker_view_container")]//*[@text="确定"]
 - xpath: //*[contains(@resource-id, "content-wrapper_dialog")]//*[@text="不发了"]
 - xpath: //*[@text="拒绝"]
+- xpath: //*[@text="放弃"]
 - xpath: //*[@text="结束训练"]
 - xpath: //*[contains(@resource-id, "quit_confirm_button")]//*[contains(@text, "确定")]
 - xpath: //*[contains(@resource-id, "layout_right_second_button")]//*[contains(@resource-id, "right_second_button")]
   action: yoga
   times: 1
-- xpath: //*[contains(@text, "微信朋友圈")]
-- xpath: //*[contains(@text, "发送")]
 asserts:
+- given:
+  - //*
+  then:
+  - //*[@package="com.gotokeep.keep"]
 - given:
   - //*[@text="胸部"]
   then:
-  - //*[contains(@text, "success")]
-  - //*[@package="com.gotokeep.keep"]
+  - //*[contains(@text, "离心俯卧撑")]
 testcase:
   name: demo1
   steps:
+  - when:
+      xpath: //*[contains(@resource-id, 'text_home_train_collection_title')]
+      action: driver.swipe(0.5, 0.8, 0.5, 0.2)
+    then: []
+  - when:
+      xpath: //*[contains(@resource-id, 'text_home_train_collection_title')]
+      action: driver.swipe(0.5, 0.2, 0.5, 0.8)
+    then: []
   - when:
       xpath: //*[contains(@resource-id, 'text_home_train_collection_title')]
       action: tap

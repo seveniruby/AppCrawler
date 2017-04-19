@@ -60,6 +60,7 @@ object Runtimes extends CommonLog{
       log.info("first import")
       instance.eval("import com.xueqiu.qa.appcrawler.AppiumClient")
       instance.eval("import com.xueqiu.qa.appcrawler.AppiumClient._")
+      instance.eval("val driver=com.xueqiu.qa.appcrawler.AppCrawler.crawler.driver")
       isLoaded=true
     }
     log.info(code)

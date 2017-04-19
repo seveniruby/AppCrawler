@@ -220,53 +220,10 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
   }
 
-  def swipe(direction: String): Unit = {
-    log.info(s"start swipe ${direction}")
-    var startX = 0.0
-    var startY = 0.0
-    var endX = 0.0
-    var endY = 0.0
-    direction match {
-      case "left" => {
-        startX = 0.9
-        startY = 0.5
-        endX = 0.1
-        endY = 0.5
-      }
-      case "right" => {
-        startX = 0.1
-        startY = 0.5
-        endX = 0.9
-        endY = 0.5
-      }
-      case "up" => {
-        startX = 0.5
-        startY = 0.9
-        endX = 0.5
-        endY = 0.1
-      }
-      case "down" => {
-        startX = 0.5
-        startY = 0.1
-        endX = 0.5
-        endY = 0.9
-      }
-      case _ => {
-        startX = 0.9
-        startY = 0.9
-        endX = 0.1
-        endY = 0.1
-      }
-    }
-    swipe(startX, endX, startY, endY)
-    sleep(1)
-  }
 
-  def swipe(startX: Double = 0.9, endX: Double = 0.1, startY: Double = 0.9, endY: Double = 0.1): Option[_] = {
+  override def swipe(startX: Double = 0.9, startY: Double = 0.1, endX: Double = 0.9, endY: Double = 0.1): Option[_] = {
     if(screenHeight<=0){
-      val size = driver.manage().window().getSize
-      screenHeight = size.getHeight
-      screenWidth = size.getWidth
+      getDeviceInfo()
     }
     retry(driver.swipe(
       (screenWidth * startX).toInt, (screenHeight * startY).toInt,

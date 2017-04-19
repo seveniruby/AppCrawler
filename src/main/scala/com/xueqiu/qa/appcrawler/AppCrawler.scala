@@ -16,19 +16,14 @@ import scala.io.Source
 object AppCrawler extends CommonLog {
   val banner=
     """
-      |
-      |
-      |
-      |________________
-      |
+      |----------------
       |AppCrawler 2.0.0
       |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
       |帮助文档: http://seveniruby.gitbooks.io/appcrawler
       |移动测试技术交流: https://testerhome.com
       |感谢: 晓光 泉龙 杨榕 恒温 mikezhou yaming116
       |感谢提供商业支持的优秀公司: Keep
-      |____________________________
-      |
+      |--------------------------------
       |
     """.stripMargin
 
@@ -159,10 +154,10 @@ object AppCrawler extends CommonLog {
     }
     // parser.parse returns Option[C]
 
-    log.info(banner)
     val args_new = if (args.length == 0) {
       Array("--help")
     } else {
+      log.info(banner)
       args
     }
 

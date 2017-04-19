@@ -29,11 +29,12 @@ class ReportPlugin extends Plugin with Report {
     generateReport()
   }
 
-
   override def afterElementAction(element: URIElement): Unit ={
     val count=getCrawler().store.clickedElementsList.length
     log.info(s"clickedElementsList size = ${count}")
-    if(getCrawler().store.clickedElementsList.size-lastSize > 10 ){
+    val curSize=getCrawler().store.clickedElementsList.size
+    if(curSize-lastSize > curSize/10+10 ){
+      log.info(s"${curSize}-${lastSize} > ${curSize}/10+10  ")
       log.info("generate test report ")
       generateReport()
     }
