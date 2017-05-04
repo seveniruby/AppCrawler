@@ -189,22 +189,20 @@ trait WebDriver extends CommonLog {
 
 
   def keyToXPath(key: String): String = {
-    key.charAt(0) match {
-      case '/' => {
+    key match {
+      //xpath
+      case xpath if Array('/', '(').contains(xpath.head) => {
         key
       }
-      case '(' => {
-        key
-      }
-      case '^' => {
+      case regex if key.contains(".*") => {
         s"//*[" +
-          s"matches(@text, '$key') " +
-          s"or matches(@resource-id, '$key') " +
-          s"or matches(@content-desc, '$key') " +
-          s"or matches(@name, '$key') " +
-          s"or matches(@label, '$key') " +
-          s"or matches(@value, '$key') " +
-          s"or matches(name(), '$key') " +
+          s"matches(@text, '$regex') " +
+          s"or matches(@resource-id, '$regex') " +
+          s"or matches(@content-desc, '$regex') " +
+          s"or matches(@name, '$regex') " +
+          s"or matches(@label, '$regex') " +
+          s"or matches(@value, '$regex') " +
+          s"or matches(name(), '$regex') " +
           s"]"
       }
       case _ => {

@@ -94,6 +94,8 @@ class CrawlerConf {
   )
   /** 引导规则. name, value, times三个元素组成 */
   var triggerActions = ListBuffer[scala.collection.mutable.Map[String, Any]]()
+  //todo: 用watch代替triggerActions
+  var watch = ListBuffer[Step]()
   var startupActions = ListBuffer[String]()
   var asserts = ListBuffer[Map[String, Any]]()
   var testcase=TestCase()

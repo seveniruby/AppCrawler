@@ -153,12 +153,14 @@ class Crawler extends CommonLog {
           driver.appiumExecResults.takeRight(10).foreach(x=>log.info(x))
 
           //todo: 需要继续过滤appium的报错
-          if(driver.appiumExecResults.takeRight(10).map(_!="success").size>10*0.3 &&
-            driver.appiumExecResults.takeRight(20).map(_!="success").size<20*0.6 ){
+          val failCount10=driver.appiumExecResults.takeRight(10).map(_!="success").size
+          log.info(s"failCount=${failCount10} retryCount=${retryCount}")
+          if(failCount10>10*0.3 && retryCount<10){
             log.error("appium error, restart and continue to crawl ")
             retryCount+=1
             restart()
           }else{
+            log.info("success finish")
             retryCount=0
           }
         }

@@ -18,7 +18,6 @@ object TemplateClass extends CommonLog {
     val pool = ClassPool.getDefault
     //todo: 特殊字符处理
     val classNameFormat = className
-    log.info(pool.find(classNameFormat))
     Try(pool.makeClass(classNameFormat)) match {
       case Success(classNew) => {
         classNew.setSuperclass(pool.get(superClassName))
