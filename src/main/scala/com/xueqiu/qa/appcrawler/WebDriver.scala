@@ -21,6 +21,7 @@ trait WebDriver extends CommonLog {
   var screenWidth = 0
   var screenHeight = 0
   var currentPageDom: Document = null
+  var currentPageSource: String=""
   val appiumExecResults=ListBuffer[String]()
 
 
@@ -187,39 +188,28 @@ trait WebDriver extends CommonLog {
     Thread.sleep((seconds * 1000).toInt)
   }
 
-
-  def keyToXPath(key: String): String = {
+  //todo: xpath 2.0 support
+  def getListFromXPath(key:String): List[Map[String, Any]] ={
     key match {
       //xpath
       case xpath if Array('/', '(').contains(xpath.head) => {
-        key
+        RichData.getListFromXPath(xpath, currentPageDom)
       }
-      case regex if key.contains(".*") => {
-        s"//*[" +
-          s"matches(@text, '$regex') " +
-          s"or matches(@resource-id, '$regex') " +
-          s"or matches(@content-desc, '$regex') " +
-          s"or matches(@name, '$regex') " +
-          s"or matches(@label, '$regex') " +
-          s"or matches(@value, '$regex') " +
-          s"or matches(name(), '$regex') " +
-          s"]"
+      case regex if key.contains(".*") || key.startsWith("^") => {
+        RichData.getListFromXPath("//*", currentPageDom).filter(m=>{
+          m("name").toString.matches(regex) ||
+            m("label").toString.matches(regex) ||
+            m("value").toString.matches(regex)
+        })
       }
-      case _ => {
-        s"//*[" +
-          s"contains(@text, '$key') " +
-          s"or contains(@resource-id, '$key') " +
-          s"or contains(@content-desc, '$key') " +
-          s"or contains(@name, '$key') " +
-          s"or contains(@label, '$key') " +
-          s"or contains(@value, '$key') " +
-          s"or contains(name(), '$key') " +
-          s"]"
+      case str: String => {
+        RichData.getListFromXPath("//*", currentPageDom).filter(m=>{
+          m("name").toString.contains(str) ||
+            m("label").toString.contains(str) ||
+            m("value").toString.contains(str)
+        })
       }
     }
   }
-
-
-
 
 }

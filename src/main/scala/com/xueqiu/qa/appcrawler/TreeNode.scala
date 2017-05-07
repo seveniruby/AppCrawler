@@ -47,7 +47,7 @@ case class TreeNode[T](
     val s=new StringBuffer()
     val before = (tree: TreeNode[T]) => {
       s.append(s"""<node TEXT="${xml.Utility.escape(tree.value.toString)}">""")
-      //todo: 增加图片地址链接   LINK="file:///Users/seveniruby/projects/LBSRefresh/Android_20160216105737/946_StockDetail-Back--.jpg"
+      //todo: 增加图片地址链接   LINK="file:///Users/seveniruby/projects/LBSRefresh/Android_20160216105737/946_StockDetail-Back--.png"
     }
     val after = (tree: TreeNode[T]) => {
       s.append("</node>")

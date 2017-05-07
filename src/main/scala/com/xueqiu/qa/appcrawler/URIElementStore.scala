@@ -94,7 +94,7 @@ class URIElementStore {
     val head = clickedElementsList.last.toString
     if (elementStore(head).resImg.isEmpty) {
       AppCrawler.log.info(s"save resImg ${imgName} to ${clickedElementsList.size - 1}")
-      elementStore(head).resImg = imgName.split('.').dropRight(2).mkString(".")+".ori.jpg"
+      elementStore(head).resImg = imgName.split('.').dropRight(2).mkString(".")+".clicked.png"
     }
   }
 

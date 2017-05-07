@@ -85,8 +85,7 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     var isFound = false
     1 to 10 foreach (i => {
       if (isFound == false) {
-        log.info(s"find by xpath ${keyToXPath(key)}")
-        val elements = driver.findElementsByXPath(keyToXPath(key))
+        val elements = driver.findElementsByXPath(key)
         if (elements.size() > 0) {
           isFound = true
         } else {
@@ -138,13 +137,13 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
   }
 
   def nodes(): List[Map[String, Any]] = {
-    RichData.getListFromXPath(keyToXPath(loc), RichData.toDocument(getPageSource))
+    getListFromXPath(loc)
   }
 
 
   def save(): Unit = {
     index += 1
-    captureTo(s"${index}.jpg")
+    captureTo(s"${index}.png")
   }
 
 
@@ -183,7 +182,7 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     */
   def tree(key: String = "//*", index: Int = 0): Map[String, Any] = {
     log.info(s"find by key = ${key} index=${index}")
-    val nodes = RichData.getListFromXPath(keyToXPath(key), RichData.toDocument(getPageSource))
+    val nodes = getListFromXPath(key)
     nodes.foreach(node => {
       log.debug(s"index=${nodes.indexOf(node)}")
       node.foreach(kv => {
@@ -227,7 +226,7 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     }
     retry(driver.swipe(
       (screenWidth * startX).toInt, (screenHeight * startY).toInt,
-      (screenWidth * endX).toInt, (screenHeight * endY).toInt, 1000
+      (screenWidth * endX).toInt, (screenHeight * endY).toInt, 2000
     )
     )
   }
@@ -240,8 +239,7 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
   //todo: 重构到独立的trait中
   override def mark(fileName: String, newImageName:String,  x: Int, y: Int, w: Int, h: Int): Unit = {
     val file = new java.io.File(fileName)
-    log.info(s"platformName=${platformName}")
-    log.info("getScreenshot")
+    log.info(s"read from ${fileName}")
     val img = ImageIO.read(file)
     val graph = img.createGraphics()
 
@@ -302,7 +300,8 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
   }
 
   override def getPageSource(): String = {
-    var source: String = ""
+    currentPageSource=null
+    currentPageDom=null
     //获取页面结构, 最多重试3次
     1 to 3 foreach (i => {
       asyncTask(20)(driver.getPageSource) match {
@@ -319,15 +318,26 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
               xml
             }
           }
-          source = RichData.toPrettyXML(xmlStr)
-          return source
+          Try(RichData.toDocument(xmlStr)) match {
+            case Success(v) => {
+              currentPageDom = v
+            }
+            case Failure(e) => {
+              log.warn("convert to xml fail")
+              log.warn(xmlStr)
+              currentPageDom=null
+            }
+          }
+
+          currentPageSource = RichData.toPrettyXML(xmlStr)
+          return currentPageSource
         }
         case None => {
           log.trace("get page source error")
         }
       }
     })
-    source
+    currentPageSource
   }
 
 
@@ -410,11 +420,11 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     driver match {
       case android: AndroidDriver[_] => {
         val xpath="(//*[@package!=''])[1]"
-        RichData.getListFromXPath(xpath, currentPageDom).head.getOrElse("package", "").toString
+        getListFromXPath(xpath).head.getOrElse("package", "").toString
       }
       case ios: IOSDriver[_] => {
         val xpath="//*[contains(name(), 'Application')]"
-        RichData.getListFromXPath(xpath, currentPageDom).head.getOrElse("name", "").toString
+        getListFromXPath(xpath).head.getOrElse("name", "").toString
       }
     }
 
@@ -429,7 +439,7 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
       }
       case ios: IOSDriver[_] => {
         val xpath="//*[contains(name(), 'NavigationBar')]"
-        RichData.getListFromXPath(xpath, currentPageDom).map(_.getOrElse("name", "").toString).mkString("")
+        getListFromXPath(xpath).map(_.getOrElse("name", "").toString).mkString("")
       }
     }
   }

@@ -10,24 +10,6 @@ import org.scalatest.FunSuite
   */
 class TestCrawler extends FunSuite{
 
-
-  test("isBlack"){
-    val appium=new Crawler
-    appium.black("stock_item.*")
-    val m1=Map("name"->"stock_item_1", "value"->"")
-    val m2=Map("value"->"stock_item_1", "name"->"")
-    val m3=Map("name"->"stock_item_1", "value"->"stock_item_1")
-    val m4=Map("name"->"", "value"->"")
-    val m5=Map("name"->"ss", "value"->"dd")
-    assert(true==appium.isBlack(m1))
-    assert(true==appium.isBlack(m2))
-    assert(true==appium.isBlack(m3))
-    assert(false==appium.isBlack(m4))
-    assert(false==appium.isBlack(m5))
-
-  }
-
-
   test("getAllElements"){
     val xml=
       """
@@ -295,10 +277,10 @@ class TestCrawler extends FunSuite{
       """.stripMargin
 
     val appium=new Crawler
-    appium.currentPageSource=xml
-    RichData.toDocument(appium.currentPageSource)
-    println(appium.getAllElements("//UIAWindow[1]//*[@visible='true' and @name!='']"))
-    println(appium.getAllElements("//UIAWindow[1]//*[@visible='true' and @value!='']"))
+    appium.driver.currentPageSource=xml
+    RichData.toDocument(appium.driver.currentPageSource)
+    println(appium.driver.getListFromXPath("//UIAWindow[1]//*[@visible='true' and @name!='']"))
+    println(appium.driver.getListFromXPath("//UIAWindow[1]//*[@visible='true' and @value!='']"))
   }
 
   test("whilespace"){

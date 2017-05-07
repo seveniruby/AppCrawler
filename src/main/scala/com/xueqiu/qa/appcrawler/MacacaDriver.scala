@@ -49,6 +49,7 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
       case x if x contains "windows" => Seq("cmd", "/C") ++ command
       case _ => command
     }
+    log.error("TODO")
   }
 
   //todo: 集成appium进程管理
@@ -80,8 +81,7 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
     var isFound = false
     1 to 10 foreach (i => {
       if (isFound == false) {
-        log.info(s"find by xpath ${keyToXPath(key)}")
-        val elements = driver.elementsByXPath(keyToXPath(key))
+        val elements = driver.elementsByXPath(key)
         if (elements.size() > 0) {
           isFound = true
         } else {
@@ -107,15 +107,8 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
 */
 
   override def event(keycode: Int): Unit = {
-    driver match {
-      case androidDriver: AndroidDriver[WebElement] => {
-        log.info(s"send event ${keycode}")
-        androidDriver.pressKeyCode(keycode)
-      }
-      case iosDriver: IOSDriver[_] => {
-        log.error("no event for ios")
-      }
-    }
+    //todo:
+    log.error("not implete")
   }
 
   def attribute(key: String): String = {
@@ -127,7 +120,7 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
   }
 
   def nodes(): List[Map[String, Any]] = {
-    RichData.getListFromXPath(keyToXPath(loc), RichData.toDocument(getPageSource))
+    getListFromXPath(loc)
   }
 
 
@@ -153,7 +146,7 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
     */
   def tree(key: String = "//*", index: Int = 0): Map[String, Any] = {
     log.info(s"find by key = ${key} index=${index}")
-    val nodes = RichData.getListFromXPath(keyToXPath(key), RichData.toDocument(getPageSource))
+    val nodes = getListFromXPath(key)
     nodes.foreach(node => {
       log.debug(s"index=${nodes.indexOf(node)}")
       node.foreach(kv => {
@@ -271,7 +264,6 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
   }
 
   override def getPageSource(): String = {
-    var source: String = ""
     //获取页面结构, 最多重试3次
     1 to 3 foreach (i => {
       asyncTask(20)(driver.source()) match {
@@ -288,16 +280,16 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
               xml
             }
           }
-          source = RichData.toPrettyXML(xmlStr)
-          currentPageDom=RichData.toDocument(source)
-          return source
+          currentPageSource = RichData.toPrettyXML(xmlStr)
+          currentPageDom=RichData.toDocument(currentPageSource)
+          return currentPageSource
         }
         case None => {
           log.trace("get page source error")
         }
       }
     })
-    source
+    currentPageSource
   }
 
 
@@ -381,7 +373,7 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
 
   override def getAppName(): String = {
     val xpath="(//*[@package!=''])[1]"
-    RichData.getListFromXPath(xpath, currentPageDom).head.getOrElse("package", "").toString
+    getListFromXPath(xpath).head.getOrElse("package", "").toString
   }
 
   override def getUrl(): String = {

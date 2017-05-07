@@ -1,5 +1,6 @@
 package com.xueqiu.qa.appcrawler
 
+import java.io
 import java.util.Date
 
 import org.apache.commons.io.FileUtils
@@ -31,7 +32,6 @@ class Crawler extends CommonLog {
   private var currentElementAction = "click"
 
   var appName = ""
-  var currentPageSource = ""
   /** 当前的url路径 */
   var currentUrl = ""
 
@@ -153,7 +153,7 @@ class Crawler extends CommonLog {
           driver.appiumExecResults.takeRight(10).foreach(x=>log.info(x))
 
           //todo: 需要继续过滤appium的报错
-          val failCount10=driver.appiumExecResults.takeRight(10).map(_!="success").size
+          val failCount10=driver.appiumExecResults.takeRight(10).filter(_!="success").size
           log.info(s"failCount=${failCount10} retryCount=${retryCount}")
           if(failCount10>10*0.3 && retryCount<10){
             log.error("appium error, restart and continue to crawl ")
@@ -186,10 +186,12 @@ class Crawler extends CommonLog {
   def restart(): Unit = {
     log.info("restart appium")
     backRetry=0
-    currentPageSource=""
     log.info("set app to null to restart appium")
     conf.capability ++= Map("app"->"")
     setupAppium()
+    refreshPage()
+    doElementAction(URIElement(s"${currentUrl}", "", "", "",
+      s"restart-${store.clickedElementsList.size}"), "")
   }
 
   def runStartupScript(): Unit = {
@@ -265,30 +267,16 @@ class Crawler extends CommonLog {
   }
 
   /**
-    * 根据xpath来获得想要的元素列表
-    *
-    * @param xpath
-    * @return
-    */
-  def getAllElements(xpath: String): List[immutable.Map[String, Any]] = {
-    log.trace(s"xpath=${xpath}")
-    log.trace("get list")
-    val elementList=RichData.getListFromXPath(xpath, driver.currentPageDom)
-    elementList.foreach(log.trace)
-    elementList
-  }
-
-  /**
     * 判断内容是否变化
     *
     * @return
     */
   def getContentHash(): String = {
-    //var nodeList = getAllElements("//*[not(ancestor-or-self::UIATableView)]")
-    //nodeList = nodeList intersect getAllElements("//*[not(ancestor-or-self::android.widget.ListView)]")
+    //var nodeList = driver.getListFromXPath("//*[not(ancestor-or-self::UIATableView)]")
+    //nodeList = nodeList intersect driver.getListFromXPath("//*[not(ancestor-or-self::android.widget.ListView)]")
 
     //排除iOS状态栏 android不受影响
-    val nodeList = getAllElements("//*[not(ancestor-or-self::UIAStatusBar)]")
+    val nodeList = driver.getListFromXPath("//*[not(ancestor-or-self::UIAStatusBar)]")
     val schemaBlackList = List()
     //加value是考虑到某些tab, 他们只有value不同
     //<             label="" name="分时" path="/0/0/6/0/0" valid="true" value="1"
@@ -307,13 +295,13 @@ class Crawler extends CommonLog {
     * 获得布局Hash
     */
   def getSchema(): String = {
-    val nodeList = getAllElements("//*[not(ancestor-or-self::UIAStatusBar)]")
+    val nodeList = driver.getListFromXPath("//*[not(ancestor-or-self::UIAStatusBar)]")
     md5(nodeList.map(getUrlElementByMap(_).toTagPath()).distinct.mkString("\n"))
   }
 
   def getUrl(): String = {
     val baseUrl=if (conf.defineUrl.nonEmpty) {
-      val urlString = conf.defineUrl.flatMap(getAllElements(_)).distinct.map(x => {
+      val urlString = conf.defineUrl.flatMap(driver.getListFromXPath(_)).distinct.map(x => {
         //按照attribute, label, name顺序挨个取第一个非空的指
         log.debug(x)
         if (x.contains("attribute")) {
@@ -433,35 +421,10 @@ class Crawler extends CommonLog {
 
   }
 
-  /**
-    * 黑名单过滤. 通过正则匹配, 判断name和value是否包含黑名单
-    *
-    * @param elementMap
-    * @return
-    */
-  def isBlack(elementMap: immutable.Map[String, Any]): Boolean = {
-    log.debug(elementMap)
-    conf.blackList.toStream.filter(b => {
-      log.debug(b)
-      List(elementMap("name"), elementMap("label"), elementMap("value")).exists(xx => xx.toString.matches(b))
-    }).headOption match {
-      case Some(v) => {
-        log.debug("true")
-        true
-      }
-      case None => {
-        log.debug("false")
-        false
-      }
-    }
-    false
-  }
-
-
   def isValid(m: immutable.Map[String, Any]): Boolean = {
     m.getOrElse("visible", "true") == "true" &&
       m.getOrElse("enabled", "true") == "true" &&
-      m.getOrElse("valid", "true") == "true" && isSmall(m)==false
+      m.getOrElse("valid", "true") == "true"
   }
 
   def isSmall(m: immutable.Map[String, Any]): Boolean ={
@@ -488,27 +451,40 @@ class Crawler extends CommonLog {
     var selectedElements = List[immutable.Map[String, Any]]()
     var blackElements = List[immutable.Map[String, Any]]()
 
-    val allElements = getAllElements("//*")
+    val allElements = driver.getListFromXPath("//*")
     log.trace(s"all elements = ${allElements.size}")
 
-    conf.blackList.filter(_.head == '/').foreach(xpath => {
-      log.trace(s"blackList xpath = ${xpath}")
-      val temp = getAllElements(xpath).filter(isValid)
-      temp.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
-      blackElements ++= temp
-    })
     conf.selectedList.foreach(xpath => {
       log.trace(s"selectedList xpath =  ${xpath}")
-      val temp = getAllElements(xpath).filter(isValid)
+      val temp = driver.getListFromXPath(xpath).filter(isValid)
       temp.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
       selectedElements ++= temp
     })
-    selectedElements = selectedElements diff blackElements
+    selectedElements=selectedElements.distinct
+    log.info(s"all elements size = ${selectedElements.size}")
 
-    log.trace(conf.firstList)
+
+    //remove blackList
+    conf.blackList.foreach(xpath => {
+      log.info(s"blackList check xpath = ${xpath}")
+      val temp = driver.getListFromXPath(xpath)
+      temp.foreach(x=>
+        log.info(s"blackList hit  ${x}")
+      )
+      blackElements ++= temp
+    })
+    blackElements=blackElements.distinct
+    selectedElements = selectedElements diff blackElements
+    log.info(s"all - black elements size = ${selectedElements.size}")
+
+    //exclude small
+    selectedElements=selectedElements.filter(isValid)
+    log.info(s"all - small elements size = ${selectedElements.size}")
+
+    //sort
     conf.firstList.foreach(xpath => {
       log.trace(s"firstList xpath = ${xpath}")
-      val temp = getAllElements(xpath).filter(isValid).intersect(selectedElements)
+      val temp = driver.getListFromXPath(xpath).filter(isValid).intersect(selectedElements)
       temp.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
       firstElements ++= temp
     })
@@ -517,7 +493,7 @@ class Crawler extends CommonLog {
 
     conf.lastList.foreach(xpath => {
       log.trace(s"lastList xpath = ${xpath}")
-      val temp = getAllElements(xpath).filter(isValid).intersect(selectedElements)
+      val temp = driver.getListFromXPath(xpath).filter(isValid).intersect(selectedElements)
       temp.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
       lastElements ++= temp
     })
@@ -538,7 +514,7 @@ class Crawler extends CommonLog {
 
   def hideKeyBoard(): Unit = {
     //iOS键盘隐藏
-    if (getAllElements("//UIAKeyboard").size >= 1) {
+    if (driver.getListFromXPath("//UIAKeyboard").size >= 1) {
       log.info("find keyboard , just hide")
       driver.hideKeyboard()
     }
@@ -546,23 +522,10 @@ class Crawler extends CommonLog {
 
   def refreshPage(): Boolean = {
     log.info("refresh page")
-    currentPageSource=""
-    driver.currentPageDom=null
+    driver.getPageSource()
+    log.trace(driver.currentPageSource)
 
-    currentPageSource = driver.getPageSource()
-    log.trace("currentPageSource=")
-    log.trace(currentPageSource)
-
-    if (currentPageSource.nonEmpty) {
-      Try(RichData.toDocument(currentPageSource)) match {
-        case Success(v) => {
-          driver.currentPageDom = v
-        }
-        case Failure(e) => {
-          log.warn("convert to xml fail")
-          log.warn(currentPageSource)
-        }
-      }
+    if (driver.currentPageSource.nonEmpty) {
       parsePageContext()
       return true
     } else {
@@ -624,7 +587,7 @@ class Crawler extends CommonLog {
     conf.beforeElementAction.foreach(elementAction => {
       val xpath = elementAction.get("xpath").get
       val action = elementAction.get("action").get
-      if (getAllElements(xpath).contains(element)) {
+      if (driver.getListFromXPath(xpath).contains(element)) {
         Runtimes.eval(action)
       }
     })
@@ -666,7 +629,7 @@ class Crawler extends CommonLog {
   }
 
   def getBackElements(): ListBuffer[immutable.Map[String, Any]] = {
-    conf.backButton.flatMap(getAllElements(_).filter(isValid))
+    conf.backButton.flatMap(driver.getListFromXPath(_).filter(isValid))
   }
 
   def getBackButton(): Option[URIElement] = {
@@ -699,12 +662,9 @@ class Crawler extends CommonLog {
   def getAvailableElement(): Seq[URIElement] = {
     var all = getSelectedElements().getOrElse(List[immutable.Map[String, Any]]())
     log.info(s"all nodes size=${all.length}")
-    //去掉黑名单, 这样rule优先级高于黑名单
-    all = all.filter(isBlack(_) == false)
-    log.info(s"all - black size=${all.length}")
     //去掉back菜单
     all = all diff getBackElements()
-    log.info(s"all - back size=${all.length}")
+    log.info(s"all - backButton size=${all.length}")
     //把元素转换为Element对象
     var allElements = all.map(getUrlElementByMap(_))
     //获得所有未点击元素
@@ -728,7 +688,7 @@ class Crawler extends CommonLog {
     */
   @tailrec
   final def crawl(): Unit = {
-    log.info("crawl next")
+    log.info("\n\ncrawl next")
     //刷新页面
     var skipBeforeElementAction = true
     //是否需要退出或者后退, 得到要做的动作
@@ -821,9 +781,8 @@ class Crawler extends CommonLog {
           store.setElementSkip(element)
         } else {
           //处理控件
-          driver.asyncTask(120){
-            doElementAction(element, getElementAction())
-          }
+          doElementAction(element, getElementAction())
+
           //插件处理
           afterElementAction(element)
         }
@@ -838,6 +797,11 @@ class Crawler extends CommonLog {
   }
 
 
+  /**
+    * 如果pri=0 表示不用优先匹配. 只有遍历到了再寻找合适的action
+    * @param element
+    * @return
+    */
   def getActionFromNormalActions(element: URIElement): String = {
     val normalActions = conf.triggerActions.filter(_.getOrElse("pri", 1).toString.toInt == 0)
     log.info(s"normal actions size = ${normalActions.size}")
@@ -845,14 +809,7 @@ class Crawler extends CommonLog {
       val xpath = r("xpath").toString
       val action = r("action").toString
 
-      (if (xpath.matches("/.*")) {
-        //支持xpath
-        getAllElements(xpath)
-      } else {
-        //支持正则通配
-        val all = getAllElements("//*").filter(isValid)
-        (all.filter(_ ("name").toString.matches(xpath)) ++ all.filter(_ ("value").toString.matches(xpath))).distinct
-      }).toStream.filter(element==getUrlElementByMap(_)).headOption match {
+      driver.getListFromXPath(xpath).toStream.filter(element==getUrlElementByMap(_)).headOption match {
         case Some(v)=>Some(action)
         case None => None
       }
@@ -870,7 +827,7 @@ class Crawler extends CommonLog {
 
       val allMap = if (xpath.matches("/.*")) {
         //支持xpath
-        getAllElements(xpath).map(getUrlElementByMap(_))
+        driver.getListFromXPath(xpath).map(getUrlElementByMap(_))
       } else {
         //支持正则通配
         if (element.toTagPath().matches(xpath)) {
@@ -905,7 +862,7 @@ class Crawler extends CommonLog {
     val domPath = getBasePathName() + ".dom"
     //感谢QQ:434715737的反馈
     log.info(s"save to ${domPath}")
-    Try(File(domPath).writeAll(currentPageSource)) match {
+    Try(File(domPath).writeAll(driver.currentPageSource)) match {
       case Success(v) => {
         log.trace(s"save to ${domPath}")
       }
@@ -920,10 +877,8 @@ class Crawler extends CommonLog {
 
   def saveScreen(force: Boolean = false): Unit = {
     //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
-    val markPath = getBasePathName() + ".ps.jpg"
-    val originPath = getBasePathName() + ".ori.jpg"
-    val markImageFile = new java.io.File(markPath)
-    if (pluginClasses.map(p => p.screenshot(markPath)).contains(true)) {
+    val originPath = getBasePathName() + ".clicked.png"
+    if (pluginClasses.map(p => p.screenshot(originPath)).contains(true)) {
       return
     }
     if (conf.saveScreen || force) {
@@ -935,7 +890,7 @@ class Crawler extends CommonLog {
           driver.screenshot()
         } else {
           log.info("ui no change")
-          val preImageFileName = getBasePathName(store.clickedElementsList.takeRight(2).head) + ".ori.jpg"
+          val preImageFileName = getBasePathName(store.clickedElementsList.takeRight(2).head) + ".clicked.png"
           val preImageFile = new java.io.File(preImageFileName)
           if (preImageFile.exists() && preImageFileName!=originPath) {
             log.info(s"copy from pre image file ${preImageFileName}")
@@ -950,7 +905,6 @@ class Crawler extends CommonLog {
         }else{
           FileUtils.copyFile(imgFile, new java.io.File(originPath))
         }
-        FileUtils.copyFile(imgFile, markImageFile)
       } match {
         case Some(v) => {
           log.info("screenshot success")
@@ -966,6 +920,13 @@ class Crawler extends CommonLog {
 
 
   def doElementAction(element: URIElement, action: String): Unit = {
+    //找到了要点击的元素或者其他的状态标记比如back swipe
+    store.setElementClicked(element)
+    //todo: 如果有相同的控件被重复记录, 会出问题, 比如确定退出的规则
+    val preElement=store.clickedElementsList.takeRight(2).head
+    val originImageName = getBasePathName(preElement) + ".clicked.png"
+    val newImageName = getBasePathName() + ".click.png"
+
     log.info(s"current element = ${element}")
     log.info(s"current index = ${store.clickedElementsList.size - 1}")
     log.info(s"current action = ${action}")
@@ -975,11 +936,9 @@ class Crawler extends CommonLog {
     log.info(s"current file name = ${element.toFileName()}")
     log.info(s"current uri = ${element.toLoc()}")
 
-    //找到了要点击的元素或者其他的状态标记比如back swipe
-    store.setElementClicked(element)
     store.saveReqHash(contentHash.last().toString)
-    store.saveReqImg(getBasePathName(store.clickedElementsList.takeRight(2).head) + ".ps.jpg")
-    store.saveReqDom(currentPageSource)
+    store.saveReqImg(getBasePathName(element) + ".click.png")
+    store.saveReqDom(driver.currentPageSource)
 
     action match {
       case "" => {
@@ -1009,8 +968,6 @@ class Crawler extends CommonLog {
         driver.findElementByUrlElement(element) match {
           case true => {
             val rect = driver.getRect()
-            val originImageName = getBasePathName(store.clickedElementsList.takeRight(2).head) + ".ori.jpg"
-            val newImageName = getBasePathName(store.clickedElementsList.takeRight(2).head) + ".ps.jpg"
             if(conf.saveScreen) {
               log.info(s"mark ${originImageName} to ${newImageName}")
               driver.mark(originImageName, newImageName, rect.x, rect.y, rect.width, rect.height)
@@ -1043,13 +1000,22 @@ class Crawler extends CommonLog {
       }
     }
 
+    val newImageFile=new io.File(newImageName)
+    val originImageFile=new io.File(originImageName)
+    if(newImageFile.exists()==false && originImageFile.exists()==true){
+      log.info("use last clicked image replace mark")
+      FileUtils.copyFile(originImageFile, newImageFile)
+    }else{
+      log.info("mark image exist")
+    }
+
     isRefreshSuccess = refreshPage()
     saveDom()
     saveScreen()
 
     store.saveResHash(contentHash.last().toString)
-    store.saveResImg(getBasePathName() + ".ps.jpg")
-    store.saveResDom(currentPageSource)
+    store.saveResImg(getBasePathName() + ".clicked.png")
+    store.saveResDom(driver.currentPageSource)
 
   }
 
@@ -1080,17 +1046,9 @@ class Crawler extends CommonLog {
       val action = r.getOrElse("action", "click").toString
       val times = r.getOrElse("times", 0).toString.toInt
       log.debug(s"finding ${r}")
-      log.debug(s"current source ${currentPageSource}")
+      log.debug(s"current source ${driver.currentPageSource}")
 
-      val allMap = if (xpath.matches("/.*")) {
-        //支持xpath
-        getAllElements(xpath)
-      } else {
-        //支持正则通配
-        val all = getAllElements("//*").filter(isValid)
-        (all.filter(_ ("name").toString.matches(xpath)) ++ all.filter(_ ("value").toString.matches(xpath))).distinct
-      }
-      allMap.headOption match {
+      driver.getListFromXPath(xpath).filter(isValid).headOption match {
         case Some(e) => {
           if (times == 1) {
             log.info(s"remove rule ${r}")

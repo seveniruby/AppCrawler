@@ -26,7 +26,7 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
       val xpath = when.xpath
       val action = when.action
 
-      RichData.getListFromXPath(xpath, driver.currentPageDom).headOption match {
+      driver.getListFromXPath(xpath).headOption match {
         case Some(v) => {
           val ele = URIElement(v, "Steps")
           crawler.doElementAction(ele, action)
@@ -43,7 +43,7 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
         log.debug(existAssert)
         cp {
           withClue(s"${existAssert} 不存在\n") {
-            RichData.getListFromXPath(existAssert, driver.currentPageDom).size should be > 0
+            driver.getListFromXPath(xpath).size should be > 0
           }
         }
 

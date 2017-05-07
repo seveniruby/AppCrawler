@@ -5,9 +5,11 @@ saveScreen: true
 screenshotTimeout: 20
 currentDriver: "android"
 showCancel: true
-tagLimitMax: 5
+tagLimitMax: 2
 tagLimit:
 - xpath: //*[../*[@selected='true']]
+  count: 12
+- xpath: //*[contains(@resource-id, "layout_bottom")]
   count: 12
 maxTime: 10800
 resultDir: ""
@@ -37,9 +39,7 @@ defineUrl:
 appWhiteList:
 - android
 - com.shafa.market
-baseUrl:
-- ".*MainActivity"
-- ".*SNBHomeView.*"
+baseUrl: []
 maxDepth: 20
 headFirst: true
 enterWebView: true
@@ -49,6 +49,7 @@ urlBlackList:
 - .*Training.*
 - .*FriendRank.*
 - .*\\.base\\.Container.*
+- DataCenterActivity
 #urlWhiteList:
 #- ".*Main.*"
 backButton:
@@ -83,17 +84,21 @@ blackList:
 - //*[contains(@resource-id, "share")]
 - //*[contains(@text, "开始第")]
 - //*[contains(@resource-id, "lock")]
-- //*[contains(@text, "举报")]
+- button_resume_run
 triggerActions:
 - xpath: //*[contains(@resource-id, "layout_picker_view_container")]//*[@text="确定"]
 - xpath: //*[contains(@resource-id, "content-wrapper_dialog")]//*[@text="不发了"]
 - xpath: //*[@text="拒绝"]
 - xpath: //*[@text="放弃"]
+- xpath: 确定
+- xpath: 不发了
 - xpath: //*[@text="结束训练"]
+- xpath: //*[contains(@text, "举报")]
+  action: back
 - xpath: //*[contains(@resource-id, "quit_confirm_button")]//*[contains(@text, "确定")]
-- xpath: //*[contains(@resource-id, "layout_right_second_button")]//*[contains(@resource-id, "right_second_button")]
-  action: yoga
-  times: 1
+- xpath: 结束
+  action: tap
+- xpath: 确定退出
 asserts:
 - given:
   - //*
@@ -107,11 +112,11 @@ testcase:
   name: demo1
   steps:
   - when:
-      xpath: //*[contains(@resource-id, 'text_home_train_collection_title')]
+      xpath: //*
       action: driver.swipe(0.5, 0.8, 0.5, 0.2)
     then: []
   - when:
-      xpath: //*[contains(@resource-id, 'text_home_train_collection_title')]
+      xpath: //*
       action: driver.swipe(0.5, 0.2, 0.5, 0.8)
     then: []
   - when:
@@ -138,5 +143,6 @@ testcase:
 #- println(driver.getPageSource())
 #afterElementAction:
 #- println(driver)
+#- Thread.sleep(1000)
 #afterUrlFinished:
 #- monkey()
