@@ -1,0 +1,133 @@
+---
+pluginList:
+- "com.testerhome.appcrawler.plugin.TagLimitPlugin"
+- "com.testerhome.appcrawler.plugin.ReportPlugin"
+logLevel: "TRACE"
+reportTitle: "Keep"
+saveScreen: true
+screenshotTimeout: 20
+currentDriver: "android"
+showCancel: true
+tagLimitMax: 3
+tagLimit:
+- xpath: //*[../*[@selected='true']]
+  count: 12
+maxTime: 10800
+resultDir: ""
+capability:
+  newCommandTimeout: 120
+  launchTimeout: 120000
+  platformVersion: ""
+  platformName: "Android"
+  autoWebview: "false"
+  autoLaunch: "true"
+  noReset: "true"
+  androidInstallTimeout: 180000
+androidCapability:
+  deviceName: "192.168.0.102:5555"
+  appPackage: "com.gotokeep.keep"
+  appActivity: ".activity.SplashActivity"
+  app: ""
+  appium: "http://127.0.0.1:4723/wd/hub"
+#  automationName: uiautomator2
+  automationName: macaca
+  reuse: 3
+#  nativeWebScreenshot: "true"
+defineUrl:
+- //*[@selected='true' and contains(name(), 'TextView')]/@text
+appWhiteList:
+- android
+- com.shafa.market
+baseUrl:
+- ".*MainActivity"
+- ".*SNBHomeView.*"
+maxDepth: 20
+headFirst: true
+enterWebView: true
+urlBlackList:
+- .*OutdoorSummaryMap.*
+- .*PersonalPage.*
+- .*Training.*
+- .*FriendRank.*
+- .*\\.base\\.Container.*
+- ".*球友.*"
+- ".*png.*"
+- ".*Talk.*"
+- ".*Chat.*"
+- ".*Safari.*"
+- "WriteStatus.*"
+- "Browser.*"
+- "MyselfUser"
+- ".*MyselfUser.*"
+- ".*股市直播.*"
+#urlWhiteList:
+#- ".*Main.*"
+backButton:
+- //*[contains(@resource-id, "left_button")]
+#defaultBackAction:
+#- import sys.process._;
+#- Thread.sleep(5000)
+#- val name=Seq("adb", "shell", "dumpsys window windows | grep mCurrentFocus").!!.split(" ")(4).split("/")(0)
+#- println(s"kill package ${name}")
+#- Seq("adb", "shell", s"am force-stop ${name}").!!
+#firstList:
+#- //*[contains(@resource-id, "layout_picker_view_container"]
+selectedList:
+#android非空标签
+- //*[@clickable='true']
+- //*[@clickable='true']//*[contains(name(), 'Text') and string-length(@text)>0 and string-length(@text)<10 ]
+#通用的button和image
+- //*[@clickable='true']//*[contains(name(), 'Button')]
+- //*[@clickable='true']//*[contains(name(), 'Image')]
+#todo:如果多个规则都包含相同控件, 如何排序
+#处于选中状态的同级控件最后点击
+lastList:
+- //*[../*[@selected='true']]
+- //*[../../*/*[@selected='true']]
+- //*[../../*/*[@selected='true'] and contains(@resource-id, 'tab_')]
+- //*[contains(name(), "HorizontalScrollView")]
+- //*[@resource-id='com.gotokeep.keep:id/layout_bottom']
+blackList:
+- ".*\\.[0-9].*"
+- ".*[0-9][0-9].*"
+- //*[contains(@resource-id, "wrapper_in_custom_title_bar")]//*[contains(@resource-id, "right_button")]
+- //*[contains(@resource-id, "share")]
+- //*[contains(@text, "开始第")]
+- //*[contains(@resource-id, "lock")]
+- //*[contains(@text, "举报")]
+triggerActions:
+- xpath: //*[contains(@resource-id, "layout_picker_view_container")]//*[@text="确定"]
+- xpath: //*[contains(@resource-id, "content-wrapper_dialog")]//*[@text="不发了"]
+- xpath: //*[@text="拒绝"]
+- xpath: //*[@text="结束训练"]
+- xpath: //*[contains(@resource-id, "quit_confirm_button")]//*[contains(@text, "确定")]
+- xpath: //*[contains(@resource-id, "layout_right_second_button")]//*[contains(@resource-id, "right_second_button")]
+  action: yoga
+  times: 1
+- xpath: //*[contains(@text, "微信朋友圈")]
+- xpath: //*[contains(@text, "发送")]
+- xpath:
+asserts:
+- given:
+  - //*[@text="胸部"]
+  when: []
+  then:
+  - //*[contains(@text, "success")]
+  - //*[@package="com.gotokeep.keep"]
+
+
+#所有view的叶子节点 一般表示游戏
+#- action: monkey
+#  xpath: //android.view.View[not(*) and contains(@bounds, "[0,0]") ]
+#  times: 20
+#startupActions:
+#- println(driver)
+#beforeElementAction:
+#- xpath: //*[@resource-id="com.shafa.market:id/nav"]//android.widget.TextView
+#  action: MiniAppium.event(21)
+#- Thread.sleep(3000)
+#- println(driver.getPageSource())
+#afterElementAction:
+#- println(driver)
+#afterUrlFinished:
+#- monkey()

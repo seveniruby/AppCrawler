@@ -1,6 +1,6 @@
-package com.xueqiu.qa.appcrawler.it
+package com.testerhome.appcrawler.it
 
-import com.xueqiu.qa.appcrawler.AppiumSuite
+import com.testerhome.appcrawler.AppiumSuite
 
 /**
   * Created by seveniruby on 16/5/21.

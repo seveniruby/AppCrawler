@@ -1,4 +1,5 @@
-import com.xueqiu.qa.appcrawler._
+import com.testerhome.appcrawler.URIElement
+import com.testerhome.appcrawler._
 
 //继承Plugin类
 class DynamicPlugin extends Plugin{

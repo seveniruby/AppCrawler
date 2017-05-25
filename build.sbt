@@ -58,7 +58,7 @@ ProguardKeys.mergeStrategies in Proguard += ProguardMerge.discard("META-INF/.*".
 
 assemblyJarName in assembly := "appcrawler-"+version.value+".jar"
 test in assembly := {}
-mainClass in assembly := Some("com.xueqiu.qa.appcrawler.AppCrawler")
+mainClass in assembly := Some("com.testerhome.appcrawler.AppCrawler")
 scriptClasspath := Seq("*")
 assemblyMergeStrategy in assembly := {
     case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
@@ -68,8 +68,8 @@ assemblyMergeStrategy in assembly := {
         case _ => MergeStrategy.first
       }
     }
-    case x if x.matches("com.xueqiu.qa.appcrawler.plugin.OCR.class")  => MergeStrategy.discard
-    case x if x.matches("com.xueqiu.qa.appcrawler.plugin.AndroidTrace.class")  => MergeStrategy.discard
+    case x if x.matches("com.testerhome.plugin.OCR.class")  => MergeStrategy.discard
+    case x if x.matches("com.testerhome.appcrawler.plugin.AndroidTrace.class")  => MergeStrategy.discard
     case x =>  {
       println(x)
       MergeStrategy.first
