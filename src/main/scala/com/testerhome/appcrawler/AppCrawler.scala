@@ -32,7 +32,7 @@ object AppCrawler extends CommonLog {
   var crawler = new Crawler
   val startTime = new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
   case class Param(
-                    app: File = new File(""),
+                    app: String = "",
                     conf: File = new File(""),
                     verbose: Boolean = false,
                     mode: String = "",
@@ -76,9 +76,23 @@ object AppCrawler extends CommonLog {
   }
 
   def main(args: Array[String]) {
+    setGlobalEncoding()
+    // parser.parse returns Option[C]
+    val args_new = if (args.length == 0) {
+      Array("--help")
+    } else {
+      log.info(banner)
+      args
+    }
+
+    val parser=createParser()
+    parseParams(parser, args_new)
+  }
+
+  def createParser(): scopt.OptionParser[Param] ={
     val parser = new scopt.OptionParser[Param]("appcrawler") {
       head(banner)
-      opt[File]('a', "app") action { (x, c) => {
+      opt[String]('a', "app") action { (x, c) => {
         c.copy(app = x)
       }
       } text ("Android或者iOS的文件地址, 可以是网络地址, 赋值给appium的app选项")
@@ -152,17 +166,10 @@ object AppCrawler extends CommonLog {
           |
         """.stripMargin)
     }
-    // parser.parse returns Option[C]
+    parser
+  }
 
-    val args_new = if (args.length == 0) {
-      Array("--help")
-    } else {
-      log.info(banner)
-      args
-    }
-
-
-
+  def parseParams(parser: scopt.OptionParser[Param], args_new:Array[String]): Unit ={
     parser.parse(args_new, Param()) match {
       case Some(config) => {
         if (config.verbose) {
@@ -185,7 +192,7 @@ object AppCrawler extends CommonLog {
         }
 
         //判断平台
-        config.app.getName match {
+        config.app match {
           case androidApp if androidApp.matches(".*\\.apk$") => {
             crawlerConf.currentDriver = "Android"
           }
@@ -213,26 +220,11 @@ object AppCrawler extends CommonLog {
         crawlerConf.capability ++= config.capability
 
         //设定app
-        config.app match {
-          case file if file.exists() => {
-            //支持相对路径
-            crawlerConf.capability ++= Map("app" -> config.app.getCanonicalPath)
-          }
-          case fileNotExist if fileNotExist.getPath.nonEmpty && fileNotExist.exists() == false && fileNotExist.getPath.contains(":/") == false => {
-            log.warn(s"app not exist ${fileNotExist.getPath}")
-            System.exit(1)
-          }
-          case network if network.getPath.contains(":/") => {
-            //支持http:// https:// ftp:// file://
-            crawlerConf.capability ++= Map("app" -> config.app.getPath.replace(":/", "://"))
-          }
-          case _ => {
-            log.info("use app in the config file")
-          }
-        }
+        crawlerConf.capability ++=Map("app"-> parsePath(config.app).getOrElse(""))
         log.info(s"app path = ${crawlerConf.capability("app")}")
 
         //设定appium的端口
+
         config.appium match {
           case port if port.matches("[0-9]+") =>
             crawlerConf.capability ++= Map("appium" -> s"http://127.0.0.1:${config.appium}/wd/hub")
@@ -266,10 +258,9 @@ object AppCrawler extends CommonLog {
           Report.title = crawlerConf.reportTitle
         }
 
-        setGlobalEncoding()
-
         log.trace("yaml config")
         log.trace(DataObject.toYaml(crawlerConf))
+
 
         if (config.report != "" && config.candidate.isEmpty && config.template=="") {
           val store = Report.loadResult(s"${config.report}/elements.yml")
@@ -306,7 +297,28 @@ object AppCrawler extends CommonLog {
     }
   }
 
-
+  def parsePath(app: String): Option[String] ={
+    val appFile=new File(app)
+    app match {
+      case file if appFile.exists() => {
+        //支持相对路径
+        Some(appFile.getCanonicalPath)
+      }
+      case url if List("http", "ftp", "https", "file").contains(url.split(':').head.toLowerCase) => {
+        //支持http:// https:// ftp:// file://
+        Some(app)
+      }
+      case fileNotExist if fileNotExist.nonEmpty => {
+        log.warn(s"app not exist ${appFile.getCanonicalPath}")
+        System.exit(1)
+        None
+      }
+      case _ => {
+        log.info("use app in the config file")
+        None
+      }
+    }
+  }
   def startCrawl(conf: CrawlerConf): Unit = {
     crawler = new Crawler
     crawler.loadConf(conf)

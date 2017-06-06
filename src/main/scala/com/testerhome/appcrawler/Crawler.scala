@@ -446,7 +446,7 @@ class Crawler extends CommonLog {
   }
 
   //todo: 支持xpath表达式
-  def getSelectedElements(): Option[List[immutable.Map[String, Any]]] = {
+  def getSelectedNodes(): List[immutable.Map[String, Any]] = {
     var all = List[immutable.Map[String, Any]]()
     var firstElements = List[immutable.Map[String, Any]]()
     var lastElements = List[immutable.Map[String, Any]]()
@@ -454,17 +454,17 @@ class Crawler extends CommonLog {
     var blackElements = List[immutable.Map[String, Any]]()
 
     val allElements = driver.getListFromXPath("//*")
-    log.trace(s"all elements = ${allElements.size}")
+    log.trace(s"all node size = ${allElements.size}")
+    allElements.foreach(log.trace)
 
     conf.selectedList.foreach(xpath => {
       log.trace(s"selectedList xpath =  ${xpath}")
       val temp = driver.getListFromXPath(xpath).filter(isValid)
-      temp.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
       selectedElements ++= temp
     })
     selectedElements=selectedElements.distinct
-    log.info(s"all elements size = ${selectedElements.size}")
-
+    log.info(s"selected nodes size = ${selectedElements.size}")
+    selectedElements.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
 
     //remove blackList
     conf.blackList.foreach(xpath => {
@@ -478,16 +478,17 @@ class Crawler extends CommonLog {
     blackElements=blackElements.distinct
     selectedElements = selectedElements diff blackElements
     log.info(s"all - black elements size = ${selectedElements.size}")
+    selectedElements.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
 
     //exclude small
     selectedElements=selectedElements.filter(isValid)
-    log.info(s"all - small elements size = ${selectedElements.size}")
+    log.info(s"all - small - non valid elements size = ${selectedElements.size}")
+    selectedElements.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
 
     //sort
     conf.firstList.foreach(xpath => {
       log.trace(s"firstList xpath = ${xpath}")
       val temp = driver.getListFromXPath(xpath).filter(isValid).intersect(selectedElements)
-      temp.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
       firstElements ++= temp
     })
     log.trace("first elements")
@@ -496,7 +497,6 @@ class Crawler extends CommonLog {
     conf.lastList.foreach(xpath => {
       log.trace(s"lastList xpath = ${xpath}")
       val temp = driver.getListFromXPath(xpath).filter(isValid).intersect(selectedElements)
-      temp.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
       lastElements ++= temp
     })
 
@@ -506,11 +506,15 @@ class Crawler extends CommonLog {
 
     //确保不重, 并保证顺序
     all = (firstElements ++ selectedElements ++ lastElements).distinct
-    log.trace("all elements")
+    log.trace("sorted nodes")
     all.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
-    log.trace(s"all selected length=${all.length}")
-    Some(all)
+    log.trace(s"sorted nodes length=${all.length}")
 
+    //去掉back菜单
+    all = all diff getBackNodes()
+    log.info(s"all - backButton size=${all.length}")
+    all.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
+    all
   }
 
 
@@ -630,14 +634,14 @@ class Crawler extends CommonLog {
     currentElementAction = action
   }
 
-  def getBackElements(): ListBuffer[immutable.Map[String, Any]] = {
+  def getBackNodes(): ListBuffer[immutable.Map[String, Any]] = {
     conf.backButton.flatMap(driver.getListFromXPath(_).filter(isValid))
   }
 
   def getBackButton(): Option[URIElement] = {
     log.info("go back")
     //找到可能的关闭按钮, 取第一个可用的关闭按钮
-    getBackElements().headOption match {
+    getBackNodes().headOption match {
       case Some(v) if appNameRecord.isDiff() == false => {
         //app相同并且找到back控件才点击. 否则就默认back
         val element = getUrlElementByMap(v)
@@ -662,23 +666,21 @@ class Crawler extends CommonLog {
 
 
   def getAvailableElement(): Seq[URIElement] = {
-    var all = getSelectedElements().getOrElse(List[immutable.Map[String, Any]]())
-    log.info(s"all nodes size=${all.length}")
-    //去掉back菜单
-    all = all diff getBackElements()
-    log.info(s"all - backButton size=${all.length}")
     //把元素转换为Element对象
-    var allElements = all.map(getUrlElementByMap(_))
+    var allElements = getSelectedNodes().map(getUrlElementByMap(_))
     //获得所有未点击元素
     log.info(s"all elements size=${allElements.length}")
 
     //过滤已经被点击过的元素
     allElements = allElements.filter(!store.isClicked(_))
     log.info(s"all - clicked size=${allElements.size}")
+    allElements.foreach(log.debug)
+
     allElements = allElements.filter(!store.isSkiped(_))
     log.info(s"fresh elements size=${allElements.length}")
     //记录未被点击的元素
     allElements.foreach(e => {
+      log.debug(e)
       store.saveElement(e)
     })
     allElements
