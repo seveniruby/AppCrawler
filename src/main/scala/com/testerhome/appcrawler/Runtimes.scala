@@ -58,8 +58,6 @@ object Runtimes extends CommonLog{
   def eval(code:String): Unit ={
     if(isLoaded==false){
       log.info("first import")
-      instance.eval("import com.testerhome.appcrawler.AppiumClient")
-      instance.eval("import com.testerhome.appcrawler.AppiumClient._")
       instance.eval("val driver=com.testerhome.appcrawler.AppCrawler.crawler.driver")
       isLoaded=true
     }

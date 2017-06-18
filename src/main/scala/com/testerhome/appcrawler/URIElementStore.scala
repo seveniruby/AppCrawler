@@ -16,7 +16,8 @@ class URIElementStore {
   var clickedElementsList = ListBuffer[URIElement]()
 
   def setElementSkip(element: URIElement): Unit = {
-    clickedElementsList.remove(clickedElementsList.size - 1)
+    //todo: 待改进
+    //clickedElementsList.remove(clickedElementsList.size - 1)
     if(elementStore.contains(element.toString)==false){
       elementStore(element.toString)=ElementInfo()
       elementStore(element.toString).element=element

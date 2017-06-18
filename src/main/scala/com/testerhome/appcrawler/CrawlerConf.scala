@@ -191,5 +191,5 @@ class CrawlerConf {
 
 
 case class TestCase(name:String="", steps:List[Step]=List[Step]())
-case class Step(given: List[String], when: When, then:List[String])
+case class Step(given: List[String], var when: When, then:List[String], xpath:String, action:String)
 case class When(xpath:String, action:String)

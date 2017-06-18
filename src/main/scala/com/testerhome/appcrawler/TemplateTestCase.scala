@@ -41,12 +41,11 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
           markup(
             s"""
                |
-             |<img src='${File(ele.reqImg).name}' width='80%' />
+               |<img src='${File(ele.reqImg).name}' width='80%' />
                |<br></br>
                |<p>after clicked</p>
                |<img src='${File(ele.resImg).name}' width='80%' />
-          """.
-              stripMargin
+          """.stripMargin
           )
 
           /*
@@ -92,20 +91,21 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
             ) {
               log.info(s"match testcase ${ele.element.loc}")
 
-              val cp = new scalatest.Checkpoints.Checkpoint
-              step.then.foreach(existAssert => {
-                log.debug(existAssert)
-                cp {
-                  withClue(s"${existAssert} 不存在\n") {
-                    RichData.getListFromXPath(existAssert, res).size should be > 0
+              if(step.then!=null) {
+                val cp = new scalatest.Checkpoints.Checkpoint
+                step.then.foreach(existAssert => {
+                  log.debug(existAssert)
+                  cp {
+                    withClue(s"${existAssert} 不存在\n") {
+                      RichData.getListFromXPath(existAssert, res).size should be > 0
+                    }
                   }
-                }
-              })
-              cp.reportAll()
+                })
+                cp.reportAll()
+              }
             } else {
               log.info("not match")
             }
-
           })
         }
       }

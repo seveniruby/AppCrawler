@@ -77,7 +77,7 @@ object AppCrawler extends CommonLog {
 
   def main(args: Array[String]) {
     setGlobalEncoding()
-    // parser.parse returns Option[C]
+    // parser.parse returns Opti on[C]
     val args_new = if (args.length == 0) {
       Array("--help")
     } else {
@@ -87,6 +87,7 @@ object AppCrawler extends CommonLog {
 
     val parser=createParser()
     parseParams(parser, args_new)
+    sys.exit()
   }
 
   def createParser(): scopt.OptionParser[Param] ={
@@ -291,16 +292,7 @@ object AppCrawler extends CommonLog {
           return
         }
 
-        if(crawlerConf.selectedList==null || crawlerConf.selectedList.isEmpty){
-          //运行自动化
-          log.info("non crawl mode")
-
-        }else{
-          log.info("crawl mode")
-          startCrawl(crawlerConf)
-        }
-
-
+        startCrawl(crawlerConf)
 
       }
       case None => {}

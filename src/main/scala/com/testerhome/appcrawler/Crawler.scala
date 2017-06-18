@@ -119,8 +119,9 @@ class Crawler extends CommonLog {
     */
   def start(existDriver: WebDriver = null): Unit = {
     addLogFile()
+    log.debug("crawl config")
+    log.debug(conf.toYaml())
     loadPlugins()
-    handleCtrlC()
     if (existDriver == null) {
       log.info("prepare setup Appium")
       setupAppium()
@@ -144,9 +145,28 @@ class Crawler extends CommonLog {
     runStartupScript()
     conf.appWhiteList.append(appNameRecord.last().toString)
 
+    if(conf.testcase!=null){
+      log.info("run steps")
+      runSteps()
+    }else{
+      log.info("no testcase")
+    }
+
+    if(conf.selectedList!=null){
+      crawlStart()
+    }else{
+      log.info("selectedList=null o need to crawl")
+    }
+    log.info("finish")
+
+
+  }
+
+  def crawlStart(): Unit ={
+    handleCtrlC()
+
     var retryCount=1
     while(retryCount>0) {
-
       Try(crawl()) match {
         case Success(v) => {
           log.info("crawl finish")
@@ -186,6 +206,7 @@ class Crawler extends CommonLog {
 
     //爬虫结束
     stop()
+
   }
 
   def restart(): Unit = {
@@ -215,7 +236,6 @@ class Crawler extends CommonLog {
       doElementAction(URIElement(s"${currentUrl}", "", "", "",
         s"startupActions-${action}-${store.clickedElementsList.size}"), action)
     })
-    runSteps()
   }
 
   def runSteps(): Unit ={
@@ -247,10 +267,6 @@ class Crawler extends CommonLog {
 
   }
 
-  def black(keys: String*): Unit = {
-    keys.foreach(conf.blackList.append(_))
-  }
-
   def md5(format: String) = {
     //import sys.process._
     //s"echo ${format}" #| "md5" !
@@ -263,13 +279,6 @@ class Crawler extends CommonLog {
     }
   }
 
-
-  def rule(loc: String, action: String, times: Int = 0): Unit = {
-    conf.triggerActions.append(mutable.Map(
-      "xpath" -> loc,
-      "action" -> action,
-      "times" -> times))
-  }
 
   /**
     * 判断内容是否变化
@@ -864,9 +873,10 @@ class Crawler extends CommonLog {
     File(s"${conf.resultDir}/elements.yml").writeAll(DataObject.toYaml(store))
   }
 
-  def getBasePathName(element: URIElement = store.clickedElementsList.last): String = {
+  def getBasePathName(right:Int=1): String = {
     //序号_文件名
-    s"${conf.resultDir}/${store.clickedElementsList.lastIndexOf(element)}_" + element.toFileName()
+    val element=store.clickedElementsList.takeRight(right).head
+    s"${conf.resultDir}/${store.clickedElementsList.size-right}_" + element.toFileName()
   }
 
   def saveDom(): Unit = {
@@ -902,7 +912,7 @@ class Crawler extends CommonLog {
           driver.screenshot()
         } else {
           log.info("ui no change")
-          val preImageFileName = getBasePathName(store.clickedElementsList.takeRight(2).head) + ".clicked.png"
+          val preImageFileName = getBasePathName(2) + ".clicked.png"
           val preImageFile = new java.io.File(preImageFileName)
           if (preImageFile.exists() && preImageFileName!=originPath) {
             log.info(s"copy from pre image file ${preImageFileName}")
@@ -936,9 +946,6 @@ class Crawler extends CommonLog {
     log.debug(s"push ${element}")
     store.setElementClicked(element)
     //todo: 如果有相同的控件被重复记录, 会出问题, 比如确定退出的规则
-    val preElement=store.clickedElementsList.takeRight(2).head
-    val originImageName = getBasePathName(preElement) + ".clicked.png"
-    val newImageName = getBasePathName() + ".click.png"
 
     log.info(s"current element = ${element}")
     log.info(s"current index = ${store.clickedElementsList.size - 1}")
@@ -950,8 +957,11 @@ class Crawler extends CommonLog {
     log.info(s"current uri = ${element.toLoc()}")
 
     store.saveReqHash(contentHash.last().toString)
-    store.saveReqImg(getBasePathName(element) + ".click.png")
+    store.saveReqImg(getBasePathName() + ".click.png")
     store.saveReqDom(driver.currentPageSource)
+
+    val originImageName = getBasePathName(2) + ".clicked.png"
+    val newImageName = getBasePathName() + ".click.png"
 
     action match {
       case "" => {
@@ -969,6 +979,9 @@ class Crawler extends CommonLog {
       }
       case "monkey" => {
         driver.event(element.name.toInt)
+      }
+      case "crawl" => {
+        crawlStart()
       }
       case code if code.matches(".*\\(.*\\).*") => {
         driver.dsl(code)
@@ -1059,7 +1072,6 @@ class Crawler extends CommonLog {
       val action = r.getOrElse("action", "click").toString
       val times = r.getOrElse("times", 0).toString.toInt
       log.debug(s"finding ${r}")
-      log.debug(s"current source ${driver.currentPageSource}")
 
       driver.getListFromXPath(xpath).filter(isValid).headOption match {
         case Some(e) => {

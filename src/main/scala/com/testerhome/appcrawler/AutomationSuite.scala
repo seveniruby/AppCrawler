@@ -22,32 +22,42 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
     val cp = new scalatest.Checkpoints.Checkpoint
 
     conf.testcase.steps.foreach(step => {
-      val when = step.when
-      val xpath = when.xpath
-      val action = when.action
 
-      driver.getListFromXPath(xpath).headOption match {
-        case Some(v) => {
-          val ele = URIElement(v, "Steps")
-          crawler.doElementAction(ele, action)
-        }
-        case None => {
-          log.info("not found")
-          //用于生成steps的用例
-          val ele = URIElement("Steps", "", "", "NOT_FOUND", xpath)
-          crawler.doElementAction(ele, "")
+
+      if(step.xpath!=null && step.action!=null){
+        step.when=When(step.xpath, step.action)
+      }
+      if(step.when!=null) {
+        val when = step.when
+        val xpath = when.xpath
+        val action = when.action
+
+        driver.getListFromXPath(xpath).headOption match {
+          case Some(v) => {
+            val ele = URIElement(v, "Steps")
+            crawler.doElementAction(ele, action)
+          }
+          case None => {
+            log.info("not found")
+            //用于生成steps的用例
+            val ele = URIElement("Steps", "", "", "NOT_FOUND", xpath)
+            crawler.doElementAction(ele, "")
+          }
         }
       }
 
-      step.then.foreach(existAssert => {
-        log.debug(existAssert)
-        cp {
-          withClue(s"${existAssert} 不存在\n") {
-            driver.getListFromXPath(xpath).size should be > 0
-          }
-        }
 
-      })
+      if(step.then!=null) {
+        step.then.foreach(existAssert => {
+          log.debug(existAssert)
+          cp {
+            withClue(s"${existAssert} 不存在\n") {
+              driver.getListFromXPath(existAssert).size should be > 0
+            }
+          }
+
+        })
+      }
     })
 
 

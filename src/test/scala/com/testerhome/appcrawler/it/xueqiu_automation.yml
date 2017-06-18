@@ -106,8 +106,8 @@ triggerActions:
 - xpath: "点此.*"
 - xpath: "放弃"
 - xpath: "不保存"
-- xpath: "确定"
-- xpath: "关闭"
+- xpath: "^确定$"
+- xpath: "^关闭$"
 - xpath: "取消"
 - xpath: "稍后再说"
 - xpath: "Cancel"
@@ -128,6 +128,7 @@ triggerActions:
   times: 10
   pri: 0
 - xpath: 我知道了
+#selectedList: null
 testcase:
   name: demo1
   steps:
@@ -137,15 +138,7 @@ testcase:
   - when:
       xpath: //*
       action: driver.swipe(0.5, 0.2, 0.5, 0.8)
-    then: []
-  - when:
-      xpath: //*[contains(@resource-id, 'text_home_train_collection_title')]
-      action: tap
+  - xpath: 自选
+    action: click
     then:
-    - //*[contains(@text, "置顶")]
-  - when:
-      xpath: //*[contains(@text, '置顶')]
-      action: click
-    then:
-    - //*[contains(@text, "添加训练")]
-    - //*[contains(@text, "故意错误")]
+    - //*[contains(@text, "港股")]
