@@ -8,7 +8,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by seveniruby on 2017/4/15.
   */
-object TemplateClass extends CommonLog {
+object SuiteToClass extends CommonLog {
 
   /**
     * 生成用例对应的class文件，用于调用scalatest执行

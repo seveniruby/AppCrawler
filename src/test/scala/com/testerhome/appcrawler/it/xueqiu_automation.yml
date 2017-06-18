@@ -1,0 +1,151 @@
+---
+pluginList:
+- "com.testerhome.appcrawler.plugin.FlowDiff"
+#- "com.testerhome.appcrawler.plugin.ProxyPlugin"
+logLevel: "TRACE"
+saveScreen: true
+showCancel: true
+reportTitle: AppCrawler雪球内部版
+screenshotTimeout: 20
+tagLimitMax: 2
+currentDriver: "android"
+maxTime: 10800
+resultDir: ""
+capability:
+  newCommandTimeout: 120
+  launchTimeout: 120000
+  platformVersion: ""
+  platformName: ""
+  autoWebview: "false"
+  autoLaunch: "true"
+  noReset: "false"
+androidCapability:
+  deviceName: "demo"
+  appPackage: "com.xueqiu.android"
+  appActivity: ".view.WelcomeActivityAlias"
+  app: ""
+  appium: "http://127.0.0.1:4723/wd/hub"
+  automationName: uiautomator2
+iosCapability:
+  deviceName: "iPhone 6 Plus"
+  bundleId: "com.xueqiu"
+  screenshotWaitTimeout: "10"
+  platformVersion: "9.3"
+  autoAcceptAlerts: "true"
+  app: "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app"
+  appium: "http://127.0.0.1:4730/wd/hub"
+defineUrl:
+- "//*[@selected='true']/@text"
+- "//*[@selected='true']/@text"
+- "//*[contains(name(), 'NavigationBar')]/@label"
+baseUrl:
+- ".*MainActivity"
+- ".*SNBHomeView.*"
+maxDepth: 20
+headFirst: true
+enterWebView: true
+urlBlackList:
+- ".*球友.*"
+- ".*png.*"
+- ".*Talk.*"
+- ".*Chat.*"
+- ".*Safari.*"
+- "WriteStatus.*"
+- "Browser.*"
+- "MyselfUser"
+- ".*MyselfUser.*"
+- ".*股市直播.*"
+#urlWhiteList:
+#- ".*Main.*"
+backButton:
+- //*[@resource-id='action_back']
+- //*[@resource-id='android:id/up']
+- //*[@resource-id='android:id/home']
+- //*[@resource-id='android:id/action_bar_title']
+- //*[@name='nav_icon_back']
+- //*[@name='Back']
+- //*[@name='返回']
+- "//*[contains(name(), 'Button') and @name='取消']"
+- "//*[contains(name(), 'Button') and @label='返回']"
+- "//*[contains(name(), 'Button') and @name='关闭']"
+- "//*[contains(name(), 'Button') and @name='首页']"
+triggerActions:
+- xpath: "//*[contains(@resource-id, 'iv_close')]"
+- xpath: "//*[@resource-id='com.xueqiu.android:id/button_login']"
+  times: 1
+- action: "15600534760"
+  xpath: "//*[@resource-id='com.xueqiu.android:id/login_account']"
+  times: 1
+- xpath: "//*[@resource-id='com.xueqiu.android:id/login_account']"
+  times: 1
+- action: "hys2xueqiu"
+  xpath: "//*[@resource-id='com.xueqiu.android:id/login_password']"
+  times: 1
+- xpath: "button_next"
+  times: 1
+- action: "15600534760"
+  xpath: "//*[contains(name(), 'StaticText') and contains(@name, '登录')]"
+  times: 1
+- action: "15600534760"
+  xpath: "//*[contains(name(), 'TextField') and contains(@value, '手机')]"
+  times: 1
+- action: "hys2xueqiu"
+  xpath: "//*[contains(name(), 'SecureTextField')]"
+  times: 1
+- xpath: "//*[contains(name(), 'Button') and contains(@name, '登 录')]"
+  times: 1
+- xpath: ".*立即登录"
+  times: 2
+- xpath: "//*[@name='登 录']"
+  times: 2
+- xpath: "//*[@name='登录']"
+  times: 2
+- action: "scroll left"
+  xpath: "专题"
+  times: 1
+- xpath: "点此.*"
+- xpath: "放弃"
+- xpath: "不保存"
+- xpath: "确定"
+- xpath: "关闭"
+- xpath: "取消"
+- xpath: "稍后再说"
+- xpath: "Cancel"
+- xpath: "这里可以.*"
+- xpath: ".*搬到这里.*"
+- xpath: "我要退出"
+- xpath: "tip_click_position"
+- xpath: "common guide icon ok"
+- xpath: "icon quotationinformation day"
+  times: 1
+- xpath: "icon stock close"
+- xpath: "隐藏键盘"
+#一个神奇的符号
+- xpath: //*[@label='✕' and visible='true']
+  times: 10
+- action: 123
+  xpath: //*[contains(name(), "EditText")]
+  times: 10
+  pri: 0
+- xpath: 我知道了
+testcase:
+  name: demo1
+  steps:
+  - when:
+      xpath: //*
+      action: driver.swipe(0.5, 0.8, 0.5, 0.2)
+  - when:
+      xpath: //*
+      action: driver.swipe(0.5, 0.2, 0.5, 0.8)
+    then: []
+  - when:
+      xpath: //*[contains(@resource-id, 'text_home_train_collection_title')]
+      action: tap
+    then:
+    - //*[contains(@text, "置顶")]
+  - when:
+      xpath: //*[contains(@text, '置顶')]
+      action: click
+    then:
+    - //*[contains(@text, "添加训练")]
+    - //*[contains(@text, "故意错误")]

@@ -6,6 +6,7 @@ import java.util.Date
 import com.testerhome.appcrawler.driver.AppiumClient
 import com.testerhome.appcrawler.driver.{MacacaDriver, WebDriver}
 import org.apache.commons.io.FileUtils
+import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.log4j._
 import org.scalatest
 import org.scalatest.ConfigMap
@@ -73,8 +74,10 @@ class Crawler extends CommonLog {
         pluginClasses.append(Class.forName(name).newInstance().asInstanceOf[Plugin])
       }
     })
+
+    //todo: 放到根目录有bug. 需要解决
     val dynamicPluginDir = (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath))
-      .getParentFile.getParentFile.getCanonicalPath + File.separator + "plugins" + File.separator
+      .getParentFile.getCanonicalPath + File.separator + "plugins" + File.separator
     log.info(s"dynamic load plugin in ${dynamicPluginDir}")
     val dynamicPlugins = Runtimes.loadPlugins(dynamicPluginDir)
     log.info(s"found dynamic plugins size ${dynamicPlugins.size}")
@@ -169,9 +172,9 @@ class Crawler extends CommonLog {
         case Failure(e) => {
           log.error("crawl not finish, return with exception")
           log.error(e.getLocalizedMessage)
-          log.error(e.getMessage)
-          log.error(e.getCause)
-          e.getStackTrace.foreach(log.error)
+          log.error(ExceptionUtils.getRootCauseMessage(e))
+          log.error(ExceptionUtils.getRootCause(e))
+          ExceptionUtils.getRootCauseStackTrace(e).foreach(log.error)
           log.error("create new session")
 
           retryCount+=1
@@ -411,13 +414,16 @@ class Crawler extends CommonLog {
       log.warn(s"urlStack.depth=${urlStack.length} > maxDepth=${conf.maxDepth}")
       return true
     }
-    //回到桌面了
-    if (urlStack.filter(_.matches("Launcher.*")).nonEmpty || appName.matches("com.android\\..*")) {
-      log.warn(s"maybe back to desktop ${urlStack.reverse.mkString("-")} need exit")
-      //尝试后腿 而不是退出
-      //needExit = true
-      return true
-    }
+    /*
+        //回到桌面了
+
+        if (urlStack.filter(_.matches("Launcher.*")).nonEmpty || appName.matches("com.android\\..*")) {
+          log.warn(s"maybe back to desktop ${urlStack.reverse.mkString("-")} need exit")
+          //尝试后腿 而不是退出
+          //needExit = true
+          return true
+        }
+    */
 
     false
 
@@ -775,6 +781,7 @@ class Crawler extends CommonLog {
       case Some(element) => {
         //todo: 输入情况 长按 需要考虑
         if(skipBeforeElementAction==false) {
+          //决定是否需要跳过
           beforeElementAction(element)
         }else{
           log.info("skip beforeElementAction")
@@ -782,6 +789,7 @@ class Crawler extends CommonLog {
 
         //不可和之前的判断合并
         if (getElementAction() == "skip") {
+          log.trace(s"pop ${element}")
           store.setElementSkip(element)
         } else {
           //处理控件
@@ -925,6 +933,7 @@ class Crawler extends CommonLog {
 
   def doElementAction(element: URIElement, action: String): Unit = {
     //找到了要点击的元素或者其他的状态标记比如back swipe
+    log.debug(s"push ${element}")
     store.setElementClicked(element)
     //todo: 如果有相同的控件被重复记录, 会出问题, 比如确定退出的规则
     val preElement=store.clickedElementsList.takeRight(2).head

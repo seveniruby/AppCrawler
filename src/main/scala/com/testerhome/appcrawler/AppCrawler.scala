@@ -261,7 +261,7 @@ object AppCrawler extends CommonLog {
         log.trace("yaml config")
         log.trace(DataObject.toYaml(crawlerConf))
 
-
+        //todo: 用switch替代
         if (config.report != "" && config.candidate.isEmpty && config.template=="") {
           val store = Report.loadResult(s"${config.report}/elements.yml")
           Report.saveTestCase(store, config.report)
@@ -291,7 +291,17 @@ object AppCrawler extends CommonLog {
           return
         }
 
-        startCrawl(crawlerConf)
+        if(crawlerConf.selectedList==null || crawlerConf.selectedList.isEmpty){
+          //运行自动化
+          log.info("non crawl mode")
+
+        }else{
+          log.info("crawl mode")
+          startCrawl(crawlerConf)
+        }
+
+
+
       }
       case None => {}
     }

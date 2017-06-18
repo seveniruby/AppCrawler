@@ -4,6 +4,7 @@ import com.testerhome.appcrawler.plugin.FlowDiff
 import org.scalatest._
 
 import scala.io.Source
+import scala.reflect.io.File
 
 /**
   * Created by seveniruby on 16/9/26.
@@ -85,11 +86,11 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
               s"""
                  |candidate image
                  |-------
-                 |<img src='${DiffSuite.candidateStore.getOrElse(key, ElementInfo()).resImg}' width='40%' />
+                 |<img src='${File(DiffSuite.candidateStore.getOrElse(key, ElementInfo()).resImg).name}' width='80%' />
                  |
                  |master image
                  |--------
-                 |<img src='${DiffSuite.masterStore.getOrElse(key, ElementInfo()).resImg}' width='40%' />
+                 |<img src='${File(DiffSuite.masterStore.getOrElse(key, ElementInfo()).resImg).name}' width='80%' />
                  |
                 """.stripMargin)
           }
@@ -119,7 +120,7 @@ object DiffSuite {
   def saveTestCase(): Unit ={
     val suites=masterStore.map(_._2.element.url)++candidateStore.map(_._2.element.url)
     suites.foreach(suite=> {
-      TemplateClass.genTestCaseClass(suite, "com.testerhome.appcrawler.DiffSuite", Map("suite"->suite, "name"->suite), Report.testcaseDir)
+      SuiteToClass.genTestCaseClass(suite, "com.testerhome.appcrawler.DiffSuite", Map("suite"->suite, "name"->suite), Report.testcaseDir)
     })
   }
 }

@@ -27,7 +27,7 @@ trait Report extends CommonLog {
     suites.foreach(suite => {
       log.info(s"gen testcase class ${suite}")
       //todo: 基于规则的多次点击事件只会被保存到一个状态中. 需要区分
-      TemplateClass.genTestCaseClass(
+      SuiteToClass.genTestCaseClass(
         suite,
         "com.testerhome.appcrawler.TemplateTestCase",
         Map("uri"->suite, "name"->suite),
