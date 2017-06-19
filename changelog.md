@@ -1,8 +1,35 @@
-# 2.1.0 [TODO]
-独立的yaml格式的自动化测试用例支持  
+# 2.1.1[TODO]
 支持从历史数据中寻找最优点击路径  
 支持web  
 支持游戏app遍历  
+
+# 2.1.0
+### bugfix
+mark图片异常的问题
+### 自动化用例
+只是demo. 还有很多细节需要设计的更好.  
+支持given when then风格, 也支持简化的xpath action then的简单风格.  
+```yaml
+#设置这个跳过遍历
+autoCrawl: false
+#测试用例入口
+testcase:
+#测试用例名字
+  name: demo1
+  steps:
+  - when:
+      xpath: //*
+      action: driver.swipe(0.5, 0.8, 0.5, 0.2)
+  - when:
+      xpath: //*
+      action: driver.swipe(0.5, 0.2, 0.5, 0.8)
+#简化风格. 没有when
+  - xpath: 自选
+    action: click
+    then:
+    - //*[contains(@text, "港股")]
+```
+
 # 2.0.0
 支持macaca[完成]  
 失败重试[完成]  

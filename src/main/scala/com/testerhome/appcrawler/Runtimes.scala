@@ -59,6 +59,7 @@ object Runtimes extends CommonLog{
     if(isLoaded==false){
       log.info("first import")
       instance.eval("val driver=com.testerhome.appcrawler.AppCrawler.crawler.driver")
+      instance.eval("def crawl(depth:Int)=com.testerhome.appcrawler.AppCrawler.crawler.crawl(depth)")
       isLoaded=true
     }
     log.info(code)

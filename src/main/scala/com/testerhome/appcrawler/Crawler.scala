@@ -137,6 +137,7 @@ class Crawler extends CommonLog {
     log.info(s"driver=${existDriver}")
     log.info("get screen info")
     driver.getDeviceInfo()
+    refreshPage()
 
 
     //todo: 不是所有的实现都支持
@@ -152,17 +153,19 @@ class Crawler extends CommonLog {
       log.info("no testcase")
     }
 
-    if(conf.selectedList!=null){
-      crawlStart()
+    if(conf.autoCrawl){
+      crawl(conf.maxDepth)
     }else{
-      log.info("selectedList=null o need to crawl")
+      log.info("autoCrawl=false")
     }
-    log.info("finish")
-
 
   }
 
-  def crawlStart(): Unit ={
+  def crawl(depth: Int): Unit ={
+    //清空堆栈 开始重新计数
+    conf.maxDepth=depth
+    urlStack.clear()
+    refreshPage()
     handleCtrlC()
 
     var retryCount=1
@@ -221,21 +224,10 @@ class Crawler extends CommonLog {
   }
 
   def runStartupScript(): Unit = {
-    log.debug("run startup script")
-    log.debug(conf.startupActions)
-
-
     log.info("first refresh")
-    store.setElementClicked(URIElement(s"${currentUrl}", "", "", "",
-      s"startupActions-Start-${store.clickedElementsList.size}"))
-    refreshPage()
-    saveDom()
-    saveScreen(true)
+    doElementAction(URIElement(s"${currentUrl}", "", "", "",
+      s"startupActions-Start-${store.clickedElementsList.size}"), "")
 
-    conf.startupActions.foreach(action => {
-      doElementAction(URIElement(s"${currentUrl}", "", "", "",
-        s"startupActions-${action}-${store.clickedElementsList.size}"), action)
-    })
   }
 
   def runSteps(): Unit ={
@@ -980,8 +972,9 @@ class Crawler extends CommonLog {
       case "monkey" => {
         driver.event(element.name.toInt)
       }
-      case "crawl" => {
-        crawlStart()
+      case crawl if crawl.contains("crawl\\(.*\\)") =>{
+        store.clickedElementsList.remove(store.clickedElementsList.size-1)
+        driver.dsl(crawl)
       }
       case code if code.matches(".*\\(.*\\).*") => {
         driver.dsl(code)

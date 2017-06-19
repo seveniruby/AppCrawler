@@ -158,5 +158,11 @@ class TestRuntimes extends FunSuite with CommonLog{
   }
 
 
+  test("crawl keyword"){
+    Runtimes.eval("def crawl(depth:Int)=com.testerhome.appcrawler.AppCrawler.crawler.crawl(depth)")
+    Runtimes.eval("crawl(1)")
+  }
+
+
 }
 

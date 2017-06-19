@@ -38,10 +38,10 @@ defineUrl:
 - "//*[@selected='true']/@text"
 - "//*[@selected='true']/@text"
 - "//*[contains(name(), 'NavigationBar')]/@label"
-baseUrl:
-- ".*MainActivity"
-- ".*SNBHomeView.*"
-maxDepth: 20
+#baseUrl:
+#- ".*MainActivity"
+#- ".*SNBHomeView.*"
+maxDepth: 1
 headFirst: true
 enterWebView: true
 urlBlackList:
@@ -104,6 +104,7 @@ triggerActions:
   xpath: "专题"
   times: 1
 - xpath: "点此.*"
+  times: 3
 - xpath: "放弃"
 - xpath: "不保存"
 - xpath: "^确定$"
@@ -128,7 +129,7 @@ triggerActions:
   times: 10
   pri: 0
 - xpath: 我知道了
-#selectedList: null
+autoCrawl: true
 testcase:
   name: demo1
   steps:

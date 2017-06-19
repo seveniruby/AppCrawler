@@ -165,7 +165,6 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
     if (resultDir.nonEmpty) {
       crawler.conf.resultDir = resultDir
     }
-    crawler.conf.startupActions.clear()
     crawler.log.setLevel(Level.TRACE)
     crawler.conf.maxDepth = maxDepth
     crawler.start(this)

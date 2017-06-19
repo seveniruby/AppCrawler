@@ -17,12 +17,12 @@ object AppCrawler extends CommonLog {
   val banner=
     """
       |----------------
-      |AppCrawler 2.0.0
+      |AppCrawler 2.1.0
       |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
       |帮助文档: http://seveniruby.gitbooks.io/appcrawler
       |移动测试技术交流: https://testerhome.com
-      |感谢: 晓光 泉龙 杨榕 恒温 mikezhou yaming116
-      |感谢提供商业支持的优秀公司: Keep
+      |感谢: 晓光 泉龙 杨榕 恒温 mikezhou yaming116 沐木
+      |感谢如下公司提供商业支持: Keep
       |--------------------------------
       |
     """.stripMargin
@@ -46,6 +46,7 @@ object AppCrawler extends CommonLog {
                     master: String = "",
                     diff: Boolean = false,
                     template: String = "",
+                    demo:Boolean=false,
                     capability: Map[String, String] = Map[String, String]()
                   )
 
@@ -140,6 +141,9 @@ object AppCrawler extends CommonLog {
       opt[Unit]("verbose").abbr("vv") action { (_, c) =>
         c.copy(verbose = true)
       } text ("是否展示更多debug信息")
+      opt[Unit]("demo") action { (_, c) =>
+        c.copy(demo = true)
+      } text ("生成demo配置文件学习使用方法")
       help("help") text (
         """
           |示例
@@ -149,6 +153,9 @@ object AppCrawler extends CommonLog {
           |appcrawler -c xueqiu.json --capability udid=[你的udid] -a Snowball.app
           |appcrawler -c xueqiu.json -a Snowball.app -u 4730
           |appcrawler -c xueqiu.json -a Snowball.app -u http://127.0.0.1:4730/wd/hub
+          |
+          |#生成demo例子
+          |appcrawler --demo
           |
           |#启动已经安装过的app
           |appcrawler --capability appPackage=com.xueqiu.android,appActivity=.welcomeActivity
@@ -289,6 +296,14 @@ object AppCrawler extends CommonLog {
             template.read(s"${crawlerConf.resultDir}/elements.yml")
           }
           template.write(config.template, crawlerConf.resultDir+"/template/")
+          return
+        }
+
+        //生成demo示例文件
+        if(config.demo){
+          val file=scala.reflect.io.File("example.yml")
+          file.writeAll(crawlerConf.toYaml())
+          log.info(s"you can read ${file.jfile.getCanonicalPath} for demo example")
           return
         }
 
