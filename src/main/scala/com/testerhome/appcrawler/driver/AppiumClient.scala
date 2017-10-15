@@ -7,7 +7,7 @@ import javax.imageio.ImageIO
 
 import com.testerhome.appcrawler.{AppCrawler, CommonLog, DataObject, URIElement}
 import com.testerhome.appcrawler._
-import io.appium.java_client.AppiumDriver
+import io.appium.java_client.{AppiumDriver, TouchAction}
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
 import org.apache.log4j.Level
@@ -219,10 +219,13 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     if(screenHeight<=0){
       getDeviceInfo()
     }
-    retry(driver.swipe(
-      (screenWidth * startX).toInt, (screenHeight * startY).toInt,
-      (screenWidth * endX).toInt, (screenHeight * endY).toInt, 2000
-    )
+    retry(
+      driver.performTouchAction(
+        new TouchAction(driver)
+          .press((screenWidth * startX).toInt, (screenHeight * startY).toInt)
+          .moveTo((screenWidth * endX).toInt, (screenHeight * endY).toInt)
+          .release()
+      )
     )
   }
 
@@ -270,12 +273,12 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
   }*/
 
   override def tap(): this.type = {
-    driver.tap(1, currentElement, 100)
+    driver.performTouchAction(new TouchAction(driver).tap(currentElement))
     this
   }
 
   override def longTap(): this.type = {
-    driver.tap(1, currentElement, 3000)
+    driver.performTouchAction(new TouchAction(driver).longPress(currentElement))
     this
   }
 
@@ -450,6 +453,9 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     currentElement.sendKeys(content)
   }
 
+  override def launchApp(): Unit = {
+    driver.launchApp()
+  }
 
 
 }

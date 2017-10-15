@@ -49,6 +49,9 @@ trait WebDriver extends CommonLog {
   def back(): Unit = {}
 
   def backApp(): Unit = {}
+  def launchApp(): Unit ={
+
+  }
 
   def getPageSource(): String = { "" }
 

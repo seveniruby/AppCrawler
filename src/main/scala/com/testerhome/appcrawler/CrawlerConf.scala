@@ -5,8 +5,6 @@ import java.io.File
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import org.json4s.native.Serialization._
-import org.json4s.{DefaultFormats, FieldSerializer}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -115,11 +113,10 @@ class CrawlerConf {
 
 
   def loadByJson4s(file: String): Option[this.type] = {
-    implicit val formats = DefaultFormats + FieldSerializer[this.type]()
     if (new java.io.File(file).exists()) {
       println(s"load config from ${file}")
       println(Source.fromFile(file).mkString)
-      Some(read[this.type](Source.fromFile(file).mkString))
+      Some(TData.fromYaml[this.type](Source.fromFile(file).mkString))
     } else {
       println(s"conf file ${file} no exist ")
       None

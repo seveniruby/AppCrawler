@@ -6,8 +6,6 @@ import java.util.jar.JarFile
 
 import com.testerhome.appcrawler.CommonLog
 import com.testerhome.appcrawler.plugin.DemoPlugin
-import com.twitter.util.Eval
-import com.twitter.util.Eval.EvalSettings
 import com.testerhome.appcrawler._
 import com.testerhome.appcrawler.driver.AppiumClient
 import org.scalatest.FunSuite
@@ -27,18 +25,6 @@ import scala.tools.nsc.interpreter.IMain
 class TestRuntimes extends FunSuite with CommonLog{
 
   val fileName="/Users/seveniruby/projects/LBSRefresh/iOS_20160813203343/AppCrawler_8.scala"
-  test("eval"){
-    val result:Int=new Eval().inPlace("1+2")
-    assert(result == 3)
-  }
-  test("eval println"){
-    val result=new Eval().inPlace("println(\"xxx\")")
-  }
-
-  test("eval object invoke"){
-    new Eval().inPlace("com.testerhome.appcrawler.MiniAppium.hello(\"dddd\", 333)")
-  }
-
   test("MiniAppium dsl"){
     AppiumClient.dsl("hello(\"seveniruby\", 30000)")
     AppiumClient.dsl("hello(\"ruby\", 30000)")
@@ -47,13 +33,6 @@ class TestRuntimes extends FunSuite with CommonLog{
     AppiumClient.dsl("sleep(3)")
     AppiumClient.dsl("hello(\"xxxxx\")")
     AppiumClient.dsl("println(com.testerhome.appcrawler.AppCrawler.crawler.driver)")
-
-  }
-
-  test("compile"){
-    val file=new File(fileName)
-    val e=new Eval(Some(file))
-    log.info(e.compilerOutputDir)
 
   }
 
