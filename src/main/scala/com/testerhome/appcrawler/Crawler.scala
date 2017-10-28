@@ -210,7 +210,7 @@ class Crawler extends CommonLog {
 
     //爬虫结束
     stop()
-
+    sys.exit()
   }
 
   def restart(): Unit = {
@@ -355,7 +355,7 @@ class Crawler extends CommonLog {
 
   def needBackApp(): Boolean = {
     log.trace(conf.appWhiteList)
-    log.trace(appNameRecord.record)
+    log.trace(appNameRecord.last(10))
 
     //跳到了其他app. 排除点一次就没有的弹框
     if (conf.appWhiteList.forall(appNameRecord.last().toString.matches(_)==false)) {
@@ -980,6 +980,8 @@ class Crawler extends CommonLog {
       }
       case "backApp" => {
         driver.launchApp()
+        //todo: 改进等待
+        Thread.sleep(8000)
         /*if (conf.defaultBackAction.size > 0) {
           log.trace(conf.defaultBackAction)
           conf.defaultBackAction.foreach(Runtimes.eval)
@@ -1124,19 +1126,15 @@ class Crawler extends CommonLog {
         }
       }
       log.info("generate report finish")
-      sys.exit()
     }
   }
 
   def handleCtrlC(): Unit = {
     log.info("add shutdown hook")
-    Signal.handle(new Signal("INT"), new SignalHandler() {
-      def handle(sig: Signal) {
-        log.info("exit by INT")
-        signalInt += 1
-        stop()
-        sys.exit(1)
-      }
+    Signal.handle(new Signal("INT"), (sig: Signal) => {
+      log.info("exit by INT")
+      signalInt += 1
+      stop()
     })
   }
 }

@@ -14,7 +14,7 @@ class TestElementStore extends FunSuite with Matchers with CommonLog{
     val element_1=URIElement("a", "b", "c", "d", "e")
     val info_1=new ElementInfo()
     info_1.element=element_1
-    info_1.action=ElementStatus.Skiped
+    info_1.action=ElementStatus.Skipped
 
 
     val element_2=URIElement("aa", "bb", "cc", "dd", "ee")

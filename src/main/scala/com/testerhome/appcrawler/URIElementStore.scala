@@ -22,7 +22,7 @@ class URIElementStore {
       elementStore(element.toString)=ElementInfo()
       elementStore(element.toString).element=element
     }
-    elementStore(element.toString).action=ElementStatus.Skiped
+    elementStore(element.toString).action=ElementStatus.Skipped
   }
 
   def setElementClicked(element: URIElement): Unit = {
@@ -121,7 +121,7 @@ class URIElementStore {
 
   def isSkiped(ele: URIElement): Boolean = {
     if (elementStore.contains(ele.toString)) {
-      elementStore(ele.toString).action == ElementStatus.Skiped
+      elementStore(ele.toString).action == ElementStatus.Skipped
     } else {
       AppCrawler.log.trace(s"element=${ele.toLoc()} first show, need click")
       false
@@ -132,7 +132,7 @@ class URIElementStore {
 }
 
 object ElementStatus extends Enumeration {
-  val Ready, Clicked, Skiped = Value
+  val Ready, Clicked, Skipped = Value
 }
 
 case class ElementInfo(

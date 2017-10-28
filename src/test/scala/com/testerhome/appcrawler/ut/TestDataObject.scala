@@ -40,7 +40,7 @@ class TestDataObject extends FunSuite with CommonLog with Matchers{
   }
 
   test("json to yaml"){
-    val conf=new CrawlerConf().load("src/test/scala/com/xueqiu/qa/appcrawler/it/xueqiu_private.json")
+    val conf=new CrawlerConf().load("src/test/scala/com/xueqiu/qa/appcrawler/it/xueqiu_private.yml")
     log.info(conf)
     val yaml=DataObject.toYaml(conf)
     File("src/test/scala/com/xueqiu/qa/appcrawler/it/xueqiu_private.yml").writeAll(yaml)
@@ -57,7 +57,7 @@ class TestDataObject extends FunSuite with CommonLog with Matchers{
   }
 
   test("read json"){
-    val conf=DataObject.fromJson[CrawlerConf](Source.fromFile("src/test/scala/com/xueqiu/qa/appcrawler/it/xueqiu_private.json").getLines().mkString("\n"))
+    val conf=DataObject.fromJson[CrawlerConf](Source.fromFile("src/test/scala/com/xueqiu/qa/appcrawler/it/xueqiu_private.yml").getLines().mkString("\n"))
     log.info(conf.saveScreen)
   }
   test("map yaml"){
