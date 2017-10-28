@@ -275,8 +275,8 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
               xml
             }
           }
-          currentPageSource = RichData.toPrettyXML(xmlStr)
-          currentPageDom=RichData.toDocument(currentPageSource)
+          currentPageSource = XPathUtil.toPrettyXML(xmlStr)
+          currentPageDom=XPathUtil.toDocument(currentPageSource)
           return currentPageSource
         }
         case None => {

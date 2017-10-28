@@ -29,13 +29,14 @@ androidCapability:
   noReset: true
   automationName: uiautomator2
 iosCapability:
-  deviceName: "iPhone 6 Plus"
+  deviceName: "iPhone 7 Plus"
   bundleId: "com.xueqiu"
   screenshotWaitTimeout: "10"
-  platformVersion: "9.3"
+  platformVersion: "10.2"
   autoAcceptAlerts: "true"
+  automationName: xcuitest
   app: "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app"
-  appium: "http://127.0.0.1:4730/wd/hub"
+  appium: "http://127.0.0.1:4723/wd/hub"
 defineUrl:
 - "//*[@selected='true']/@text"
 - "//*[@selected='true']/@text"
@@ -43,7 +44,7 @@ defineUrl:
 baseUrl:
 - ".*MainActivity"
 - ".*SNBHomeView.*"
-maxDepth: 20
+maxDepth: 8
 headFirst: true
 enterWebView: true
 urlBlackList:
@@ -102,8 +103,6 @@ lastList:
 #tab低栏
 - //*[contains(@resource-id,'tabs')]//*
 blackList:
-- //*[contains(name(), 'TextField')]
-- //*[contains(name(), 'EditText')]
 #排除掉ios的状态栏
 - "//*[contains(name(), 'StatusBar')]//*"
 #股票分组编辑. 同一个imageview有2个图代表不同的状态. 没法区分, 只能设置为黑名单

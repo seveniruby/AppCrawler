@@ -1,9 +1,9 @@
 name := "AppCrawler"
-version := "2.1.1"
+version := "2.1.2"
 scalaVersion := "2.12.3"
 
 libraryDependencies ++= Seq(
-  "org.scala-lang" % "scala-compiler" % scalaVersion.value,
+  //"org.scala-lang" % "scala-compiler" % scalaVersion.value,
   "org.scala-lang" % "scala-library" % scalaVersion.value,
   //"org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "io.appium" % "java-client" % "5.0.4",
@@ -27,9 +27,6 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.3" ,
   "org.apache.directory.studio" % "org.apache.commons.io" % "2.4",
   "org.scalatra.scalate" %% "scalate-core" % "1.8.0",
-  "com.sksamuel.elastic4s" %% "elastic4s-core" % "5.1.5",
-  "com.sksamuel.elastic4s" %% "elastic4s-xpack-security" % "5.1.5",
-  "org.elasticsearch.client" % "transport" % "5.1.2",
   "org.apache.logging.log4j" % "log4j-core" % "2.7",
   "macaca.webdriver.client" % "macacaclient" % "2.0.7",
   "org.javassist" % "javassist" % "3.22.0-CR2",

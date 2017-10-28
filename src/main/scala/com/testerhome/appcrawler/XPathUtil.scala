@@ -16,7 +16,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by seveniruby on 16/3/26.
   */
-object RichData extends CommonLog {
+object XPathUtil extends CommonLog {
   var xpathExpr=List("name", "label", "value", "resource-id", "content-desc", "class", "text", "index")
 
   def toDocument(raw: String): Document = {
@@ -83,7 +83,8 @@ object RichData extends CommonLog {
           case "tag" => ""
           //case "index" => ""
           case "name" if kv._2.size>50 => ""
-          case "text" if newAttribute("tag").contains("Button")==false => ""
+            //todo: 优化长文本的展示
+          case "text" if newAttribute("tag").contains("Button")==false && kv._2.length>10 => ""
           case key if xpathExpr.contains(key) && kv._2.nonEmpty => s"@${kv._1}=" + "\"" + kv._2.replace("\"", "\\\"") + "\""
           case _ => ""
         }

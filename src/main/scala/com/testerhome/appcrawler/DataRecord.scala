@@ -6,7 +6,7 @@ import scala.collection.mutable.ListBuffer
   * Created by seveniruby on 16/8/25.
   */
 class DataRecord extends CommonLog {
-  private val record=ListBuffer[(Long, Any)]()
+  val record=ListBuffer[(Long, Any)]()
   //todo: 暂时只用2个就足够了
   private val size=10
   def append(any: Any): Unit ={

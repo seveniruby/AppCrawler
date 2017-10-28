@@ -35,4 +35,11 @@ class TestXueQiu extends FunSuite{
     )
   }
 
+  test("appcrawler base example"){
+    AppCrawler.main(Array("-c", "src/test/scala/com/testerhome/appcrawler/it/xueqiu_base.yml",
+      "-o", s"/tmp/xueqiu/${System.currentTimeMillis()}", "--verbose"
+    )
+    )
+  }
+
 }

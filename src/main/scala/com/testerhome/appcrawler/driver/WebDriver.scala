@@ -4,7 +4,7 @@ import java.io.File
 import java.util.concurrent.{Callable, Executors, TimeUnit, TimeoutException}
 
 import com.testerhome.appcrawler.{CommonLog, URIElement}
-import com.testerhome.appcrawler.{CommonLog, RichData, Runtimes}
+import com.testerhome.appcrawler.{CommonLog, XPathUtil, Runtimes}
 import org.openqa.selenium.Rectangle
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.w3c.dom.Document
@@ -197,17 +197,17 @@ trait WebDriver extends CommonLog {
     key match {
       //xpath
       case xpath if Array('/', '(').contains(xpath.head) => {
-        RichData.getListFromXPath(xpath, currentPageDom)
+        XPathUtil.getListFromXPath(xpath, currentPageDom)
       }
       case regex if key.contains(".*") || key.startsWith("^") => {
-        RichData.getListFromXPath("//*", currentPageDom).filter(m=>{
+        XPathUtil.getListFromXPath("//*", currentPageDom).filter(m=>{
           m("name").toString.matches(regex) ||
             m("label").toString.matches(regex) ||
             m("value").toString.matches(regex)
         })
       }
       case str: String => {
-        RichData.getListFromXPath("//*", currentPageDom).filter(m=>{
+        XPathUtil.getListFromXPath("//*", currentPageDom).filter(m=>{
           m("name").toString.contains(str) ||
             m("label").toString.contains(str) ||
             m("value").toString.contains(str)

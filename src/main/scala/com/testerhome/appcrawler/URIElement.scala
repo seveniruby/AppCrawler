@@ -20,7 +20,10 @@ case class URIElement(url: String="", tag: String="", id: String="", name: Strin
   def toFileName(): String ={
     //url_[parent id]-tag-id
     s"${url}_${"\"([^/0-9][^\" =]*)\"".r.findAllMatchIn(loc).map(_.subgroups).toList.flatten.
-      map(_.split("/").lastOption.getOrElse("")).mkString("-")}".replaceAll("[\\\\/?\"*<>\\|\n ]", ".").take(200)
+      map(_.split("/").lastOption.getOrElse("")).mkString("-")}"
+      .replaceAll("[\\\\/?\"*<>\\|\n ]", ".")
+      .replace("android.widget.", "")
+      .take(100)
   }
 
   /**

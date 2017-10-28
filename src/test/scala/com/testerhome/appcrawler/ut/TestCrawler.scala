@@ -2,14 +2,16 @@ package com.testerhome.appcrawler.ut
 
 import com.testerhome.appcrawler.URIElement
 import com.testerhome.appcrawler._
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Matchers}
 
 
 /**
   * Created by seveniruby on 15/11/28.
   */
-class TestCrawler extends FunSuite{
+class TestCrawler extends FunSuite with Matchers{
 
+
+  val crawler=new Crawler()
   test("getAllElements"){
     val xml=
       """
@@ -278,7 +280,7 @@ class TestCrawler extends FunSuite{
 
     val appium=new Crawler
     appium.driver.currentPageSource=xml
-    RichData.toDocument(appium.driver.currentPageSource)
+    XPathUtil.toDocument(appium.driver.currentPageSource)
     println(appium.driver.getListFromXPath("//UIAWindow[1]//*[@visible='true' and @name!='']"))
     println(appium.driver.getListFromXPath("//UIAWindow[1]//*[@visible='true' and @value!='']"))
   }
@@ -300,12 +302,21 @@ class TestCrawler extends FunSuite{
 */
 
   test("elements equal"){
-    val crawler=new Crawler()
     val u1=URIElement("a", "b", "c", "d","")
     val u2=URIElement("a", "b", "c", "d","")
     val u3=URIElement("a", "b", "c", "d","e")
     assert(u1==u2)
     crawler.store.setElementClicked(u1)
     assert(crawler.store.isClicked(u2)==true)
+  }
+
+  test("need back to app"){
+
+    crawler.appNameRecord.append("a")
+    crawler.appNameRecord.append("b")
+    crawler.conf.appWhiteList.append("a")
+    println(crawler.conf.appWhiteList)
+
+    crawler.needBackApp() should be equals (true)
   }
 }

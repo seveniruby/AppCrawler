@@ -300,6 +300,7 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
   override def getPageSource(): String = {
     currentPageSource=null
     currentPageDom=null
+    log.info("start to get page source from appium")
     //获取页面结构, 最多重试3次
     1 to 3 foreach (i => {
       asyncTask(20)(driver.getPageSource) match {
@@ -316,7 +317,7 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
               xml
             }
           }
-          Try(RichData.toDocument(xmlStr)) match {
+          Try(XPathUtil.toDocument(xmlStr)) match {
             case Success(v) => {
               currentPageDom = v
             }
@@ -327,11 +328,11 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
             }
           }
 
-          currentPageSource = RichData.toPrettyXML(xmlStr)
+          currentPageSource = XPathUtil.toPrettyXML(xmlStr)
           return currentPageSource
         }
         case None => {
-          log.trace("get page source error")
+          log.warn("get page source error")
         }
       }
     })

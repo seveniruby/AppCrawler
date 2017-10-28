@@ -1,13 +1,13 @@
 package com.testerhome.appcrawler.ut
 
 import com.testerhome.appcrawler.{CommonLog, URIElement}
-import com.testerhome.appcrawler.{CommonLog, RichData}
+import com.testerhome.appcrawler.{CommonLog, XPathUtil}
 import org.scalatest.{FunSuite, Matchers}
 
 /**
   * Created by seveniruby on 16/3/26.
   */
-class TestRichData extends FunSuite with Matchers with CommonLog{
+class TestXPathUtil extends FunSuite with Matchers with CommonLog{
 
 
   val xmlAndroid=
@@ -307,7 +307,7 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
       |
     """.stripMargin
 
-  val domAndroid=RichData.toDocument(xmlAndroid)
+  val domAndroid=XPathUtil.toDocument(xmlAndroid)
 
 
   val xmlIOS=
@@ -646,53 +646,53 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
     """.stripMargin
 
 
-  val domIOS=RichData.toDocument(xmlIOS)
+  val domIOS=XPathUtil.toDocument(xmlIOS)
 
 
   test("parse xpath"){
-    log.info(RichData.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", domAndroid))
-    val node=RichData.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", domAndroid)(0)
+    log.info(XPathUtil.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", domAndroid))
+    val node=XPathUtil.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", domAndroid)(0)
     println(node)
     node("resource-id") should be equals("com.xueqiu.android:id/action_search")
     node("content-desc") should be equals("输入股票名称/代码")
   }
 
   test("getPackage"){
-    val node=RichData.getListFromXPath("(//*[@package!=''])[1]", domAndroid)(0)
+    val node=XPathUtil.getListFromXPath("(//*[@package!=''])[1]", domAndroid)(0)
     println(node)
   }
   test("extra attribute from xpath"){
-    val node=RichData.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id", domAndroid)(0)
+    val node=XPathUtil.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id", domAndroid)(0)
     println(node)
     node.values.toList(0) should be equals("com.xueqiu.android:id/action_search")
 
     //todo:暂不支持
-    val value=RichData.getListFromXPath("string(//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id)", domAndroid)
+    val value=XPathUtil.getListFromXPath("string(//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id)", domAndroid)
     println(value)
 
   }
 
   test("get parent path"){
-    val value=RichData.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/parent::*", domAndroid)
+    val value=XPathUtil.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/parent::*", domAndroid)
     value.foreach(println)
     println(value)
 
-    val ancestor=RichData.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor-or-self::*", domAndroid)
+    val ancestor=XPathUtil.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor-or-self::*", domAndroid)
     ancestor.foreach(x=>if(x.contains("tag")) println(x("tag")))
     println(ancestor)
     ancestor.foreach(println)
 
-    val ancestorName=RichData.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor::name", domAndroid)
+    val ancestorName=XPathUtil.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor::name", domAndroid)
     ancestorName.foreach(println)
   }
 
   test("xpath parse"){
 
-    val value=RichData.getListFromXPath("//UIAApplication[@name=\"雪球\" and @path=\"/0\"]/UIAWindow[@path=\"/0/0\"]/UIAStaticText[@name=\"这里可以批量实盘买卖组合持仓股票\" and @path=\"/0/0/8\"]", domIOS)
+    val value=XPathUtil.getListFromXPath("//UIAApplication[@name=\"雪球\" and @path=\"/0\"]/UIAWindow[@path=\"/0/0\"]/UIAStaticText[@name=\"这里可以批量实盘买卖组合持仓股票\" and @path=\"/0/0/8\"]", domIOS)
     value.foreach(println)
     println(value)
 
-    val appName=RichData.getListFromXPath("//UIAApplication", domIOS)
+    val appName=XPathUtil.getListFromXPath("//UIAApplication", domIOS)
     appName.foreach(println)
     println(appName.head.getOrElse("name", ""))
     appName.head.getOrElse("name", "") should be equals("雪球")
@@ -725,13 +725,13 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
   }
 
   test("get all leaf node"){
-    val value=RichData.getListFromXPath("//node()[not(node())]", domAndroid)
+    val value=XPathUtil.getListFromXPath("//node()[not(node())]", domAndroid)
     value.foreach(log.info)
   }
 
 
   test("text xpath"){
-    val value=RichData.getListFromXPath("//*[@text='买什么']", domAndroid)
+    val value=XPathUtil.getListFromXPath("//*[@text='买什么']", domAndroid)
     value.foreach(log.info)
   }
 
@@ -739,19 +739,19 @@ class TestRichData extends FunSuite with Matchers with CommonLog{
   test("get back button"){
 
 
-    val value1=RichData.getListFromXPath("//*[@label='nav_icon_back']", domIOS)
+    val value1=XPathUtil.getListFromXPath("//*[@label='nav_icon_back']", domIOS)
     value1.foreach(log.info)
 
-    val value2=RichData.getListFromXPath("//UIANavigationBar/UIAButton[@label=\"nav_icon_back\"]", domIOS)
+    val value2=XPathUtil.getListFromXPath("//UIANavigationBar/UIAButton[@label=\"nav_icon_back\"]", domIOS)
     value2.foreach(log.info)
   }
 
   test("同类型的控件是否具备selected=true属性"){
-    val nodes=RichData.getListFromXPath("//*[../*[@selected='true']]", domAndroid)
+    val nodes=XPathUtil.getListFromXPath("//*[../*[@selected='true']]", domAndroid)
     nodes.foreach(x=>log.info(x.getOrElse("xpath", "")))
 
     log.info("两层以上")
-    val nodes2=RichData.getListFromXPath("//*[../../*[@selected='true']]", domAndroid)
+    val nodes2=XPathUtil.getListFromXPath("//*[../../*[@selected='true']]", domAndroid)
     nodes2.foreach(x=>log.info(x.getOrElse("xpath", "")))
   }
 

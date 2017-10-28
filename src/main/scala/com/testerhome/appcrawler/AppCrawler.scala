@@ -184,7 +184,7 @@ object AppCrawler extends CommonLog {
           GA.logLevel = Level.TRACE
           log.info(s"verbose=${config.verbose}")
           log.info(s"set global log level to ${GA.logLevel}")
-          RichData.initLog()
+          XPathUtil.initLog()
         }
         log.trace("config=")
         log.trace(config)

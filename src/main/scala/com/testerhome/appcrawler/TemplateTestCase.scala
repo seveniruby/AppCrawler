@@ -60,13 +60,13 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
           """.stripMargin
           )
           */
-          val req = RichData.toDocument(ele.reqDom)
-          val res = RichData.toDocument(ele.resDom)
+          val req = XPathUtil.toDocument(ele.reqDom)
+          val res = XPathUtil.toDocument(ele.resDom)
           log.debug(ele.reqDom)
           AppCrawler.crawler.conf.asserts.foreach(assert => {
             val given = assert.getOrElse("given", List[String]()).asInstanceOf[List[String]]
-            log.info(given.map(g => RichData.getListFromXPath(g, req).size))
-            if (given.forall(g => RichData.getListFromXPath(g, req).size > 0) == true) {
+            log.info(given.map(g => XPathUtil.getListFromXPath(g, req).size))
+            if (given.forall(g => XPathUtil.getListFromXPath(g, req).size > 0) == true) {
               log.info(s"asserts match")
               val existAsserts = assert.getOrElse("then", List[String]()).asInstanceOf[List[String]]
               val cp = new scalatest.Checkpoints.Checkpoint
@@ -74,7 +74,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
                 log.debug(existAssert)
                 cp {
                   withClue(s"${existAssert} 不存在\n") {
-                    RichData.getListFromXPath(existAssert, res).size should be > 0
+                    XPathUtil.getListFromXPath(existAssert, res).size should be > 0
                   }
                 }
               })
@@ -85,7 +85,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
           })
 
           AppCrawler.crawler.conf.testcase.steps.foreach(step => {
-            if (RichData.getListFromXPath(step.when.xpath, req)
+            if (XPathUtil.getListFromXPath(step.when.xpath, req)
               .map(_.getOrElse("xpath", ""))
               .headOption == Some(ele.element.loc)
             ) {
@@ -97,7 +97,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
                   log.debug(existAssert)
                   cp {
                     withClue(s"${existAssert} 不存在\n") {
-                      RichData.getListFromXPath(existAssert, res).size should be > 0
+                      XPathUtil.getListFromXPath(existAssert, res).size should be > 0
                     }
                   }
                 })

@@ -144,6 +144,7 @@ class Crawler extends CommonLog {
     //driver.manage().logs().getAvailableLogTypes().toArray.foreach(log.info)
     //设定结果目录
     runStartupScript()
+    println("append current app name to appWhiteList")
     conf.appWhiteList.append(appNameRecord.last().toString)
 
     if(conf.testcase!=null){
@@ -218,6 +219,8 @@ class Crawler extends CommonLog {
     log.info("set app to null to restart appium")
     conf.capability ++= Map("app"->"")
     setupAppium()
+    //todo: 采用轮询
+    Thread.sleep(8000)
     refreshPage()
     doElementAction(URIElement(s"${currentUrl}", "", "", "",
       s"restart-${store.clickedElementsList.size}"), "")
@@ -351,8 +354,11 @@ class Crawler extends CommonLog {
   }
 
   def needBackApp(): Boolean = {
+    log.trace(conf.appWhiteList)
+    log.trace(appNameRecord.record)
+
     //跳到了其他app. 排除点一次就没有的弹框
-    if (conf.appWhiteList.forall(appNameRecord.last().toString.matches(_)==false) && appNameRecord.last(2).distinct.size>1) {
+    if (conf.appWhiteList.forall(appNameRecord.last().toString.matches(_)==false)) {
       log.warn(s"not in app white list ${conf.appWhiteList}")
       log.warn(s"jump to other app appName=${appNameRecord.last()} lastAppName=${appNameRecord.pre()}")
       setElementAction("backApp")
@@ -457,7 +463,7 @@ class Crawler extends CommonLog {
       }
 
       //高度小就跳过
-      if(height<50 && width<50){
+      if(height<30 && width<30) {
         log.info(bounds)
         log.info(driver.screenHeight)
         log.info("small")
@@ -694,10 +700,10 @@ class Crawler extends CommonLog {
     allElements.foreach(log.debug)
 
     allElements = allElements.filter(!store.isSkiped(_))
-    log.info(s"fresh elements size=${allElements.length}")
+    log.info(s"all - skiped fresh elements size=${allElements.length}")
     //记录未被点击的元素
     allElements.foreach(e => {
-      log.debug(e)
+      log.trace(e)
       store.saveElement(e)
     })
     allElements
@@ -973,7 +979,9 @@ class Crawler extends CommonLog {
         back()
       }
       case "backApp" => {
-        if (conf.defaultBackAction.size > 0) {
+        driver.launchApp()
+        /*if (conf.defaultBackAction.size > 0) {
+          log.trace(conf.defaultBackAction)
           conf.defaultBackAction.foreach(Runtimes.eval)
         } else {
           driver.backApp()
@@ -982,7 +990,7 @@ class Crawler extends CommonLog {
             driver.launchApp()
           }
 
-        }
+        }*/
       }
       case "monkey" => {
         driver.event(element.name.toInt)

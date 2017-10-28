@@ -22,7 +22,7 @@ class CrawlerConf {
   var reportTitle = ""
   var screenshotTimeout = 20
   var currentDriver = "Android"
-  var tagLimitMax = 6
+  var tagLimitMax = 3
   var tagLimit = ListBuffer[Map[String, Any]]()
   //var tagLimit=scala.collection.mutable.Map[String, Int]()
   var showCancel = false
@@ -98,10 +98,10 @@ class CrawlerConf {
   var testcase=TestCase(
     name="TesterHome AppCrawler",
     steps = List(
-      Step(given = null, when = null, xpath="//*", action = "driver.swipe(0.9, 0,5, 0.1, 0.5)", then=null),
-      Step(given = null, when = null, xpath="//*", action = "driver.swipe(0.9, 0,5, 0.1, 0.5)", then=null),
-      Step(given = null, when = null, xpath="//*", action = "driver.swipe(0.9, 0,5, 0.1, 0.5)", then=null),
-      Step(given = null, when = null, xpath="//*", action = "driver.swipe(0.9, 0,5, 0.1, 0.5)", then=null)
+      Step(given = null, when = null, xpath="//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then=null),
+      Step(given = null, when = null, xpath="//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then=null),
+      Step(given = null, when = null, xpath="//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then=null),
+      Step(given = null, when = null, xpath="//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then=null)
     )
   )
 

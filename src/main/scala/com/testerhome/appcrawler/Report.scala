@@ -65,10 +65,10 @@ trait Report extends CommonLog {
     changeTitle()
   }
 
-  def changeTitle(): Unit ={
+  def changeTitle(title:String=Report.title): Unit ={
     val originTitle="ScalaTest Results"
     val indexFile=reportPath+"/index.html"
-    val newContent=Source.fromFile(indexFile).mkString.replace(originTitle, Report.title)
+    val newContent=Source.fromFile(indexFile).mkString.replace(originTitle, title)
     scala.reflect.io.File(indexFile).writeAll(newContent)
   }
 
