@@ -3,6 +3,7 @@ package com.testerhome.appcrawler.driver
 import java.awt.{BasicStroke, Color}
 import java.io.File
 import java.net.URL
+import java.time.Duration
 import javax.imageio.ImageIO
 
 import com.testerhome.appcrawler.{AppCrawler, CommonLog, DataObject, URIElement}
@@ -223,7 +224,8 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
       driver.performTouchAction(
         new TouchAction(driver)
           .press((screenWidth * startX).toInt, (screenHeight * startY).toInt)
-          .moveTo((screenWidth * endX).toInt, (screenHeight * endY).toInt)
+          .moveTo((screenWidth * (endX-startX)).toInt, (screenHeight * (endY-startY)).toInt)
+          //.waitAction(Duration.ofSeconds(1))
           .release()
       )
     )

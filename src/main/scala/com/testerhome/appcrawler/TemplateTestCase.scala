@@ -28,7 +28,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
       log.info("show all elements")
       //把未遍历的放到后面
       sortedElements.filter(_.action == ElementStatus.Clicked) ++
-        sortedElements.filter(_.action == ElementStatus.Skipped) ++
+        //sortedElements.filter(_.action == ElementStatus.Skipped) ++
         sortedElements.filter(_.action == ElementStatus.Ready)
     } else {
       log.info("only show clicked elements")
