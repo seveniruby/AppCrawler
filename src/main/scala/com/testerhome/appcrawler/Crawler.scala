@@ -47,7 +47,8 @@ class Crawler extends CommonLog {
   //滑动最大重试次数
   var swipeMaxRetry = 2
   var stopAll = false
-  var signalInt = 0
+  val signals = new DataRecord()
+  signals.append(1)
   private val startTime = new Date().getTime
 
   val urlStack = mutable.Stack[String]()
@@ -576,6 +577,7 @@ class Crawler extends CommonLog {
     //如果跳回到某个页面, 就弹栈到特定的页面, 比如回到首页
     if (urlStack.contains(currentUrl)) {
       while (urlStack.head != currentUrl) {
+        log.info("pop urlStack")
         urlStack.pop()
       }
     } else {
@@ -586,6 +588,7 @@ class Crawler extends CommonLog {
     }
     //判断新的url堆栈中是否包含baseUrl, 如果有就清空栈记录并从新计数
     if (conf.baseUrl.map(urlStack.head.matches(_)).contains(true)) {
+      log.info("clear urlStack")
       urlStack.clear()
       urlStack.push(currentUrl)
     }
@@ -1116,24 +1119,28 @@ class Crawler extends CommonLog {
 
   def stop(): Unit = {
     stopAll = true
-    if (signalInt < 2) {
-      Try(pluginClasses.foreach(_.stop())) match {
-        case Success(v)=> {}
-        case Failure(e) => {
-          log.error(e.getMessage)
-          log.error(e.getCause)
-          e.getStackTrace.foreach(log.error)
-        }
+    log.info(s"ctrl c interval = ${signals.intervalMS()}")
+    Try(pluginClasses.foreach(_.stop())) match {
+      case Success(v)=> {}
+      case Failure(e) => {
+        log.error(e.getMessage)
+        log.error(e.getCause)
+        e.getStackTrace.foreach(log.error)
       }
-      log.info("generate report finish")
     }
+    log.info("generate report finish")
+
+    if (signals.intervalMS() < 2000) {
+      System.exit(1)
+    }
+
   }
 
   def handleCtrlC(): Unit = {
     log.info("add shutdown hook")
     Signal.handle(new Signal("INT"), (sig: Signal) => {
       log.info("exit by INT")
-      signalInt += 1
+      signals.append(1)
       stop()
     })
   }

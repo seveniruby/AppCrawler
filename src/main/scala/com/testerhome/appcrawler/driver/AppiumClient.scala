@@ -45,11 +45,13 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
   }
 
 
+  //todo: to be support
   def shell(command:String): Unit ={
-    sys.props("os.name").toLowerCase match {
+    val commandFull=sys.props("os.name").toLowerCase match {
       case x if x contains "windows" => Seq("cmd", "/C") ++ command
       case _ => command
     }
+    log.info(commandFull)
   }
 
   //todo: 集成appium进程管理

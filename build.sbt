@@ -1,6 +1,6 @@
 name := "AppCrawler"
 version := "2.1.2"
-scalaVersion := "2.12.3"
+scalaVersion := "2.12.4"
 
 libraryDependencies ++= Seq(
   //"org.scala-lang" % "scala-compiler" % scalaVersion.value,

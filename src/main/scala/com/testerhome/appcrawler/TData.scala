@@ -132,6 +132,7 @@ object TData {
 
 
   //扁平化
+  //todo: 去掉类型检查警告
   def flatten(data: Map[String, Any]): mutable.Map[String, Any] = {
     val stack = new mutable.Stack[String]()
     val result = mutable.Map[String, Any]()
@@ -212,27 +213,6 @@ object TData {
   }
 
 
-  //两个nested的结构合并
-  def deepMerge[K](map: Map[K, _], that: Map[K, _]): Map[K, _] = {
-    (for (k <- map.keys ++ that.keys) yield {
-      val newValue =
-        (map.get(k), that.get(k)) match {
-          case (Some(v), None) => v
-          case (None, Some(v)) => v
-          case (Some(v1), Some(v2)) => {
-            (v1, v2) match {
-              case (v1: Map[K, _], v2: Map[K, _]) => deepMerge(v1, v2)
-              case (v1: List[_], v2: List[_]) => v1 ++ v2
-              case (v1: Array[_], v2: Array[_]) => v1 ++ v2
-              case (v1, null) => v1
-              case _ => v2
-            }
-          }
-        }
-      k -> newValue
-    }).toMap
-  }
-
   //从文本中给出结构化的解析结果
   def from(content:String): Map[String, Any] ={
     content.trim.take(10) match {
@@ -282,7 +262,7 @@ object TData {
       0.until(children.getLength).map(j=>children.item(j).getNodeValue)
     }).flatten.toList
   }
-  def xpathSingle(raw:String, path:String, encoding:String="UTF-8"): Any ={
+  private def xpathSingle(raw:String, path:String, encoding:String="UTF-8"): Any ={
     val doc=builder.parse(IOUtils.toInputStream(raw, encoding))
     xpathObject.compile(path).evaluate(doc, XPathConstants.STRING)
   }
@@ -345,11 +325,11 @@ object TData {
   //todo: 递归解析
   def toHashMap(someObject: Any): Any ={
     someObject match {
-      case kv: Map[String, _] => {
+      case kv: Map[_, _] => {
         val h=new java.util.HashMap[String, Any]()
         kv.foreach{
           case (k,v)=> {
-            h.put(k, toHashMap(v))
+            h.put(k.toString, toHashMap(v))
           }
         }
         h

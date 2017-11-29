@@ -42,4 +42,17 @@ class TestXueQiu extends FunSuite{
     )
   }
 
+  test("appcrawler base example ios"){
+
+    val app = "/Users/seveniruby/projects/ios-uicatalog/build/Debug-iphonesimulator/UICatalog.app"
+    AppCrawler.main(Array("-c", "src/test/scala/com/testerhome/appcrawler/it/xueqiu_base.yml",
+      "-a", app,
+      //"-a", "/Users/seveniruby/projects/snowball-ios/DerivedData/Snowball/Build/Products/Debug-iphonesimulator/Snowball.app",
+      "-o", s"/tmp/xueqiu/${System.currentTimeMillis()}", "--verbose"
+    )
+    )
+  }
+
+
+
 }
