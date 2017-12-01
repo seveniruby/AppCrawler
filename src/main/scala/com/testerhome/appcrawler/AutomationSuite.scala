@@ -14,6 +14,9 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
     crawler = configMap.get("crawler").get.asInstanceOf[Crawler]
   }
 
+
+  //todo: 利用suite排序进入延迟执行
+
   test("run steps") {
     log.info("testcase start")
     val conf = crawler.conf
@@ -32,16 +35,19 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
         val xpath = when.xpath
         val action = when.action
 
-        driver.getListFromXPath(xpath).headOption match {
+        driver.findMapWithRetry(xpath).headOption match {
           case Some(v) => {
             val ele = URIElement(v, "Steps")
             crawler.doElementAction(ele, action)
           }
           case None => {
-            log.info("not found")
             //用于生成steps的用例
             val ele = URIElement("Steps", "", "", "NOT_FOUND", xpath)
             crawler.doElementAction(ele, "")
+            withClue("NOT_FOUND"){
+              log.info(xpath)
+              fail(s"ELEMENT_NOT_FOUND xpath=${xpath}")
+            }
           }
         }
       }
@@ -49,17 +55,16 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
 
       if(step.then!=null) {
         step.then.foreach(existAssert => {
-          log.debug(existAssert)
           cp {
             withClue(s"${existAssert} 不存在\n") {
-              driver.getListFromXPath(existAssert).size should be > 0
+              val result=driver.findMap(existAssert)
+              log.info(s"${existAssert}\n${TData.toJson(result)}")
+              result.size should be > 0
             }
           }
-
         })
       }
     })
-
 
     cp.reportAll()
     log.info("finish run steps")

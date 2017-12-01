@@ -70,28 +70,8 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
               val req = XPathUtil.toDocument(ele.reqDom)
               val res = XPathUtil.toDocument(ele.resDom)
               log.debug(ele.reqDom)
-              AppCrawler.crawler.conf.asserts.foreach(assert => {
-                val given = assert.getOrElse("given", List[String]()).asInstanceOf[List[String]]
-                log.info(given.map(g => XPathUtil.getListFromXPath(g, req).size))
-                if (given.forall(g => XPathUtil.getListFromXPath(g, req).size > 0) == true) {
-                  log.info(s"asserts match")
-                  val existAsserts = assert.getOrElse("then", List[String]()).asInstanceOf[List[String]]
-                  val cp = new scalatest.Checkpoints.Checkpoint
-                  existAsserts.foreach(existAssert => {
-                    log.debug(existAssert)
-                    cp {
-                      withClue(s"${existAssert} 不存在\n") {
-                        XPathUtil.getListFromXPath(existAssert, res).size should be > 0
-                      }
-                    }
-                  })
-                  cp.reportAll()
-                } else {
-                  log.info("not match")
-                }
-              })
 
-              AppCrawler.crawler.conf.testcase.steps.foreach(step => {
+              AppCrawler.crawler.conf.assert.steps.foreach(step => {
                 if (XPathUtil.getListFromXPath(step.when.xpath, req)
                   .map(_.getOrElse("xpath", ""))
                   .headOption == Some(ele.element.loc)

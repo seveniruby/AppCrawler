@@ -1,6 +1,7 @@
 logLevel := Level.Warn
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.2.2")
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.5")
+addSbtPlugin("com.lightbend.sbt" % "sbt-proguard" % "0.3.0")
 //addSbtPlugin("org.scala-debugger" % "sbt-scala-debugger" % "1.1.0-M3")
 //addSbtPlugin("org.scala-debugger" % "sbt-jdi-tools" % "1.0.0")
 //addSbtPlugin("org.senkbeil" %% "sbt-grus" % "0.1.0")

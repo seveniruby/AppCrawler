@@ -136,11 +136,11 @@ testcase:
 #  times: 20
 #startupActions:
 #- println(driver)
-#beforeElementAction:
-#- xpath: //*[@resource-id="com.shafa.market:id/nav"]//android.widget.TextView
-#  action: MiniAppium.event(21)
-#- Thread.sleep(3000)
-#- println(driver.getPageSource())
+beforeElementAction:
+- xpath: //*[@resource-id="com.shafa.market:id/nav"]//android.widget.TextView
+  action: MiniAppium.event(21)
+- Thread.sleep(3000)
+- println(driver.getPageSource())
 #afterElementAction:
 #- println(driver)
 #- Thread.sleep(1000)

@@ -21,7 +21,7 @@ class TagLimitPlugin extends Plugin {
     log.trace(s"tag path = ${key}")
     if (!tagLimit.contains(key)) {
       //跳过具备selected=true的菜单栏
-      getCrawler().driver.getListFromXPath("//*[@selected='true']").foreach(m=>{
+      getCrawler().driver.findMap("//*[@selected='true']").foreach(m=>{
         val element=getCrawler().getUrlElementByMap(m)
         tagLimit(element.toTagPath())=20
         log.info(s"tagLimit[${element.toTagPath()}]=20")

@@ -116,7 +116,7 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
   }
 
   def nodes(): List[Map[String, Any]] = {
-    getListFromXPath(loc)
+    findMap(loc)
   }
 
 
@@ -142,7 +142,7 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
     */
   def tree(key: String = "//*", index: Int = 0): Map[String, Any] = {
     log.info(s"find by key = ${key} index=${index}")
-    val nodes = getListFromXPath(key)
+    val nodes = findMap(key)
     nodes.foreach(node => {
       log.debug(s"index=${nodes.indexOf(node)}")
       node.foreach(kv => {
@@ -368,7 +368,7 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
 
   override def getAppName(): String = {
     val xpath="(//*[@package!=''])[1]"
-    getListFromXPath(xpath).head.getOrElse("package", "").toString
+    findMap(xpath).head.getOrElse("package", "").toString
   }
 
   override def getUrl(): String = {

@@ -67,13 +67,10 @@ object XPathUtil extends CommonLog {
       if (newAttribute.getOrElse("name", "") == newAttribute.getOrElse("label", "")) {
         newAttribute = newAttribute - "name"
       }
+      //有限取content-desc
       if (newAttribute.getOrElse("content-desc", "") == newAttribute.getOrElse("resource-id", "")) {
-        newAttribute = newAttribute - "content-desc"
+        newAttribute = newAttribute - "resource-id"
       }
-      if(newAttribute.getOrElse("resource-id", "").nonEmpty){
-        newAttribute=Map("resource-id"-> newAttribute.getOrElse("resource-id", "") )
-      }
-
 
       var xpathSingle = newAttribute.map(kv => {
         //todo: appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
@@ -84,7 +81,11 @@ object XPathUtil extends CommonLog {
           //case "index" => ""
           case "name" if kv._2.size>50 => ""
             //todo: 优化长文本的展示
-          case "text" if newAttribute("tag").contains("Button")==false && kv._2.length>10 => ""
+          case "text" if newAttribute("tag").contains("Button")==false && kv._2.length>10 => {
+            log.trace(kv)
+            log.trace(newAttribute)
+            ""
+          }
           case key if xpathExpr.contains(key) && kv._2.nonEmpty => s"@${kv._1}=" + "\"" + kv._2.replace("\"", "\\\"") + "\""
           case _ => ""
         }

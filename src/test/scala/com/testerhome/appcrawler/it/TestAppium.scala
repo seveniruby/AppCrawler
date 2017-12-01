@@ -2,7 +2,6 @@ package com.testerhome.appcrawler.it
 
 import java.net.URL
 
-import com.sun.jdi.connect.spi.TransportService.Capabilities
 import com.testerhome.appcrawler.driver.AppiumClient
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.remote.{AndroidMobileCapabilityType, MobileCapabilityType}
@@ -29,7 +28,5 @@ class TestAppium extends FunSuite{
     capa.setCapability(AndroidMobileCapabilityType.APP_ACTIVITY, ".view.WelcomeActivityAlias")
     capa.setCapability(MobileCapabilityType.DEVICE_NAME, "demo")
     val driver=new AndroidDriver[WebElement](new URL("http://127.0.0.1:4723/wd/hub/"), capa)
-
-
   }
 }

@@ -27,15 +27,18 @@ androidCapability:
   appium: "http://127.0.0.1:4723/wd/hub"
   fullReset: false
   noReset: true
-  automationName: uiautomator2
+  automationName: appium
+  unicodeKeyboard: true
 iosCapability:
   deviceName: "iPhone 7 Plus"
-  bundleId: "com.xueqiu"
+  #bundleId: "com.xueqiu"
+  bundleId: com.example.apple-samplecode.UICatalog
   screenshotWaitTimeout: "10"
   platformVersion: "10.2"
   autoAcceptAlerts: "true"
   automationName: xcuitest
-  app: "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app"
+  app: /Users/seveniruby/projects/ios-uicatalog/build/Debug-iphonesimulator/UICatalog.app
+  #app: "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app"
   appium: "http://127.0.0.1:4723/wd/hub"
 defineUrl:
 - "//*[@selected='true']/@text"
@@ -80,6 +83,7 @@ selectedList:
 #android非空标签
 - //*[@clickable="true"]//android.widget.TextView[string-length(@text)>0 and string-length(@text)<20]
 - //android.widget.EditText
+- //android.widget.TextView[string-length(@text)>0 and string-length(@text)<20 and @clickable="true"]
 #ios
 - //*[contains(name(), 'Text') and string-length(@value)>0 and string-length(@value)<20 ]
 #通用的button和image
@@ -147,7 +151,7 @@ blackList:
 - "球友.*"
 - ".*开户.*"
 triggerActions:
-- xpath: "//*[contains(@resource-id, 'iv_close')]"
+#- xpath: "//*[contains(@resource-id, 'iv_close')]"
 - xpath: "//*[@resource-id='com.xueqiu.android:id/button_login']"
   times: 1
 - action: "15600534760"
@@ -155,9 +159,12 @@ triggerActions:
   times: 1
 - xpath: "//*[@resource-id='com.xueqiu.android:id/login_account']"
   times: 1
-- action: "hys2xueqiu"
-  xpath: "//*[@resource-id='com.xueqiu.android:id/login_password']"
+- action: "click"
+  xpath: //*[@password='true']
   times: 1
+- action: "1234"
+  xpath: //*[@password='true']
+  times: 2
 - xpath: "button_next"
   times: 1
 - action: "15600534760"
@@ -166,7 +173,7 @@ triggerActions:
 - action: "15600534760"
   xpath: "//*[contains(name(), 'TextField') and contains(@value, '手机')]"
   times: 1
-- action: "hys2xueqiu"
+- action: "dsssssdd"
   xpath: "//*[contains(name(), 'SecureTextField')]"
   times: 1
 - xpath: "//*[contains(name(), 'Button') and contains(@name, '登 录')]"
@@ -177,7 +184,7 @@ triggerActions:
   times: 2
 - xpath: "//*[@name='登录']"
   times: 2
-- action: "scroll left"
+- action: "driver.swipe(0.5, 0.1, 0.5, 0.9)"
   xpath: "专题"
   times: 1
 - xpath: "点此.*"
@@ -200,10 +207,6 @@ triggerActions:
 #一个神奇的符号
 - xpath: //*[@label='✕' and visible='true']
   times: 10
-- action: 123
-  xpath: //*[contains(name(), "EditText")]
-  times: 10
-  pri: 0
 - xpath: 我知道了
 tagLimit:
 - xpath: //*[../*[@selected='true']]

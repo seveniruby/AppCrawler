@@ -30,26 +30,29 @@ class CrawlerConf {
   var maxTime = 3600 * 3
   /** 结果目录 */
   var resultDir = ""
+  //todo: 支持多设备
+  /** 设备列表，支持兼容性测试 */
+  var devices = ListBuffer(
+    Map[String, Any](
+      "platformName" -> "",
+      "platformVersion" -> "9.2",
+      "deviceName" -> "iPhone 6"
+    ))
   /** appium的capability通用配置 */
   var capability = Map[String, Any](
-    "app" -> "",
-    "platformName" -> "",
-    "platformVersion" -> "",
-    "deviceName" -> "demo",
-    "noReset" -> "false",
-    "autoWebview" -> "false",
-    "autoLaunch" -> "true"
+    "noReset" -> "true",
+    "fullReset" -> "false",
   )
   /** android专属配置 最后会和capability合并 */
   var androidCapability = Map[String, Any](
+    "app" -> "",
     "appPackage" -> "",
     "appActivity" -> ""
   )
   var iosCapability = Map[String, Any](
+    "app" -> "",
     "bundleId" -> "",
     "autoAcceptAlerts" -> "true",
-    "platformVersion" -> "9.2",
-    "deviceName" -> "iPhone 6"
   )
   var xpathAttributes = List("name", "label", "value", "resource-id", "content-desc", "index", "text")
   /** 用来确定url的元素定位xpath 他的text会被取出当作url因素 */
@@ -93,15 +96,18 @@ class CrawlerConf {
   /** 引导规则. name, value, times三个元素组成 */
   var triggerActions = ListBuffer[scala.collection.mutable.Map[String, Any]]()
   //todo: 用watch代替triggerActions
-  var autoCrawl: Boolean=true
-  var asserts = ListBuffer[Map[String, Any]]()
-  var testcase=TestCase(
-    name="TesterHome AppCrawler",
+  var autoCrawl: Boolean = true
+  var assert = TestCase(
+    name = "TesterHome AppCrawler",
+    steps = List()
+  )
+  var testcase = TestCase(
+    name = "TesterHome AppCrawler",
     steps = List(
-      Step(given = null, when = null, xpath="//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then=null),
-      Step(given = null, when = null, xpath="//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then=null),
-      Step(given = null, when = null, xpath="//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then=null),
-      Step(given = null, when = null, xpath="//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then=null)
+      Step(given = null, when = null, xpath = "//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then = null),
+      Step(given = null, when = null, xpath = "//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then = null),
+      Step(given = null, when = null, xpath = "//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then = null),
+      Step(given = null, when = null, xpath = "//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then = null)
     )
   )
 
@@ -193,6 +199,9 @@ class CrawlerConf {
 }
 
 
-case class TestCase(name:String="", steps:List[Step]=List[Step]())
-case class Step(given: List[String], var when: When, then:List[String], xpath:String, action:String)
-case class When(xpath:String, action:String)
+case class TestCase(name: String = "", steps: List[Step] = List[Step]())
+
+//given表示多个条件满足 when表示执行多个动作，then表示多个断言，xpath和action为when的简写
+case class Step(given: List[String], var when: When, then: List[String], xpath: String, action: String)
+
+case class When(xpath: String, action: String)

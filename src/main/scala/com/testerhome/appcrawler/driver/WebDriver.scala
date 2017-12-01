@@ -193,7 +193,7 @@ trait WebDriver extends CommonLog {
   }
 
   //todo: xpath 2.0 support
-  def getListFromXPath(key:String): List[Map[String, Any]] ={
+  def findMap(key:String): List[Map[String, Any]] ={
     key match {
       //xpath
       case xpath if Array('/', '(').contains(xpath.head) => {
@@ -215,5 +215,31 @@ trait WebDriver extends CommonLog {
       }
     }
   }
+
+  //支持宽松查找，自动刷新查找，自动滚动查找
+  def findMapWithRetry(key:String): List[Map[String, Any]] ={
+    var array=findMap(key)
+    if(array.size==0){
+      getPageSource()
+      log.trace("retry 1")
+      array=findMap(key)
+    }
+
+    if(array.size==0){
+      getPageSource()
+      log.trace("retry 2")
+      array=findMap(key)
+    }
+
+    if(array.size==0){
+      getPageSource()
+      log.trace("retry 3")
+      array=findMap(key)
+    }
+    return array
+
+  }
+
+
 
 }

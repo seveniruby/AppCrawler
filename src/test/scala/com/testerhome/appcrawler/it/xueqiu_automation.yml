@@ -3,7 +3,7 @@ pluginList:
 - "com.testerhome.appcrawler.plugin.FlowDiff"
 #- "com.testerhome.appcrawler.plugin.ProxyPlugin"
 logLevel: "TRACE"
-saveScreen: true
+saveScreen: false
 showCancel: true
 reportTitle: AppCrawler雪球内部版
 screenshotTimeout: 20
@@ -18,7 +18,9 @@ capability:
   platformName: ""
   autoWebview: "false"
   autoLaunch: "true"
-  noReset: "false"
+  noReset: "true"
+  fullReset: "false"
+  dontStopAppOnReset: "true"
 androidCapability:
   deviceName: "demo"
   appPackage: "com.xueqiu.android"
@@ -129,17 +131,16 @@ triggerActions:
   times: 10
   pri: 0
 - xpath: 我知道了
-autoCrawl: true
+autoCrawl: false
 testcase:
   name: demo1
   steps:
   - when:
       xpath: //*
-      action: driver.swipe(0.5, 0.8, 0.5, 0.2)
-  - when:
-      xpath: //*
-      action: driver.swipe(0.5, 0.2, 0.5, 0.8)
-  - xpath: 自选
-    action: click
-    then:
-    - //*[contains(@text, "港股")]
+      action: driver.swipe(0.8, 0.8, 0.2, 0.2)
+    then: ["//*[@resource-id!='']"]
+  - when: { xpath: //*, action: driver.swipe(0.5, 0.2, 0.5, 0.8) }
+  - { xpath: 自选, action: click, then: [ "//*[contains(@text, '港股')]" ] }
+  - { xpath: 沪深, action: click, then: [ "//*[contains(@text, '中国平安')]" ] }
+  - { xpath: ddd, action: click, then: [ "//*[contains(@text, 'xxx')]" ] }
+  - { xpath: mmmm, action: click, then: [ "//*[contains(@text, 'mmm')]" ] }

@@ -1,5 +1,5 @@
 name := "AppCrawler"
-version := "2.1.2"
+version := "2.1.3"
 scalaVersion := "2.12.4"
 
 libraryDependencies ++= Seq(
@@ -52,6 +52,10 @@ ProguardKeys.options in Proguard += ProguardOptions.keepMain("com.xueqiu.qa.appc
 ProguardKeys.mergeStrategies in Proguard += ProguardMerge.first(".*".r)
 ProguardKeys.mergeStrategies in Proguard += ProguardMerge.discard("META-INF/.*".r)
 */
+
+enablePlugins(SbtProguard)
+proguardOptions in Proguard ++= Seq("-dontnote", "-dontwarn", "-ignorewarnings")
+proguardOptions in Proguard += ProguardOptions.keepMain("com.testerhome.appcrawler.AppCrawler")
 
 assemblyJarName in assembly := "appcrawler-"+version.value+".jar"
 test in assembly := {}

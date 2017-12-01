@@ -281,8 +281,8 @@ class TestCrawler extends FunSuite with Matchers{
     val appium=new Crawler
     appium.driver.currentPageSource=xml
     XPathUtil.toDocument(appium.driver.currentPageSource)
-    println(appium.driver.getListFromXPath("//UIAWindow[1]//*[@visible='true' and @name!='']"))
-    println(appium.driver.getListFromXPath("//UIAWindow[1]//*[@visible='true' and @value!='']"))
+    println(appium.driver.findMap("//UIAWindow[1]//*[@visible='true' and @name!='']"))
+    println(appium.driver.findMap("//UIAWindow[1]//*[@visible='true' and @value!='']"))
   }
 
   test("whilespace"){

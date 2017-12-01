@@ -136,7 +136,7 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
   }
 
   def nodes(): List[Map[String, Any]] = {
-    getListFromXPath(loc)
+    findMap(loc)
   }
 
 
@@ -181,7 +181,7 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     */
   def tree(key: String = "//*", index: Int = 0): Map[String, Any] = {
     log.info(s"find by key = ${key} index=${index}")
-    val nodes = getListFromXPath(key)
+    val nodes = findMap(key)
     nodes.foreach(node => {
       log.debug(s"index=${nodes.indexOf(node)}")
       node.foreach(kv => {
@@ -226,8 +226,9 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
       driver.performTouchAction(
         new TouchAction(driver)
           .press((screenWidth * startX).toInt, (screenHeight * startY).toInt)
-          .moveTo((screenWidth * (endX-startX)).toInt, (screenHeight * (endY-startY)).toInt)
-          //.waitAction(Duration.ofSeconds(1))
+          .waitAction(Duration.ofSeconds(1))
+          //.moveTo((screenWidth * (endX-startX)).toInt, (screenHeight * (endY-startY)).toInt)
+          .moveTo((screenWidth * endX).toInt, (screenHeight * endY).toInt)
           .release()
       )
     )
@@ -423,11 +424,11 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     driver match {
       case android: AndroidDriver[_] => {
         val xpath="(//*[@package!=''])[1]"
-        getListFromXPath(xpath).head.getOrElse("package", "").toString
+        findMap(xpath).head.getOrElse("package", "").toString
       }
       case ios: IOSDriver[_] => {
         val xpath="//*[contains(name(), 'Application')]"
-        getListFromXPath(xpath).head.getOrElse("name", "").toString
+        findMap(xpath).head.getOrElse("name", "").toString
       }
     }
 
@@ -437,12 +438,13 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     driver match {
       case android: AndroidDriver[_] => {
         (asyncTask() {
+          //todo: 此api不稳定，会导致appium在执行几百次api后发生异常
           driver.asInstanceOf[AndroidDriver[WebElement]].currentActivity()
         }).getOrElse("").split('.').last
       }
       case ios: IOSDriver[_] => {
         val xpath="//*[contains(name(), 'NavigationBar')]"
-        getListFromXPath(xpath).map(_.getOrElse("name", "").toString).mkString("")
+        findMap(xpath).map(_.getOrElse("name", "").toString).mkString("")
       }
     }
   }
