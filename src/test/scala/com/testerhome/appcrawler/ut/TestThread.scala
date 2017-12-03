@@ -148,7 +148,7 @@ class TestThread extends FunSuite{
       Thread.sleep(1000)
       "xxxx"
     }
-    assert(r.get=="xxxx")
+    assert(r.left.get=="xxxx")
     val now=System.currentTimeMillis()
     println((now-pre)/1000)
 
@@ -174,7 +174,7 @@ class TestThread extends FunSuite{
       Thread.sleep(1000)
       1
     }
-    assert(r.get==1)
+    assert(r.left.get==1)
     val now=System.currentTimeMillis()
     println((now-pre)/1000)
 

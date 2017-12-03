@@ -16,6 +16,6 @@ class FlowDiff extends Plugin{
   }
 
   override def afterElementAction(element: URIElement): Unit ={
-    getCrawler().store.saveResDom(getCrawler().driver.currentPageSource)
+    //getCrawler().store.saveResDom(getCrawler().driver.currentPageSource)
   }
 }

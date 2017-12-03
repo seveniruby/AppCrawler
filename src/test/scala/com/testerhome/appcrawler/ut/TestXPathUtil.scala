@@ -730,6 +730,519 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
   }
 
 
+  //todo: 支持xpath2.0
+  test("text xpath matches"){
+    val value=XPathUtil.getListFromXPath("//*[matches(@text, '买什么')]", domAndroid)
+    value.foreach(log.info)
+  }
+
+  test("xpath and"){
+    val content=
+      """
+        |<?xml version="1.0" encoding="UTF-8"?>
+        |<hierarchy rotation="0">
+        |  <android.widget.FrameLayout bounds="[0,0][1080,1812]"
+        |    checkable="false" checked="false" class="android.widget.FrameLayout"
+        |    clickable="false" content-desc="" enabled="true" focusable="false"
+        |    focused="false" index="0" instance="0" long-clickable="false"
+        |    package="com.tencent.mobileqq" password="false" resource-id=""
+        |    scrollable="false" selected="false" text="">
+        |    <android.widget.RelativeLayout bounds="[0,0][1080,1812]"
+        |      checkable="false" checked="false"
+        |      class="android.widget.RelativeLayout" clickable="false"
+        |      content-desc="" enabled="true" focusable="false" focused="false"
+        |      index="0" instance="0" long-clickable="false"
+        |      package="com.tencent.mobileqq" password="false" resource-id=""
+        |      scrollable="false" selected="false" text="">
+        |      <android.widget.LinearLayout bounds="[0,0][1080,1812]"
+        |        checkable="false" checked="false"
+        |        class="android.widget.LinearLayout" clickable="false"
+        |        content-desc="" enabled="true" focusable="false" focused="false"
+        |        index="0" instance="0" long-clickable="false"
+        |        package="com.tencent.mobileqq" password="false" resource-id=""
+        |        scrollable="false" selected="false" text="">
+        |        <android.widget.FrameLayout bounds="[0,0][1080,1812]"
+        |          checkable="false" checked="false"
+        |          class="android.widget.FrameLayout" clickable="false"
+        |          content-desc="" enabled="true" focusable="false"
+        |          focused="false" index="1" instance="1" long-clickable="false"
+        |          package="com.tencent.mobileqq" password="false"
+        |          resource-id="android:id/content" scrollable="false"
+        |          selected="false" text="">
+        |          <android.widget.FrameLayout bounds="[0,0][1080,1812]"
+        |            checkable="false" checked="false"
+        |            class="android.widget.FrameLayout" clickable="false"
+        |            content-desc="" enabled="true" focusable="false"
+        |            focused="false" index="0" instance="2"
+        |            long-clickable="false" package="com.tencent.mobileqq"
+        |            password="false" resource-id="com.tencent.mobileqq:id/name"
+        |            scrollable="false" selected="false" text="">
+        |            <android.widget.FrameLayout bounds="[0,0][1080,1812]"
+        |              checkable="false" checked="false"
+        |              class="android.widget.FrameLayout" clickable="false"
+        |              content-desc="" enabled="true" focusable="true"
+        |              focused="false" index="0" instance="3"
+        |              long-clickable="false" package="com.tencent.mobileqq"
+        |              password="false"
+        |              resource-id="com.tencent.mobileqq:id/common_xlistview"
+        |              scrollable="true" selected="false" text="">
+        |              <android.widget.LinearLayout bounds="[0,0][1080,1812]"
+        |                checkable="false" checked="false"
+        |                class="android.widget.LinearLayout" clickable="false"
+        |                content-desc="" enabled="true" focusable="false"
+        |                focused="false" index="0" instance="1"
+        |                long-clickable="false" package="com.tencent.mobileqq"
+        |                password="false"
+        |                resource-id="com.tencent.mobileqq:id/name"
+        |                scrollable="false" selected="false" text="">
+        |                <android.widget.RelativeLayout bounds="[0,0][1080,1181]"
+        |                  checkable="false" checked="false"
+        |                  class="android.widget.RelativeLayout"
+        |                  clickable="false"
+        |                  content-desc="帐号信息昵称通灵郎男  乌鲁木齐2013-04-24"
+        |                  enabled="true" focusable="false" focused="false"
+        |                  index="0" instance="1" long-clickable="false"
+        |                  package="com.tencent.mobileqq" password="false"
+        |                  resource-id="com.tencent.mobileqq:id/name"
+        |                  scrollable="false" selected="false" text="">
+        |                  <android.widget.LinearLayout
+        |                    bounds="[0,636][1080,1181]" checkable="false"
+        |                    checked="false" class="android.widget.LinearLayout"
+        |                    clickable="false" content-desc="群成员资料"
+        |                    enabled="true" focusable="false" focused="false"
+        |                    index="0" instance="2" long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="" scrollable="false" selected="false" text="">
+        |                    <android.widget.TextView bounds="[432,813][648,898]"
+        |                      checkable="false" checked="false"
+        |                      class="android.widget.TextView" clickable="true"
+        |                      content-desc="群名称：通灵郎" enabled="true"
+        |                      focusable="true" focused="false" index="0"
+        |                      instance="0" long-clickable="true"
+        |                      package="com.tencent.mobileqq" password="false"
+        |                      resource-id="com.tencent.mobileqq:id/name"
+        |                      scrollable="false" selected="false" text="通灵郎"/>
+        |                    <android.widget.RelativeLayout
+        |                      bounds="[485,922][595,975]" checkable="false"
+        |                      checked="false"
+        |                      class="android.widget.RelativeLayout"
+        |                      clickable="true" content-desc="" enabled="true"
+        |                      focusable="false" focused="false" index="1"
+        |                      instance="2" long-clickable="false"
+        |                      package="com.tencent.mobileqq" password="false"
+        |                      resource-id="com.tencent.mobileqq:id/name"
+        |                      scrollable="false" selected="false" text="">
+        |                      <android.widget.TextView
+        |                        bounds="[485,922][595,975]" checkable="false"
+        |                        checked="false" class="android.widget.TextView"
+        |                        clickable="false" content-desc="" enabled="true"
+        |                        focusable="false" focused="false" index="0"
+        |                        instance="1" long-clickable="false"
+        |                        package="com.tencent.mobileqq" password="false"
+        |                        resource-id="com.tencent.mobileqq:id/name"
+        |                        scrollable="false" selected="false" text=" 学渣 "/>
+        |                    </android.widget.RelativeLayout>
+        |                    <android.widget.LinearLayout
+        |                      bounds="[54,1005][1026,1054]" checkable="false"
+        |                      checked="false"
+        |                      class="android.widget.LinearLayout"
+        |                      clickable="false" content-desc="" enabled="true"
+        |                      focusable="false" focused="false" index="2"
+        |                      instance="3" long-clickable="false"
+        |                      package="com.tencent.mobileqq" password="false"
+        |                      resource-id="" scrollable="false" selected="false" text="">
+        |                      <android.widget.TextView
+        |                        bounds="[54,1005][1026,1054]" checkable="false"
+        |                        checked="false" class="android.widget.TextView"
+        |                        clickable="true"
+        |                        content-desc="个性签名今天的苦果，是昨天的伏笔；当下的付出，才是明日的花开。"
+        |                        enabled="true" focusable="false" focused="false"
+        |                        index="0" instance="2" long-clickable="false"
+        |                        package="com.tencent.mobileqq" password="false"
+        |                        resource-id="com.tencent.mobileqq:id/name"
+        |                        scrollable="false" selected="false" text="今天的苦果，是昨天的伏笔；当下的付出，才是明日的花开。"/>
+        |                    </android.widget.LinearLayout>
+        |                    <android.widget.LinearLayout
+        |                      bounds="[418,1093][661,1139]" checkable="false"
+        |                      checked="false"
+        |                      class="android.widget.LinearLayout"
+        |                      clickable="false" content-desc="" enabled="true"
+        |                      focusable="false" focused="false" index="3"
+        |                      instance="4" long-clickable="false"
+        |                      package="com.tencent.mobileqq" password="false"
+        |                      resource-id="com.tencent.mobileqq:id/name"
+        |                      scrollable="false" selected="false" text="">
+        |                      <android.widget.TextView
+        |                        bounds="[460,1093][661,1139]" checkable="false"
+        |                        checked="false" class="android.widget.TextView"
+        |                        clickable="false" content-desc="" enabled="true"
+        |                        focusable="false" focused="false" index="0"
+        |                        instance="3" long-clickable="false"
+        |                        package="com.tencent.mobileqq" password="false"
+        |                        resource-id="com.tencent.mobileqq:id/name"
+        |                        scrollable="false" selected="false" text="乌鲁木齐"/>
+        |                    </android.widget.LinearLayout>
+        |                  </android.widget.LinearLayout>
+        |                  <android.widget.ImageView bounds="[388,486][691,789]"
+        |                    checkable="false" checked="false"
+        |                    class="android.widget.ImageView" clickable="false"
+        |                    content-desc="" enabled="true" focusable="false"
+        |                    focused="false" index="1" instance="0"
+        |                    long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="com.tencent.mobileqq:id/name"
+        |                    scrollable="false" selected="false" text=""/>
+        |                  <android.widget.ImageView bounds="[390,486][690,786]"
+        |                    checkable="false" checked="false"
+        |                    class="android.widget.ImageView" clickable="true"
+        |                    content-desc="查看大头像" enabled="true"
+        |                    focusable="false" focused="false" index="2"
+        |                    instance="1" long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="com.tencent.mobileqq:id/name"
+        |                    scrollable="false" selected="false" text=""/>
+        |                </android.widget.RelativeLayout>
+        |                <android.widget.RelativeLayout
+        |                  bounds="[0,1181][1080,1319]" checkable="false"
+        |                  checked="false" class="android.widget.RelativeLayout"
+        |                  clickable="true" content-desc="帐号信息549628569非会员"
+        |                  enabled="true" focusable="false" focused="false"
+        |                  index="1" instance="3" long-clickable="true"
+        |                  package="com.tencent.mobileqq" password="false"
+        |                  resource-id="" scrollable="false" selected="false" text="">
+        |                  <android.widget.ImageView bounds="[36,1212][111,1287]"
+        |                    checkable="false" checked="false"
+        |                    class="android.widget.ImageView" clickable="false"
+        |                    content-desc="" enabled="true" focusable="false"
+        |                    focused="false" index="0" instance="2"
+        |                    long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="com.tencent.mobileqq:id/name"
+        |                    scrollable="false" selected="false" text=""/>
+        |                  <android.widget.LinearLayout
+        |                    bounds="[147,1183][1008,1317]" checkable="false"
+        |                    checked="false" class="android.widget.LinearLayout"
+        |                    clickable="false" content-desc="" enabled="true"
+        |                    focusable="false" focused="false" index="1"
+        |                    instance="5" long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="com.tencent.mobileqq:id/name"
+        |                    scrollable="false" selected="false" text="">
+        |                    <android.widget.LinearLayout
+        |                      bounds="[147,1216][1008,1284]" checkable="false"
+        |                      checked="false"
+        |                      class="android.widget.LinearLayout"
+        |                      clickable="false" content-desc="" enabled="true"
+        |                      focusable="false" focused="false" index="0"
+        |                      instance="6" long-clickable="false"
+        |                      package="com.tencent.mobileqq" password="false"
+        |                      resource-id="" scrollable="false" selected="false" text="">
+        |                      <android.widget.TextView
+        |                        bounds="[147,1216][408,1284]" checkable="false"
+        |                        checked="false" class="android.widget.TextView"
+        |                        clickable="false" content-desc="" enabled="true"
+        |                        focusable="false" focused="false" index="0"
+        |                        instance="4" long-clickable="false"
+        |                        package="com.tencent.mobileqq" password="false"
+        |                        resource-id="com.tencent.mobileqq:id/name"
+        |                        scrollable="false" selected="false" text="549628569"/>
+        |                    </android.widget.LinearLayout>
+        |                  </android.widget.LinearLayout>
+        |                  <android.widget.ImageView
+        |                    bounds="[1008,1227][1035,1272]" checkable="false"
+        |                    checked="false" class="android.widget.ImageView"
+        |                    clickable="false" content-desc="" enabled="true"
+        |                    focusable="false" focused="false" index="2"
+        |                    instance="3" long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="com.tencent.mobileqq:id/name"
+        |                    scrollable="false" selected="false" text=""/>
+        |                </android.widget.RelativeLayout>
+        |                <android.widget.RelativeLayout
+        |                  bounds="[0,1319][1080,1457]" checkable="false"
+        |                  checked="false" class="android.widget.RelativeLayout"
+        |                  clickable="true" content-desc="QQ空间通灵郎的空间"
+        |                  enabled="true" focusable="false" focused="false"
+        |                  index="2" instance="4" long-clickable="false"
+        |                  package="com.tencent.mobileqq" password="false"
+        |                  resource-id="" scrollable="false" selected="false" text="">
+        |                  <android.widget.ImageView bounds="[38,1350][113,1425]"
+        |                    checkable="false" checked="false"
+        |                    class="android.widget.ImageView" clickable="false"
+        |                    content-desc="" enabled="true" focusable="false"
+        |                    focused="false" index="0" instance="4"
+        |                    long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="com.tencent.mobileqq:id/name"
+        |                    scrollable="false" selected="false" text=""/>
+        |                  <android.widget.LinearLayout
+        |                    bounds="[149,1321][1008,1455]" checkable="false"
+        |                    checked="false" class="android.widget.LinearLayout"
+        |                    clickable="false" content-desc="" enabled="true"
+        |                    focusable="false" focused="false" index="1"
+        |                    instance="7" long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="com.tencent.mobileqq:id/name"
+        |                    scrollable="false" selected="false" text="">
+        |                    <android.widget.LinearLayout
+        |                      bounds="[149,1354][1008,1422]" checkable="false"
+        |                      checked="false"
+        |                      class="android.widget.LinearLayout"
+        |                      clickable="false" content-desc="" enabled="true"
+        |                      focusable="false" focused="false" index="0"
+        |                      instance="8" long-clickable="false"
+        |                      package="com.tencent.mobileqq" password="false"
+        |                      resource-id="" scrollable="false" selected="false" text="">
+        |                      <android.widget.TextView
+        |                        bounds="[149,1354][455,1422]" checkable="false"
+        |                        checked="false" class="android.widget.TextView"
+        |                        clickable="false" content-desc="" enabled="true"
+        |                        focusable="false" focused="false" index="0"
+        |                        instance="5" long-clickable="false"
+        |                        package="com.tencent.mobileqq" password="false"
+        |                        resource-id="com.tencent.mobileqq:id/name"
+        |                        scrollable="false" selected="false" text="通灵郎的空间"/>
+        |                    </android.widget.LinearLayout>
+        |                  </android.widget.LinearLayout>
+        |                  <android.widget.ImageView
+        |                    bounds="[1008,1365][1035,1410]" checkable="false"
+        |                    checked="false" class="android.widget.ImageView"
+        |                    clickable="false" content-desc="" enabled="true"
+        |                    focusable="false" focused="false" index="2"
+        |                    instance="5" long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="com.tencent.mobileqq:id/name"
+        |                    scrollable="false" selected="false" text=""/>
+        |                </android.widget.RelativeLayout>
+        |                <android.widget.TextView bounds="[0,1457][1080,1514]"
+        |                  checkable="false" checked="false"
+        |                  class="android.widget.TextView" clickable="false"
+        |                  content-desc="" enabled="true" focusable="false"
+        |                  focused="false" index="3" instance="6"
+        |                  long-clickable="false" package="com.tencent.mobileqq"
+        |                  password="false" resource-id="" scrollable="false"
+        |                  selected="false" text=""/>
+        |                <android.widget.RelativeLayout
+        |                  bounds="[0,1514][1080,1652]" checkable="false"
+        |                  checked="false" class="android.widget.RelativeLayout"
+        |                  clickable="true" content-desc="群聊等级" enabled="true"
+        |                  focusable="false" focused="false" index="4"
+        |                  instance="5" long-clickable="false"
+        |                  package="com.tencent.mobileqq" password="false"
+        |                  resource-id="" scrollable="false" selected="false" text="">
+        |                  <android.widget.ImageView bounds="[36,1545][111,1620]"
+        |                    checkable="false" checked="false"
+        |                    class="android.widget.ImageView" clickable="false"
+        |                    content-desc="" enabled="true" focusable="false"
+        |                    focused="false" index="0" instance="6"
+        |                    long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="com.tencent.mobileqq:id/name"
+        |                    scrollable="false" selected="false" text=""/>
+        |                  <android.widget.LinearLayout
+        |                    bounds="[147,1516][1008,1650]" checkable="false"
+        |                    checked="false" class="android.widget.LinearLayout"
+        |                    clickable="false" content-desc="" enabled="true"
+        |                    focusable="false" focused="false" index="1"
+        |                    instance="9" long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="com.tencent.mobileqq:id/name"
+        |                    scrollable="false" selected="false" text="">
+        |                    <android.widget.LinearLayout
+        |                      bounds="[147,1549][1008,1617]" checkable="false"
+        |                      checked="false"
+        |                      class="android.widget.LinearLayout"
+        |                      clickable="false" content-desc="" enabled="true"
+        |                      focusable="false" focused="false" index="0"
+        |                      instance="10" long-clickable="false"
+        |                      package="com.tencent.mobileqq" password="false"
+        |                      resource-id="" scrollable="false" selected="false" text="">
+        |                      <android.widget.TextView
+        |                        bounds="[147,1549][609,1617]" checkable="false"
+        |                        checked="false" class="android.widget.TextView"
+        |                        clickable="false" content-desc="" enabled="true"
+        |                        focusable="false" focused="false" index="0"
+        |                        instance="7" long-clickable="false"
+        |                        package="com.tencent.mobileqq" password="false"
+        |                        resource-id="com.tencent.mobileqq:id/name"
+        |                        scrollable="false" selected="false" text="群聊等级已达LV1 "/>
+        |                    </android.widget.LinearLayout>
+        |                  </android.widget.LinearLayout>
+        |                  <android.widget.ImageView
+        |                    bounds="[1008,1560][1035,1605]" checkable="false"
+        |                    checked="false" class="android.widget.ImageView"
+        |                    clickable="false" content-desc="" enabled="true"
+        |                    focusable="false" focused="false" index="2"
+        |                    instance="7" long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="com.tencent.mobileqq:id/name"
+        |                    scrollable="false" selected="false" text=""/>
+        |                </android.widget.RelativeLayout>
+        |                <android.widget.RelativeLayout
+        |                  bounds="[0,1652][1080,1790]" checkable="false"
+        |                  checked="false" class="android.widget.RelativeLayout"
+        |                  clickable="true" content-desc="最近发言无本地发言记录"
+        |                  enabled="true" focusable="false" focused="false"
+        |                  index="5" instance="6" long-clickable="false"
+        |                  package="com.tencent.mobileqq" password="false"
+        |                  resource-id="" scrollable="false" selected="false" text="">
+        |                  <android.widget.ImageView bounds="[38,1683][113,1758]"
+        |                    checkable="false" checked="false"
+        |                    class="android.widget.ImageView" clickable="false"
+        |                    content-desc="" enabled="true" focusable="false"
+        |                    focused="false" index="0" instance="8"
+        |                    long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="com.tencent.mobileqq:id/name"
+        |                    scrollable="false" selected="false" text=""/>
+        |                  <android.widget.LinearLayout
+        |                    bounds="[149,1654][1008,1788]" checkable="false"
+        |                    checked="false" class="android.widget.LinearLayout"
+        |                    clickable="false" content-desc="" enabled="true"
+        |                    focusable="false" focused="false" index="1"
+        |                    instance="11" long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="com.tencent.mobileqq:id/name"
+        |                    scrollable="false" selected="false" text="">
+        |                    <android.widget.LinearLayout
+        |                      bounds="[149,1687][1008,1755]" checkable="false"
+        |                      checked="false"
+        |                      class="android.widget.LinearLayout"
+        |                      clickable="false" content-desc="" enabled="true"
+        |                      focusable="false" focused="false" index="0"
+        |                      instance="12" long-clickable="false"
+        |                      package="com.tencent.mobileqq" password="false"
+        |                      resource-id="" scrollable="false" selected="false" text="">
+        |                      <android.widget.TextView
+        |                        bounds="[149,1687][506,1755]" checkable="false"
+        |                        checked="false" class="android.widget.TextView"
+        |                        clickable="false" content-desc="" enabled="true"
+        |                        focusable="false" focused="false" index="0"
+        |                        instance="8" long-clickable="false"
+        |                        package="com.tencent.mobileqq" password="false"
+        |                        resource-id="com.tencent.mobileqq:id/name"
+        |                        scrollable="false" selected="false" text="无本地发言记录"/>
+        |                    </android.widget.LinearLayout>
+        |                  </android.widget.LinearLayout>
+        |                  <android.widget.ImageView
+        |                    bounds="[1008,1698][1035,1743]" checkable="false"
+        |                    checked="false" class="android.widget.ImageView"
+        |                    clickable="false" content-desc="" enabled="true"
+        |                    focusable="false" focused="false" index="2"
+        |                    instance="9" long-clickable="false"
+        |                    package="com.tencent.mobileqq" password="false"
+        |                    resource-id="com.tencent.mobileqq:id/name"
+        |                    scrollable="false" selected="false" text=""/>
+        |                </android.widget.RelativeLayout>
+        |              </android.widget.LinearLayout>
+        |            </android.widget.FrameLayout>
+        |            <android.widget.ImageView bounds="[0,0][1080,636]"
+        |              checkable="false" checked="false"
+        |              class="android.widget.ImageView" clickable="false"
+        |              content-desc="" enabled="true" focusable="false"
+        |              focused="false" index="1" instance="10"
+        |              long-clickable="false" package="com.tencent.mobileqq"
+        |              password="false"
+        |              resource-id="com.tencent.mobileqq:id/name"
+        |              scrollable="false" selected="false" text=""/>
+        |            <android.widget.RelativeLayout bounds="[0,0][1080,223]"
+        |              checkable="false" checked="false"
+        |              class="android.widget.RelativeLayout" clickable="false"
+        |              content-desc="" enabled="true" focusable="false"
+        |              focused="false" index="2" instance="7"
+        |              long-clickable="false" package="com.tencent.mobileqq"
+        |              password="false"
+        |              resource-id="com.tencent.mobileqq:id/name"
+        |              scrollable="false" selected="false" text="">
+        |              <android.widget.RelativeLayout bounds="[0,73][1080,223]"
+        |                checkable="false" checked="false"
+        |                class="android.widget.RelativeLayout" clickable="false"
+        |                content-desc="" enabled="true" focusable="false"
+        |                focused="false" index="0" instance="8"
+        |                long-clickable="false" package="com.tencent.mobileqq"
+        |                password="false" resource-id="" scrollable="false"
+        |                selected="false" text="">
+        |                <android.widget.TextView bounds="[30,94][195,202]"
+        |                  checkable="false" checked="false"
+        |                  class="android.widget.TextView" clickable="true"
+        |                  content-desc="返回" enabled="true" focusable="false"
+        |                  focused="false" index="0" instance="9"
+        |                  long-clickable="false" package="com.tencent.mobileqq"
+        |                  password="false"
+        |                  resource-id="com.tencent.mobileqq:id/ivTitleBtnLeft"
+        |                  scrollable="false" selected="false" text="返回"/>
+        |                <android.widget.TextView bounds="[928,103][1053,193]"
+        |                  checkable="false" checked="false"
+        |                  class="android.widget.TextView" clickable="true"
+        |                  content-desc="更多" enabled="true" focusable="false"
+        |                  focused="false" index="1" instance="10"
+        |                  long-clickable="false" package="com.tencent.mobileqq"
+        |                  password="false"
+        |                  resource-id="com.tencent.mobileqq:id/ivTitleBtnRightText"
+        |                  scrollable="false" selected="false" text="更多"/>
+        |              </android.widget.RelativeLayout>
+        |            </android.widget.RelativeLayout>
+        |            <android.view.View bounds="[0,636][1080,1812]"
+        |              checkable="false" checked="false"
+        |              class="android.view.View" clickable="false"
+        |              content-desc="" enabled="true" focusable="false"
+        |              focused="false" index="3" instance="0"
+        |              long-clickable="false" package="com.tencent.mobileqq"
+        |              password="false" resource-id="" scrollable="false"
+        |              selected="false" text=""/>
+        |            <android.widget.LinearLayout bounds="[0,1644][1080,1812]"
+        |              checkable="false" checked="false"
+        |              class="android.widget.LinearLayout" clickable="false"
+        |              content-desc="" enabled="true" focusable="false"
+        |              focused="false" index="4" instance="13"
+        |              long-clickable="false" package="com.tencent.mobileqq"
+        |              password="false"
+        |              resource-id="com.tencent.mobileqq:id/name"
+        |              scrollable="false" selected="false" text="">
+        |              <android.widget.Button bounds="[30,1662][350,1794]"
+        |                checkable="false" checked="false"
+        |                class="android.widget.Button" clickable="true"
+        |                content-desc="加好友" enabled="true" focusable="true"
+        |                focused="false" index="0" instance="0"
+        |                long-clickable="false" package="com.tencent.mobileqq"
+        |                password="false"
+        |                resource-id="com.tencent.mobileqq:id/name"
+        |                scrollable="false" selected="false" text="加好友"/>
+        |              <android.widget.Button bounds="[380,1662][700,1794]"
+        |                checkable="false" checked="false"
+        |                class="android.widget.Button" clickable="true"
+        |                content-desc="送礼物" enabled="true" focusable="true"
+        |                focused="false" index="1" instance="1"
+        |                long-clickable="false" package="com.tencent.mobileqq"
+        |                password="false"
+        |                resource-id="com.tencent.mobileqq:id/name"
+        |                scrollable="false" selected="false" text="送礼物"/>
+        |              <android.widget.Button bounds="[730,1662][1050,1794]"
+        |                checkable="false" checked="false"
+        |                class="android.widget.Button" clickable="true"
+        |                content-desc="发消息" enabled="true" focusable="true"
+        |                focused="false" index="2" instance="2"
+        |                long-clickable="false" package="com.tencent.mobileqq"
+        |                password="false"
+        |                resource-id="com.tencent.mobileqq:id/name"
+        |                scrollable="false" selected="false" text="发消息"/>
+        |            </android.widget.LinearLayout>
+        |          </android.widget.FrameLayout>
+        |        </android.widget.FrameLayout>
+        |      </android.widget.LinearLayout>
+        |    </android.widget.RelativeLayout>
+        |  </android.widget.FrameLayout>
+        |</hierarchy>
+        |
+      """.stripMargin
+    val dom=XPathUtil.toDocument(content)
+    val xpath="string(//*[contains(@content-desc, '帐号信息') and @clickable='true']/@content-desc)"
+    val res=XPathUtil.getListFromXPath(xpath, dom)
+
+    log.info(res)
+  }
+
+
   test("text xpath"){
     val value=XPathUtil.getListFromXPath("//*[@text='买什么']", domAndroid)
     value.foreach(log.info)

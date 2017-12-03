@@ -23,7 +23,7 @@ import scala.util.{Failure, Success, Try}
   * Created by seveniruby on 16/8/9.
   */
 class AppiumClient extends CommonLog with WebBrowser with WebDriver{
-  Runtimes.init()
+  Util.init()
   var conf: CrawlerConf = _
 
   implicit var driver: AppiumDriver[WebElement] = _
@@ -60,8 +60,8 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     asyncTask(10){
       appiumProcess.exitValue()
     } match {
-      case None=>{log.info("appium start success")}
-      case Some(code)=>{log.error(s"appium failed with code ${code}")}
+      case Left(x)=>{log.info("appium start success")}
+      case Right(code)=>{log.error(s"appium failed with code ${code}")}
     }
 
   }
@@ -136,7 +136,7 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
   }
 
   def nodes(): List[Map[String, Any]] = {
-    findMap(loc)
+    findMapByKey(loc)
   }
 
 
@@ -181,7 +181,7 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     */
   def tree(key: String = "//*", index: Int = 0): Map[String, Any] = {
     log.info(s"find by key = ${key} index=${index}")
-    val nodes = findMap(key)
+    val nodes = findMapByKey(key)
     nodes.foreach(node => {
       log.debug(s"index=${nodes.indexOf(node)}")
       node.foreach(kv => {
@@ -222,7 +222,7 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     if(screenHeight<=0){
       getDeviceInfo()
     }
-    retry(
+    tryAndCatch(
       driver.performTouchAction(
         new TouchAction(driver)
           .press((screenWidth * startX).toInt, (screenHeight * startY).toInt)
@@ -307,9 +307,11 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     currentPageDom=null
     log.info("start to get page source from appium")
     //获取页面结构, 最多重试3次
+    var errorCount=0
+    var error: Throwable=null
     1 to 3 foreach (i => {
       asyncTask(20)(driver.getPageSource) match {
-        case Some(v) => {
+        case Left(v) => {
           log.trace("get page source success")
           //todo: wda返回的不是标准的xml
           val xmlStr=v match {
@@ -336,12 +338,18 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
           currentPageSource = XPathUtil.toPrettyXML(xmlStr)
           return currentPageSource
         }
-        case None => {
-          log.warn("get page source error")
+        case Right(e) => {
+          errorCount+=1
+          log.error("get page source error")
+          error=e
         }
       }
     })
-    currentPageSource
+    if(currentPageSource==null){
+      throw error
+    }else{
+      currentPageSource
+    }
   }
 
 
@@ -390,7 +398,7 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     */
     //todo: 用其他定位方式优化
     log.info(s"find by xpath= ${element.loc}")
-    retry(driver.findElementsByXPath(element.loc)) match {
+    tryAndCatch(driver.findElementsByXPath(element.loc)) match {
       case Some(v) => {
         val arr = v.toArray().distinct
         arr.length match {
@@ -424,11 +432,11 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     driver match {
       case android: AndroidDriver[_] => {
         val xpath="(//*[@package!=''])[1]"
-        findMap(xpath).head.getOrElse("package", "").toString
+        findMapByKey(xpath).head.getOrElse("package", "").toString
       }
       case ios: IOSDriver[_] => {
         val xpath="//*[contains(name(), 'Application')]"
-        findMap(xpath).head.getOrElse("name", "").toString
+        findMapByKey(xpath).head.getOrElse("name", "").toString
       }
     }
 
@@ -440,11 +448,11 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
         (asyncTask() {
           //todo: 此api不稳定，会导致appium在执行几百次api后发生异常
           driver.asInstanceOf[AndroidDriver[WebElement]].currentActivity()
-        }).getOrElse("").split('.').last
+        }).left.getOrElse("").split('.').last
       }
       case ios: IOSDriver[_] => {
         val xpath="//*[contains(name(), 'NavigationBar')]"
-        findMap(xpath).map(_.getOrElse("name", "").toString).mkString("")
+        findMapByKey(xpath).map(_.getOrElse("name", "").toString).mkString("")
       }
     }
   }

@@ -4,7 +4,7 @@ import java.io.File
 import java.util.concurrent.{Callable, Executors, TimeUnit, TimeoutException}
 
 import com.testerhome.appcrawler.{CommonLog, URIElement}
-import com.testerhome.appcrawler.{CommonLog, XPathUtil, Runtimes}
+import com.testerhome.appcrawler.{CommonLog, XPathUtil, Util}
 import org.openqa.selenium.Rectangle
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.w3c.dom.Document
@@ -105,18 +105,6 @@ trait WebDriver extends CommonLog {
 
 
 
-
-  def dsl(command: String): Unit = {
-    log.info(s"eval ${command}")
-    Try(Runtimes.eval(command)) match {
-      case Success(v) => log.info(v)
-      case Failure(e) => log.warn(e.getMessage)
-    }
-    log.info("eval finish")
-    //new Eval().inPlace(s"com.testerhome.appcrawler.MiniAppium.${command.trim}")
-  }
-
-
   def getUrl(): String = {
     ""
   }
@@ -125,7 +113,7 @@ trait WebDriver extends CommonLog {
     ""
   }
 
-  def asyncTask[T](timeout: Int = 30, restart: Boolean = false)(callback: => T): Option[T] = {
+  def asyncTask[T](timeout: Int = 30)(callback: => T): Either[T, Throwable] = {
     Try({
       val task = Executors.newSingleThreadExecutor().submit(new Callable[T]() {
         def call(): T = {
@@ -138,30 +126,28 @@ trait WebDriver extends CommonLog {
         task.get(timeout, TimeUnit.SECONDS)
       }
 
-    })  match {
+    }) match {
       case Success(v) => {
         appiumExecResults.append("success")
-        Some(v)
+        Left(v)
       }
       case Failure(e) => {
         e match {
           case e: TimeoutException => {
             log.error(s"${timeout} seconds timeout")
-            appiumExecResults.append("timeout")
           }
           case _ => {
             log.error("exception")
             log.error(e.getMessage)
             log.error(e.getStackTrace.mkString("\n"))
-            appiumExecResults.append(e.getMessage)
           }
         }
-        None
+        Right(e)
       }
     }
   }
 
-  def retry[T](r: => T): Option[T] = {
+  def tryAndCatch[T](r: => T): Option[T] = {
     Try(r) match {
       case Success(v) => {
         log.info("retry execute success")
@@ -193,13 +179,13 @@ trait WebDriver extends CommonLog {
   }
 
   //todo: xpath 2.0 support
-  def findMap(key:String): List[Map[String, Any]] ={
+  def findMapByKey(key:String): List[Map[String, Any]] ={
     key match {
       //xpath
-      case xpath if Array('/', '(').contains(xpath.head) => {
+      case xpath if Array("/.*", "\\(.*", "string\\(/.*\\)").exists(xpath.matches(_)) => {
         XPathUtil.getListFromXPath(xpath, currentPageDom)
       }
-      case regex if key.contains(".*") || key.startsWith("^") => {
+      case regex if regex.contains(".*") || regex.startsWith("^")  => {
         XPathUtil.getListFromXPath("//*", currentPageDom).filter(m=>{
           m("name").toString.matches(regex) ||
             m("label").toString.matches(regex) ||
@@ -218,23 +204,23 @@ trait WebDriver extends CommonLog {
 
   //支持宽松查找，自动刷新查找，自动滚动查找
   def findMapWithRetry(key:String): List[Map[String, Any]] ={
-    var array=findMap(key)
+    var array=findMapByKey(key)
     if(array.size==0){
       getPageSource()
       log.trace("retry 1")
-      array=findMap(key)
+      array=findMapByKey(key)
     }
 
     if(array.size==0){
       getPageSource()
       log.trace("retry 2")
-      array=findMap(key)
+      array=findMapByKey(key)
     }
 
     if(array.size==0){
       getPageSource()
       log.trace("retry 3")
-      array=findMap(key)
+      array=findMapByKey(key)
     }
     return array
 

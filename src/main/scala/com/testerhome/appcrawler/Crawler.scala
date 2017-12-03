@@ -39,13 +39,13 @@ class Crawler extends CommonLog {
   var currentUrl = ""
 
   var isRefreshSuccess = true
-
+  private var exitCrawl=false
   private var backRetry = 0
   //最大重试次数
   var backMaxRetry = 5
   private var swipeRetry = 0
   //滑动最大重试次数
-  var swipeMaxRetry = 1
+  var swipeRetryMax = 1
   var stopAll = false
   val signals = new DataRecord()
   signals.append(1)
@@ -80,7 +80,7 @@ class Crawler extends CommonLog {
     val dynamicPluginDir = (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath))
       .getParentFile.getCanonicalPath + File.separator + "plugins" + File.separator
     log.info(s"dynamic load plugin in ${dynamicPluginDir}")
-    val dynamicPlugins = Runtimes.loadPlugins(dynamicPluginDir)
+    val dynamicPlugins = Util.loadPlugins(dynamicPluginDir)
     log.info(s"found dynamic plugins size ${dynamicPlugins.size}")
     dynamicPlugins.foreach(pluginClasses.append(_))
     pluginClasses.foreach(log.info)
@@ -126,6 +126,8 @@ class Crawler extends CommonLog {
       log.info(s"set xpath attribute with ${conf.xpathAttributes}")
       XPathUtil.setXPathExpr(conf.xpathAttributes)
     }
+
+
     log.info("set xpath")
     loadPlugins()
     if (existDriver == null) {
@@ -175,29 +177,13 @@ class Crawler extends CommonLog {
     refreshPage()
     handleCtrlC()
 
-    var retryCount=1
-    while(retryCount>0) {
+    //启动第一次
+    var errorCount=1
+    while(errorCount>0) {
       Try(crawl()) match {
         case Success(v) => {
           log.info("crawl finish")
-
-          //如果错误太多就重试, 错误少就认为是完成了
-
-
-          log.info("list last 10 exec results")
-          driver.appiumExecResults.takeRight(10).foreach(x=>log.info(x))
-
-          //todo: 需要继续过滤appium的报错
-          val failCount10=driver.appiumExecResults.takeRight(10).filter(_!="success").size
-          log.info(s"failCount=${failCount10} retryCount=${retryCount}")
-          if(failCount10>10*0.3 && retryCount<10){
-            log.error("appium error, restart and continue to crawl ")
-            retryCount+=1
-            restart()
-          }else{
-            log.info("success finish")
-            retryCount=0
-          }
+          errorCount=0
         }
         case Failure(e) => {
           log.error("crawl not finish, return with exception")
@@ -207,7 +193,7 @@ class Crawler extends CommonLog {
           ExceptionUtils.getRootCauseStackTrace(e).foreach(log.error)
           log.error("create new session")
 
-          retryCount+=1
+          errorCount+=1
           restart()
         }
       }
@@ -220,21 +206,25 @@ class Crawler extends CommonLog {
   }
 
   def restart(): Unit = {
+    if(conf.beforeRestart!=null) {
+      log.info("execute shell on restart")
+      conf.beforeRestart.foreach(Util.dsl(_))
+    }
     log.info("restart appium")
-    backRetry=0
-    log.info("set app to null to restart appium")
     conf.capability ++= Map("app"->"")
+    conf.capability ++= Map("dontStopOnReset"->"true")
+    conf.capability ++= Map("noReset"->"true")
     setupAppium()
     //todo: 采用轮询
-    Thread.sleep(8000)
+    Thread.sleep(6000)
     refreshPage()
-    doElementAction(URIElement(s"${currentUrl}", "", "", "restart",
+    doElementAction(URIElement(s"${currentUrl}", "restart", "restart", "restart",
       s"restart-${store.clickedElementsList.size}"), "")
   }
 
   def runStartupScript(): Unit = {
     log.info("first refresh")
-    doElementAction(URIElement(s"${currentUrl}", "", "", "startupActions",
+    doElementAction(URIElement(s"${currentUrl}", "startupActions", "startupActions", "startupActions",
       s"startupActions-Start-${store.clickedElementsList.size}"), "")
 
   }
@@ -248,6 +238,11 @@ class Crawler extends CommonLog {
     //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
     //PageFactory.initElements(new AppiumFieldDecorator(driver, 10, TimeUnit.SECONDS), this)
     //implicitlyWait(Span(10, Seconds))
+
+    //todo: init all var
+    swipeRetry=0
+    backRetry=0
+    Util.isLoaded=false
 
     //todo: 主要做遍历测试和异常测试. 所以暂不使用selendroid
     //todo: Appium模式太慢
@@ -291,7 +286,7 @@ class Crawler extends CommonLog {
     //nodeList = nodeList intersect driver.getListFromXPath("//*[not(ancestor-or-self::android.widget.ListView)]")
 
     //排除iOS状态栏 android不受影响
-    val nodeList = driver.findMap("//*[not(ancestor-or-self::UIAStatusBar)]")
+    val nodeList = driver.findMapByKey("//*[not(ancestor-or-self::UIAStatusBar)]")
     val schemaBlackList = List()
     //加value是考虑到某些tab, 他们只有value不同
     //<             label="" name="分时" path="/0/0/6/0/0" valid="true" value="1"
@@ -310,24 +305,21 @@ class Crawler extends CommonLog {
     * 获得布局Hash
     */
   def getSchema(): String = {
-    val nodeList = driver.findMap("//*[not(ancestor-or-self::UIAStatusBar)]")
+    val nodeList = driver.findMapByKey("//*[not(ancestor-or-self::UIAStatusBar)]")
     md5(nodeList.map(getUrlElementByMap(_).toTagPath()).distinct.mkString("\n"))
   }
 
   def getUri(): String = {
     val uri=if (conf.defineUrl!=null && conf.defineUrl.nonEmpty) {
-      val urlString = conf.defineUrl.flatMap(driver.findMap(_)).distinct.map(x => {
-        //按照attribute, label, name顺序挨个取第一个非空的指
-        log.debug(x)
-        if (x.contains("attribute")) {
-          x.getOrElse("attribute", "")
-        } else {
-          if (x.get("label").nonEmpty) {
-            x.getOrElse("label", "")
-          } else {
-            x.getOrElse("name", "")
-          }
-        }
+      val urlString = conf.defineUrl.flatMap(driver.findMapByKey(_)).distinct.map(x => {
+        //按照attribute, label, name顺序挨个取第一个非空的指x
+        List(
+          x.getOrElse("attribute", ""),
+          x.getOrElse("text", ""),
+          x.getOrElse("value", ""),
+          x.getOrElse("content-desc", ""),
+          x.getOrElse("label", "")
+        ).filter(_.toString.nonEmpty).headOption.getOrElse("")
       }).filter(_.toString.nonEmpty).mkString("-")
       log.info(s"defineUrl=$urlString")
       urlString
@@ -489,7 +481,7 @@ class Crawler extends CommonLog {
 
     conf.selectedList.foreach(xpath => {
       log.trace(s"selectedList xpath =  ${xpath}")
-      val temp = driver.findMap(xpath).filter(isValid)
+      val temp = driver.findMapByKey(xpath).filter(isValid)
       selectedElements ++= temp
     })
     selectedElements=selectedElements.distinct
@@ -498,7 +490,7 @@ class Crawler extends CommonLog {
 
     //remove blackList
     conf.blackList.foreach(xpath => {
-      val temp = driver.findMap(xpath)
+      val temp = driver.findMapByKey(xpath)
       temp.foreach(x=>
         log.info(s"blackList hit ${xpath} ${x}")
       )
@@ -517,7 +509,7 @@ class Crawler extends CommonLog {
     //sort
     conf.firstList.foreach(xpath => {
       log.trace(s"firstList xpath = ${xpath}")
-      val temp = driver.findMap(xpath).filter(isValid).intersect(selectedElements)
+      val temp = driver.findMapByKey(xpath).filter(isValid).intersect(selectedElements)
       firstElements ++= temp
     })
     log.trace("first elements")
@@ -525,7 +517,7 @@ class Crawler extends CommonLog {
 
     conf.lastList.foreach(xpath => {
       log.trace(s"lastList xpath = ${xpath}")
-      val temp = driver.findMap(xpath).filter(isValid).intersect(selectedElements)
+      val temp = driver.findMapByKey(xpath).filter(isValid).intersect(selectedElements)
       lastElements ++= temp
     })
 
@@ -549,7 +541,7 @@ class Crawler extends CommonLog {
 
   def hideKeyBoard(): Unit = {
     //iOS键盘隐藏
-    if (driver.findMap("//UIAKeyboard").size >= 1) {
+    if (driver.findMapByKey("//UIAKeyboard").size >= 1) {
       log.info("find keyboard , just hide")
       driver.hideKeyboard()
     }
@@ -624,21 +616,14 @@ class Crawler extends CommonLog {
     conf.beforeElementAction.foreach(elementAction => {
       val xpath = elementAction.get("xpath").get
       val action = elementAction.get("action").get
-      if (driver.findMap(xpath).contains(element)) {
-        Runtimes.eval(action)
+      if (driver.findMapByKey(xpath).contains(element)) {
+        Util.eval(action)
       }
     })
     pluginClasses.foreach(p => p.beforeElementAction(element))
   }
 
   def afterElementAction(element: URIElement): Unit = {
-    log.trace("afterElementAction")
-    /*
-    if (getElementAction() != "skip") {
-      refreshPage()
-    }
-    */
-
     if (getElementAction() == "back" || getElementAction() == "backApp") {
       backRetry += 1
     } else if(getElementAction()!="after"){
@@ -648,9 +633,10 @@ class Crawler extends CommonLog {
     }
     log.info(s"backRetry=${backRetry}")
 
-    log.info("afterElementAction eval")
-    log.debug(conf.afterElementAction)
-    conf.afterElementAction.foreach(Runtimes.eval)
+    if(conf.afterElementAction!=null){
+      log.info("afterElementAction eval")
+      conf.afterElementAction.foreach(Util.eval)
+    }
     pluginClasses.foreach(p => p.afterElementAction(element))
   }
 
@@ -667,7 +653,7 @@ class Crawler extends CommonLog {
   }
 
   def getBackNodes(): ListBuffer[immutable.Map[String, Any]] = {
-    conf.backButton.flatMap(driver.findMap(_).filter(isValid))
+    conf.backButton.flatMap(driver.findMapByKey(_).filter(isValid))
   }
 
   def getBackButton(): Option[URIElement] = {
@@ -690,7 +676,7 @@ class Crawler extends CommonLog {
       case _ => {
         log.warn("find back button error")
         setElementAction("back")
-        return Some(URIElement(s"${currentUrl}", "", "", "Back",
+        return Some(URIElement(s"${currentUrl}", "Back", "Back", "Back",
           s"Back-${store.clickedElementsList.size}"))
       }
     }
@@ -724,6 +710,9 @@ class Crawler extends CommonLog {
     */
   @tailrec
   final def crawl(): Unit = {
+    if(exitCrawl==true){
+      return
+    }
     log.info("\n\ncrawl next")
     //刷新页面
     var skipBeforeElementAction = true
@@ -741,12 +730,12 @@ class Crawler extends CommonLog {
     //是否应该退出
     if (needExit()) {
       log.warn("get signal to exit")
-      return
+      exitCrawl=true
     }
     //页面刷新失败自动后退
     if (isRefreshSuccess == false) {
       log.warn("refresh fail")
-      nextElement = Some(URIElement(s"${currentUrl}", "", "", "Back",
+      nextElement = Some(URIElement(s"${currentUrl}", "Back", "Back", "Back",
         s"Back-${store.clickedElementsList.size}"))
       setElementAction("back")
     } else {
@@ -755,7 +744,7 @@ class Crawler extends CommonLog {
 
     //是否需要回退到app
     if (needBackApp()) {
-      nextElement = Some(URIElement(s"${currentUrl}", "", "", "backApp",
+      nextElement = Some(URIElement(s"${currentUrl}", "backApp", "backApp", "backApp",
         s"backApp-${appNameRecord.last()}-${store.clickedElementsList.size}"))
       setElementAction("backApp")
     }
@@ -777,7 +766,6 @@ class Crawler extends CommonLog {
       if (needReturn()) {
         log.info("need to back")
         nextElement = getBackButton()
-        setElementAction("back")
       } else {
         log.info("no need to back")
       }
@@ -792,24 +780,31 @@ class Crawler extends CommonLog {
           nextElement = Some(e)
           setElementAction(getActionFromNormalActions(e))
           skipBeforeElementAction = false
+          swipeRetry=0
         }
         case None => {
           log.info(s"${currentUrl} all elements had be clicked")
           //滚动多次没有新元素
 
           if (conf.afterUrlFinished != null) {
-            if (swipeRetry >= swipeMaxRetry) {
-              log.warn(s"swipe retry too many times ${swipeRetry} >= ${swipeMaxRetry}")
-              swipeRetry = 0
-              setElementAction("back")
+            val isMatch=conf.afterUrlFinished.exists(step=>step.given.forall(g=>driver.findMapByKey(g).size>0))
+            if(isMatch==false) {
+              log.info("not match afterUrlFinish")
               nextElement = getBackButton()
-            }else {
-              nextElement = Some(URIElement(s"${currentUrl}", "", "", "afterUrlFinished",
+            }else if(isMatch==true && swipeRetry<swipeRetryMax) {
+              log.info("match afterUrlFinish")
+              nextElement = Some(URIElement(s"${currentUrl}", "", "afterUrlFinished", "afterUrlFinished",
                 s"afterUrlFinished-${appNameRecord.last()}-${store.clickedElementsList.size}"))
               setElementAction("after")
+              swipeRetry += 1
+              log.info(s"swipeRetry=${swipeRetry}")
+            }else{
+              log.warn(s"swipeRetry too many times ${swipeRetry} >= ${swipeRetryMax}")
+              nextElement = getBackButton()
+              swipeRetry = 0
+              log.info(s"swipeRetry=${swipeRetry}")
             }
           }else{
-            setElementAction("back")
             nextElement = getBackButton()
           }
         }
@@ -834,7 +829,6 @@ class Crawler extends CommonLog {
         } else {
           //处理控件
           doElementAction(element, getElementAction())
-
           //插件处理
           afterElementAction(element)
         }
@@ -861,7 +855,7 @@ class Crawler extends CommonLog {
       val xpath = r("xpath").toString
       val action = r("action").toString
 
-      driver.findMap(xpath).toStream.filter(element==getUrlElementByMap(_)).headOption match {
+      driver.findMapByKey(xpath).toStream.filter(element==getUrlElementByMap(_)).headOption match {
         case Some(v)=>Some(action)
         case None => None
       }
@@ -879,7 +873,7 @@ class Crawler extends CommonLog {
 
       val allMap = if (xpath.matches("/.*")) {
         //支持xpath
-        driver.findMap(xpath).map(getUrlElementByMap(_))
+        driver.findMapByKey(xpath).map(getUrlElementByMap(_))
       } else {
         //支持正则通配
         if (element.toTagPath().matches(xpath)) {
@@ -959,11 +953,12 @@ class Crawler extends CommonLog {
           FileUtils.copyFile(imgFile, new java.io.File(originPath))
         }
       } match {
-        case Some(v) => {
+        case Left(x) => {
           log.info("screenshot success")
         }
-        case None => {
+        case Right(e) => {
           log.error("screenshot error")
+          log.error(e.getMessage)
         }
       }
     } else {
@@ -981,8 +976,8 @@ class Crawler extends CommonLog {
     log.info(s"current element = ${element}")
     log.info(s"current index = ${store.clickedElementsList.size - 1}")
     log.info(s"current action = ${action}")
-    log.info(s"current url = ${element.url}")
     log.info(s"current xpath = ${element.loc}")
+    log.info(s"current url = ${element.url}")
     log.info(s"current tag path = ${element.toTagPath()}")
     log.info(s"current file name = ${element.toFileName()}")
     log.info(s"current uri = ${element.toLoc()}")
@@ -1005,7 +1000,7 @@ class Crawler extends CommonLog {
       case "backApp" => {
         driver.launchApp()
         //todo: 改进等待
-        Thread.sleep(8000)
+        Thread.sleep(6000)
         /*if (conf.defaultBackAction.size > 0) {
           log.trace(conf.defaultBackAction)
           conf.defaultBackAction.foreach(Runtimes.eval)
@@ -1019,10 +1014,17 @@ class Crawler extends CommonLog {
         }*/
       }
       case "after" => {
-        swipeRetry+=1
         if (conf.afterUrlFinished != null) {
-          log.info(conf.afterUrlFinished)
-          conf.afterUrlFinished.foreach(Runtimes.eval)
+          conf.afterUrlFinished.foreach(step => {
+            step.given.forall(g=>driver.findMapByKey(g).size>0) match {
+              case true => {
+                log.info(s"match ${step}")
+                //todo: 支持元素动作
+                Util.dsl(step.when.action)
+              }
+              case false => {log.info(s"not match ${step.given}")}
+            }
+          })
         }else{
           log.warn("no afterUrlFinish, do not use after")
         }
@@ -1032,10 +1034,10 @@ class Crawler extends CommonLog {
       }
       case crawl if crawl.contains("crawl\\(.*\\)") =>{
         store.clickedElementsList.remove(store.clickedElementsList.size-1)
-        driver.dsl(crawl)
+        Util.dsl(crawl)
       }
       case code if code.matches(".*\\(.*\\).*") => {
-        driver.dsl(code)
+        Util.dsl(code)
       }
       case str: String => {
         //todo: tap和click的行为不一致. 在ipad上有时候click会点错位置, 而tap不会
@@ -1072,7 +1074,7 @@ class Crawler extends CommonLog {
           }
         }
         if (List("UIATextField", "UIATextView", "EditText").map(element.tag.contains(_)).contains(true)) {
-          driver.retry(driver.hideKeyboard())
+          driver.tryAndCatch(driver.hideKeyboard())
         }
       }
     }
@@ -1086,6 +1088,9 @@ class Crawler extends CommonLog {
       log.info("mark image exist")
     }
 
+    //等待页面加载
+    log.info("sleep 1000 for loading")
+    Thread.sleep(500)
     isRefreshSuccess = refreshPage()
     saveDom()
     saveScreen()
@@ -1099,9 +1104,9 @@ class Crawler extends CommonLog {
   def back(): Unit = {
     pluginClasses.foreach(_.beforeBack())
     if (conf.currentDriver.toLowerCase == "android") {
-      if (backDistance.intervalMS() < 4000) {
+      if (backDistance.intervalMS() < 2000) {
         log.warn("two back action too close")
-        Thread.sleep(4000)
+        Thread.sleep(2000)
       }
       driver.asyncTask() {
         driver.back()
@@ -1114,9 +1119,9 @@ class Crawler extends CommonLog {
   }
 
 
+  //todo: 结构化
   //通过规则实现操作. 不管元素是否被点击过
   def getElementByElementActions(): Option[URIElement] = {
-    log.trace("rule match start")
     //先判断是否在期望的界面里. 提升速度
     conf.triggerActions.filter(_.getOrElse("pri", 1).toString.toInt == 1).foreach(r => {
       val xpath = r("xpath").toString
@@ -1124,7 +1129,7 @@ class Crawler extends CommonLog {
       val times = r.getOrElse("times", 0).toString.toInt
       log.debug(s"finding ${r}")
 
-      driver.findMap(xpath).filter(isValid).headOption match {
+      driver.findMapByKey(xpath).filter(isValid).headOption match {
         case Some(e) => {
           if (times == 1) {
             log.info(s"remove rule ${r}")
@@ -1136,7 +1141,7 @@ class Crawler extends CommonLog {
             val count = conf.monkeyEvents.size
             val random = util.Random.nextInt(count)
             val code = conf.monkeyEvents(random)
-            return Some(URIElement("Monkey", "", "", s"${code}", s"event-${code}"))
+            return Some(URIElement("Monkey", s"${code}", s"${code}", s"${code}", s"event-${code}"))
           } else {
             return Some(getUrlElementByMap(e))
           }

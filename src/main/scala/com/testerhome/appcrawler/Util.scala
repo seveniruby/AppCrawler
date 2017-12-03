@@ -5,11 +5,12 @@ import java.io.File
 import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
 import scala.tools.nsc.interpreter.IMain
 import scala.tools.nsc.{Global, Settings}
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by seveniruby on 16/8/13.
   */
-class Runtimes(val outputDir:String="") extends CommonLog{
+class Util(val outputDir:String="") extends CommonLog{
   private val settingsCompile=new Settings()
 
   if(outputDir.nonEmpty){
@@ -38,7 +39,7 @@ class Runtimes(val outputDir:String="") extends CommonLog{
     run.compile(fileNames)
   }
 
-  def eval(code:String): Unit ={
+  def eval(code:String)={
     interpreter.interpret(code)
   }
   def reset(): Unit ={
@@ -49,21 +50,32 @@ class Runtimes(val outputDir:String="") extends CommonLog{
 
 }
 
-object Runtimes extends CommonLog{
-  var instance=new Runtimes()
+object Util extends CommonLog{
+  var instance=new Util()
   var isLoaded=false
   def apply(): Unit ={
 
   }
+
+  def dsl(command: String): Unit = {
+    log.info(s"eval ${command}")
+    Try(Util.eval(command)) match {
+      case Success(v) => log.info(v)
+      case Failure(e) => log.warn(e.getMessage)
+    }
+    log.info("eval finish")
+    //new Eval().inPlace(s"com.testerhome.appcrawler.MiniAppium.${command.trim}")
+  }
   def eval(code:String): Unit ={
     if(isLoaded==false){
       log.info("first import")
+      instance.eval("import sys.process._")
       instance.eval("val driver=com.testerhome.appcrawler.AppCrawler.crawler.driver")
       instance.eval("def crawl(depth:Int)=com.testerhome.appcrawler.AppCrawler.crawler.crawl(depth)")
       isLoaded=true
     }
     log.info(code)
-    instance.eval(code)
+    log.info(instance.eval(code))
     log.info("eval finish")
   }
 
@@ -72,7 +84,7 @@ object Runtimes extends CommonLog{
     isLoaded=false
   }
   def init(classDir:String=""): Unit ={
-    instance=new Runtimes(classDir)
+    instance=new Util(classDir)
   }
   def reset(): Unit ={
 
@@ -88,7 +100,7 @@ object Runtimes extends CommonLog{
     log.info(s"find plugins in ${pluginDir}")
     log.info(pluginFiles)
     log.info(pluginClassNames)
-    val runtimes=new Runtimes(pluginDir)
+    val runtimes=new Util(pluginDir)
     runtimes.compile(pluginFiles.map(pluginDirFile.getCanonicalPath+File.separator+_))
     val urls=Seq(pluginDirFile.toURI.toURL, getClass.getProtectionDomain.getCodeSource.getLocation)
     val loader=new URLClassLoader(urls, Thread.currentThread().getContextClassLoader)

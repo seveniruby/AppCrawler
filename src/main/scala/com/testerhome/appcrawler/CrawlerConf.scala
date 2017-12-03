@@ -104,16 +104,14 @@ class CrawlerConf {
   var testcase = TestCase(
     name = "TesterHome AppCrawler",
     steps = List(
-      Step(given = null, when = null, xpath = "//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then = null),
-      Step(given = null, when = null, xpath = "//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then = null),
-      Step(given = null, when = null, xpath = "//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then = null),
-      Step(given = null, when = null, xpath = "//*", action = "driver.swipe(0.9, 0.5, 0.1, 0.5)", then = null)
+      Step(given = null, when = null, xpath = "//*", action = "println(\"testcase demo\")", then = null)
     )
   )
 
   var beforeElementAction = ListBuffer[Map[String, String]]()
   var afterElementAction = ListBuffer[String]()
-  var afterUrlFinished = ListBuffer[String]()
+  var afterUrlFinished = ListBuffer[Step]()
+  var beforeRestart=ListBuffer[String]()
   var monkeyEvents = ListBuffer[Int]()
   var monkeyRunTimeSeconds = 30
 

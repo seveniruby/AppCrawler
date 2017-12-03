@@ -18,7 +18,7 @@ import scala.sys.process._
   * Created by seveniruby on 16/8/9.
   */
 class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
-  Runtimes.init()
+  Util.init()
   var conf: CrawlerConf = _
 
   implicit var driver: MacacaClient = _
@@ -54,8 +54,8 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
     asyncTask(10){
       appiumProcess.exitValue()
     } match {
-      case None=>{log.info("appium start success")}
-      case Some(code)=>{log.error(s"appium failed with code ${code}")}
+      case Left(x)=>{log.info("appium start success")}
+      case Right(code)=>{log.error(s"appium failed with code ${code}")}
     }
 
   }
@@ -116,7 +116,7 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
   }
 
   def nodes(): List[Map[String, Any]] = {
-    findMap(loc)
+    findMapByKey(loc)
   }
 
 
@@ -142,7 +142,7 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
     */
   def tree(key: String = "//*", index: Int = 0): Map[String, Any] = {
     log.info(s"find by key = ${key} index=${index}")
-    val nodes = findMap(key)
+    val nodes = findMapByKey(key)
     nodes.foreach(node => {
       log.debug(s"index=${nodes.indexOf(node)}")
       node.foreach(kv => {
@@ -180,7 +180,7 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
   }
 
   override def swipe(startX: Double = 0.9, endX: Double = 0.1, startY: Double = 0.9, endY: Double = 0.1): Option[_] = {
-    retry(driver.swipe(
+    tryAndCatch(driver.swipe(
       (screenWidth * startX).toInt, (screenHeight * startY).toInt,
       (screenWidth * endX).toInt, (screenHeight * endY).toInt, 1000
     )
@@ -262,7 +262,7 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
     //获取页面结构, 最多重试3次
     1 to 3 foreach (i => {
       asyncTask(20)(driver.source()) match {
-        case Some(v) => {
+        case Left(v) => {
           log.trace("get page source success")
           //todo: wda返回的不是标准的xml
           val xmlStr=v match {
@@ -279,8 +279,8 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
           currentPageDom=XPathUtil.toDocument(currentPageSource)
           return currentPageSource
         }
-        case None => {
-          log.trace("get page source error")
+        case Right(e) => {
+          log.error("get page source error")
         }
       }
     })
@@ -333,7 +333,7 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
     */
     //todo: 用其他定位方式优化
     log.info(s"find by xpath= ${element.loc}")
-    retry{
+    tryAndCatch{
       val s=driver.elementsByXPath(element.loc)
       0 until s.size() map(s.getIndex(_))
     } match {
@@ -368,7 +368,7 @@ class MacacaDriver extends CommonLog with WebBrowser with WebDriver{
 
   override def getAppName(): String = {
     val xpath="(//*[@package!=''])[1]"
-    findMap(xpath).head.getOrElse("package", "").toString
+    findMapByKey(xpath).head.getOrElse("package", "").toString
   }
 
   override def getUrl(): String = {
