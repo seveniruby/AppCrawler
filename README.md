@@ -99,7 +99,6 @@ QQ技术交流群: 177933995
 * [Android遍历](doc/Android遍历.md)
 * [动作触发器](doc/动作触发器.md)
 * [iOS遍历](doc/iOS遍历.md)
-* [自动化测试结合](doc/自动化测试结合.md)
 * [兼容性测试](doc/兼容性测试.md)
 * [XPath表达式学习](doc/XPath表达式学习.md)
 * [插件](doc/插件.md)

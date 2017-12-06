@@ -5,6 +5,7 @@ import java.io.File
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import org.openqa.selenium.interactions.Actions
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -22,6 +23,9 @@ class CrawlerConf {
   var reportTitle = ""
   var screenshotTimeout = 20
   var currentDriver = "Android"
+  var swipeRetryMax=1000
+  /**在执行action后等待多少毫秒进行刷新*/
+  var waitLoading=1000
   var tagLimitMax = 3
   var tagLimit = ListBuffer[Map[String, Any]]()
   //var tagLimit=scala.collection.mutable.Map[String, Int]()
@@ -94,7 +98,7 @@ class CrawlerConf {
     ".*[0-9]{2}.*"
   )
   /** 引导规则. name, value, times三个元素组成 */
-  var triggerActions = ListBuffer[scala.collection.mutable.Map[String, Any]]()
+  var triggerActions = ListBuffer[Step]()
   //todo: 用watch代替triggerActions
   var autoCrawl: Boolean = true
   var assert = TestCase(
@@ -104,7 +108,7 @@ class CrawlerConf {
   var testcase = TestCase(
     name = "TesterHome AppCrawler",
     steps = List(
-      Step(given = null, when = null, xpath = "//*", action = "println(\"testcase demo\")", then = null)
+      Step(given = null, when = null, xpath = "//*", action = "println(\"testcase demo\")", actions=null, then = null)
     )
   )
 
@@ -200,6 +204,20 @@ class CrawlerConf {
 case class TestCase(name: String = "", steps: List[Step] = List[Step]())
 
 //given表示多个条件满足 when表示执行多个动作，then表示多个断言，xpath和action为when的简写
-case class Step(given: List[String], var when: When, then: List[String], xpath: String, action: String)
-
-case class When(xpath: String, action: String)
+case class Step(given: List[String],
+                var when: When,
+                then: List[String],
+                xpath: String,
+                action: String,
+                actions: List[String]=List[String](),
+                var times:Int = 0
+               ){
+  def use(): Int ={
+    times-=1
+    times
+  }
+}
+case class When(xpath: String=null,
+                action: String=null,
+                actions: List[String]=List[String]()
+               )

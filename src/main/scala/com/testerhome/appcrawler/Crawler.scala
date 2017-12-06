@@ -45,7 +45,6 @@ class Crawler extends CommonLog {
   var backMaxRetry = 5
   private var swipeRetry = 0
   //滑动最大重试次数
-  var swipeRetryMax = 1
   var stopAll = false
   val signals = new DataRecord()
   signals.append(1)
@@ -141,7 +140,7 @@ class Crawler extends CommonLog {
     log.info(s"platformName=${conf.currentDriver} driver=${driver}")
     log.info(AppCrawler.banner)
     log.info("waiting for app load")
-    Thread.sleep(8000)
+    Thread.sleep(5000)
     log.info(s"driver=${existDriver}")
     log.info("get screen info")
     driver.getDeviceInfo()
@@ -212,7 +211,7 @@ class Crawler extends CommonLog {
     }
     log.info("restart appium")
     conf.capability ++= Map("app"->"")
-    conf.capability ++= Map("dontStopOnReset"->"true")
+    conf.capability ++= Map("dontStopAppOnReset"->"true")
     conf.capability ++= Map("noReset"->"true")
     setupAppium()
     //todo: 采用轮询
@@ -242,6 +241,14 @@ class Crawler extends CommonLog {
     //todo: init all var
     swipeRetry=0
     backRetry=0
+    if(conf.swipeRetryMax==null){
+      conf.swipeRetryMax=2
+    }
+    if(conf.waitLoading==null){
+      conf.waitLoading=1000
+    }
+
+    log.info(s"swipeRetryMax=${conf.swipeRetryMax}")
     Util.isLoaded=false
 
     //todo: 主要做遍历测试和异常测试. 所以暂不使用selendroid
@@ -649,7 +656,11 @@ class Crawler extends CommonLog {
     **/
   def setElementAction(action: String): Unit = {
     log.info(s"set action to ${action}")
-    currentElementAction = action
+    if(action==null){
+      currentElementAction = "click"
+    }else{
+      currentElementAction = action
+    }
   }
 
   def getBackNodes(): ListBuffer[immutable.Map[String, Any]] = {
@@ -778,7 +789,8 @@ class Crawler extends CommonLog {
         case Some(e) => {
           log.info(s"found ${e} by first available element")
           nextElement = Some(e)
-          setElementAction(getActionFromNormalActions(e))
+          //todo: 需要一个action指定表
+          setElementAction("click")
           skipBeforeElementAction = false
           swipeRetry=0
         }
@@ -791,7 +803,7 @@ class Crawler extends CommonLog {
             if(isMatch==false) {
               log.info("not match afterUrlFinish")
               nextElement = getBackButton()
-            }else if(isMatch==true && swipeRetry<swipeRetryMax) {
+            }else if(isMatch==true && swipeRetry<conf.swipeRetryMax) {
               log.info("match afterUrlFinish")
               nextElement = Some(URIElement(s"${currentUrl}", "", "afterUrlFinished", "afterUrlFinished",
                 s"afterUrlFinished-${appNameRecord.last()}-${store.clickedElementsList.size}"))
@@ -799,7 +811,7 @@ class Crawler extends CommonLog {
               swipeRetry += 1
               log.info(s"swipeRetry=${swipeRetry}")
             }else{
-              log.warn(s"swipeRetry too many times ${swipeRetry} >= ${swipeRetryMax}")
+              log.warn(s"swipeRetry too many times ${swipeRetry} >= ${conf.swipeRetryMax}")
               nextElement = getBackButton()
               swipeRetry = 0
               log.info(s"swipeRetry=${swipeRetry}")
@@ -841,30 +853,6 @@ class Crawler extends CommonLog {
     }
     crawl()
   }
-
-
-  /**
-    * 如果pri=0 表示不用优先匹配. 只有遍历到了再寻找合适的action
-    * @param element
-    * @return
-    */
-  def getActionFromNormalActions(element: URIElement): String = {
-    val normalActions = conf.triggerActions.filter(_.getOrElse("pri", 1).toString.toInt == 0)
-    log.info(s"normal actions size = ${normalActions.size}")
-    normalActions.toStream.map(r => {
-      val xpath = r("xpath").toString
-      val action = r("action").toString
-
-      driver.findMapByKey(xpath).toStream.filter(element==getUrlElementByMap(_)).headOption match {
-        case Some(v)=>Some(action)
-        case None => None
-      }
-    }).filter(_!=None).headOption match {
-      case Some(action) => action.get
-      case None => "click"
-    }
-  }
-
 
   def getTagLimitFromElementActions(element: URIElement): Option[Int] = {
     conf.tagLimit.foreach(r => {
@@ -984,7 +972,8 @@ class Crawler extends CommonLog {
 
     store.saveReqHash(contentHash.last().toString)
     store.saveReqImg(getBasePathName() + ".click.png")
-    store.saveReqDom(driver.currentPageSource)
+    //todo: 内存占用太大，改用文件
+    //store.saveReqDom(driver.currentPageSource)
 
     val originImageName = getBasePathName(2) + ".clicked.png"
     val newImageName = getBasePathName() + ".click.png"
@@ -1030,7 +1019,10 @@ class Crawler extends CommonLog {
         }
       }
       case "monkey" => {
-        driver.event(element.name.toInt)
+        val count = conf.monkeyEvents.size
+        val random = util.Random.nextInt(count)
+        val code = conf.monkeyEvents(random)
+        driver.event(code)
       }
       case crawl if crawl.contains("crawl\\(.*\\)") =>{
         store.clickedElementsList.remove(store.clickedElementsList.size-1)
@@ -1090,14 +1082,15 @@ class Crawler extends CommonLog {
 
     //等待页面加载
     log.info("sleep 1000 for loading")
-    Thread.sleep(500)
+    Thread.sleep(conf.waitLoading)
     isRefreshSuccess = refreshPage()
     saveDom()
     saveScreen()
 
     store.saveResHash(contentHash.last().toString)
     store.saveResImg(getBasePathName() + ".clicked.png")
-    store.saveResDom(driver.currentPageSource)
+    //todo: 内存消耗太大，改用文件存储
+    //store.saveResDom(driver.currentPageSource)
 
   }
 
@@ -1123,28 +1116,35 @@ class Crawler extends CommonLog {
   //通过规则实现操作. 不管元素是否被点击过
   def getElementByElementActions(): Option[URIElement] = {
     //先判断是否在期望的界面里. 提升速度
-    conf.triggerActions.filter(_.getOrElse("pri", 1).toString.toInt == 1).foreach(r => {
-      val xpath = r("xpath").toString
-      val action = r.getOrElse("action", "click").toString
-      val times = r.getOrElse("times", 0).toString.toInt
-      log.debug(s"finding ${r}")
+    conf.triggerActions.foreach(step => {
+      val xpath = if(step.when!=null){
+        step.when.xpath
+      }else{
+        step.xpath
+      }
+      val action = if(step.when!=null){
+        step.when.action
+      }else{
+        step.action
+      }
+      log.debug(s"finding ${step}")
 
       driver.findMapByKey(xpath).filter(isValid).headOption match {
         case Some(e) => {
-          if (times == 1) {
-            log.info(s"remove rule ${r}")
-            conf.triggerActions -= r
+          if (step.times == 1) {
+            log.info(s"remove rule ${step}")
+            conf.triggerActions -= step
           }
-          r("times") = times - 1
+          step.use()
+          log.info(s"step times = ${step.times}")
+
           setElementAction(action)
           if (action == "monkey") {
-            val count = conf.monkeyEvents.size
-            val random = util.Random.nextInt(count)
-            val code = conf.monkeyEvents(random)
-            return Some(URIElement("Monkey", s"${code}", s"${code}", s"${code}", s"event-${code}"))
+            return Some(URIElement("Monkey", s"", s"", s"Monkey", s"Monkey"))
           } else {
             return Some(getUrlElementByMap(e))
           }
+
         }
         case None => {}
       }
