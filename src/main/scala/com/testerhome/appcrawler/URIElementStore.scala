@@ -80,8 +80,6 @@ class URIElementStore {
     }
   }
 
-
-
   def saveReqImg(imgName:String): Unit = {
     val head = clickedElementsList.last.toString
     if (elementStore(head).reqImg.isEmpty) {

@@ -27,7 +27,7 @@ class TagLimitPlugin extends Plugin {
         log.info(s"tagLimit[${element.toTagPath()}]=20")
       })
       //应用定制化的规则
-      getCrawler().getTagLimitFromElementActions(element) match {
+      getCrawler().getTimesFromTagLimit(element) match {
         case Some(v)=> {
           tagLimit(key)=v
           log.info(s"tagLimit[${key}]=${tagLimit(key)} with conf.tagLimit")

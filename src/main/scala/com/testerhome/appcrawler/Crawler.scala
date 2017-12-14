@@ -486,9 +486,9 @@ class Crawler extends CommonLog {
     var selectedElements = List[immutable.Map[String, Any]]()
     var blackElements = List[immutable.Map[String, Any]]()
 
-    conf.selectedList.foreach(xpath => {
-      log.trace(s"selectedList xpath =  ${xpath}")
-      val temp = driver.findMapByKey(xpath).filter(isValid)
+    conf.selectedList.foreach(step => {
+      log.trace(s"selectedList xpath =  ${step.getXPath()}")
+      val temp = driver.findMapByKey(step.getXPath()).filter(isValid)
       selectedElements ++= temp
     })
     selectedElements=selectedElements.distinct
@@ -514,17 +514,17 @@ class Crawler extends CommonLog {
     selectedElements.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
 
     //sort
-    conf.firstList.foreach(xpath => {
-      log.trace(s"firstList xpath = ${xpath}")
-      val temp = driver.findMapByKey(xpath).filter(isValid).intersect(selectedElements)
+    conf.firstList.foreach(step => {
+      log.trace(s"firstList xpath = ${step.getXPath()}")
+      val temp = driver.findMapByKey(step.getXPath()).filter(isValid).intersect(selectedElements)
       firstElements ++= temp
     })
     log.trace("first elements")
     firstElements.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
 
-    conf.lastList.foreach(xpath => {
-      log.trace(s"lastList xpath = ${xpath}")
-      val temp = driver.findMapByKey(xpath).filter(isValid).intersect(selectedElements)
+    conf.lastList.foreach(step => {
+      log.trace(s"lastList xpath = ${step.getXPath()}")
+      val temp = driver.findMapByKey(step.getXPath()).filter(isValid).intersect(selectedElements)
       lastElements ++= temp
     })
 
@@ -619,14 +619,16 @@ class Crawler extends CommonLog {
 
 
   def beforeElementAction(element: URIElement): Unit = {
-    log.trace("beforeElementAction")
-    conf.beforeElementAction.foreach(elementAction => {
-      val xpath = elementAction.get("xpath").get
-      val action = elementAction.get("action").get
-      if (driver.findMapByKey(xpath).contains(element)) {
-        Util.eval(action)
-      }
-    })
+    if(conf.beforeElementAction!=null) {
+      log.trace("beforeElementAction")
+      conf.beforeElementAction.foreach(step => {
+        val xpath = step.getXPath()
+        val action = step.getAction()
+        if (driver.findMapByKey(xpath).contains(element)) {
+          Util.dsl(action)
+        }
+      })
+    }
     pluginClasses.foreach(p => p.beforeElementAction(element))
   }
 
@@ -642,7 +644,9 @@ class Crawler extends CommonLog {
 
     if(conf.afterElementAction!=null){
       log.info("afterElementAction eval")
-      conf.afterElementAction.foreach(Util.eval)
+      conf.afterElementAction.foreach(step=>{
+        Util.dsl(step.getAction())
+      })
     }
     pluginClasses.foreach(p => p.afterElementAction(element))
   }
@@ -854,32 +858,16 @@ class Crawler extends CommonLog {
     crawl()
   }
 
-  def getTagLimitFromElementActions(element: URIElement): Option[Int] = {
-    conf.tagLimit.foreach(r => {
-      val xpath = r.getOrElse("xpath", "").toString
-      val action = r.getOrElse("count", 1).toString.toInt
-
-      val allMap = if (xpath.matches("/.*")) {
-        //支持xpath
-        driver.findMapByKey(xpath).map(getUrlElementByMap(_))
-      } else {
-        //支持正则通配
-        if (element.toTagPath().matches(xpath)) {
-          List(element)
-        } else {
-          List[URIElement]()
-        }
-      }
-
-      if (allMap.exists(_ == element)) {
-        return Some(action)
+  def getTimesFromTagLimit(element: URIElement): Option[Int] = {
+    conf.tagLimit.foreach(tag => {
+      if(driver.findMapByKey(tag.getXPath()).map(getUrlElementByMap(_)).contains(element)){
+        return Some(tag.times)
+      }else{
+        None
       }
     })
     None
   }
-
-
-
 
   def saveLog(): Unit = {
     //记录点击log
@@ -973,7 +961,7 @@ class Crawler extends CommonLog {
     store.saveReqHash(contentHash.last().toString)
     store.saveReqImg(getBasePathName() + ".click.png")
     //todo: 内存占用太大，改用文件
-    //store.saveReqDom(driver.currentPageSource)
+    store.saveReqDom(driver.currentPageSource)
 
     val originImageName = getBasePathName(2) + ".clicked.png"
     val newImageName = getBasePathName() + ".click.png"
@@ -1090,7 +1078,7 @@ class Crawler extends CommonLog {
     store.saveResHash(contentHash.last().toString)
     store.saveResImg(getBasePathName() + ".clicked.png")
     //todo: 内存消耗太大，改用文件存储
-    //store.saveResDom(driver.currentPageSource)
+    store.saveResDom(driver.currentPageSource)
 
   }
 

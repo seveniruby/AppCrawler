@@ -27,7 +27,7 @@ class CrawlerConf {
   /**在执行action后等待多少毫秒进行刷新*/
   var waitLoading=1000
   var tagLimitMax = 3
-  var tagLimit = ListBuffer[Map[String, Any]]()
+  var tagLimit = ListBuffer[Step]()
   //var tagLimit=scala.collection.mutable.Map[String, Int]()
   var showCancel = false
   /** 最大运行时间 */
@@ -79,17 +79,17 @@ class CrawlerConf {
   var backButton = ListBuffer[String]()
 
   /** 优先遍历元素 */
-  var firstList = ListBuffer[String](
+  var firstList = ListBuffer[Step](
   )
   /** 默认遍历列表 */
-  var selectedList = ListBuffer[String](
-    "//*[contains(name(), 'Text')]",
-    "//*[contains(name(), 'Image')]",
-    "//*[contains(name(), 'Button')]",
-    "//*[contains(name(), 'CheckBox')]"
+  var selectedList = ListBuffer[Step](
+    Step(xpath="//*[contains(name(), 'Text')]"),
+    Step(xpath="//*[contains(name(), 'Image')]"),
+    Step(xpath="//*[contains(name(), 'Button')]"),
+    Step(xpath="//*[contains(name(), 'CheckBox')]")
   )
   /** 最后遍历列表 */
-  var lastList = ListBuffer[String]()
+  var lastList = ListBuffer[Step]()
 
   //包括backButton
   //todo: 支持正则表达式
@@ -103,17 +103,17 @@ class CrawlerConf {
   var autoCrawl: Boolean = true
   var assert = TestCase(
     name = "TesterHome AppCrawler",
-    steps = List()
+    steps = List[Step]()
   )
   var testcase = TestCase(
     name = "TesterHome AppCrawler",
-    steps = List(
+    steps = List[Step](
       Step(given = null, when = null, xpath = "//*", action = "println(\"testcase demo\")", actions=null, then = null)
     )
   )
 
-  var beforeElementAction = ListBuffer[Map[String, String]]()
-  var afterElementAction = ListBuffer[String]()
+  var beforeElementAction = ListBuffer[Step]()
+  var afterElementAction = ListBuffer[Step]()
   var afterUrlFinished = ListBuffer[Step]()
   var beforeRestart=ListBuffer[String]()
   var monkeyEvents = ListBuffer[Int]()
@@ -204,17 +204,32 @@ class CrawlerConf {
 case class TestCase(name: String = "", steps: List[Step] = List[Step]())
 
 //given表示多个条件满足 when表示执行多个动作，then表示多个断言，xpath和action为when的简写
-case class Step(given: List[String],
-                var when: When,
-                then: List[String],
-                xpath: String,
-                action: String,
+case class Step(given: List[String]=List[String](),
+                var when: When=null,
+                then: List[String]=List[String](),
+                xpath: String="//*",
+                action: String=null,
                 actions: List[String]=List[String](),
                 var times:Int = 0
                ){
   def use(): Int ={
     times-=1
     times
+  }
+  def getXPath(): String ={
+    if(when==null){
+      this.xpath
+    }else{
+      when.xpath
+    }
+  }
+
+  def getAction(): String ={
+    if(when==null){
+      action
+    }else{
+      when.action
+    }
   }
 }
 case class When(xpath: String=null,

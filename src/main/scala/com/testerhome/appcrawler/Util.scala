@@ -66,7 +66,7 @@ object Util extends CommonLog{
     log.info("eval finish")
     //new Eval().inPlace(s"com.testerhome.appcrawler.MiniAppium.${command.trim}")
   }
-  def eval(code:String): Unit ={
+  private def eval(code:String): Unit ={
     if(isLoaded==false){
       log.info("first import")
       instance.eval("import sys.process._")

@@ -1,5 +1,5 @@
 name := "AppCrawler"
-version := "2.1.3"
+version := "2.3.0"
 scalaVersion := "2.12.4"
 
 libraryDependencies ++= Seq(
@@ -7,7 +7,7 @@ libraryDependencies ++= Seq(
   //"org.scala-lang" % "scala-library" % scalaVersion.value,
   //"org.scala-lang" % "scala-reflect" % scalaVersion.value,
   "io.appium" % "java-client" % "5.0.4",
-  "org.seleniumhq.selenium" % "selenium-java" % "2.53.1" % "test",
+  "org.seleniumhq.selenium" % "selenium-java" % "2.53.1" ,
   //"io.selendroid" % "selendroid" % "0.16.0",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.8.7",
   "com.github.scopt" %% "scopt" % "3.5.0",

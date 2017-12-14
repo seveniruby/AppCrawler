@@ -80,7 +80,7 @@ class TestUtil extends FunSuite with CommonLog{
   test("imain"){
 
     Util.init()
-    Util.eval(
+    Util.dsl(
       """
         |import com.testerhome.appcrawler.MiniAppium
         |println("xxx")
@@ -95,8 +95,8 @@ class TestUtil extends FunSuite with CommonLog{
   test("imain q"){
 
     Util.init()
-    Util.eval("import com.testerhome.appcrawler.MiniAppium")
-    Util.eval(
+    Util.dsl("import com.testerhome.appcrawler.MiniAppium")
+    Util.dsl(
       """
         |println("xxx")
         |println("ddd")
@@ -110,8 +110,8 @@ class TestUtil extends FunSuite with CommonLog{
   test("imain with MiniAppium"){
 
     Util.init()
-    Util.eval("import com.testerhome.appcrawler.MiniAppium._")
-    Util.eval(
+    Util.dsl("import com.testerhome.appcrawler.MiniAppium._")
+    Util.dsl(
       """
         |hello("222")
         |println(driver)
@@ -151,10 +151,9 @@ class TestUtil extends FunSuite with CommonLog{
 
   }
 
-
   test("crawl keyword"){
-    Util.eval("def crawl(depth:Int)=com.testerhome.appcrawler.AppCrawler.crawler.crawl(depth)")
-    Util.eval("crawl(1)")
+    Util.dsl("def crawl(depth:Int)=com.testerhome.appcrawler.AppCrawler.crawler.crawl(depth)")
+    Util.dsl("crawl(1)")
   }
 
 
