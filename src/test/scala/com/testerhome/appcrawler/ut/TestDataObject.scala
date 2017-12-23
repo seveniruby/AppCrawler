@@ -21,16 +21,6 @@ class TestDataObject extends FunSuite with CommonLog with Matchers{
     log.info(aa)
   }
 
-  test("conf yaml "){
-    val conf=new CrawlerConf()
-    conf.backButton.append("//北京")
-    val yaml=DataObject.toYaml(conf)
-    log.info(yaml)
-
-    val confNew=DataObject.fromYaml[CrawlerConf](yaml)
-    assert(confNew.backButton.last=="//北京")
-  }
-
   test("read clickedElementsList"){
     val yaml=scala.io.Source.fromFile("iOS_20160813165030/clickedList.yml").getLines().mkString("\n")
     val elementList=DataObject.fromYaml[List[URIElement]](yaml)

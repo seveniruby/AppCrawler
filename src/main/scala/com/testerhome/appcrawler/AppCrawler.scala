@@ -35,6 +35,7 @@ object AppCrawler extends CommonLog {
   val startTime = new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
   case class Param(
                     app: String = "",
+                    encoding: String="",
                     conf: File = new File(""),
                     verbose: Boolean = false,
                     mode: String = "",
@@ -64,22 +65,20 @@ object AppCrawler extends CommonLog {
   }
 
 
-  def setGlobalEncoding(): Unit = {
-    log.debug("set file.encoding to UTF-8")
-    System.setProperty("file.encoding", "UTF-8");
-
+  def setGlobalEncoding(encoding:String="UTF-8"): Unit = {
+    log.info("default Charset=" + Charset.defaultCharset())
+    log.info("default file.encoding=" + System.getProperty("file.encoding"))
+    log.info(s"set file.encoding to ${encoding}")
+    System.setProperty("file.encoding", encoding);
     val charset = classOf[Charset].getDeclaredField("defaultCharset")
     charset.setAccessible(true)
     charset.set(null, null)
-    log.debug("Default Charset=" + Charset.defaultCharset())
-    log.debug("file.encoding=" + System.getProperty("file.encoding"))
-    log.debug("Default Charset=" + Charset.defaultCharset())
-    log.debug("project directory=" + (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
-
+    log.info("Charset=" + Charset.defaultCharset())
+    log.info("file.encoding=" + System.getProperty("file.encoding"))
+    //log.info("project directory=" + (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
   }
 
   def main(args: Array[String]) {
-    setGlobalEncoding()
     // parser.parse returns Opti on[C]
     val args_new = if (args.length == 0) {
       Array("--help")
@@ -100,6 +99,12 @@ object AppCrawler extends CommonLog {
         c.copy(app = x)
       }
       } text ("Android或者iOS的文件地址, 可以是网络地址, 赋值给appium的app选项")
+
+      opt[String]('e', "encoding") action { (x, c) => {
+        c.copy(app = x)
+      }
+      } text ("set encoding, such as UTF-8 GBK")
+
       opt[File]('c', "conf") action { (x, c) =>
         c.copy(conf = x)
       } validate { x => {
@@ -188,6 +193,10 @@ object AppCrawler extends CommonLog {
           log.info(s"set global log level to ${GA.logLevel}")
           XPathUtil.initLog()
         }
+
+        if(config.encoding.nonEmpty){
+          setGlobalEncoding(config.encoding)
+        }
         log.trace("config=")
         log.trace(config)
         if (config.sbt_params.nonEmpty) {
@@ -230,7 +239,9 @@ object AppCrawler extends CommonLog {
         crawlerConf.capability ++= config.capability
 
         //设定app
-        crawlerConf.capability ++=Map("app"-> parsePath(config.app).getOrElse(""))
+        if(config.app.nonEmpty){
+          crawlerConf.capability ++=Map("app"-> parsePath(config.app).getOrElse(""))
+        }
         log.info(s"app path = ${crawlerConf.capability("app")}")
 
         //设定appium的端口

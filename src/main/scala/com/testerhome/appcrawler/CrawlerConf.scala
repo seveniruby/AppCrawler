@@ -16,7 +16,7 @@ import scala.io.Source
   */
 class CrawlerConf {
   /** 插件列表 */
-  var pluginList = List("com.testerhome.appcrawler.plugin.TagLimitPlugin")
+  var pluginList = List[String]()
   var logLevel = "TRACE"
   /** 是否截图 */
   var saveScreen = true
@@ -76,7 +76,7 @@ class CrawlerConf {
 
   var defaultBackAction = ListBuffer[String]()
   /** 后退按钮标记, 主要用于iOS, xpath */
-  var backButton = ListBuffer[String]()
+  var backButton = ListBuffer[Step]()
 
   /** 优先遍历元素 */
   var firstList = ListBuffer[Step](
@@ -107,9 +107,7 @@ class CrawlerConf {
   )
   var testcase = TestCase(
     name = "TesterHome AppCrawler",
-    steps = List[Step](
-      Step(given = null, when = null, xpath = "//*", action = "println(\"testcase demo\")", actions=null, then = null)
-    )
+    steps = List[Step]()
   )
 
   var beforeElementAction = ListBuffer[Step]()
@@ -218,9 +216,17 @@ case class Step(given: List[String]=List[String](),
   }
   def getXPath(): String ={
     if(when==null){
-      this.xpath
+      if(this.xpath==null){
+        "/*"
+      }else{
+        this.xpath
+      }
     }else{
-      when.xpath
+      if(when.xpath==null){
+        "/*"
+      }else{
+        when.xpath
+      }
     }
   }
 

@@ -25,32 +25,28 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
     val cp = new scalatest.Checkpoints.Checkpoint
 
     conf.testcase.steps.foreach(step => {
+      log.info(step)
+      val xpath=step.getXPath()
+      val action=step.getAction()
+      log.info(xpath)
+      log.info(action)
 
-
-      if(step.xpath!=null && step.action!=null){
-        step.when=When(step.xpath, step.action)
-      }
-      if(step.when!=null) {
-        val when = step.when
-        val xpath = when.xpath
-        val action = when.action
-
-        driver.findMapWithRetry(xpath).headOption match {
-          case Some(v) => {
-            val ele = URIElement(v, "Steps")
-            crawler.doElementAction(ele, action)
-          }
-          case None => {
-            //用于生成steps的用例
-            val ele = URIElement("Steps", "", "", "NOT_FOUND", xpath)
-            crawler.doElementAction(ele, "")
-            withClue("NOT_FOUND"){
-              log.info(xpath)
-              fail(s"ELEMENT_NOT_FOUND xpath=${xpath}")
-            }
+      driver.findMapWithRetry(xpath).headOption match {
+        case Some(v) => {
+          val ele = URIElement(v, "Steps")
+          crawler.doElementAction(ele, action)
+        }
+        case None => {
+          //用于生成steps的用例
+          val ele = URIElement("Steps", "", "", "NOT_FOUND", xpath)
+          crawler.doElementAction(ele, "")
+          withClue("NOT_FOUND"){
+            log.info(xpath)
+            fail(s"ELEMENT_NOT_FOUND xpath=${xpath}")
           }
         }
       }
+
 
 
       if(step.then!=null) {

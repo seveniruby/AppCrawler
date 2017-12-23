@@ -27,7 +27,7 @@ trait CommonLog {
       console.setLayout(layout)
       log.addAppender(console)
     }else{
-      log.info("alread exist")
+      log.info("already exist")
     }
     log.trace(s"set ${this} log level to ${GA.logLevel}")
     log.setLevel(GA.logLevel)

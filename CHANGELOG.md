@@ -5,7 +5,17 @@
 - 使用节点树模型
 - 优化自动重启逻辑
 
+
 # 2.3.0
+- 支持性能
+- 支持弱网
+- 支持接口数据入报告
+
+# 2.2.1
+- 合并triggerAction firstList lastList为orderList
+- 去掉autoCrawl
+
+# 2.2.0
 - 修复自动重启执行afterUrlFinish的bug，增强afterUrlFinish支持条件，支持given when
 - 增强assert配置的模型，与testcase保持一致，只设置given then即可
 - 修复iOS backButton的bug

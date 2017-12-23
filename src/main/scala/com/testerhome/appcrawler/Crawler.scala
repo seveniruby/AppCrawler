@@ -100,6 +100,7 @@ class Crawler extends CommonLog {
     log.setLevel(GA.logLevel)
   }
 
+  //todo: 让其他的文件也支持log输出到文件
   def addLogFile(): Unit = {
     AppCrawler.logPath = conf.resultDir + "/appcrawler.log"
 
@@ -150,8 +151,8 @@ class Crawler extends CommonLog {
     //todo: 不是所有的实现都支持
     //driver.manage().logs().getAvailableLogTypes().toArray.foreach(log.info)
     //设定结果目录
-    runStartupScript()
-    println("append current app name to appWhiteList")
+    firstRefresh()
+    log.info("append current app name to appWhiteList")
     conf.appWhiteList.append(appNameRecord.last().toString)
 
     if(conf.testcase!=null){
@@ -221,10 +222,10 @@ class Crawler extends CommonLog {
       s"restart-${store.clickedElementsList.size}"), "")
   }
 
-  def runStartupScript(): Unit = {
+  def firstRefresh(): Unit = {
     log.info("first refresh")
-    doElementAction(URIElement(s"${currentUrl}", "startupActions", "startupActions", "startupActions",
-      s"startupActions-Start-${store.clickedElementsList.size}"), "")
+    doElementAction(URIElement(s"${currentUrl}", "start", "start", "start",
+      s"Start-Start-${store.clickedElementsList.size}"), "")
 
   }
 
@@ -668,7 +669,7 @@ class Crawler extends CommonLog {
   }
 
   def getBackNodes(): ListBuffer[immutable.Map[String, Any]] = {
-    conf.backButton.flatMap(driver.findMapByKey(_).filter(isValid))
+    conf.backButton.flatMap(step=>driver.findMapByKey(step.getXPath()).filter(isValid))
   }
 
   def getBackButton(): Option[URIElement] = {
@@ -767,7 +768,7 @@ class Crawler extends CommonLog {
     //先应用优先规则
     if (nextElement == None) {
       //todo: 优化结构
-      getElementByElementActions() match {
+      getElementByTriggerActions() match {
         case Some(e) => {
           log.info(s"found ${e} by ElementActions")
           nextElement = Some(e)
@@ -1012,11 +1013,11 @@ class Crawler extends CommonLog {
         val code = conf.monkeyEvents(random)
         driver.event(code)
       }
-      case crawl if crawl.contains("crawl\\(.*\\)") =>{
+      case crawl if crawl!=null && crawl.contains("crawl\\(.*\\)") =>{
         store.clickedElementsList.remove(store.clickedElementsList.size-1)
         Util.dsl(crawl)
       }
-      case code if code.matches(".*\\(.*\\).*") => {
+      case code if code!=null && code.matches(".*\\(.*\\).*") => {
         Util.dsl(code)
       }
       case str: String => {
@@ -1035,6 +1036,11 @@ class Crawler extends CommonLog {
             driver.asyncTask() {
               //支持各种动作
               str match {
+                case null => {
+                  //todo: 根据类型自动执行默认动作
+                  log.info("default action")
+                  driver.tap()
+                }
                 case "click" => {
                   log.info("click element")
                   driver.tap()
@@ -1102,19 +1108,12 @@ class Crawler extends CommonLog {
 
   //todo: 结构化
   //通过规则实现操作. 不管元素是否被点击过
-  def getElementByElementActions(): Option[URIElement] = {
+  def getElementByTriggerActions(): Option[URIElement] = {
     //先判断是否在期望的界面里. 提升速度
+    //todo: 让when生效
     conf.triggerActions.foreach(step => {
-      val xpath = if(step.when!=null){
-        step.when.xpath
-      }else{
-        step.xpath
-      }
-      val action = if(step.when!=null){
-        step.when.action
-      }else{
-        step.action
-      }
+      val xpath = step.getXPath()
+      val action = step.getAction()
       log.debug(s"finding ${step}")
 
       driver.findMapByKey(xpath).filter(isValid).headOption match {
