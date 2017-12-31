@@ -23,9 +23,10 @@ class CrawlerConf {
   var reportTitle = ""
   var screenshotTimeout = 20
   var currentDriver = "Android"
-  var swipeRetryMax=1000
+  var swipeRetryMax=2
   /**在执行action后等待多少毫秒进行刷新*/
   var waitLoading=1000
+  var waitLaunch=6000
   var tagLimitMax = 3
   var tagLimit = ListBuffer[Step]()
   //var tagLimit=scala.collection.mutable.Map[String, Int]()
@@ -34,6 +35,8 @@ class CrawlerConf {
   var maxTime = 3600 * 3
   /** 结果目录 */
   var resultDir = ""
+  /** sikuli的数据 */
+  var sikuliImages=""
   //todo: 支持多设备
   /** 设备列表，支持兼容性测试 */
   var devices = ListBuffer(
@@ -95,7 +98,7 @@ class CrawlerConf {
   //todo: 支持正则表达式
   /** 黑名单列表 matches风格, 默认排除内容是2个数字以上的控件. */
   var blackList = ListBuffer[String](
-    ".*[0-9]{2}.*"
+    //".*[0-9]{2}.*"
   )
   /** 引导规则. name, value, times三个元素组成 */
   var triggerActions = ListBuffer[Step]()
@@ -183,10 +186,10 @@ class CrawlerConf {
     val content = Source.fromFile(file, "UTF-8").getLines().mkString("\n")
     file.getName match {
       case json if json.endsWith(".json") => {
-        Some(DataObject.fromJson[CrawlerConf](content))
+        Some(TData.fromJson[CrawlerConf](content))
       }
       case yaml if yaml.endsWith(".yml") || yaml.endsWith(".yaml") => {
-        Some(DataObject.fromYaml[CrawlerConf](content))
+        Some(TData.fromYaml[CrawlerConf](content))
       }
       case path => {
         println(s"${path} not support")

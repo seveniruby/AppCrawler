@@ -69,7 +69,7 @@ object AppCrawler extends CommonLog {
     log.info("default Charset=" + Charset.defaultCharset())
     log.info("default file.encoding=" + System.getProperty("file.encoding"))
     log.info(s"set file.encoding to ${encoding}")
-    System.setProperty("file.encoding", encoding);
+    System.setProperty("file.encoding", encoding)
     val charset = classOf[Charset].getDeclaredField("defaultCharset")
     charset.setAccessible(true)
     charset.set(null, null)
@@ -280,7 +280,7 @@ object AppCrawler extends CommonLog {
         }
 
         log.trace("yaml config")
-        log.trace(DataObject.toYaml(crawlerConf))
+        log.trace(TData.toYaml(crawlerConf))
 
         //todo: 用switch替代
         if (config.report != "" && config.candidate.isEmpty && config.template=="") {

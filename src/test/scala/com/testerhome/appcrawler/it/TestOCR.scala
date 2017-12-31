@@ -1,15 +1,12 @@
-/*
+
 package com.testerhome.appcrawler.ut
 
-import java.awt.BasicStroke
+import java.awt.{BasicStroke, Color}
 import javax.imageio.ImageIO
 
 import net.sourceforge.tess4j.ITessAPI.TessPageIteratorLevel
 import org.scalatest.FunSuite
-
 import net.sourceforge.tess4j._
-
-import scala.reflect.io.File
 import scala.collection.JavaConversions._
 
 
@@ -20,12 +17,18 @@ class TestOCR extends FunSuite{
 
   test("test ocr"){
     val api=new Tesseract()
-    api.setDatapath("/Users/seveniruby/Downloads/")
+    api.setTessVariable("TESSDATA_PREFIX", "/Users/seveniruby/temp/ocr/")
+    api.setDatapath("/Users/seveniruby/temp/ocr/tessdata/")
     api.setLanguage("eng+chi_sim")
-    val img=new java.io.File("/Users/seveniruby/temp/google-test7.png")
+
+    //val path = "/Users/seveniruby/temp/ocr/ocr.png"
+    //val path="/Users/seveniruby/temp/ocr/103_com.gotokeep.keep-PersonalPageActivity_android.widget.RelativeLayout-title_bar-android.widget.RelativeLayout-left_button.clicked.png"
+    val path="/Users/seveniruby/temp/ocr/t1t.jpeg"
+    val img=new java.io.File(path)
     val imgFile=ImageIO.read(img)
     val graph=imgFile.createGraphics()
     graph.setStroke(new BasicStroke(5))
+    graph.setColor(Color.RED)
 
     val result=api.doOCR(img)
 
@@ -54,4 +57,3 @@ class TestOCR extends FunSuite{
   }
 
 }
-*/

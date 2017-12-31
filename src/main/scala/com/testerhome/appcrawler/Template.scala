@@ -19,7 +19,7 @@ class Template {
 
   def getPageSource(url:String): Unit ={
     val page=Source.fromURL(s"${url}/source/xml").mkString
-    val xml=DataObject.fromJson[Map[String, String]](page).getOrElse("value", "")
+    val xml=TData.fromJson[Map[String, String]](page).getOrElse("value", "")
       .asInstanceOf[Map[String, String]].getOrElse("tree", "")
     val doc=XPathUtil.toDocument(xml)
     elements("Demo")=ListBuffer[Map[String, Any]]()
@@ -29,7 +29,7 @@ class Template {
   def read(path:String): Unit = {
 
     //val path = "/Users/seveniruby/projects/AppCrawlerSuite/AppCrawler/android_20170109145102/elements.yml"
-    val store = (DataObject.fromYaml[URIElementStore](Source.fromFile(path).mkString)).elementStore
+    val store = (TData.fromYaml[URIElementStore](Source.fromFile(path).mkString)).elementStore
 
     store.foreach(s => {
       val reqDom = s._2.reqDom

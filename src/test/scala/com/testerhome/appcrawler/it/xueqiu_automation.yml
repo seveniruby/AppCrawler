@@ -27,7 +27,7 @@ androidCapability:
   appActivity: ".view.WelcomeActivityAlias"
   app: ""
   appium: "http://127.0.0.1:4723/wd/hub"
-  automationName: uiautomator2
+  automationName: appium
 iosCapability:
   deviceName: "iPhone 6 Plus"
   bundleId: "com.xueqiu"
@@ -60,17 +60,17 @@ urlBlackList:
 #urlWhiteList:
 #- ".*Main.*"
 backButton:
-- //*[@resource-id='action_back']
-- //*[@resource-id='android:id/up']
-- //*[@resource-id='android:id/home']
-- //*[@resource-id='android:id/action_bar_title']
-- //*[@name='nav_icon_back']
-- //*[@name='Back']
-- //*[@name='返回']
-- "//*[contains(name(), 'Button') and @name='取消']"
-- "//*[contains(name(), 'Button') and @label='返回']"
-- "//*[contains(name(), 'Button') and @name='关闭']"
-- "//*[contains(name(), 'Button') and @name='首页']"
+- xpath: //*[@resource-id='action_back']
+- xpath: //*[@resource-id='android:id/up']
+- xpath: //*[@resource-id='android:id/home']
+- xpath: //*[@resource-id='android:id/action_bar_title']
+- xpath: //*[@name='nav_icon_back']
+- xpath: //*[@name='Back']
+- xpath: //*[@name='返回']
+- xpath: "//*[contains(name(), 'Button') and @name='取消']"
+- xpath: "//*[contains(name(), 'Button') and @label='返回']"
+- xpath: "//*[contains(name(), 'Button') and @name='关闭']"
+- xpath: "//*[contains(name(), 'Button') and @name='首页']"
 triggerActions:
 - xpath: "//*[contains(@resource-id, 'iv_close')]"
 - xpath: "//*[@resource-id='com.xueqiu.android:id/button_login']"
@@ -131,7 +131,6 @@ triggerActions:
   times: 10
   pri: 0
 - xpath: 我知道了
-autoCrawl: false
 testcase:
   name: demo1
   steps:

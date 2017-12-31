@@ -1,0 +1,53 @@
+---
+pluginList:
+- "com.testerhome.appcrawler.plugin.FlowDiff"
+#- "com.testerhome.appcrawler.plugin.ProxyPlugin"
+logLevel: "TRACE"
+saveScreen: true
+showCancel: true
+reportTitle: AppCrawler雪球内部版
+screenshotTimeout: 20
+tagLimitMax: 2
+currentDriver: "android"
+maxTime: 10800
+resultDir: ""
+sikuliImages: "/Users/seveniruby/temp/ocr/images"
+capability:
+  newCommandTimeout: 120
+  launchTimeout: 120000
+  platformVersion: ""
+  platformName: ""
+  autoWebview: "false"
+  autoLaunch: "true"
+  noReset: "true"
+  fullReset: "false"
+  dontStopAppOnReset: "true"
+androidCapability:
+  deviceName: "demo"
+  appPackage: "com.xueqiu.android"
+  appActivity: ".view.WelcomeActivityAlias"
+  app: ""
+  appium: "http://127.0.0.1:4723/wd/hub"
+  automationName: sikuli
+iosCapability:
+  deviceName: "iPhone 6 Plus"
+  bundleId: "com.xueqiu"
+  screenshotWaitTimeout: "10"
+  platformVersion: "9.3"
+  autoAcceptAlerts: "true"
+  app: "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app"
+  appium: "http://127.0.0.1:4730/wd/hub"
+defineUrl:
+- "//*[@selected='true']/@text"
+- "//*[@selected='true']/@text"
+- "//*[contains(name(), 'NavigationBar')]/@label"
+#baseUrl:
+#- ".*MainActivity"
+#- ".*SNBHomeView.*"
+maxDepth: 2
+headFirst: true
+selectedList:
+- xpath: //*
+triggerActions:
+- { xpath: "//*[contains(@name, '行情灰')]", times: 1 }
+- { xpath: 沪深港通, times: 1}

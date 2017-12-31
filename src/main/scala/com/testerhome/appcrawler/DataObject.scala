@@ -124,5 +124,3 @@ trait DataObject {
 
 
 }
-
-object DataObject extends DataObject

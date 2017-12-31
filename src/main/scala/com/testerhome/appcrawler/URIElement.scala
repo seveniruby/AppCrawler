@@ -1,13 +1,36 @@
 package com.testerhome.appcrawler
 
+import javax.xml.bind.annotation.XmlAttribute
+
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import org.apache.commons.lang3.StringUtils
+import org.openqa.selenium.{Dimension, Point}
 
 import scala.collection.immutable
 
 /**
   * Created by seveniruby on 15/12/18.
   */
-case class URIElement(url: String="", tag: String="", id: String="", name: String="", loc:String="") {
+case class URIElement(
+                       @XmlAttribute(name = "url")
+                       url: String="",
+                       @XmlAttribute(name = "tag")
+                       tag: String="",
+                       @XmlAttribute(name = "id")
+                       id: String="",
+                       @XmlAttribute(name = "name")
+                       name: String="",
+                       @XmlAttribute(name = "loc")
+                       loc:String="",
+                       @XmlAttribute(name = "x")
+                       x:Int=0,
+                       @XmlAttribute(name = "y")
+                       y: Int=0,
+                       @XmlAttribute(name = "width")
+                       width: Int=0,
+                       @XmlAttribute(name = "height")
+                       height:Int=0
+                     ) {
   //用来代表唯一的控件, 每个特定的命名控件只被点击一次. 所以这个element的构造决定了控件是否可被点击多次.
   //比如某个输入框被命名为url=xueqiu id=input, 那么就只能被点击一次
   //如果url修改为url=xueqiu/xxxActivity id=input 就可以被点击多次
@@ -43,10 +66,30 @@ case class URIElement(url: String="", tag: String="", id: String="", name: Strin
     //相同url下的相同元素类型控制点击额度
     s"${url}_${loc.replaceAll("@index=\"[0-9]*\"", "")}"
   }
+  def center(): Point  ={
+    new Point(x+width/2, y+height/2)
+  }
+
+  def location(): Point={
+    new Point(x, y)
+  }
+
+  def size(): Dimension ={
+    new Dimension(width, height)
+  }
+  def toXml(): String ={
+    s"""
+      |<UIAButton dom="" enabled="true" height="${height}" hint="" label="${id}"
+      |        name="${name}" path="/0/0/4" valid="true" value="${loc}" visible="true"
+      |        width="${width}" x="${x}" y="${y}"/>
+    """.stripMargin
+
+  }
 
   override def toString: String = {
     s"${this.url}_${this.loc}"
   }
+
 
   def hash(s:String)={
     val m = java.security.MessageDigest.getInstance("MD5")
@@ -60,17 +103,17 @@ case class URIElement(url: String="", tag: String="", id: String="", name: Strin
 object URIElement {
   //def apply(url: String, tag: String, id: String, name: String, loc: String = ""): UrlElement = new UrlElement(url, tag, id, name, loc)
 
-  def apply(x:scala.collection.Map[String, Any], uri:String): URIElement = {
-    val tag = x.getOrElse("tag", "NoTag").toString
+  def apply(nodeMap:scala.collection.Map[String, Any], uri:String): URIElement = {
+    val tag = nodeMap.getOrElse("tag", "NoTag").toString
 
     //name为Android的description/text属性, 或者iOS的value属性
     //appium1.5已经废弃findElementByName
-    val name = x.getOrElse("value", "").toString.replace("\n", "\\n").take(30)
+    val name = nodeMap.getOrElse("value", "").toString.replace("\n", "\\n").take(30)
     //name为id/name属性. 为空的时候为value属性
 
     //id表示android的resource-id或者iOS的name属性
-    val id = x.getOrElse("name", "").toString.split('/').last
-    val loc = x.getOrElse("xpath", "").toString
+    val id = nodeMap.getOrElse("name", "").toString.split('/').last
+    val loc = nodeMap.getOrElse("xpath", "").toString
     URIElement(uri, tag, id, name, loc)
   }
 

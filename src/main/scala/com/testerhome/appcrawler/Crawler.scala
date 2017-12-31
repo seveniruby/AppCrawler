@@ -3,8 +3,7 @@ package com.testerhome.appcrawler
 import java.io
 import java.util.Date
 
-import com.testerhome.appcrawler.driver.AppiumClient
-import com.testerhome.appcrawler.driver.{MacacaDriver, WebDriver}
+import com.testerhome.appcrawler.driver.{AppiumClient, MacacaDriver, SikuliDriver, WebDriver}
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.log4j._
@@ -141,7 +140,7 @@ class Crawler extends CommonLog {
     log.info(s"platformName=${conf.currentDriver} driver=${driver}")
     log.info(AppCrawler.banner)
     log.info("waiting for app load")
-    Thread.sleep(5000)
+    Thread.sleep(conf.waitLaunch)
     log.info(s"driver=${existDriver}")
     log.info("get screen info")
     driver.getDeviceInfo()
@@ -261,6 +260,16 @@ class Crawler extends CommonLog {
         log.info("use macaca")
         driver=new MacacaDriver(url, conf.capability)
       }
+      case "sikuli" => {
+        log.info("use SikuliDriver")
+        conf.capability++=Map("automationName"-> "Appium")
+        driver=new SikuliDriver(url, conf.capability)
+        if (conf.sikuliImages != null) {
+          driver.imagesDir=conf.sikuliImages
+        }else{
+          log.error("please set sikuliImages with your images directory")
+        }
+      }
       case _ => {
         log.info("use AppiumClient")
         driver=new AppiumClient(url, conf.capability)
@@ -346,22 +355,27 @@ class Crawler extends CommonLog {
   /**
     * 获取控件的基本属性并设置一个唯一的uid作为识别. screenName+id+name
     *
-    * @param x
+    * @param nodeMap
     * @return
     */
-  def getUrlElementByMap(x: immutable.Map[String, Any]): URIElement = {
+  def getUrlElementByMap(nodeMap: immutable.Map[String, Any]): URIElement = {
     //控件的类型
-    val tag = x.getOrElse("tag", "NoTag").toString
+    val tag = nodeMap.getOrElse("tag", "NoTag").toString
 
     //name为Android的description/text属性, 或者iOS的value属性
     //appium1.5已经废弃findElementByName
-    val name = x.getOrElse("value", "").toString.replace("\n", "\\n").take(30)
+    val name = nodeMap.getOrElse("value", "").toString.replace("\n", "\\n").take(30)
     //name为id/name属性. 为空的时候为value属性
 
     //id表示android的resource-id或者iOS的name属性
-    val id = x.getOrElse("name", "").toString.split('/').last
-    val loc = x.getOrElse("xpath", "").toString
-    URIElement(currentUrl, tag, id, name, loc)
+    log.trace(nodeMap)
+    val id = nodeMap.getOrElse("name", "").toString.split('/').last
+    val loc = nodeMap.getOrElse("xpath", "").toString
+    val x=nodeMap.getOrElse("x", "0").toString.toInt
+    val y=nodeMap.getOrElse("y", "0").toString.toInt
+    val width=nodeMap.getOrElse("width", "0").toString.toInt
+    val height=nodeMap.getOrElse("height", "0").toString.toInt
+    URIElement(url=currentUrl, tag=tag, id=id, name=name, loc=loc, x=x, y=y, width=width, height=height)
   }
 
   def needBackApp(): Boolean = {
@@ -507,12 +521,12 @@ class Crawler extends CommonLog {
     blackElements=blackElements.distinct
     selectedElements = selectedElements diff blackElements
     log.info(s"all - black elements size = ${selectedElements.size}")
-    selectedElements.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
+    selectedElements.map(_.getOrElse("xpath", "no xpath")).take(10).foreach(log.trace)
 
     //exclude small
     selectedElements=selectedElements.filter(isSmall(_)==false)
     log.info(s"all - small elements size = ${selectedElements.size}")
-    selectedElements.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
+    selectedElements.map(_.getOrElse("xpath", "no xpath")).take(10).foreach(log.trace)
 
     //sort
     conf.firstList.foreach(step => {
@@ -557,7 +571,7 @@ class Crawler extends CommonLog {
 
   def refreshPage(): Boolean = {
     log.info("refresh page")
-    driver.getPageSource()
+    driver.getPageSourceWithRetry()
     log.trace(driver.currentPageSource)
 
     if (driver.currentPageSource!=null) {
@@ -680,11 +694,11 @@ class Crawler extends CommonLog {
         //app相同并且找到back控件才点击. 否则就默认back
         val element = getUrlElementByMap(v)
         val backElement=URIElement(
-          element.url,
-          element.tag,
-          element.name,
-          element.name+store.getClickedElementsList.map(_.loc==element.loc).size.toString,
-          element.loc)
+          url=element.url,
+          tag=element.tag,
+          id=element.name,
+          name=element.name+store.getClickedElementsList.map(_.loc==element.loc).size.toString,
+          loc=element.loc)
         setElementAction("click")
         backRetry+=1
         return Some(backElement)
@@ -758,13 +772,6 @@ class Crawler extends CommonLog {
       log.debug("refresh success")
     }
 
-    //是否需要回退到app
-    if (needBackApp()) {
-      nextElement = Some(URIElement(s"${currentUrl}", "backApp", "backApp", "backApp",
-        s"backApp-${appNameRecord.last()}-${store.clickedElementsList.size}"))
-      setElementAction("backApp")
-    }
-
     //先应用优先规则
     if (nextElement == None) {
       //todo: 优化结构
@@ -775,6 +782,13 @@ class Crawler extends CommonLog {
         }
         case None => {}
       }
+    }
+
+    //是否需要回退到app
+    if (nextElement == None && needBackApp()) {
+      nextElement = Some(URIElement(s"${currentUrl}", "backApp", "backApp", "backApp",
+        s"backApp-${appNameRecord.last()}-${store.clickedElementsList.size}"))
+      setElementAction("backApp")
     }
 
     //判断是否需要返回上层
@@ -872,7 +886,7 @@ class Crawler extends CommonLog {
 
   def saveLog(): Unit = {
     //记录点击log
-    File(s"${conf.resultDir}/elements.yml").writeAll(DataObject.toYaml(store))
+    File(s"${conf.resultDir}/elements.yml").writeAll(TData.toYaml(store))
   }
 
   def getBasePathName(right:Int=1): String = {
@@ -978,7 +992,7 @@ class Crawler extends CommonLog {
       case "backApp" => {
         driver.launchApp()
         //todo: 改进等待
-        Thread.sleep(6000)
+        Thread.sleep(conf.waitLaunch)
         /*if (conf.defaultBackAction.size > 0) {
           log.trace(conf.defaultBackAction)
           conf.defaultBackAction.foreach(Runtimes.eval)
@@ -1025,8 +1039,11 @@ class Crawler extends CommonLog {
         //todo: tap的缺点就是点击元素的时候容易点击到元素上层的控件
 
         log.info(s"need input ${str}")
-        driver.findElementByUrlElement(element) match {
-          case true => {
+        driver.findElementByURI(element) match {
+          case null => {
+            log.warn(s"not found by ${element.loc}")
+          }
+          case _ => {
             val rect = driver.getRect()
             if(conf.saveScreen) {
               log.info(s"mark ${originImageName} to ${newImageName}")
@@ -1055,12 +1072,10 @@ class Crawler extends CommonLog {
               }
             }
           }
-          case false => {
-            log.warn(s"not found by ${element.loc}")
-          }
+
         }
         if (List("UIATextField", "UIATextView", "EditText").map(element.tag.contains(_)).contains(true)) {
-          driver.tryAndCatch(driver.hideKeyboard())
+          driver.asyncTask()(driver.hideKeyboard())
         }
       }
     }
@@ -1093,7 +1108,7 @@ class Crawler extends CommonLog {
     if (conf.currentDriver.toLowerCase == "android") {
       if (backDistance.intervalMS() < 2000) {
         log.warn("two back action too close")
-        Thread.sleep(2000)
+        Thread.sleep(conf.waitLaunch)
       }
       driver.asyncTask() {
         driver.back()

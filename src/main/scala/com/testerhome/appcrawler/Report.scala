@@ -84,6 +84,6 @@ object Report extends Report{
 
 
   def loadResult(elementsFile: String): URIElementStore ={
-    DataObject.fromYaml[URIElementStore](Source.fromFile(elementsFile).mkString)
+    TData.fromYaml[URIElementStore](Source.fromFile(elementsFile).mkString)
   }
 }

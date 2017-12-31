@@ -33,6 +33,7 @@ import us.codecraft.xsoup.Xsoup
 import scala.collection.JavaConversions._
 import scala.io.Source
 import collection.JavaConverters._
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule
 
 /**
   * Created by seveniruby on 16/8/13.
@@ -87,6 +88,7 @@ object TData {
 
   def toXML(data: Any, root:String="xml"): String = {
     val mapper = new XmlMapper()
+    mapper.registerModule(new JaxbAnnotationModule)
     mapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
     //mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
     //mapper.registerModule(DefaultScalaModule)

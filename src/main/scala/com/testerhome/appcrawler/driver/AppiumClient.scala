@@ -17,19 +17,18 @@ import org.scalatest.selenium.WebBrowser
 import org.scalatest.time.{Seconds, Span}
 
 import scala.sys.process._
-import scala.util.{Failure, Success, Try}
+import collection.JavaConverters._
 
 /**
   * Created by seveniruby on 16/8/9.
   */
-class AppiumClient extends CommonLog with WebBrowser with WebDriver{
+class AppiumClient extends WebBrowser with WebDriver{
   Util.init()
   var conf: CrawlerConf = _
 
   implicit var driver: AppiumDriver[WebElement] = _
   var appiumProcess: Process = null
-  var loc = ""
-  var index = 0
+
   var currentElement:WebElement=_
 
   private var platformName = ""
@@ -44,15 +43,6 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     platformName = platform
   }
 
-
-  //todo: to be support
-  def shell(command:String): Unit ={
-    val commandFull=sys.props("os.name").toLowerCase match {
-      case x if x contains "windows" => Seq("cmd", "/C") ++ command
-      case _ => command
-    }
-    log.info(commandFull)
-  }
 
   //todo: 集成appium进程管理
   def start(port: Int = 4723): Unit = {
@@ -75,40 +65,6 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
   }
 
 
-  /**
-    * 在5s的时间内确定元素存在并且位置是固定的
-    *
-    * @param key
-    */
-  def wait(key: String): Unit = {
-    var isFound = false
-    1 to 10 foreach (i => {
-      if (isFound == false) {
-        val elements = driver.findElementsByXPath(key)
-        if (elements.size() > 0) {
-          isFound = true
-        } else {
-          sleep(0.5)
-        }
-      }
-    })
-
-  }
-
-  def see(key: String = "//*", index: Int = 0): this.type = {
-    loc = key
-    this.index = index
-    wait(key)
-    this
-  }
-
-/*
-  override def tap(): this.type = {
-    click on (XPathQuery(tree(loc, index)("xpath").toString))
-    this
-  }
-*/
-
   def send(keys: String): this.type = {
     tap()
     driver.getKeyboard.sendKeys(keys)
@@ -125,24 +81,6 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
         log.error("no event for ios")
       }
     }
-  }
-
-  def attribute(key: String): String = {
-    nodes().head.get(key).get.toString
-  }
-
-  def apply(key: String): String = {
-    attribute(key)
-  }
-
-  def nodes(): List[Map[String, Any]] = {
-    findMapByKey(loc)
-  }
-
-
-  def save(): Unit = {
-    index += 1
-    captureTo(s"${index}.png")
   }
 
 
@@ -173,43 +111,6 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     implicitlyWait(Span(10, Seconds))
   }
 
-  /**
-    * 解析给定的xpath表达式或者text的定位标记 把节点的信息转换为map
-    *
-    * @param key
-    * @return
-    */
-  def tree(key: String = "//*", index: Int = 0): Map[String, Any] = {
-    log.info(s"find by key = ${key} index=${index}")
-    val nodes = findMapByKey(key)
-    nodes.foreach(node => {
-      log.debug(s"index=${nodes.indexOf(node)}")
-      node.foreach(kv => {
-        log.debug(kv)
-      })
-    })
-    val ret = nodes.lift(index).getOrElse(Map[String, Any]())
-    log.info(s"ret = ${ret}")
-    ret
-  }
-
-  //todo: not test
-  def crawl(conf: String = "", resultDir: String = "", maxDepth: Int = 1): Unit = {
-    var crawler: Crawler = new Crawler
-
-    crawler = new Crawler
-    if (conf.nonEmpty) {
-      crawler.loadConf(conf)
-    }
-    if (resultDir.nonEmpty) {
-      crawler.conf.resultDir = resultDir
-    }
-    crawler.log.setLevel(Level.TRACE)
-    crawler.conf.maxDepth = maxDepth
-    crawler.start(this)
-
-  }
-
   override def getDeviceInfo(): Unit = {
     val size = driver.manage().window().getSize
     screenHeight = size.getHeight
@@ -218,11 +119,11 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
   }
 
 
-  override def swipe(startX: Double = 0.9, startY: Double = 0.1, endX: Double = 0.9, endY: Double = 0.1): Option[_] = {
+  override def swipe(startX: Double = 0.9, startY: Double = 0.1, endX: Double = 0.9, endY: Double = 0.1): Unit = {
     if(screenHeight<=0){
       getDeviceInfo()
     }
-    tryAndCatch(
+    asyncTask()(
       driver.performTouchAction(
         new TouchAction(driver)
           .press((screenWidth * startX).toInt, (screenHeight * startY).toInt)
@@ -246,7 +147,7 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     val img = ImageIO.read(file)
     val graph = img.createGraphics()
 
-    if (platformName.toLowerCase == "ios") {
+    if(img.getWidth>screenWidth){
       log.info("scale the origin image")
       graph.drawImage(img, 0, 0, screenWidth, screenHeight, null)
     }
@@ -256,27 +157,18 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     graph.dispose()
 
     log.info(s"write png ${fileName}")
-    if (platformName.toLowerCase == "ios") {
+    if(img.getWidth>screenWidth){
+      log.info("scale the origin image and save")
       val subImg=img.getSubimage(0, 0, screenWidth, screenHeight)
       ImageIO.write(subImg, "png", new java.io.File(newImageName))
-    } else {
+    }else{
       ImageIO.write(img, "png", new java.io.File(newImageName))
     }
   }
-
-
-  def hello(action: String, number: Int = 0): Unit = {
-    println(s"hello ${action} ${number}")
+  override def clickLocation(): Unit = {
+    val point=currentURIElement.center()
+    driver.performTouchAction(new TouchAction(driver).tap(point.x, point.y))
   }
-
-/*
-  def tap(x: Int = screenWidth / 2, y: Int = screenHeight / 2): Unit = {
-    log.info("tap")
-    driver.tap(1, x, y, 100)
-    //driver.findElementByXPath("//UIAWindow[@path='/0/2']").click()
-    //new TouchAction(driver).tap(x, y).perform()
-  }*/
-
   override def tap(): this.type = {
     driver.performTouchAction(new TouchAction(driver).tap(currentElement))
     this
@@ -303,136 +195,24 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
   }
 
   override def getPageSource(): String = {
-    currentPageSource=null
-    currentPageDom=null
-    log.info("start to get page source from appium")
-    //获取页面结构, 最多重试3次
-    var errorCount=0
-    var error: Throwable=null
-    1 to 3 foreach (i => {
-      asyncTask(20)(driver.getPageSource) match {
-        case Left(v) => {
-          log.trace("get page source success")
-          //todo: wda返回的不是标准的xml
-          val xmlStr=v match {
-            case json if json.trim.charAt(0)=='{' => {
-              log.info("json format maybe from wda")
-              DataObject.fromJson[Map[String, String]](v).getOrElse("value", "")
-            }
-            case xml if xml.trim.charAt(0)=='<' =>{
-              log.info("xml format ")
-              xml
-            }
-          }
-          Try(XPathUtil.toDocument(xmlStr)) match {
-            case Success(v) => {
-              currentPageDom = v
-            }
-            case Failure(e) => {
-              log.warn("convert to xml fail")
-              log.warn(xmlStr)
-              currentPageDom=null
-            }
-          }
-
-          currentPageSource = XPathUtil.toPrettyXML(xmlStr)
-          return currentPageSource
-        }
-        case Right(e) => {
-          errorCount+=1
-          log.error("get page source error")
-          error=e
-        }
-      }
-    })
-    if(currentPageSource==null){
-      throw error
-    }else{
-      currentPageSource
-    }
+    driver.getPageSource
   }
 
 
-  def monkey(): Unit = {
-    val crawl = AppCrawler.crawler
-    val monkeyEvents = crawl.conf.monkeyEvents
-    val count = monkeyEvents.size
-    val limits = AppCrawler.crawler.conf.monkeyRunTimeSeconds
-    val record = new DataRecord
-    while (record.intervalMS() / 1000 < limits) {
-      val number = util.Random.nextInt(count)
-      val code = monkeyEvents(number)
-      event(code)
-      record.append(code)
-      val element = URIElement(crawl.currentUrl + "_Monkey", "", "", "", s"monkey_${code}")
-      crawl.store.setElementClicked(element)
-    }
+  override def findElementsByURI(element: URIElement): List[AnyRef] = {
+    driver.findElementsByXPath(element.loc).asScala.toList
   }
 
-
-  //todo:优化查找方法
-  //找到统一的定位方法就在这里定义, 找不到就分别在子类中重载定义
-  override def findElementByUrlElement(element: URIElement): Boolean = {
-    //为了加速去掉id定位, 测试表明比xpath竟然还慢
-    /*
-    log.info(s"find element by uid ${element}")
-    if (element.id != "") {
-      log.info(s"find by id=${element.id}")
-      MiniAppium.doAppium(driver.findElementsById(element.id)) match {
-        case Some(v) => {
-          val arr = v.toArray().distinct
-          if (arr.length == 1) {
-            log.trace("find by id success")
-            return Some(arr.head.asInstanceOf[WebElement])
-          } else {
-            //有些公司可能存在重名id
-            arr.foreach(log.info)
-            log.info(s"find count ${arr.size}, change to find by xpath")
-          }
-        }
-        case None => {
-          log.warn("find by id error")
-        }
-      }
-    }
-    */
-    //todo: 用其他定位方式优化
-    log.info(s"find by xpath= ${element.loc}")
-    tryAndCatch(driver.findElementsByXPath(element.loc)) match {
-      case Some(v) => {
-        val arr = v.toArray().distinct
-        arr.length match {
-          case len if len == 1 => {
-            log.info("find by xpath success")
-            currentElement=arr.head.asInstanceOf[WebElement]
-            return true
-          }
-          case len if len > 1 => {
-            log.warn(s"find count ${v.size()}, you should check your dom file")
-            //有些公司可能存在重名id
-            arr.foreach(log.info)
-            log.warn("just use the first one")
-            currentElement=arr.head.asInstanceOf[WebElement]
-            return true
-          }
-          case len if len == 0 => {
-            log.warn("find by xpath error no element found")
-          }
-        }
-      }
-      case None => {
-        log.warn("find by xpath error")
-      }
-    }
-    false
+  override def findElementByURI(element: URIElement): AnyRef = {
+    currentElement=super.findElementByURI(element).asInstanceOf[WebElement]
+    currentElement
   }
-
 
   override def getAppName(): String = {
     driver match {
       case android: AndroidDriver[_] => {
         val xpath="(//*[@package!=''])[1]"
-        findMapByKey(xpath).head.getOrElse("package", "").toString
+        findMapByKey(xpath).headOption.getOrElse(Map("package"->"")).get("package").toString
       }
       case ios: IOSDriver[_] => {
         val xpath="//*[contains(name(), 'Application')]"
@@ -462,7 +242,6 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     val size=currentElement.getSize
     new Rectangle(location.x, location.y, size.height, size.width)
   }
-
 
   override def sendKeys(content: String): Unit = {
     currentElement.sendKeys(content)

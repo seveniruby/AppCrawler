@@ -171,6 +171,11 @@ object XPathUtil extends CommonLog {
           nodeMap("name") = ""
           nodeMap("value") = ""
           nodeMap("label") = ""
+          nodeMap("x")="0"
+          nodeMap("y")="0"
+          nodeMap("width")="0"
+          nodeMap("height")="0"
+
 
           val node = nodeList.item(i)
           //如果node为.可能会异常. 不过目前不会
@@ -211,6 +216,15 @@ object XPathUtil extends CommonLog {
             nodesMap += (nodeMap.toMap)
           } else {
             log.trace(s"xpath error skip ${nodeMap}")
+          }
+
+          //android
+          if(nodeMap.contains("bounds")){
+            val rect=nodeMap("bounds").toString.split("[^0-9]+").takeRight(4)
+            nodeMap("x")=rect(0).toInt
+            nodeMap("y")=rect(1).toInt
+            nodeMap("width")=rect(2).toInt-rect(0).toInt
+            nodeMap("height")=rect(3).toInt-rect(1).toInt
           }
         } )
       }

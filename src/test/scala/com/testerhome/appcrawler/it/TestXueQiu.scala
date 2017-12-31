@@ -55,13 +55,18 @@ class TestXueQiu extends FunSuite{
   }
 
   test("test automation"){
-
     AppCrawler.main(Array("-c", "src/test/scala/com/testerhome/appcrawler/it/xueqiu_automation.yml",
       "-o", s"/tmp/xueqiu/${System.currentTimeMillis()}", "--verbose"
     )
     )
   }
 
+  test("test sikuli"){
+    AppCrawler.main(Array("-c", "src/test/scala/com/testerhome/appcrawler/it/xueqiu_sikuli.yml",
+      "-o", s"/tmp/xueqiu/${System.currentTimeMillis()}", "--verbose"
+    )
+    )
+  }
 
 
 }

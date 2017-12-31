@@ -30,11 +30,11 @@ class TestElementStore extends FunSuite with Matchers with CommonLog{
     store.clickedElementsList.append(element_2)
 
     log.info(store)
-    val str=DataObject.toYaml(store)
+    val str=TData.toYaml(store)
     log.info(str)
-    val store2=DataObject.fromYaml[URIElementStore](str)
+    val store2=TData.fromYaml[URIElementStore](str)
     log.info(store2)
-    val str2=DataObject.toYaml(store2)
+    val str2=TData.toYaml(store2)
 
 
     str should be equals str2
