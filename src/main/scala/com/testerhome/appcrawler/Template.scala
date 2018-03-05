@@ -21,9 +21,8 @@ class Template {
     val page=Source.fromURL(s"${url}/source/xml").mkString
     val xml=TData.fromJson[Map[String, String]](page).getOrElse("value", "")
       .asInstanceOf[Map[String, String]].getOrElse("tree", "")
-    val doc=XPathUtil.toDocument(xml)
     elements("Demo")=ListBuffer[Map[String, Any]]()
-    elements("Demo")++=XPathUtil.getListFromXPath("//*[]", doc)
+    elements("Demo")++=XPathUtil.getListFromXPath("//*[]", xml)
 
   }
   def read(path:String): Unit = {
@@ -35,12 +34,11 @@ class Template {
       val reqDom = s._2.reqDom
       val url = s._2.element.url
       if (reqDom.size != 0) {
-        val doc = XPathUtil.toDocument(reqDom)
 
         if (elements.contains(url) == false) {
           elements.put(url, ListBuffer[Map[String, Any]]())
         }
-        elements(url) ++= XPathUtil.getListFromXPath("//*", doc)
+        elements(url) ++= XPathUtil.getListFromXPath("//*", reqDom)
         val tagsLimit=List("Image", "Button", "Text")
         elements(url) = elements(url)
           .filter(_.getOrElse("visible", "true")=="true")

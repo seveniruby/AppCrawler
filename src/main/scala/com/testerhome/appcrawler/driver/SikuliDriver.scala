@@ -16,6 +16,7 @@ import scala.collection.mutable.ListBuffer
 
 class SikuliDriver extends AppiumClient {
   private var images=ListBuffer[Pattern]()
+  var score=0.6F
   val result=ListBuffer[URIElement]()
 
   def this(url: String = "http://127.0.0.1:4723/wd/hub", configMap: Map[String, Any]=Map[String, Any]()) {
@@ -65,7 +66,7 @@ class SikuliDriver extends AppiumClient {
       log.info("load images from images directory")
       new File(imagesDir).listFiles().foreach(f=>{
         log.info(s"load image ${f.getCanonicalPath}")
-        images.append(new Pattern(f.getCanonicalPath).similar(0.4F))
+        images.append(new Pattern(f.getCanonicalPath).similar(score))
       })
     }
 

@@ -78,11 +78,17 @@ class MacacaDriver extends WebBrowser with WebDriver{
   }
 
   override def swipe(startX: Double = 0.9, endX: Double = 0.1, startY: Double = 0.9, endY: Double = 0.1): Unit = {
-    asyncTask()(driver.swipe(
-      (screenWidth * startX).toInt, (screenHeight * startY).toInt,
-      (screenWidth * endX).toInt, (screenHeight * endY).toInt, 1000
-    )
-    )
+    //macaca 2.0.20有api变动
+    asyncTask() {
+      val json = new JSONObject()
+      json.put("fromX", (screenWidth * startX).toInt)
+      json.put("fromY", (screenHeight * startY).toInt)
+      json.put("toX", (screenWidth * endX).toInt)
+      json.put("toY", (screenHeight * endY).toInt)
+      json.put("duration", 2)
+      driver.touch("drag", json)
+    }
+
   }
 
 

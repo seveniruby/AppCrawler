@@ -1,8 +1,8 @@
 package com.testerhome.appcrawler.ut
 
-import com.testerhome.appcrawler.{CommonLog, URIElement}
-import com.testerhome.appcrawler.{CommonLog, XPathUtil}
+import com.testerhome.appcrawler.{CommonLog, Crawler, URIElement, XPathUtil}
 import org.scalatest.{FunSuite, Matchers}
+import org.w3c.dom.NodeList
 
 /**
   * Created by seveniruby on 16/3/26.
@@ -1266,6 +1266,27 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
     log.info("两层以上")
     val nodes2=XPathUtil.getListFromXPath("//*[../../*[@selected='true']]", domAndroid)
     nodes2.foreach(x=>log.info(x.getOrElse("xpath", "")))
+  }
+
+
+  test("xpath"){
+    XPathUtil.xpathExpr=List("resource-id", "content-desc", "depth")
+    XPathUtil.getListFromXPath("//*", xmlAndroid).foreach(node=>{
+      println(node.get("xpath"))
+      println(node.get("depth"))
+    })
+
+  }
+
+  test("sort selected nodes"){
+    val crawler=new Crawler
+    crawler.conf.sortByAttribute="depth"
+    XPathUtil.xpathExpr=List("resource-id", "content-desc", "depth", "instance", "index")
+    crawler.getSelectedNodes(XPathUtil.toDocument(xmlAndroid), true).foreach(node=>{
+      println(node.get("depth").get)
+      println(node.get("xpath").get)
+    })
+
   }
 
 

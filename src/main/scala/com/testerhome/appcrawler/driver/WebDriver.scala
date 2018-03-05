@@ -298,26 +298,7 @@ trait WebDriver extends CommonLog {
 
   //todo: xpath 2.0 support
   def findMapByKey(key:String): List[Map[String, Any]] ={
-    key match {
-      //xpath
-      case xpath if Array("/.*", "\\(.*", "string\\(/.*\\)").exists(xpath.matches(_)) => {
-        XPathUtil.getListFromXPath(xpath, currentPageDom)
-      }
-      case regex if regex.contains(".*") || regex.startsWith("^")  => {
-        XPathUtil.getListFromXPath("//*", currentPageDom).filter(m=>{
-          m("name").toString.matches(regex) ||
-            m("label").toString.matches(regex) ||
-            m("value").toString.matches(regex)
-        })
-      }
-      case str: String => {
-        XPathUtil.getListFromXPath("//*", currentPageDom).filter(m=>{
-          m("name").toString.contains(str) ||
-            m("label").toString.contains(str) ||
-            m("value").toString.contains(str)
-        })
-      }
-    }
+    XPathUtil.findMapByKey(key, currentPageDom)
   }
 
   //支持宽松查找，自动刷新查找，自动滚动查找

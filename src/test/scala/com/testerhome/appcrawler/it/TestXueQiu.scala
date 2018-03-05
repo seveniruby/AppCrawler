@@ -67,6 +67,24 @@ class TestXueQiu extends FunSuite{
     )
     )
   }
+  test("test xiaomi"){
+    AppCrawler.main(Array("-c", "src/tes" +
+      "" +
+      "t/scala/com/testerhome/appcrawler/it/xiaomi.yml",
+      "-o", s"/tmp/xiaomi/${System.currentTimeMillis()}", "--verbose"
+    )
+    )
+  }
+
+  test("xiaomi click"){
+    capability.setCapability("app", "")
+    capability.setCapability("appPackage", "com.xueqiu.android")
+    capability.setCapability("appActivity", ".view.WelcomeActivityAlias")
+    val driver=new AndroidDriver[AndroidElement](new URL("http://127.0.0.1:4723/wd/hub"), capability)
+
+  }
+
+
 
 
 }

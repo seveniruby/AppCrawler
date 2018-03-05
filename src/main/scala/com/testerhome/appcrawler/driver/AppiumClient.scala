@@ -212,7 +212,7 @@ class AppiumClient extends WebBrowser with WebDriver{
     driver match {
       case android: AndroidDriver[_] => {
         val xpath="(//*[@package!=''])[1]"
-        findMapByKey(xpath).headOption.getOrElse(Map("package"->"")).get("package").toString
+        findMapByKey(xpath).headOption.getOrElse(Map("package"->"")).get("package").getOrElse("").toString
       }
       case ios: IOSDriver[_] => {
         val xpath="//*[contains(name(), 'Application')]"

@@ -25,7 +25,7 @@ class TestSikuli extends FunSuite{
     }
   }
 
-  test("find by image xueqiu"){
+  test("find by image xueqiu with gray"){
 
 
     //val sourceImg="/Users/seveniruby/temp/ocr/t1t.png"
@@ -35,18 +35,18 @@ class TestSikuli extends FunSuite{
     val sourceImg="/Users/seveniruby/temp/ocr/xueqiu2.png"
     val findImg="/Users/seveniruby/temp/ocr/images/行情灰.png"
 
-    //val graySourceImg=Image.convertImageToGrayscale(ImageIO.read(new File(sourceImg)))
-    //val grayTargetImg=Image.convertImageToGrayscale(ImageIO.read(new File(findImg)))
+    val graySourceImg=Image.convertImageToGrayscale(ImageIO.read(new File(sourceImg)))
+    val grayTargetImg=Image.convertImageToGrayscale(ImageIO.read(new File(findImg)))
 
-    val img=new java.io.File(sourceImg)
-    val imgFile=ImageIO.read(img)
-    val graph=imgFile.createGraphics()
+    //val img=new java.io.File(sourceImg)
+    //val imgFile=ImageIO.read(img)
+    val graph=graySourceImg.createGraphics()
     graph.setStroke(new BasicStroke(4))
     graph.setColor(Color.RED)
 
 
-    val finder=new Finder(sourceImg)
-    finder.findAll(new Pattern(findImg).similar(0.5F))
+    val finder=new Finder(graySourceImg)
+    finder.findAll(new Pattern(grayTargetImg).similar(0.5F))
     while(finder.hasNext){
       val e=finder.next()
       println(e.getScore)
@@ -64,8 +64,50 @@ class TestSikuli extends FunSuite{
     }
 
     graph.dispose()
-    ImageIO.write(imgFile, "png", new java.io.File(s"${img}.mark.png"))
+    ImageIO.write(graySourceImg, "png", new java.io.File(s"${sourceImg}.mark.png"))
   }
+
+
+  test("find by image xueqiu with color"){
+
+
+    val sourceImg="/Users/seveniruby/temp/ocr/t1t.png"
+    val findImg="/Users/seveniruby/temp/ocr/images/方形.png"
+
+
+    //val sourceImg="/Users/seveniruby/temp/ocr/xueqiu2.png"
+    //val findImg="/Users/seveniruby/temp/ocr/images/行情灰.png"
+
+    val img=new java.io.File(sourceImg)
+    val imgFile=ImageIO.read(img)
+    val graph=imgFile.createGraphics()
+    graph.setStroke(new BasicStroke(4))
+    graph.setColor(Color.RED)
+
+
+    val finder=new Finder(sourceImg)
+    finder.findAll(new Pattern(findImg).similar(0.6F))
+    while(finder.hasNext){
+      val e=finder.next()
+      println(e.getScore)
+      println(e.getTarget.toJSON)
+      e.getTargetOffset.toJSON
+      println(e.getText)
+      val x=e.getTarget.x
+      val y=e.getTarget.y
+      val xx=e.getImage.getSize.width
+      val yy=e.getImage.getSize.height
+      println(s"${x} ${y} ${xx} ${yy}")
+      graph.drawRect(x, y, xx, yy)
+      graph.drawString("%.2f".format(e.getScore), x, y )
+
+    }
+
+    graph.dispose()
+    ImageIO.write(imgFile, "png", new java.io.File(s"${sourceImg}.mark.png"))
+  }
+
+
 
   test("find by text"){
 

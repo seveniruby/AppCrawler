@@ -26,8 +26,8 @@ androidCapability:
   appPackage: "com.xueqiu.android"
   appActivity: ".view.WelcomeActivityAlias"
   app: ""
-  appium: "http://127.0.0.1:4723/wd/hub"
-  automationName: appium
+  appium: "http://192.168.31.27:4723/wd/hub"
+  #automationName: uiautomator2
 iosCapability:
   deviceName: "iPhone 6 Plus"
   bundleId: "com.xueqiu"
@@ -35,7 +35,7 @@ iosCapability:
   platformVersion: "9.3"
   autoAcceptAlerts: "true"
   app: "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app"
-  appium: "http://127.0.0.1:4730/wd/hub"
+  appium: "http://192.168.31.27:4723/wd/hub"
 defineUrl:
 - "//*[@selected='true']/@text"
 - "//*[@selected='true']/@text"

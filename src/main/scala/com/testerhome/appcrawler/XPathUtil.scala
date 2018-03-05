@@ -52,7 +52,7 @@ object XPathUtil extends CommonLog {
     * @return
     */
   def getXPathFromAttributes(attributes: ListBuffer[Map[String, String]]): String = {
-    var xpath = attributes.takeRight(4).map(attribute => {
+    var xpath = attributes.map(attribute => {
       var newAttribute = attribute
       //如果有值就不需要path了, 基本上两层xpath定位即可唯一
       xpathExpr.foreach(key => {
@@ -89,40 +89,18 @@ object XPathUtil extends CommonLog {
           case key if xpathExpr.contains(key) && kv._2.nonEmpty => s"@${kv._1}=" + "\"" + kv._2.replace("\"", "\\\"") + "\""
           case _ => ""
         }
-        /*
-        if (kv._1 != "tag") {
-          if (kv._1 == "name" && kv._2.size > 50) {
-            log.trace(s"name size too long ${kv._2.size}>20")
-            ""
-          }
-          //只有按钮才需要记录文本, 文本框很容易变化, 不需要记录
-          else if (kv._1 == "text" && kv._2.size > 10 && newAttribute("tag").contains("Button") ) {
-            log.trace(s"text size too long ${kv._2.size}>10")
-            s"contains(@text, '${kv._2.split("&")(0).take(10)}')"
-          }
-          else {
-            s"@${kv._1}=" + "\"" + kv._2.replace("\"", "\\\"") + "\""
-          }
-        } else {
-          ""
-        }
-        */
       }).filter(x => x.nonEmpty).mkString(" and ")
 
       //todo: macaca的source有问题
       xpathSingle = if (xpathSingle.isEmpty) {
-        s"/${attribute.getOrElse("class", attribute.getOrElse("tag", "*"))}"
+        //s"/${attribute.getOrElse("class", attribute.getOrElse("tag", "*"))}"
+        ""
       } else {
-        s"/*[${xpathSingle}]"
+        s"//*[${xpathSingle}]"
       }
       xpathSingle
     }
     ).mkString("")
-    if (xpath.isEmpty) {
-      log.trace(attributes)
-    } else {
-      xpath = "/" + xpath
-    }
     return xpath
   }
 
@@ -152,17 +130,33 @@ object XPathUtil extends CommonLog {
   }
 
 
-  def getListFromXPath(xpath: String, pageDom: Document): List[Map[String, Any]] = {
+  def getNodeListFromXML(raw:String, xpath:String): AnyRef ={
+    val pageDom=toDocument(raw)
+    getNodeListFromXML(pageDom, xpath)
+  }
+
+  def getNodeListFromXML(pageDom:Document, xpath:String): AnyRef ={
     val nodesMap = ListBuffer[Map[String, Any]]()
     val xPath: XPath = XPathFactory.newInstance().newXPath()
     val compexp = xPath.compile(xpath)
     //val node=compexp.evaluate(pageDom)
-    val node = if (xpath.matches("string(.*)") || xpath.matches(".*/@[^/]*")) {
+    if (xpath.matches("string(.*)") || xpath.matches(".*/@[^/]*")) {
       compexp.evaluate(pageDom, XPathConstants.STRING)
     } else {
       compexp.evaluate(pageDom, XPathConstants.NODESET)
     }
+  }
 
+
+  def getListFromXPath(xpath:String, pageDomString: String): List[Map[String, Any]] ={
+    val pageDom=toDocument(pageDomString)
+    getListFromXPath(xpath, pageDom)
+  }
+  def getListFromXPath(xpath: String, pageDom: Document): List[Map[String, Any]] = {
+
+    val node=getNodeListFromXML(pageDom, xpath)
+
+    val nodesMap = ListBuffer[Map[String, Any]]()
     node match {
       case nodeList: NodeList => {
         0 until nodeList.getLength foreach (i => {
@@ -176,12 +170,14 @@ object XPathUtil extends CommonLog {
           nodeMap("width")="0"
           nodeMap("height")="0"
 
-
           val node = nodeList.item(i)
           //如果node为.可能会异常. 不过目前不会
           nodeMap("tag") = node.getNodeName
-          val path=getAttributesFromNode(node)
-          nodeMap("xpath") = getXPathFromAttributes(path)
+          //todo: 增加深度标记
+          //必须在xpath前面
+          nodeMap("depth") = getAttributesFromNode(node).size
+          nodeMap("xpath") = getXPathFromAttributes(getAttributesFromNode(node))
+
           //支持导出单个字段
           nodeMap(node.getNodeName) = node.getNodeValue
           //获得所有节点属性
@@ -234,6 +230,29 @@ object XPathUtil extends CommonLog {
       }
     }
     nodesMap.toList
+  }
+
+  def findMapByKey(key:String, currentPageDom: Document): List[Map[String, Any]] ={
+    key match {
+      //xpath
+      case xpath if Array("/.*", "\\(.*", "string\\(/.*\\)").exists(xpath.matches(_)) => {
+        getListFromXPath(xpath, currentPageDom)
+      }
+      case regex if regex.contains(".*") || regex.startsWith("^")  => {
+        getListFromXPath("//*", currentPageDom).filter(m=>{
+          m("name").toString.matches(regex) ||
+            m("label").toString.matches(regex) ||
+            m("value").toString.matches(regex)
+        })
+      }
+      case str: String => {
+        getListFromXPath("//*", currentPageDom).filter(m=>{
+          m("name").toString.contains(str) ||
+            m("label").toString.contains(str) ||
+            m("value").toString.contains(str)
+        })
+      }
+    }
   }
 
 }

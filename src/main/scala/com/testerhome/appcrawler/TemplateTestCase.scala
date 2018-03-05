@@ -67,12 +67,10 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
               """.stripMargin
               )
               */
-              val req = XPathUtil.toDocument(ele.reqDom)
-              val res = XPathUtil.toDocument(ele.resDom)
               log.debug(ele.reqDom)
 
               AppCrawler.crawler.conf.assert.steps.foreach(step => {
-                if (XPathUtil.getListFromXPath(step.when.xpath, req)
+                if (XPathUtil.getListFromXPath(step.when.xpath, ele.reqDom)
                   .map(_.getOrElse("xpath", ""))
                   .headOption == Some(ele.element.loc)
                 ) {
@@ -84,7 +82,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
                       log.debug(existAssert)
                       cp {
                         withClue(s"${existAssert} 不存在\n") {
-                          XPathUtil.getListFromXPath(existAssert, res).size should be > 0
+                          XPathUtil.getListFromXPath(existAssert, ele.resDom).size should be > 0
                         }
                       }
                     })

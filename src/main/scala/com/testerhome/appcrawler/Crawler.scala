@@ -9,6 +9,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.log4j._
 import org.scalatest
 import org.scalatest.ConfigMap
+import org.w3c.dom.Document
 import sun.misc.{Signal, SignalHandler}
 
 import scala.annotation.tailrec
@@ -494,7 +495,7 @@ class Crawler extends CommonLog {
   }
 
   //todo: 支持xpath表达式
-  def getSelectedNodes(): List[immutable.Map[String, Any]] = {
+  def getSelectedNodes(currentPageDom: Document, skipSmall:Boolean=false ): List[immutable.Map[String, Any]] = {
     var all = List[immutable.Map[String, Any]]()
     var firstElements = List[immutable.Map[String, Any]]()
     var lastElements = List[immutable.Map[String, Any]]()
@@ -503,7 +504,7 @@ class Crawler extends CommonLog {
 
     conf.selectedList.foreach(step => {
       log.trace(s"selectedList xpath =  ${step.getXPath()}")
-      val temp = driver.findMapByKey(step.getXPath()).filter(isValid)
+      val temp = XPathUtil.findMapByKey(step.getXPath(), currentPageDom).filter(isValid)
       selectedElements ++= temp
     })
     selectedElements=selectedElements.distinct
@@ -512,7 +513,7 @@ class Crawler extends CommonLog {
 
     //remove blackList
     conf.blackList.foreach(xpath => {
-      val temp = driver.findMapByKey(xpath)
+      val temp = XPathUtil.findMapByKey(xpath, currentPageDom)
       temp.foreach(x=>
         log.info(s"blackList hit ${xpath} ${x}")
       )
@@ -524,14 +525,17 @@ class Crawler extends CommonLog {
     selectedElements.map(_.getOrElse("xpath", "no xpath")).take(10).foreach(log.trace)
 
     //exclude small
-    selectedElements=selectedElements.filter(isSmall(_)==false)
+    if(skipSmall==false){
+      selectedElements=selectedElements.filter(isSmall(_)==false)
+    }
     log.info(s"all - small elements size = ${selectedElements.size}")
     selectedElements.map(_.getOrElse("xpath", "no xpath")).take(10).foreach(log.trace)
 
+    //todo: 根据深度优先
     //sort
     conf.firstList.foreach(step => {
       log.trace(s"firstList xpath = ${step.getXPath()}")
-      val temp = driver.findMapByKey(step.getXPath()).filter(isValid).intersect(selectedElements)
+      val temp = XPathUtil.findMapByKey(step.getXPath(), currentPageDom).filter(isValid).intersect(selectedElements)
       firstElements ++= temp
     })
     log.trace("first elements")
@@ -539,7 +543,7 @@ class Crawler extends CommonLog {
 
     conf.lastList.foreach(step => {
       log.trace(s"lastList xpath = ${step.getXPath()}")
-      val temp = driver.findMapByKey(step.getXPath()).filter(isValid).intersect(selectedElements)
+      val temp = XPathUtil.findMapByKey(step.getXPath(), currentPageDom).filter(isValid).intersect(selectedElements)
       lastElements ++= temp
     })
 
@@ -549,6 +553,12 @@ class Crawler extends CommonLog {
 
     //确保不重, 并保证顺序
     all = (firstElements ++ selectedElements ++ lastElements).distinct
+
+    conf.sortByAttribute match {
+      case "depth" => {
+        all=all.sortWith(_.get("depth").get.toString.toInt > _.get("depth").get.toString.toInt)
+      }
+    }
     log.trace("sorted nodes")
     all.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
     log.trace(s"sorted nodes length=${all.length}")
@@ -715,7 +725,7 @@ class Crawler extends CommonLog {
 
   def getAvailableElement(): Seq[URIElement] = {
     //把元素转换为Element对象
-    var allElements = getSelectedNodes().map(getUrlElementByMap(_))
+    var allElements = getSelectedNodes(driver.currentPageDom).map(getUrlElementByMap(_))
     //获得所有未点击元素
     log.info(s"all elements size=${allElements.length}")
 
