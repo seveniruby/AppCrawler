@@ -273,7 +273,9 @@ class Crawler extends CommonLog {
       }
       case _ => {
         log.info("use AppiumClient")
+        log.info(conf.capability)
         driver=new AppiumClient(url, conf.capability)
+        log.info(driver)
       }
     }
 

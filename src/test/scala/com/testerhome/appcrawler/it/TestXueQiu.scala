@@ -61,6 +61,15 @@ class TestXueQiu extends FunSuite{
     )
   }
 
+
+  test("test default crawler"){
+    AppCrawler.main(Array(
+      "--capability", "appPackage=com.xueqiu.android,appActivity=.view.WelcomeActivityAlias,dontStopAppOnReset=true",
+      "-o", s"/tmp/xueqiu/${System.currentTimeMillis()}", "--verbose"
+    )
+    )
+  }
+
   test("test sikuli"){
     AppCrawler.main(Array("-c", "src/test/scala/com/testerhome/appcrawler/it/xueqiu_sikuli.yml",
       "-o", s"/tmp/xueqiu/${System.currentTimeMillis()}", "--verbose"

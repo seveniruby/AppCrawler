@@ -7,7 +7,7 @@ saveScreen: false
 showCancel: true
 reportTitle: AppCrawler雪球内部版
 screenshotTimeout: 20
-tagLimitMax: 2
+tagLimitMax: 5
 currentDriver: "android"
 maxTime: 10800
 resultDir: ""
@@ -26,7 +26,7 @@ androidCapability:
   appPackage: "com.xueqiu.android"
   appActivity: ".view.WelcomeActivityAlias"
   app: ""
-  appium: "http://192.168.31.27:4723/wd/hub"
+  appium: "http://127.0.0.1:4723/wd/hub"
   #automationName: uiautomator2
 iosCapability:
   deviceName: "iPhone 6 Plus"
