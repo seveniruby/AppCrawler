@@ -3,7 +3,7 @@ package com.testerhome.appcrawler
 import java.io
 import java.util.Date
 
-import com.testerhome.appcrawler.driver.{AppiumClient, MacacaDriver, SikuliDriver, WebDriver}
+import com.testerhome.appcrawler.driver.{AppiumClient, MacacaDriver, WebDriver}
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.log4j._
@@ -261,7 +261,7 @@ class Crawler extends CommonLog {
         log.info("use macaca")
         driver=new MacacaDriver(url, conf.capability)
       }
-      case "sikuli" => {
+      /*case "sikuli" => {
         log.info("use SikuliDriver")
         conf.capability++=Map("automationName"-> "Appium")
         driver=new SikuliDriver(url, conf.capability)
@@ -270,7 +270,7 @@ class Crawler extends CommonLog {
         }else{
           log.error("please set sikuliImages with your images directory")
         }
-      }
+      }*/
       case _ => {
         log.info("use AppiumClient")
         log.info(conf.capability)
@@ -622,14 +622,15 @@ class Crawler extends CommonLog {
     //如果跳回到某个页面, 就弹栈到特定的页面, 比如回到首页
     if (urlStack.contains(currentUrl)) {
       while (urlStack.head != currentUrl) {
-        log.info("pop urlStack")
+        log.debug("pop urlStack")
         urlStack.pop()
       }
-    } else {
-      urlStack.push(currentUrl)
+      //如果有回退就保存log
       if(urlStack.size>2) {
         saveLog()
       }
+    } else {
+      urlStack.push(currentUrl)
     }
     //判断新的url堆栈中是否包含baseUrl, 如果有就清空栈记录并从新计数
     if (conf.baseUrl.map(urlStack.head.matches(_)).contains(true)) {
@@ -912,7 +913,9 @@ class Crawler extends CommonLog {
 
   def saveLog(): Unit = {
     //记录点击log
-    File(s"${conf.resultDir}/elements.yml").writeAll(TData.toYaml(store))
+    val logName=s"${conf.resultDir}/elements.yml"
+    log.info(s"save log to ${logName}")
+    File(logName).writeAll(TData.toYaml(store))
   }
 
   def getBasePathName(right:Int=1): String = {

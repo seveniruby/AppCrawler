@@ -39,13 +39,6 @@ libraryDependencies ++= Seq(
   "com.github.tototoshi" %% "scala-csv" % "1.3.4" ,
   "us.codecraft" % "xsoup" % "0.3.1" ,
   "junit" % "junit" % "4.12" % "test",
-  //"org.sikuli" % "sikuli-api" % "1.2.0",
-  "com.sikulix" % "sikulixapi" % "1.1.2-SNAPSHOT"
-    exclude("ch.qos.logback", "logback-classic")
-    exclude("org.slf4j", "log4j-over-slf4j")
-    exclude("org.apache.logging.log4j", "log4j-core")
-    exclude("com.sikulix", "${sikulix.libs}")
-    exclude("com.github.vidstige", "jadb"),
   //"org.bytedeco" % "javacpp" % "1.3.3",
   //"org.bytedeco" % "javacv-platform" % "1.3.3",
   //"org.bytedeco" % "javacv" % "1.2",
