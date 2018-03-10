@@ -14,16 +14,16 @@ import org.scalatest.FunSuite
   */
 class TestIOS extends FunSuite{
 
-  val app = "/Users/seveniruby/projects/ios-uicatalog/build/Debug-iphonesimulator/UICatalog.app"
-
+  //val app = "/Users/seveniruby/projects/ios-uicatalog/build/Debug-iphonesimulator/UICatalog.app"
+  val app="/Users/seveniruby/Library/Developer/Xcode/DerivedData/UICatalog-ftyzdbgapjmxxobezrnrxsshpdqh/Build/Products/Debug-iphonesimulator/UICatalog.app"
+  val bundleID="com.testerhome.ios"
   test("ios测试"){
     val capability=new DesiredCapabilities()
-    capability.setCapability("app",
-      "/Users/seveniruby/projects/ios-uicatalog/build/Debug-iphonesimulator/UICatalog.app")
-    capability.setCapability("bundleId", "com.example.apple-samplecode.UICatalog")
+    capability.setCapability("app", app)
+    //capability.setCapability("bundleId", "com.example.apple-samplecode.UICatalog")
+    capability.setCapability("bundleId", bundleID )
     //capability.setCapability("appPackage", "com.example.apple-samplecode.UICatalog")
     //capability.setCapability("appActivity", "com.example.apple-samplecode.UICatalog")
-
 
     capability.setCapability("fullReset", "false")
     capability.setCapability("noReset", "true")
@@ -53,38 +53,23 @@ class TestIOS extends FunSuite{
 
   test("ios测试 IOSDriver"){
     val capability=new DesiredCapabilities()
-    capability.setCapability("app",
-      app)
-    capability.setCapability("bundleId", "com.example.apple-samplecode.UICatalog")
+    capability.setCapability("app", app)
+    capability.setCapability("bundleId", bundleID)
     //capability.setCapability("appPackage", "com.example.apple-samplecode.UICatalog")
     //capability.setCapability("appActivity", "com.example.apple-samplecode.UICatalog")
 
-
     capability.setCapability("fullReset", "false")
     capability.setCapability("noReset", "true")
-    //capability.setCapability("udid", "4F05E384-FE32-43DE-8539-4DC3E2EBC117")
     capability.setCapability("automationName", "XCUITest")
     capability.setCapability("platformName", "ios")
-    capability.setCapability("platformVersion", "10.2")
-    capability.setCapability("deviceName", "iPhone 7")
+    capability.setCapability("platformVersion", "11.2")
+    capability.setCapability("deviceName", "iPhone 8")
     capability.setCapability("autoAcceptAlerts", true)
 
-
-    //val url="http://192.168.100.65:7771"
-    //val url="http://127.0.0.1:8100"
     val url="http://127.0.0.1:4723/wd/hub"
     val driver=new IOSDriver[IOSElement](new URL(url), capability)
     println(driver.getPageSource)
-    driver.findElementsByXPath("//*[@label='OK']") match {
-      case array if array.size()>0 => array.head.click()
-      case _ => println("no OK alert")
-    }
-    driver.runAppInBackground(Duration.ofSeconds(3))
-    driver.findElementsByXPath("//*").foreach(x=>{
-      println(x)
-      println(x.getText)
-    })
-
+    driver.findElementById("Buttons").click()
   }
 
   test("android"){

@@ -22,6 +22,8 @@ case class URIElement(
                        name: String="",
                        @XmlAttribute(name = "loc")
                        loc:String="",
+                       @XmlAttribute(name = "ancestor")
+                       ancestor:String="",
                        @XmlAttribute(name = "x")
                        x:Int=0,
                        @XmlAttribute(name = "y")
@@ -62,9 +64,7 @@ case class URIElement(
     * @return
     */
   def toTagPath(): String ={
-    //todo: 将来保存到URIElement中
-    //相同url下的相同元素类型控制点击额度
-    s"${url}_${loc.replaceAll("@index=\"[0-9]*\"", "")}"
+    ancestor
   }
   def center(): Point  ={
     new Point(x+width/2, y+height/2)
@@ -104,17 +104,15 @@ object URIElement {
   //def apply(url: String, tag: String, id: String, name: String, loc: String = ""): UrlElement = new UrlElement(url, tag, id, name, loc)
 
   def apply(nodeMap:scala.collection.Map[String, Any], uri:String): URIElement = {
-    val tag = nodeMap.getOrElse("tag", "NoTag").toString
-
-    //name为Android的description/text属性, 或者iOS的value属性
-    //appium1.5已经废弃findElementByName
-    val name = nodeMap.getOrElse("value", "").toString.replace("\n", "\\n").take(30)
     //name为id/name属性. 为空的时候为value属性
-
     //id表示android的resource-id或者iOS的name属性
-    val id = nodeMap.getOrElse("name", "").toString.split('/').last
-    val loc = nodeMap.getOrElse("xpath", "").toString
-    URIElement(uri, tag, id, name, loc)
+    URIElement(url=uri,
+      tag=nodeMap.getOrElse("tag", "NoTag").toString,
+      id=nodeMap.getOrElse("name", "").toString.split('/').last,
+      name=nodeMap.getOrElse("value", "").toString.replace("\n", "\\n").take(30),
+      loc=nodeMap.getOrElse("xpath", "").toString,
+      ancestor = nodeMap.getOrElse("ancestor", "").toString
+    )
   }
 
 /*  def apply(x: scala.collection.immutable.Map[String, Any], uri:String=""): UrlElement = {

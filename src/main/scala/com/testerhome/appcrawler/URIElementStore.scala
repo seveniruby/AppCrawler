@@ -142,5 +142,5 @@ case class ElementInfo(
                         var resImg:String="",
                         var clickedIndex: Int = -1,
                         var action: ElementStatus.Value = ElementStatus.Ready,
-                        var element: URIElement = URIElement("Init", "", "", "", "")
+                        var element: URIElement = URIElement(url="Init", tag="", id="", name="", loc="")
                       )

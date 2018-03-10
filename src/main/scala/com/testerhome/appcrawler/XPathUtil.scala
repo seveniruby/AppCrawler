@@ -105,7 +105,7 @@ object XPathUtil extends CommonLog {
   }
 
   def getAttributesFromNode(node: Node): ListBuffer[Map[String, String]] ={
-    val path = ListBuffer[Map[String, String]]()
+    val attributesList = ListBuffer[Map[String, String]]()
     //递归获取路径,生成可定位的xpath表达式
     def getParent(node: Node): Unit = {
       if (node.hasAttributes) {
@@ -117,16 +117,41 @@ object XPathUtil extends CommonLog {
           attributeMap ++= Map(kv.getName -> kv.getValue)
         })
         attributeMap ++= Map("tag" -> node.getNodeName)
-        path += attributeMap
+        attributesList += attributeMap
       }
+
       if (node.getParentNode != null) {
         getParent(node.getParentNode)
       }
     }
     getParent(node)
     //返回一个从root到leaf的属性列表
-    return path.reverse
+    return attributesList.reverse
 
+  }
+
+
+  def getAncestorFromNode(node: Node): Unit ={
+
+
+  }
+  def isMenuFromBrotherNode(node: Node): Boolean ={
+    var b=false
+    val nodeList=node.getParentNode.getChildNodes
+    0 until(nodeList.getLength) foreach(i=>{
+      if(b==false) {
+        val attributes = nodeList.item(i).getAttributes
+        if(attributes!=null) {
+          0 until attributes.getLength foreach (i => {
+            val kv = attributes.item(i).asInstanceOf[Attr]
+            if (kv.getName == "selected" && kv.getValue() == "true") {
+              b = true
+            }
+          })
+        }
+      }
+    })
+    b
   }
 
 
@@ -173,10 +198,14 @@ object XPathUtil extends CommonLog {
           val node = nodeList.item(i)
           //如果node为.可能会异常. 不过目前不会
           nodeMap("tag") = node.getNodeName
-          //todo: 增加深度标记
+
+
+          val attributesList=getAttributesFromNode(node)
           //必须在xpath前面
-          nodeMap("depth") = getAttributesFromNode(node).size
-          nodeMap("xpath") = getXPathFromAttributes(getAttributesFromNode(node))
+          nodeMap("depth") = attributesList.size
+          nodeMap("menu") = isMenuFromBrotherNode(node)
+          nodeMap("ancestor")=attributesList.map(_.get("tag").get).mkString("/")
+          nodeMap("xpath") = getXPathFromAttributes(attributesList)
 
           //支持导出单个字段
           nodeMap(node.getNodeName) = node.getNodeValue

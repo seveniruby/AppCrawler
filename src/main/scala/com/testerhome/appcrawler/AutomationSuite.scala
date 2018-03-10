@@ -38,7 +38,7 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
         }
         case None => {
           //用于生成steps的用例
-          val ele = URIElement("Steps", "", "", "NOT_FOUND", xpath)
+          val ele = URIElement(url="Steps", tag="", id="", name="NOT_FOUND", loc=xpath)
           crawler.doElementAction(ele, "")
           withClue("NOT_FOUND"){
             log.info(xpath)

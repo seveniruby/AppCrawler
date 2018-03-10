@@ -1,8 +1,11 @@
 package com.testerhome.appcrawler.ut
 
-import com.testerhome.appcrawler.{CommonLog, Crawler, URIElement, XPathUtil}
+import com.testerhome.appcrawler._
 import org.scalatest.{FunSuite, Matchers}
 import org.w3c.dom.NodeList
+
+import scala.collection.mutable
+import scala.io.Source
 
 /**
   * Created by seveniruby on 16/3/26.
@@ -1270,7 +1273,7 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
 
 
   test("xpath"){
-    XPathUtil.xpathExpr=List("resource-id", "content-desc", "depth")
+    XPathUtil.xpathExpr=List("resource-id", "content-desc", "depth", "selected")
     XPathUtil.getListFromXPath("//*", xmlAndroid).foreach(node=>{
       println(node.get("xpath"))
       println(node.get("depth"))
@@ -1279,12 +1282,26 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
   }
 
   test("sort selected nodes"){
+    val xmlAndroid=Source.fromFile("/tmp/xueqiu/1520350511580/16_com.xueqiu.android-MainActivity_decor_content_parent-content-mainContent-public_timeline_content-lis.dom").mkString
     val crawler=new Crawler
-    crawler.conf.sortByAttribute="depth"
-    XPathUtil.xpathExpr=List("resource-id", "content-desc", "depth", "instance", "index")
+    crawler.conf.sortByAttribute=List("depth", "selected")
+    XPathUtil.xpathExpr=List("class", "text", "content-desc", "depth", "instance", "index", "selected")
+    val map=mutable.HashMap[String, Boolean]()
+    crawler.getSelectedNodes(XPathUtil.toDocument(xmlAndroid), true).foreach(node=>{
+      if(node.get("selected").get=="true"){
+        map(node.get("ancestor").get.toString)=true
+        println(node.get("ancestor").get.toString)
+      }
+
+    })
+
     crawler.getSelectedNodes(XPathUtil.toDocument(xmlAndroid), true).foreach(node=>{
       println(node.get("depth").get)
+      println(node.get("selected").get)
+      println(map.getOrElse(node.get("ancestor").get.toString, false))
+      println(node.get("ancestor").get)
       println(node.get("xpath").get)
+      println(node.get("name").get)
     })
 
   }

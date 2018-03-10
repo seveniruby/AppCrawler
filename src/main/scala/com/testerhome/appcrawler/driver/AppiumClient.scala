@@ -200,6 +200,7 @@ class AppiumClient extends WebBrowser with WebDriver{
 
 
   override def findElementsByURI(element: URIElement): List[AnyRef] = {
+    //todo: 优化速度，个别时候定位可能超过10s
     driver.findElementsByXPath(element.loc).asScala.toList
   }
 

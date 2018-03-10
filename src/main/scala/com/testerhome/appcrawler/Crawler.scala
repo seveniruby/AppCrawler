@@ -218,14 +218,14 @@ class Crawler extends CommonLog {
     //todo: 采用轮询
     Thread.sleep(6000)
     refreshPage()
-    doElementAction(URIElement(s"${currentUrl}", "restart", "restart", "restart",
-      s"restart-${store.clickedElementsList.size}"), "")
+    doElementAction(URIElement(url=s"${currentUrl}", tag="restart", id="restart", name="restart",
+      loc=s"restart-${store.clickedElementsList.size}"), "")
   }
 
   def firstRefresh(): Unit = {
     log.info("first refresh")
-    doElementAction(URIElement(s"${currentUrl}", "start", "start", "start",
-      s"Start-Start-${store.clickedElementsList.size}"), "")
+    doElementAction(URIElement(url=s"${currentUrl}", tag="start", id="start", name="start",
+      loc=s"Start-Start-${store.clickedElementsList.size}"), "")
 
   }
 
@@ -533,7 +533,6 @@ class Crawler extends CommonLog {
     log.info(s"all - small elements size = ${selectedElements.size}")
     selectedElements.map(_.getOrElse("xpath", "no xpath")).take(10).foreach(log.trace)
 
-    //todo: 根据深度优先
     //sort
     conf.firstList.foreach(step => {
       log.trace(s"firstList xpath = ${step.getXPath()}")
@@ -549,18 +548,33 @@ class Crawler extends CommonLog {
       lastElements ++= temp
     })
 
+
+
+    //先根据depth排序
+    conf.sortByAttribute.foreach(attribute=>{
+      attribute match {
+        case "depth" => {
+          selectedElements=selectedElements.sortWith(
+            _.get("depth").get.toString.toInt > _.get("depth").get.toString.toInt
+          )
+        }
+        case "selected" => {
+          //todo:同级延后
+          selectedElements=selectedElements.sortWith(
+            _.get("selected").getOrElse("").toString.split("true").size > _.get("selected").getOrElse("").toString.split("true").size
+          )
+        }
+      }
+    })
+
+
+    //再根据先后顺序调整，这样只需要排序同级元素
     //去掉不在first和last中的元素
     selectedElements = selectedElements diff firstElements
     selectedElements = selectedElements diff lastElements
-
     //确保不重, 并保证顺序
     all = (firstElements ++ selectedElements ++ lastElements).distinct
 
-    conf.sortByAttribute match {
-      case "depth" => {
-        all=all.sortWith(_.get("depth").get.toString.toInt > _.get("depth").get.toString.toInt)
-      }
-    }
     log.trace("sorted nodes")
     all.map(_.getOrElse("xpath", "no xpath")).foreach(log.trace)
     log.trace(s"sorted nodes length=${all.length}")
@@ -718,8 +732,8 @@ class Crawler extends CommonLog {
       case _ => {
         log.warn("find back button error")
         setElementAction("back")
-        return Some(URIElement(s"${currentUrl}", "Back", "Back", "Back",
-          s"Back-${store.clickedElementsList.size}"))
+        return Some(URIElement(url=s"${currentUrl}", tag="Back", id="Back", name="Back",
+          loc=s"Back-${store.clickedElementsList.size}"))
       }
     }
   }
@@ -777,8 +791,8 @@ class Crawler extends CommonLog {
     //页面刷新失败自动后退
     if (isRefreshSuccess == false) {
       log.warn("refresh fail")
-      nextElement = Some(URIElement(s"${currentUrl}", "Back", "Back", "Back",
-        s"Back-${store.clickedElementsList.size}"))
+      nextElement = Some(URIElement(url=s"${currentUrl}", tag="Back", id="Back", name="Back",
+        loc=s"Back-${store.clickedElementsList.size}"))
       setElementAction("back")
     } else {
       log.debug("refresh success")
@@ -798,8 +812,8 @@ class Crawler extends CommonLog {
 
     //是否需要回退到app
     if (nextElement == None && needBackApp()) {
-      nextElement = Some(URIElement(s"${currentUrl}", "backApp", "backApp", "backApp",
-        s"backApp-${appNameRecord.last()}-${store.clickedElementsList.size}"))
+      nextElement = Some(URIElement(url=s"${currentUrl}", tag="backApp", id="backApp", name="backApp",
+        loc=s"backApp-${appNameRecord.last()}-${store.clickedElementsList.size}"))
       setElementAction("backApp")
     }
 
@@ -836,8 +850,8 @@ class Crawler extends CommonLog {
               nextElement = getBackButton()
             }else if(isMatch==true && swipeRetry<conf.swipeRetryMax) {
               log.info("match afterUrlFinish")
-              nextElement = Some(URIElement(s"${currentUrl}", "", "afterUrlFinished", "afterUrlFinished",
-                s"afterUrlFinished-${appNameRecord.last()}-${store.clickedElementsList.size}"))
+              nextElement = Some(URIElement(url=s"${currentUrl}", tag="", id="afterUrlFinished", name="afterUrlFinished",
+                loc=s"afterUrlFinished-${appNameRecord.last()}-${store.clickedElementsList.size}"))
               setElementAction("after")
               swipeRetry += 1
               log.info(s"swipeRetry=${swipeRetry}")
@@ -1154,7 +1168,7 @@ class Crawler extends CommonLog {
 
           setElementAction(action)
           if (action == "monkey") {
-            return Some(URIElement("Monkey", s"", s"", s"Monkey", s"Monkey"))
+            return Some(URIElement(url=action, tag=action, id=action, name=action, loc = action))
           } else {
             return Some(getUrlElementByMap(e))
           }
