@@ -3,7 +3,7 @@ package com.testerhome.appcrawler
 import java.io
 import java.util.Date
 
-import com.testerhome.appcrawler.driver.{AppiumClient, MacacaDriver, WebDriver}
+import com.testerhome.appcrawler.driver.{AppiumClient, MacacaDriver, ReactWebDriver}
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.log4j._
@@ -23,7 +23,7 @@ import scala.util.{Failure, Success, Try}
   * Created by seveniruby on 15/11/28.
   */
 class Crawler extends CommonLog {
-  var driver:WebDriver=_
+  var driver:ReactWebDriver=_
   var conf = new CrawlerConf()
 
   /** 存放插件类 */
@@ -31,7 +31,7 @@ class Crawler extends CommonLog {
   var fileAppender: FileAppender = _
 
   val store = new URIElementStore
-  /** 元素的默认操作 */
+
   private var currentElementAction = "click"
 
   var appName = ""
@@ -68,20 +68,23 @@ class Crawler extends CommonLog {
     )
     defaultPlugins.foreach(name => pluginClasses.append(Class.forName(name).newInstance().asInstanceOf[Plugin]))
 
-    conf.pluginList.foreach(name => {
+    //todo: 暂时禁用，很多人不会用
+/*    conf.pluginList.foreach(name => {
       if (defaultPlugins.forall(_ != name)) {
         log.info(s"load com.testerhome.appcrawler.plugin $name")
         pluginClasses.append(Class.forName(name).newInstance().asInstanceOf[Plugin])
       }
-    })
+    })*/
 
-    //todo: 放到根目录有bug. 需要解决
+/*    //todo: 放到根目录有bug. 需要解决
+//todo: 暂时禁用，用的人太少
     val dynamicPluginDir = (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath))
       .getParentFile.getCanonicalPath + File.separator + "plugins" + File.separator
     log.info(s"dynamic load plugin in ${dynamicPluginDir}")
     val dynamicPlugins = Util.loadPlugins(dynamicPluginDir)
     log.info(s"found dynamic plugins size ${dynamicPlugins.size}")
     dynamicPlugins.foreach(pluginClasses.append(_))
+    */
     pluginClasses.foreach(log.info)
     pluginClasses.foreach(p => p.init(this))
     pluginClasses.foreach(p => p.start())
@@ -118,7 +121,7 @@ class Crawler extends CommonLog {
   /**
     * 启动爬虫
     */
-  def start(existDriver: WebDriver = null): Unit = {
+  def start(existDriver: ReactWebDriver = null): Unit = {
     addLogFile()
     log.debug("crawl config")
     log.debug(conf.toYaml())
@@ -242,12 +245,6 @@ class Crawler extends CommonLog {
     //todo: init all var
     swipeRetry=0
     backRetry=0
-    if(conf.swipeRetryMax==null){
-      conf.swipeRetryMax=2
-    }
-    if(conf.waitLoading==null){
-      conf.waitLoading=1000
-    }
 
     log.info(s"swipeRetryMax=${conf.swipeRetryMax}")
     Util.isLoaded=false
@@ -261,6 +258,8 @@ class Crawler extends CommonLog {
         log.info("use macaca")
         driver=new MacacaDriver(url, conf.capability)
       }
+        //todo: 支持图片
+        //todo: 支持web、windows、mac
       /*case "sikuli" => {
         log.info("use SikuliDriver")
         conf.capability++=Map("automationName"-> "Appium")
@@ -378,7 +377,9 @@ class Crawler extends CommonLog {
     val y=nodeMap.getOrElse("y", "0").toString.toInt
     val width=nodeMap.getOrElse("width", "0").toString.toInt
     val height=nodeMap.getOrElse("height", "0").toString.toInt
-    URIElement(url=currentUrl, tag=tag, id=id, name=name, loc=loc, x=x, y=y, width=width, height=height)
+    val ancestor=nodeMap.getOrElse("ancestor", "").toString
+    URIElement(url=currentUrl, tag=tag, id=id, name=name, loc=loc, ancestor=ancestor,
+      x=x, y=y, width=width, height=height)
   }
 
   def needBackApp(): Boolean = {
@@ -465,6 +466,7 @@ class Crawler extends CommonLog {
       m.getOrElse("valid", "true") == "true"
   }
 
+
   def isSmall(m: immutable.Map[String, Any]): Boolean ={
 
     var res=false
@@ -478,7 +480,7 @@ class Crawler extends CommonLog {
       val width=endX-startX
       val height=endY-startY
 
-      if(endY>driver.screenHeight || endX>driver.screenWidth){
+      if( startY >driver.screenHeight || startX >driver.screenWidth){
         log.info(bounds)
         log.info(driver.screenHeight)
         log.info("not visual")
@@ -526,7 +528,7 @@ class Crawler extends CommonLog {
     log.info(s"all - black elements size = ${selectedElements.size}")
     selectedElements.map(_.getOrElse("xpath", "no xpath")).take(10).foreach(log.trace)
 
-    //exclude small
+    //remove small
     if(skipSmall==false){
       selectedElements=selectedElements.filter(isSmall(_)==false)
     }
@@ -703,9 +705,9 @@ class Crawler extends CommonLog {
   def setElementAction(action: String): Unit = {
     log.info(s"set action to ${action}")
     if(action==null){
-      currentElementAction = "click"
+      currentElementAction="click"
     }else{
-      currentElementAction = action
+      currentElementAction=action
     }
   }
 
@@ -1089,9 +1091,13 @@ class Crawler extends CommonLog {
                 }
                 case "click" => {
                   log.info("click element")
-                  driver.tap()
+                  //todo: 增加click支持
+                  driver.click()
                 }
                 case "tap" => {
+                  driver.tap()
+                }
+                case "longTap" =>{
                   driver.longTap()
                 }
                 case str => {
@@ -1195,19 +1201,26 @@ class Crawler extends CommonLog {
       }
     }
     log.info("generate report finish")
-
-    if (signals.intervalMS() < 2000) {
-      System.exit(1)
-    }
+    System.exit(0)
 
   }
 
   def handleCtrlC(): Unit = {
     log.info("add shutdown hook")
     Signal.handle(new Signal("INT"), (sig: Signal) => {
-      log.info("exit by INT")
-      signals.append(1)
       stop()
+
+      //todo: 更好的处理退出
+      /*
+      log.info("send INT, do you want stop? please input y")
+      if(scala.io.StdIn.readChar().toLower=='y'){
+        signals.append(1)
+        stop()
+      }else{
+        log.info("continue run")
+      }
+      */
     })
+
   }
 }

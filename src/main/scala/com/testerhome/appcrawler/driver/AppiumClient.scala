@@ -4,8 +4,9 @@ import java.awt.{BasicStroke, Color}
 import java.io.File
 import java.net.URL
 import java.time.Duration
-import javax.imageio.ImageIO
+import java.util.concurrent.TimeUnit
 
+import javax.imageio.ImageIO
 import com.testerhome.appcrawler.{AppCrawler, CommonLog, DataObject, URIElement}
 import com.testerhome.appcrawler._
 import io.appium.java_client.{AppiumDriver, TouchAction}
@@ -22,7 +23,7 @@ import collection.JavaConverters._
 /**
   * Created by seveniruby on 16/8/9.
   */
-class AppiumClient extends WebBrowser with WebDriver{
+class AppiumClient extends ReactWebDriver{
   Util.init()
   var conf: CrawlerConf = _
 
@@ -107,8 +108,7 @@ class AppiumClient extends WebBrowser with WebDriver{
 
     getDeviceInfo
     log.info(s"capture dir = ${new File(".").getAbsolutePath}")
-    setCaptureDir(".")
-    implicitlyWait(Span(10, Seconds))
+    driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
   }
 
   override def getDeviceInfo(): Unit = {
@@ -169,13 +169,18 @@ class AppiumClient extends WebBrowser with WebDriver{
     val point=currentURIElement.center()
     driver.performTouchAction(new TouchAction(driver).tap(point.x, point.y))
   }
+  override def click(): this.type ={
+    log.info(currentElement)
+    currentElement.click()
+    this
+  }
   override def tap(): this.type = {
-    driver.performTouchAction(new TouchAction(driver).tap(currentElement))
+    new TouchAction(driver).tap(currentElement).perform()
     this
   }
 
   override def longTap(): this.type = {
-    driver.performTouchAction(new TouchAction(driver).longPress(currentElement))
+    new TouchAction(driver).longPress(currentElement).perform()
     this
   }
 
@@ -201,6 +206,7 @@ class AppiumClient extends WebBrowser with WebDriver{
 
   override def findElementsByURI(element: URIElement): List[AnyRef] = {
     //todo: 优化速度，个别时候定位可能超过10s
+    //todo: 多种策略，使用findElement 使用xml直接分析location 生成平台特定的定位符
     driver.findElementsByXPath(element.loc).asScala.toList
   }
 

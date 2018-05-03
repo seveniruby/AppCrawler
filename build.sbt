@@ -1,6 +1,7 @@
 name := "AppCrawler"
 version := "2.3.0"
-scalaVersion := "2.12.4"
+scalaVersion := "2.12.5"
+//scalaVersion := "2.13.0-M3"
 
 libraryDependencies ++= Seq(
   //"org.scala-lang" % "scala-compiler" % scalaVersion.value,
@@ -29,8 +30,8 @@ libraryDependencies ++= Seq(
   "org.lucee" % "commons-codec" % "1.10.L001",
   "org.jsoup" % "jsoup" % "1.9.2",
   "com.jayway.jsonpath" % "json-path" % "2.2.0" ,
-  "org.scalactic" %% "scalactic" % "3.0.3" ,
-  "org.scalatest" %% "scalatest" % "3.0.3" exclude("org.scala-lang.modules", "scala-xml"),
+  "org.scalactic" %% "scalactic" % "3.0.5" ,
+  "org.scalatest" %% "scalatest" % "3.0.5" exclude("org.scala-lang.modules", "scala-xml"),
   "org.apache.directory.studio" % "org.apache.commons.io" % "2.4",
   "org.scalatra.scalate" %% "scalate-core" % "1.8.0",
   "org.apache.logging.log4j" % "log4j-core" % "2.7",
@@ -50,6 +51,7 @@ libraryDependencies ++= Seq(
     exclude("org.apache.logging.log4j", "log4j-core"),
   "com.github.poslegm" %% "scala-phash" % "1.0.3",
   "org.ow2.asm" % "asm" % "5.2",
+//  "org.openimaj" % "openimaj" % "1.3.6",
   "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 
@@ -83,9 +85,6 @@ assemblyMergeStrategy in assembly := {
         case _ => MergeStrategy.first
       }
     }
-    case x if x.matches("com.testerhome.plugin.OCR.class")  => MergeStrategy.discard
-    case x if x.matches("tools.jar")  => MergeStrategy.discard
-    case x if x.matches("com.testerhome.appcrawler.plugin.AndroidTrace.class")  => MergeStrategy.discard
     case x =>  {
       //println(x)
       MergeStrategy.first
@@ -105,13 +104,13 @@ resolvers += Classpaths.sbtIvySnapshots
 resolvers += Resolver.sonatypeRepo("public")
 resolvers += Resolver.mavenLocal
 resolvers += Resolver.url("bintray-sbt-plugins", url("http://dl.bintray.com/sbt/sbt-plugin-releases"))(Resolver.ivyStylePatterns)
-resolvers += "spring-snapshots" at "http://repo.spring.io/snapshot/"
+//resolvers += "spring-snapshots" at "http://repo.spring.io/snapshot/"
 resolvers += "central" at "http://central.maven.org/maven2/"
-resolvers += "central2" at "http://central02.maven.org/"
+//resolvers += "central2" at "http://central02.maven.org/"
 resolvers += "elk" at "https://artifacts.elastic.co/maven"
 resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases/"
 resolvers += "bintray" at "http://dl.bintray.com/xudafeng/maven/"
-resolvers += "sonatype-ossrh" at "https://oss.sonatype.org/content/repositories/snapshots/"
+//resolvers += "sonatype-ossrh" at "https://oss.sonatype.org/content/repositories/snapshots/"
 resolvers += "jitpack" at "https://jitpack.io"
 resolvers += Resolver.sonatypeRepo("public")
 

@@ -14,7 +14,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by seveniruby on 2017/4/17.
   */
-trait WebDriver extends CommonLog {
+trait ReactWebDriver extends CommonLog {
 
   val capabilities = new DesiredCapabilities()
 
@@ -173,6 +173,7 @@ trait WebDriver extends CommonLog {
   }
   def press(sec: Int): this.type = { this }
   def tap(): this.type = { this }
+  def click(): this.type = { this }
   def longTap(): this.type = { this }
   def swipe(direction: String): Unit = {
     log.info(s"start swipe ${direction}")
@@ -276,9 +277,7 @@ trait WebDriver extends CommonLog {
         None
       }
     }
-
   }
-
 
   def event(keycode: Int): Unit = {}
   def mark(fileName: String, newImageName:String,  x: Int, y: Int, w: Int, h: Int): Unit = {}

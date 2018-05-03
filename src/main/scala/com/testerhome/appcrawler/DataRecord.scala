@@ -10,7 +10,6 @@ class DataRecord extends CommonLog {
   //todo: 暂时只用2个就足够了
   private val size=10
   def append(any: Any): Unit ={
-    log.info(s"append ${any}")
     record.append(System.currentTimeMillis()->any)
   }
   def intervalMS(): Long ={

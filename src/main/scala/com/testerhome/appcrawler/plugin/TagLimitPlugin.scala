@@ -37,7 +37,7 @@ class TagLimitPlugin extends Plugin {
     }
 
     //如果达到限制次数就退出
-    if (tagLimit(key) <= 0) {
+    if (key.nonEmpty && tagLimit(key) <= 0) {
       log.warn(s"tagLimit[${key}]=${tagLimit(key)}")
       getCrawler().setElementAction("skip")
       log.info(s"$element need skip")

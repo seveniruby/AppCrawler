@@ -15,12 +15,13 @@ import scala.io.Source
   * Created by seveniruby on 16/1/6.
   */
 class CrawlerConf {
-  /** 插件列表 */
-  var pluginList = List[String]()
+  /** 插件列表，暂时禁用，太高级了，很多人不会用 */
+  //var pluginList = List[String]()
   var logLevel = "TRACE"
   /** 是否截图 */
   var saveScreen = true
   var reportTitle = ""
+  //截图等待的超时时间，截图一般会消耗2s
   var screenshotTimeout = 20
   var currentDriver = "Android"
   var swipeRetryMax=2
@@ -47,6 +48,7 @@ class CrawlerConf {
     ))
   /** appium的capability通用配置 */
   var capability = Map[String, Any](
+    //默认不清空数据，防止有人用于微信和qq
     "noReset" -> "true",
     "fullReset" -> "false",
   )
@@ -61,6 +63,7 @@ class CrawlerConf {
     "bundleId" -> "",
     "autoAcceptAlerts" -> "true",
   )
+  //自动生成的xpath表达式里可以包含的匹配属
   var xpathAttributes = List("name", "label", "value", "resource-id", "content-desc", "index", "text")
   /** 用来确定url的元素定位xpath 他的text会被取出当作url因素 */
   var defineUrl = List[String]()
@@ -78,21 +81,26 @@ class CrawlerConf {
   var urlWhiteList = ListBuffer[String]()
 
   var defaultBackAction = ListBuffer[String]()
+
+
   /** 后退按钮标记, 主要用于iOS, xpath */
   var backButton = ListBuffer[Step]()
-
   /** 优先遍历元素 */
   var firstList = ListBuffer[Step](
   )
-  /** 默认遍历列表 */
+  /** 默认遍历列表，xpath有用，action暂时没启用*/
   var selectedList = ListBuffer[Step](
-    Step(xpath="//*[contains(name(), 'Text')]"),
+    Step(xpath="//*[contains(name(), 'Text') and @clickable='true']"),
+    Step(xpath="//*[@clickable='true']//*[contains(name(), 'Text')]"),
+    Step(xpath="//*[@name!='']"),
     Step(xpath="//*[contains(name(), 'Image')]"),
     Step(xpath="//*[contains(name(), 'Button')]"),
-    Step(xpath="//*[contains(name(), 'CheckBox')]")
   )
   /** 最后遍历列表 */
-  var lastList = ListBuffer[Step]()
+  var lastList = ListBuffer[Step](
+    Step(xpath="//*[@selected='true']/..//*"),
+    Step(xpath="//*[@selected='true']/../..//*")
+  )
 
   //包括backButton
   //todo: 支持正则表达式
@@ -104,11 +112,11 @@ class CrawlerConf {
   var triggerActions = ListBuffer[Step]()
   //todo: 用watch代替triggerActions
   var autoCrawl: Boolean = true
-  var assert = TestCase(
+  var assert = ReactTestCase(
     name = "TesterHome AppCrawler",
     steps = List[Step]()
   )
-  var testcase = TestCase(
+  var testcase = ReactTestCase(
     name = "TesterHome AppCrawler",
     steps = List[Step]()
   )
@@ -116,6 +124,8 @@ class CrawlerConf {
   var beforeElementAction = ListBuffer[Step]()
   var afterElementAction = ListBuffer[Step]()
   var afterUrlFinished = ListBuffer[Step]()
+
+
   var beforeRestart=ListBuffer[String]()
   var monkeyEvents = ListBuffer[Int]()
   var monkeyRunTimeSeconds = 30
@@ -200,48 +210,3 @@ class CrawlerConf {
 
 
 }
-
-
-case class TestCase(name: String = "", steps: List[Step] = List[Step]())
-
-//given表示多个条件满足 when表示执行多个动作，then表示多个断言，xpath和action为when的简写
-case class Step(given: List[String]=List[String](),
-                var when: When=null,
-                then: List[String]=List[String](),
-                xpath: String="//*",
-                action: String=null,
-                actions: List[String]=List[String](),
-                var times:Int = 0
-               ){
-  def use(): Int ={
-    times-=1
-    times
-  }
-  def getXPath(): String ={
-    if(when==null){
-      if(this.xpath==null){
-        "/*"
-      }else{
-        this.xpath
-      }
-    }else{
-      if(when.xpath==null){
-        "/*"
-      }else{
-        when.xpath
-      }
-    }
-  }
-
-  def getAction(): String ={
-    if(when==null){
-      action
-    }else{
-      when.action
-    }
-  }
-}
-case class When(xpath: String=null,
-                action: String=null,
-                actions: List[String]=List[String]()
-               )

@@ -17,7 +17,7 @@ import scala.sys.process._
 /**
   * Created by seveniruby on 16/8/9.
   */
-class MacacaDriver extends WebBrowser with WebDriver{
+class MacacaDriver extends ReactWebDriver{
   Util.init()
   var conf: CrawlerConf = _
 
@@ -133,7 +133,12 @@ class MacacaDriver extends WebBrowser with WebDriver{
     //new TouchAction(driver).tap(x, y).perform()
   }*/
 
+  //todo: 用真正的tap替代
   override def tap(): this.type = {
+    currentElement.click()
+    this
+  }
+  override def click(): this.type = {
     currentElement.click()
     this
   }
