@@ -1,13 +1,13 @@
 name := "AppCrawler"
 version := "2.3.0"
-scalaVersion := "2.12.5"
+scalaVersion := "2.12.6"
 //scalaVersion := "2.13.0-M3"
 
 libraryDependencies ++= Seq(
   //"org.scala-lang" % "scala-compiler" % scalaVersion.value,
   //"org.scala-lang" % "scala-library" % scalaVersion.value,
   //"org.scala-lang" % "scala-reflect" % scalaVersion.value,
-  "io.appium" % "java-client" % "5.0.4",
+  "io.appium" % "java-client" % "6.0.0",
   //"org.seleniumhq.selenium" % "selenium-java" % "2.53.1" ,
   //"io.selendroid" % "selendroid" % "0.16.0",
   "com.github.scopt" %% "scopt" % "3.5.0",
@@ -18,9 +18,9 @@ libraryDependencies ++= Seq(
   //"org.apache.logging.log4j" % "log4j" % "2.5",
   //"com.android.tools.ddms" % "ddmlib" % "24.5.0",
   //"org.lucee" % "xml-xerces" % "2.11.0",
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.0",
-  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.9.0",
-  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-xml" % "2.9.0" ,
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.5",
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.9.5",
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-xml" % "2.9.5" ,
   "net.lightbody.bmp" % "browsermob-core" % "2.1.5"
     exclude ("com.fasterxml.jackson.core", "jackson-databind")
     exclude ("com.fasterxml.jackson.core", "jackson-annotations")
@@ -30,8 +30,8 @@ libraryDependencies ++= Seq(
   "org.lucee" % "commons-codec" % "1.10.L001",
   "org.jsoup" % "jsoup" % "1.9.2",
   "com.jayway.jsonpath" % "json-path" % "2.2.0" ,
-  "org.scalactic" %% "scalactic" % "3.0.5" ,
-  "org.scalatest" %% "scalatest" % "3.0.5" exclude("org.scala-lang.modules", "scala-xml"),
+  "org.scalactic" %% "scalactic" % "3.2.0-SNAP10" ,
+  "org.scalatest" %% "scalatest" % "3.2.0-SNAP10" exclude("org.scala-lang.modules", "scala-xml"),
   "org.apache.directory.studio" % "org.apache.commons.io" % "2.4",
   "org.scalatra.scalate" %% "scalate-core" % "1.8.0",
   "org.apache.logging.log4j" % "log4j-core" % "2.7",
@@ -44,11 +44,14 @@ libraryDependencies ++= Seq(
   //"org.bytedeco" % "javacv-platform" % "1.3.3",
   //"org.bytedeco" % "javacv" % "1.2",
   //"com.github.vidstige" % "jadb" % "v1.0.1",
+
+  /**
   "net.sourceforge.tess4j" % "tess4j" % "3.4.2"
     //exclude("ch.qos.logback", "logback-classic")
     exclude("ch.qos.logback", "logback-classic")
     exclude("org.slf4j", "log4j-over-slf4j")
     exclude("org.apache.logging.log4j", "log4j-core"),
+    */
   "com.github.poslegm" %% "scala-phash" % "1.0.3",
   "org.ow2.asm" % "asm" % "5.2",
 //  "org.openimaj" % "openimaj" % "1.3.6",

@@ -112,7 +112,7 @@ class URIElementStore {
     if (elementStore.contains(ele.toString)) {
       elementStore(ele.toString).action == ElementStatus.Clicked
     } else {
-      AppCrawler.log.trace(s"element=${ele.toLoc()} first show, need click")
+      AppCrawler.log.trace(s"element=${ele} first show, need click")
       false
     }
   }
@@ -121,7 +121,7 @@ class URIElementStore {
     if (elementStore.contains(ele.toString)) {
       elementStore(ele.toString).action == ElementStatus.Skipped
     } else {
-      AppCrawler.log.trace(s"element=${ele.toLoc()} first show, need click")
+      AppCrawler.log.trace(s"element=${ele} first show, need click")
       false
     }
   }

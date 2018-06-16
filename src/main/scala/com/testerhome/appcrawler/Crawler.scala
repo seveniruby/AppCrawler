@@ -373,13 +373,15 @@ class Crawler extends CommonLog {
     log.trace(nodeMap)
     val id = nodeMap.getOrElse("name", "").toString.split('/').last
     val instance = nodeMap.getOrElse("instance", "").toString
+    val depth = nodeMap.getOrElse("depth", "").toString
     val loc = nodeMap.getOrElse("xpath", "").toString
     val x=nodeMap.getOrElse("x", "0").toString.toInt
     val y=nodeMap.getOrElse("y", "0").toString.toInt
     val width=nodeMap.getOrElse("width", "0").toString.toInt
     val height=nodeMap.getOrElse("height", "0").toString.toInt
     val ancestor=nodeMap.getOrElse("ancestor", "").toString
-    URIElement(url=currentUrl, tag=tag, id=id, name=name, instance=instance,
+    URIElement(url=currentUrl, tag=tag, id=id, name=name,
+      instance=instance, depth=depth,
       loc=loc, ancestor=ancestor,
       x=x, y=y, width=width, height=height
     )
@@ -1005,7 +1007,6 @@ class Crawler extends CommonLog {
     log.info(s"current url = ${element.url}")
     log.info(s"current tag path = ${element.getAncestor()}")
     log.info(s"current file name = ${element.toFileName()}")
-    log.info(s"current uri = ${element.toLoc()}")
 
     store.saveReqHash(contentHash.last().toString)
     store.saveReqImg(getBasePathName() + ".click.png")

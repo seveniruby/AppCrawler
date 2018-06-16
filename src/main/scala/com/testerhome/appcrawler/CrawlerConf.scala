@@ -78,8 +78,6 @@ class CrawlerConf {
   var maxDepth = 6
   /** 是否是前向遍历或者后向遍历 */
   var sortByAttribute = List("depth", "selected")
-  /** 是否遍历WebView控件 */
-  var enterWebView = true
   /** url黑名单.用于排除某些页面 */
   var urlBlackList = ListBuffer[String]()
   var urlWhiteList = ListBuffer[String]()

@@ -22,6 +22,8 @@ case class URIElement(
                        name: String="",
                        @XmlAttribute(name = "instance")
                        instance: String="",
+                       @XmlAttribute(name = "depth")
+                       depth: String="",
                        @XmlAttribute(name = "loc")
                        loc:String="",
                        @XmlAttribute(name = "ancestor")
@@ -45,20 +47,7 @@ case class URIElement(
     * @return
     */
   def toFileName(): String ={
-    //url_[parent id]-tag-id
-    s"${url}_${"\"([^/0-9][^\" =]*)\"".r.findAllMatchIn(loc).map(_.subgroups).toList.flatten.
-      map(_.split("/").lastOption.getOrElse("")).mkString("-")}"
-      .replaceAll("[\\\\/?\"*<>\\|\n ]", ".")
-      .replace("android.widget.", "")
-      .take(100)
-  }
-
-  /**
-    * 唯一的定位标记
-    * @return
-    */
-  def toLoc(): String ={
-    s"${url}\t${loc}\t${tag}\t${id}\t${name}"
+    s"${url}_tag.${tag.replace("android.widget.", "")}_instance.${instance}_depth.${depth}_id.${id}_name.${name}".take(100)
   }
 
   /**
@@ -105,6 +94,7 @@ case class URIElement(
 object URIElement {
   //def apply(url: String, tag: String, id: String, name: String, loc: String = ""): UrlElement = new UrlElement(url, tag, id, name, loc)
 
+  //todo: remove
   def apply(nodeMap:scala.collection.Map[String, Any], uri:String): URIElement = {
     //name为id/name属性. 为空的时候为value属性
     //id表示android的resource-id或者iOS的name属性

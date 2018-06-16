@@ -31,7 +31,7 @@ class TestXueQiu extends FunSuite{
 
   test("appcrawler"){
     AppCrawler.main(Array("--capability", "appPackage=com.xueqiu.android,appActivity=.view.WelcomeActivityAlias",
-      "-o", s"/tmp/xueqiu/${System.currentTimeMillis()}", "--verbose"
+      "-o", s"/tmp/xueqiu/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}", "--verbose"
     )
     )
   }
