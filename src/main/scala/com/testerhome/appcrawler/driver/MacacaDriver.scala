@@ -167,13 +167,14 @@ class MacacaDriver extends ReactWebDriver{
     driver.source()
   }
 
-  override def findElementsByURI(element: URIElement): List[AnyRef] = {
+  override def findElementsByURI(element: URIElement, findBy:String): List[AnyRef] = {
+    //todo: 改进macaca定位
     val s=driver.elementsByXPath(element.loc)
     0 until s.size() map(s.getIndex(_)) toList
   }
 
-  override def findElementByURI(element: URIElement): AnyRef = {
-    currentElement=super.findElementByURI(element).asInstanceOf[macaca.client.commands.Element]
+  override def findElementByURI(element: URIElement, findBy:String): AnyRef = {
+    currentElement=super.findElementByURI(element, findBy).asInstanceOf[macaca.client.commands.Element]
     currentElement
   }
 

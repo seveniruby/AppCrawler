@@ -20,6 +20,8 @@ case class URIElement(
                        id: String="",
                        @XmlAttribute(name = "name")
                        name: String="",
+                       @XmlAttribute(name = "instance")
+                       instance: String="",
                        @XmlAttribute(name = "loc")
                        loc:String="",
                        @XmlAttribute(name = "ancestor")
@@ -63,7 +65,7 @@ case class URIElement(
     * 提取元素的tag组成的路径
     * @return
     */
-  def toTagPath(): String ={
+  def getAncestor(): String ={
     ancestor
   }
   def center(): Point  ={

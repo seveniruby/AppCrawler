@@ -159,6 +159,7 @@ class AppiumClient extends ReactWebDriver{
     log.info(s"write png ${fileName}")
     if(img.getWidth>screenWidth){
       log.info("scale the origin image and save")
+      //todo: RasterFormatException: (y + height) is outside of Raster 横屏需要处理异常
       val subImg=img.getSubimage(0, 0, screenWidth, screenHeight)
       ImageIO.write(subImg, "png", new java.io.File(newImageName))
     }else{
@@ -204,14 +205,34 @@ class AppiumClient extends ReactWebDriver{
   }
 
 
-  override def findElementsByURI(element: URIElement): List[AnyRef] = {
+  override def findElementsByURI(element: URIElement, findBy: String): List[AnyRef] = {
     //todo: 优化速度，个别时候定位可能超过10s
     //todo: 多种策略，使用findElement 使用xml直接分析location 生成平台特定的定位符
-    driver.findElementsByXPath(element.loc).asScala.toList
+
+    element match {
+      case id if element.id.nonEmpty && findBy=="default" =>{
+        log.info(s"findElementsById ${element.id}")
+        driver.findElementsById(element.id).asScala.toList
+      }
+      case name if element.name.nonEmpty && findBy=="default" => {
+        log.info(s"findElementsByAccessibilityId ${element.name}")
+        driver.findElementsByAccessibilityId(element.name).asScala.toList
+      }
+      case android if findBy=="android" => {
+        val locator="new UiSelector().className(\"" + element.tag + "\").instance(" + element.instance + ")"
+        log.info(s"findElementsByAndroidUIAutomator $locator")
+        driver.asInstanceOf[AndroidDriver[WebElement]].findElementsByAndroidUIAutomator(locator).asScala.toList
+      }
+      case _ => {
+        //todo: 生成原生定位符
+        log.info(s"findElementsByXPath ${element.loc}")
+        driver.findElementsByXPath(element.loc).asScala.toList
+      }
+    }
   }
 
-  override def findElementByURI(element: URIElement): AnyRef = {
-    currentElement=super.findElementByURI(element).asInstanceOf[WebElement]
+  override def findElementByURI(element: URIElement, findBy:String): AnyRef = {
+    currentElement=super.findElementByURI(element,findBy).asInstanceOf[WebElement]
     currentElement
   }
 

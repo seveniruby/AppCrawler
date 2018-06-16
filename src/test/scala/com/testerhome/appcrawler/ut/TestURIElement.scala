@@ -15,7 +15,7 @@ class TestURIElement extends FunSuite {
   test("tag path"){
 
     val element=URIElement("", "", "", "", "//xxfxx[@index=\"11\" and @index=\"2\" and  @text=\"fff<xxx->>>dddff\"]")
-    println(element.toTagPath())
+    println(element.getAncestor())
   }
 
 }

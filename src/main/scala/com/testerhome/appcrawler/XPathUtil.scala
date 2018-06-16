@@ -236,6 +236,11 @@ object XPathUtil extends CommonLog {
           if (nodeMap.contains("content-desc")) {
             nodeMap("label") = nodeMap("content-desc")
           }
+          //为了加速android定位
+          if (nodeMap.contains("instance")) {
+            nodeMap("instance") = nodeMap("instance")
+          }
+
 
           if (nodeMap("xpath").toString.nonEmpty && nodeMap("value").toString().size<50) {
             nodesMap += (nodeMap.toMap)

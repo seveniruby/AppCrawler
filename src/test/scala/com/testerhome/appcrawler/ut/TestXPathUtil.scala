@@ -712,7 +712,7 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
       """.stripMargin
 
     val ele=URIElement("", "", "", "", str)
-    println(ele.toTagPath())
+    println(ele.getAncestor())
     println(ele.toFileName())
 
   }
@@ -722,7 +722,7 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
         |//UIAApplication[@name="雪球" and @path="/0"]/UIAWindow[@path="/0/0"]/UIATableView[@path="/0/0/1"]/UIATableCell[@name="恒瑞医药业绩会，高管说了啥？" and @path="/0/0/1/10"]/UIAStaticText[@name="恒瑞医药业绩会，高管说了啥？" and @path="/0/0/1/10/0"]
       """.stripMargin
     val ele=URIElement("", "", "", "", str)
-    log.info(ele.toTagPath())
+    log.info(ele.getAncestor())
     log.info(ele.toFileName())
 
   }

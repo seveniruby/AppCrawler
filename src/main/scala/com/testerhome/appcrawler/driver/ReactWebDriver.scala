@@ -43,10 +43,10 @@ trait ReactWebDriver extends CommonLog {
   }
 
 
-  def findElementsByURI(element: URIElement): List[AnyRef] ={
+  def findElementsByURI(element: URIElement, findBy:String): List[AnyRef] ={
     List[AnyRef](element)
   }
-  def findElementByURI(element: URIElement): AnyRef= {
+  def findElementByURI(element: URIElement, findBy:String): AnyRef= {
     //为了加速去掉id定位, 测试表明比xpath竟然还慢
     /*
     log.info(s"find element by uid ${element}")
@@ -70,10 +70,11 @@ trait ReactWebDriver extends CommonLog {
       }
     }
     */
+
     //todo: 用其他定位方式优化
     log.info(s"find by uri element= ${element}")
     currentURIElement=element
-    asyncTask()(findElementsByURI(element)) match {
+    asyncTask()(findElementsByURI(element, findBy)) match {
       case Left(v) => {
         val arr = v.distinct
         arr.length match {

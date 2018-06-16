@@ -17,14 +17,14 @@ class TagLimitPlugin extends Plugin {
   }
 
   override def beforeElementAction(element: URIElement): Unit = {
-    val key = element.toTagPath()
+    val key = element.getAncestor()
     log.trace(s"tag path = ${key}")
     if (!tagLimit.contains(key)) {
       //跳过具备selected=true的菜单栏
       getCrawler().driver.findMapByKey("//*[@selected='true']").foreach(m=>{
         val element=getCrawler().getUrlElementByMap(m)
-        tagLimit(element.toTagPath())=20
-        log.info(s"tagLimit[${element.toTagPath()}]=20")
+        tagLimit(element.getAncestor())=20
+        log.info(s"tagLimit[${element.getAncestor()}]=20")
       })
       //应用定制化的规则
       getCrawler().getTimesFromTagLimit(element) match {
@@ -45,7 +45,7 @@ class TagLimitPlugin extends Plugin {
   }
 
   override def afterElementAction(element: URIElement): Unit = {
-    val key = element.toTagPath()
+    val key = element.getAncestor()
     if (tagLimit.contains(key)) {
       tagLimit(key) -= 1
       log.info(s"tagLimit[${key}]=${tagLimit(key)}")

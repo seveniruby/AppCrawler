@@ -325,7 +325,7 @@ class Crawler extends CommonLog {
     */
   def getSchema(): String = {
     val nodeList = driver.findMapByKey("//*[not(ancestor-or-self::UIAStatusBar)]")
-    md5(nodeList.map(getUrlElementByMap(_).toTagPath()).distinct.mkString("\n"))
+    md5(nodeList.map(getUrlElementByMap(_).getAncestor()).distinct.mkString("\n"))
   }
 
   def getUri(): String = {
@@ -372,14 +372,17 @@ class Crawler extends CommonLog {
     //id表示android的resource-id或者iOS的name属性
     log.trace(nodeMap)
     val id = nodeMap.getOrElse("name", "").toString.split('/').last
+    val instance = nodeMap.getOrElse("instance", "").toString
     val loc = nodeMap.getOrElse("xpath", "").toString
     val x=nodeMap.getOrElse("x", "0").toString.toInt
     val y=nodeMap.getOrElse("y", "0").toString.toInt
     val width=nodeMap.getOrElse("width", "0").toString.toInt
     val height=nodeMap.getOrElse("height", "0").toString.toInt
     val ancestor=nodeMap.getOrElse("ancestor", "").toString
-    URIElement(url=currentUrl, tag=tag, id=id, name=name, loc=loc, ancestor=ancestor,
-      x=x, y=y, width=width, height=height)
+    URIElement(url=currentUrl, tag=tag, id=id, name=name, instance=instance,
+      loc=loc, ancestor=ancestor,
+      x=x, y=y, width=width, height=height
+    )
   }
 
   def needBackApp(): Boolean = {
@@ -1000,7 +1003,7 @@ class Crawler extends CommonLog {
     log.info(s"current action = ${action}")
     log.info(s"current xpath = ${element.loc}")
     log.info(s"current url = ${element.url}")
-    log.info(s"current tag path = ${element.toTagPath()}")
+    log.info(s"current tag path = ${element.getAncestor()}")
     log.info(s"current file name = ${element.toFileName()}")
     log.info(s"current uri = ${element.toLoc()}")
 
@@ -1012,6 +1015,7 @@ class Crawler extends CommonLog {
     val originImageName = getBasePathName(2) + ".clicked.png"
     val newImageName = getBasePathName() + ".click.png"
 
+    //todo: 支持null
     action match {
       case ""  | "log" => {
         log.info("just log")
@@ -1070,7 +1074,7 @@ class Crawler extends CommonLog {
         //todo: tap的缺点就是点击元素的时候容易点击到元素上层的控件
 
         log.info(s"need input ${str}")
-        driver.findElementByURI(element) match {
+        driver.findElementByURI(element, conf.findBy) match {
           case null => {
             log.warn(s"not found by ${element.loc}")
           }
@@ -1143,7 +1147,7 @@ class Crawler extends CommonLog {
     if (conf.currentDriver.toLowerCase == "android") {
       if (backDistance.intervalMS() < 2000) {
         log.warn("two back action too close")
-        Thread.sleep(conf.waitLaunch)
+        Thread.sleep(2000)
       }
       driver.asyncTask() {
         driver.back()

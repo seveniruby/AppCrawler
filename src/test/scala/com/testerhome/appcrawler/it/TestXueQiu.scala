@@ -30,7 +30,7 @@ class TestXueQiu extends FunSuite{
   }
 
   test("appcrawler"){
-    AppCrawler.main(Array("-c", "src/test/scala/com/testerhome/appcrawler/it/xueqiu_private.yml",
+    AppCrawler.main(Array("--capability", "appPackage=com.xueqiu.android,appActivity=.view.WelcomeActivityAlias",
       "-o", s"/tmp/xueqiu/${System.currentTimeMillis()}", "--verbose"
     )
     )

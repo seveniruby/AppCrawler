@@ -28,7 +28,11 @@ class CrawlerConf {
   /**在执行action后等待多少毫秒进行刷新*/
   var waitLoading=1000
   var waitLaunch=6000
+  //default use id|name|xpath|android, you can set to xpath to only use xpath
+  var findBy="android"
+  //相似控件最多点击几次
   var tagLimitMax = 3
+  //个别控件可例外
   var tagLimit = ListBuffer[Step]()
   //var tagLimit=scala.collection.mutable.Map[String, Int]()
   var showCancel = false
@@ -38,7 +42,7 @@ class CrawlerConf {
   var resultDir = ""
   /** sikuli的数据 */
   var sikuliImages=""
-  //todo: 支持多设备
+  //todo: 通过数据驱动，支持多设备
   /** 设备列表，支持兼容性测试 */
   var devices = ListBuffer(
     Map[String, Any](
