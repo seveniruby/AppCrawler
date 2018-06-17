@@ -1,7 +1,8 @@
 package com.testerhome.appcrawler
 
-import javax.xml.bind.annotation.XmlAttribute
+import java.io.File
 
+import javax.xml.bind.annotation.XmlAttribute
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import org.apache.commons.lang3.StringUtils
 import org.openqa.selenium.{Dimension, Point}
@@ -47,7 +48,8 @@ case class URIElement(
     * @return
     */
   def toFileName(): String ={
-    s"${url}_tag.${tag.replace("android.widget.", "")}_instance.${instance}_depth.${depth}_id.${id}_name.${name}".take(100)
+    (s"${url}_tag.${tag.replace("android.widget.", "")}_${instance}_depth.${depth}_" +
+      s"id.${id}_name.${name}").replace(File.separator, ".").take(100)
   }
 
   /**

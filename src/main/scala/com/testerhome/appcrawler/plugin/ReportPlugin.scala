@@ -27,6 +27,7 @@ class ReportPlugin extends Plugin with Report {
   }
 
   override def stop(): Unit ={
+    this.getCrawler().saveLog()
     generateReport()
   }
 

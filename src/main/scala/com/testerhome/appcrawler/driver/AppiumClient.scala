@@ -9,9 +9,11 @@ import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 import com.testerhome.appcrawler.{AppCrawler, CommonLog, DataObject, URIElement}
 import com.testerhome.appcrawler._
-import io.appium.java_client.{AppiumDriver, TouchAction}
-import io.appium.java_client.android.AndroidDriver
+import io.appium.java_client.{AppiumDriver, MobileElement, TouchAction}
+import io.appium.java_client.android.{AndroidDriver, AndroidElement}
 import io.appium.java_client.ios.IOSDriver
+import io.appium.java_client.touch.{LongPressOptions, TapOptions, WaitOptions}
+import io.appium.java_client.touch.offset.{ElementOption, PointOption}
 import org.apache.log4j.Level
 import org.openqa.selenium.{OutputType, Rectangle, TakesScreenshot, WebElement}
 import org.scalatest.selenium.WebBrowser
@@ -124,14 +126,7 @@ class AppiumClient extends ReactWebDriver{
       getDeviceInfo()
     }
     asyncTask()(
-      driver.performTouchAction(
-        new TouchAction(driver)
-          .press((screenWidth * startX).toInt, (screenHeight * startY).toInt)
-          .waitAction(Duration.ofSeconds(1))
-          //.moveTo((screenWidth * (endX-startX)).toInt, (screenHeight * (endY-startY)).toInt)
-          .moveTo((screenWidth * endX).toInt, (screenHeight * endY).toInt)
-          .release()
-      )
+      new AppiumTouchAction(driver, screenWidth, screenHeight).swipe(startX, startY, endX, endY)
     )
   }
 
@@ -163,12 +158,17 @@ class AppiumClient extends ReactWebDriver{
       val subImg=img.getSubimage(0, 0, screenWidth, screenHeight)
       ImageIO.write(subImg, "png", new java.io.File(newImageName))
     }else{
+      log.info(s"ImageIO.write newImageName ${newImageName}")
       ImageIO.write(img, "png", new java.io.File(newImageName))
     }
   }
   override def clickLocation(): Unit = {
     val point=currentURIElement.center()
-    driver.performTouchAction(new TouchAction(driver).tap(point.x, point.y))
+    driver.performTouchAction(
+      new TouchAction(driver).tap(
+        TapOptions.tapOptions().withPosition(
+          PointOption.point(point.x, point.y)))
+    )
   }
   override def click(): this.type ={
     log.info(currentElement)
@@ -176,12 +176,19 @@ class AppiumClient extends ReactWebDriver{
     this
   }
   override def tap(): this.type = {
-    new TouchAction(driver).tap(currentElement).perform()
+    new AppiumTouchAction(driver).tap(currentElement)
     this
   }
 
   override def longTap(): this.type = {
-    new TouchAction(driver).longPress(currentElement).perform()
+    driver.performTouchAction(
+      (new TouchAction(driver)
+        .longPress(
+          LongPressOptions.longPressOptions()
+            .withElement(ElementOption.element(currentElement))
+            .withDuration(Duration.ofSeconds(2))
+        ))
+    )
     this
   }
 

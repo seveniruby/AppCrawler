@@ -60,7 +60,6 @@ class Crawler extends CommonLog {
     * 根据类名初始化插件. 插件可以使用java编写. 继承自Plugin即可
     */
   def loadPlugins(): Unit = {
-    //todo: 需要考虑默认加载一些插件,并防止重复加载
     val defaultPlugins = List(
       "com.testerhome.appcrawler.plugin.TagLimitPlugin",
       "com.testerhome.appcrawler.plugin.ReportPlugin",
@@ -219,7 +218,7 @@ class Crawler extends CommonLog {
     conf.capability ++= Map("noReset"->"true")
     setupAppium()
     //todo: 采用轮询
-    Thread.sleep(6000)
+    Thread.sleep(conf.waitLaunch)
     refreshPage()
     doElementAction(URIElement(url=s"${currentUrl}", tag="restart", id="restart", name="restart",
       loc=s"restart-${store.clickedElementsList.size}"), "")
@@ -250,8 +249,6 @@ class Crawler extends CommonLog {
     Util.isLoaded=false
 
     //todo: 主要做遍历测试和异常测试. 所以暂不使用selendroid
-    //todo: Appium模式太慢
-
     val url=conf.capability("appium").toString
     conf.capability.getOrElse("automationName", "").toString match {
       case "macaca" => {
@@ -273,6 +270,8 @@ class Crawler extends CommonLog {
       case _ => {
         log.info("use AppiumClient")
         log.info(conf.capability)
+        //appium 6.0.0 has bug with okhttp
+        System.setProperty("webdriver.http.factory", "apache")
         driver=new AppiumClient(url, conf.capability)
         log.info(driver)
       }
@@ -631,10 +630,6 @@ class Crawler extends CommonLog {
       while (urlStack.head != currentUrl) {
         log.debug("pop urlStack")
         urlStack.pop()
-      }
-      //如果有回退就保存log
-      if(urlStack.size>2) {
-        saveLog()
       }
     } else {
       urlStack.push(currentUrl)
@@ -1010,8 +1005,7 @@ class Crawler extends CommonLog {
 
     store.saveReqHash(contentHash.last().toString)
     store.saveReqImg(getBasePathName() + ".click.png")
-    //todo: 内存占用太大，改用文件
-    store.saveReqDom(driver.currentPageSource)
+    store.saveReqDom(store.clickedElementsList.takeRight(2).headOption.getOrElse(element).toFileName())
 
     val originImageName = getBasePathName(2) + ".clicked.png"
     val newImageName = getBasePathName() + ".click.png"
@@ -1083,7 +1077,9 @@ class Crawler extends CommonLog {
             val rect = driver.getRect()
             if(conf.saveScreen) {
               log.info(s"mark ${originImageName} to ${newImageName}")
-              driver.mark(originImageName, newImageName, rect.x, rect.y, rect.width, rect.height)
+              driver.asyncTask() {
+                driver.mark(originImageName, newImageName, rect.x, rect.y, rect.width, rect.height)
+              }
             }
 
             driver.asyncTask() {
@@ -1139,7 +1135,7 @@ class Crawler extends CommonLog {
     store.saveResHash(contentHash.last().toString)
     store.saveResImg(getBasePathName() + ".clicked.png")
     //todo: 内存消耗太大，改用文件存储
-    store.saveResDom(driver.currentPageSource)
+    store.saveResDom(element.toFileName())
 
   }
 

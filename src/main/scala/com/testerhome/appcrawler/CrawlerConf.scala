@@ -105,7 +105,6 @@ class CrawlerConf {
   )
 
   //包括backButton
-  //todo: 支持正则表达式
   /** 黑名单列表 matches风格, 默认排除内容是2个数字以上的控件. */
   var blackList = ListBuffer[String](
     //".*[0-9]{2}.*"
@@ -194,6 +193,7 @@ class CrawlerConf {
     load(new File(file)).get
   }
 
+  //如果没有显式配置参数，那么就会用默认值代替
   def load(file: File): Option[CrawlerConf] = {
     val content = Source.fromFile(file, "UTF-8").getLines().mkString("\n")
     file.getName match {

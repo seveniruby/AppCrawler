@@ -29,9 +29,12 @@ class TestXueQiu extends FunSuite{
 
   }
 
-  test("appcrawler"){
-    AppCrawler.main(Array("--capability", "appPackage=com.xueqiu.android,appActivity=.view.WelcomeActivityAlias",
-      "-o", s"/tmp/xueqiu/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}", "--verbose"
+  test("appcrawler xueqiu by default conf"){
+    AppCrawler.main(Array(
+      "--capability", "appPackage=com.xueqiu.android,appActivity=.view.WelcomeActivityAlias",
+      "-u", "5723",
+      "-o", s"/tmp/xueqiu/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}",
+      "--verbose"
     )
     )
   }

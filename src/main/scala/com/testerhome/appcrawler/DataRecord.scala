@@ -7,7 +7,6 @@ import scala.collection.mutable.ListBuffer
   */
 class DataRecord extends CommonLog {
   val record=ListBuffer[(Long, Any)]()
-  //todo: 暂时只用2个就足够了
   private val size=10
   def append(any: Any): Unit ={
     record.append(System.currentTimeMillis()->any)

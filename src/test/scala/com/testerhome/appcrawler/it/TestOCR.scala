@@ -1,3 +1,4 @@
+/*
 
 package com.testerhome.appcrawler.ut
 
@@ -57,3 +58,4 @@ class TestOCR extends FunSuite{
   }
 
 }
+*/

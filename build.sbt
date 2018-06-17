@@ -1,5 +1,5 @@
 name := "AppCrawler"
-version := "2.3.0"
+version := "2.3.1"
 scalaVersion := "2.12.6"
 //scalaVersion := "2.13.0-M3"
 
@@ -30,8 +30,8 @@ libraryDependencies ++= Seq(
   "org.lucee" % "commons-codec" % "1.10.L001",
   "org.jsoup" % "jsoup" % "1.9.2",
   "com.jayway.jsonpath" % "json-path" % "2.2.0" ,
-  "org.scalactic" %% "scalactic" % "3.2.0-SNAP10" ,
-  "org.scalatest" %% "scalatest" % "3.2.0-SNAP10" exclude("org.scala-lang.modules", "scala-xml"),
+  "org.scalactic" %% "scalactic" % "3.0.5" ,
+  "org.scalatest" %% "scalatest" % "3.0.5" exclude("org.scala-lang.modules", "scala-xml"),
   "org.apache.directory.studio" % "org.apache.commons.io" % "2.4",
   "org.scalatra.scalate" %% "scalate-core" % "1.8.0",
   "org.apache.logging.log4j" % "log4j-core" % "2.7",
@@ -55,6 +55,7 @@ libraryDependencies ++= Seq(
   "com.github.poslegm" %% "scala-phash" % "1.0.3",
   "org.ow2.asm" % "asm" % "5.2",
 //  "org.openimaj" % "openimaj" % "1.3.6",
+  "io.qameta.allure" % "allure-junit4" % "2.6.0",
   "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 

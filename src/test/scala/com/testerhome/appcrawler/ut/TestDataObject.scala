@@ -7,6 +7,7 @@ import com.testerhome.appcrawler._
 import org.scalatest.{FunSuite, Matchers}
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 import scala.io.Source
 import scala.reflect.io.File
 
@@ -299,5 +300,27 @@ class TestDataObject extends FunSuite with CommonLog with Matchers{
         |{"status":0,"value":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<AppiumAUT>\n    <XCUIElementTypeApplication name=\"雪球\" label=\"雪球\" value=\"\" dom=\"\" enabled=\"true\" valid=\"true\" visible=\"true\" hint=\"\" path=\"/0\" x=\"0\" y=\"0\" width=\"375\" height=\"667\">\n</XCUIElementTypeApplication>\n</AppiumAUT>","sessionId":"6a137283-8ceb-4df4-8a48-bf9d5de32659"}
       """.stripMargin
     log.info(TData.fromJson[Map[String, String]](str).getOrElse("value", ""))
+  }
+
+  test("load from yaml"){
+    val conf=new CrawlerConf()
+    conf.selectedList=ListBuffer[Step]()
+    File("/tmp/1.yaml").writeAll(TData.toYaml(conf))
+
+    val conf2=TData.fromYaml[CrawlerConf](Source.fromFile("/tmp/1.yaml").mkString)
+    log.info(conf2.selectedList)
+
+    conf.selectedList=null
+    File("/tmp/2.yaml").writeAll(TData.toYaml(conf))
+
+    val conf3=TData.fromYaml[CrawlerConf](Source.fromFile("/tmp/2.yaml").mkString)
+    log.info(conf3.selectedList)
+
+    val conf4=TData.fromYaml[CrawlerConf](Source.fromFile("/tmp/3.yaml").mkString)
+    log.info(conf4.selectedList)
+
+
+
+
   }
 }
