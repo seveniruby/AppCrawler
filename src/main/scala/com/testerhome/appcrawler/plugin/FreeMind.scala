@@ -1,6 +1,6 @@
 package com.testerhome.appcrawler.plugin
 
-import com.testerhome.appcrawler.{TreeNode, Plugin}
+import com.testerhome.appcrawler.TreeNode
 
 import scala.collection.mutable.ListBuffer
 import scala.reflect.io.File

@@ -37,6 +37,7 @@ trait Report extends CommonLog {
   }
 
 
+  //todo: 用junit+allure代替
   def runTestCase(namespace: String=""): Unit = {
     var cmdArgs = Array("-R", testcaseDir,
       "-oF", "-u", reportPath, "-h", reportPath)

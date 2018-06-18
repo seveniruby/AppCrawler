@@ -3,7 +3,7 @@ package com.testerhome.appcrawler.plugin
 import java.util.logging.Level
 
 import com.testerhome.appcrawler.driver.AppiumClient
-import com.testerhome.appcrawler.{Plugin, URIElement}
+import com.testerhome.appcrawler.URIElement
 
 import scala.collection.mutable.ListBuffer
 import scala.reflect.io.File

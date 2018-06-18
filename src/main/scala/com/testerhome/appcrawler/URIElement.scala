@@ -48,8 +48,8 @@ case class URIElement(
     * @return
     */
   def toFileName(): String ={
-    (s"${url}_tag.${tag.replace("android.widget.", "")}_${instance}_depth.${depth}_" +
-      s"id.${id}_name.${name}").replace(File.separator, ".").take(100)
+    (s"${url}.tag=${tag.replace("android.widget.", "")}.${instance}.depth=${depth}." +
+      s"id=${id}.name=${name}").replace(File.separator, ".").take(100)
   }
 
   /**

@@ -67,7 +67,7 @@ object XPathUtil extends CommonLog {
       if (newAttribute.getOrElse("name", "") == newAttribute.getOrElse("label", "")) {
         newAttribute = newAttribute - "name"
       }
-      //有限取content-desc
+      //优先取content-desc
       if (newAttribute.getOrElse("content-desc", "") == newAttribute.getOrElse("resource-id", "")) {
         newAttribute = newAttribute - "resource-id"
       }
@@ -91,6 +91,7 @@ object XPathUtil extends CommonLog {
         }
       }).filter(x => x.nonEmpty).mkString(" and ")
 
+      //todo: 改进xpath算法，更灵活，更唯一，更简短
       //todo: macaca的source有问题
       xpathSingle = if (xpathSingle.isEmpty) {
         //s"/${attribute.getOrElse("class", attribute.getOrElse("tag", "*"))}"

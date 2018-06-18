@@ -1,4 +1,6 @@
-package com.testerhome.appcrawler
+package com.testerhome.appcrawler.plugin
+
+import com.testerhome.appcrawler.{CommonLog, Crawler, URIElement}
 
 /**
   * Created by seveniruby on 16/1/7.
@@ -42,9 +44,6 @@ abstract class Plugin extends CommonLog{
     false
   }
 
-  def getPageSource(): String ={
-    ""
-  }
   def stop(): Unit ={
 
   }

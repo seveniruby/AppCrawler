@@ -2,6 +2,8 @@ package com.testerhome.appcrawler
 
 import java.io.File
 
+import com.testerhome.appcrawler.plugin.Plugin
+
 import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
 import scala.tools.nsc.interpreter.IMain
 import scala.tools.nsc.{Global, Settings}

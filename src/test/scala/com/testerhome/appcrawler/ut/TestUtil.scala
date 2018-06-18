@@ -5,7 +5,7 @@ import java.io.File
 import java.util.jar.JarFile
 
 import com.testerhome.appcrawler.CommonLog
-import com.testerhome.appcrawler.plugin.DemoPlugin
+import com.testerhome.appcrawler.plugin.{DemoPlugin, Plugin}
 import com.testerhome.appcrawler._
 import com.testerhome.appcrawler.driver.AppiumClient
 import org.scalatest.FunSuite

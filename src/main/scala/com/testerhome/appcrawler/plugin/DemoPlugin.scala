@@ -1,7 +1,6 @@
 package com.testerhome.appcrawler.plugin
 
 import com.testerhome.appcrawler.URIElement
-import com.testerhome.appcrawler.Plugin
 
 /**
   * Created by seveniruby on 16/1/21.

@@ -17,25 +17,27 @@ import scala.io.Source
 class CrawlerConf {
   /** 插件列表，暂时禁用，太高级了，很多人不会用 */
   //var pluginList = List[String]()
-  var logLevel = "TRACE"
   /** 是否截图 */
   var saveScreen = true
   var reportTitle = ""
-  //截图等待的超时时间，截图一般会消耗2s
-  var screenshotTimeout = 20
   var currentDriver = "Android"
   var swipeRetryMax=2
   /**在执行action后等待多少毫秒进行刷新*/
-  var waitLoading=1000
+  var waitLoading=500
   var waitLaunch=6000
   //default use id|name|xpath|android, you can set to xpath to only use xpath
   var findBy="android"
   //相似控件最多点击几次
-  var tagLimitMax = 3
+  var tagLimitMax = 2
   //个别控件可例外
-  var tagLimit = ListBuffer[Step]()
+  var tagLimit = ListBuffer[Step](
+    //特殊的按钮，可以一直被遍历
+    Step(xpath = "确定", times = 1000),
+    Step(xpath = "取消", times = 1000),
+    Step(xpath = "share_comment_guide_btn_name", times=1000)
+  )
   //var tagLimit=scala.collection.mutable.Map[String, Int]()
-  var showCancel = false
+  var showCancel = true
   /** 最大运行时间 */
   var maxTime = 3600 * 3
   /** 结果目录 */
@@ -43,13 +45,6 @@ class CrawlerConf {
   /** sikuli的数据 */
   var sikuliImages=""
   //todo: 通过数据驱动，支持多设备
-  /** 设备列表，支持兼容性测试 */
-  var devices = ListBuffer(
-    Map[String, Any](
-      "platformName" -> "",
-      "platformVersion" -> "9.2",
-      "deviceName" -> "iPhone 6"
-    ))
   /** appium的capability通用配置 */
   var capability = Map[String, Any](
     //默认不清空数据，防止有人用于微信和qq
@@ -68,14 +63,14 @@ class CrawlerConf {
     "autoAcceptAlerts" -> "true",
   )
   //自动生成的xpath表达式里可以包含的匹配属
-  var xpathAttributes = List("name", "label", "value", "resource-id", "content-desc", "index", "text")
+  var xpathAttributes = List("name", "label", "value", "resource-id", "content-desc", "instance", "text")
   /** 用来确定url的元素定位xpath 他的text会被取出当作url因素 */
   var defineUrl = List[String]()
   /** 设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度 */
   var baseUrl = List[String]()
   var appWhiteList = ListBuffer[String]()
   /** 默认的最大深度10, 结合baseUrl可很好的控制遍历的范围 */
-  var maxDepth = 6
+  var maxDepth = 10
   /** 是否是前向遍历或者后向遍历 */
   var sortByAttribute = List("depth", "selected")
   /** url黑名单.用于排除某些页面 */
@@ -107,7 +102,7 @@ class CrawlerConf {
   //包括backButton
   /** 黑名单列表 matches风格, 默认排除内容是2个数字以上的控件. */
   var blackList = ListBuffer[String](
-    //".*[0-9]{2}.*"
+    ".*[0-9]{2}.*"
   )
   /** 引导规则. name, value, times三个元素组成 */
   var triggerActions = ListBuffer[Step]()

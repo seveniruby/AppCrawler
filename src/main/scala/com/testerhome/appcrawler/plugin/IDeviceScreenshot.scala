@@ -1,6 +1,5 @@
 package com.testerhome.appcrawler.plugin
 
-import com.testerhome.appcrawler.Plugin
 import sys.process._
 /**
   * Created by seveniruby on 16/4/26.

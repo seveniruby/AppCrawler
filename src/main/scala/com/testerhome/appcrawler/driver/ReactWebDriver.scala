@@ -232,6 +232,7 @@ trait ReactWebDriver extends CommonLog {
   }
 
   def asyncTask[T](timeout: Int = 30)(callback: => T): Either[T, Throwable] = {
+    //todo: 异步线程消耗资源厉害，需要改进
     Try({
       val task = Executors.newSingleThreadExecutor().submit(new Callable[T]() {
         def call(): T = {

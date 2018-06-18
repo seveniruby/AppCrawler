@@ -193,7 +193,6 @@ class AppiumClient extends ReactWebDriver{
   }
 
   override def back(): Unit = {
-    log.info("navigate back")
     driver.navigate().back()
   }
 

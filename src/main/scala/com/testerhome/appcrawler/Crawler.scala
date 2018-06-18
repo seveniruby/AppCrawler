@@ -4,6 +4,7 @@ import java.io
 import java.util.Date
 
 import com.testerhome.appcrawler.driver.{AppiumClient, MacacaDriver, ReactWebDriver}
+import com.testerhome.appcrawler.plugin.Plugin
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.log4j._
@@ -902,16 +903,6 @@ class Crawler extends CommonLog {
     crawl()
   }
 
-  def getTimesFromTagLimit(element: URIElement): Option[Int] = {
-    conf.tagLimit.foreach(tag => {
-      if(driver.findMapByKey(tag.getXPath()).map(getUrlElementByMap(_)).contains(element)){
-        return Some(tag.times)
-      }else{
-        None
-      }
-    })
-    None
-  }
 
   def saveLog(): Unit = {
     //记录点击log
@@ -1017,9 +1008,11 @@ class Crawler extends CommonLog {
         log.info(TData.toJson(element))
       }
       case "back" => {
+        log.info("back")
         back()
       }
       case "backApp" => {
+        log.info("backApp")
         driver.launchApp()
         //todo: 改进等待
         Thread.sleep(conf.waitLaunch)
@@ -1126,7 +1119,7 @@ class Crawler extends CommonLog {
     }
 
     //等待页面加载
-    log.info("sleep 1000 for loading")
+    log.info(s"sleep ${conf.waitLoading} for loading")
     Thread.sleep(conf.waitLoading)
     isRefreshSuccess = refreshPage()
     saveDom()
@@ -1147,6 +1140,7 @@ class Crawler extends CommonLog {
         Thread.sleep(2000)
       }
       driver.asyncTask() {
+        log.info("navigate back")
         driver.back()
       }
       backDistance.append("back")

@@ -1,7 +1,7 @@
 package com.testerhome.appcrawler.plugin
 
 import com.testerhome.appcrawler.URIElement
-import com.testerhome.appcrawler.{ElementStatus, Plugin}
+import com.testerhome.appcrawler.ElementStatus
 
 /**
   * Created by seveniruby on 16/1/21.
@@ -27,7 +27,7 @@ class TagLimitPlugin extends Plugin {
         log.info(s"tagLimit[${element.getAncestor()}]=20")
       })
       //应用定制化的规则
-      getCrawler().getTimesFromTagLimit(element) match {
+      getTimesFromTagLimit(element) match {
         case Some(v)=> {
           tagLimit(key)=v
           log.info(s"tagLimit[${key}]=${tagLimit(key)} with conf.tagLimit")
@@ -55,6 +55,19 @@ class TagLimitPlugin extends Plugin {
 
   override def afterUrlRefresh(url: String): Unit = {
 
+  }
+
+  def getTimesFromTagLimit(element: URIElement): Option[Int] = {
+    this.getCrawler().conf.tagLimit.foreach(tag => {
+      if(getCrawler().driver.findMapByKey(tag.getXPath())
+        .map(getCrawler().getUrlElementByMap(_))
+        .contains(element)){
+        return Some(tag.times)
+      }else{
+        None
+      }
+    })
+    None
   }
 
 }
