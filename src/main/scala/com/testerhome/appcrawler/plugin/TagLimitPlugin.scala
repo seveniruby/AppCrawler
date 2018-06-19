@@ -62,7 +62,7 @@ class TagLimitPlugin extends Plugin {
   def getTimesFromTagLimit(element: URIElement): Option[Int] = {
     this.getCrawler().conf.tagLimit.foreach(tag => {
       if(getCrawler().driver.findMapByKey(tag.getXPath())
-        .map(getCrawler().getUrlElementByMap(_))
+        .map(new URIElement(_, getCrawler().currentUrl))
         .contains(element)){
         return Some(tag.times)
       }else{

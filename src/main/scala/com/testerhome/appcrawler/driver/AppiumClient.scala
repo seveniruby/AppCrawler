@@ -241,9 +241,22 @@ class AppiumClient extends ReactWebDriver{
         if(element.name.nonEmpty){
           locator.append(".description(\"" + element.name + "\")" )
         }
-        log.info(s"findElementsByAndroidUIAutomator ${locator.toString()}")
-        driver.asInstanceOf[AndroidDriver[WebElement]].findElementsByAndroidUIAutomator(locator.toString()).asScala.toList
+        log.info(s"findElementByAndroidUIAutomator ${locator.toString()}")
+        asyncTask(20){
+          List(driver.asInstanceOf[AndroidDriver[WebElement]].findElementByAndroidUIAutomator(locator.toString()))
+        } match {
+          case Left(value)=>{
+            value
+          }
+          case Right(value)=>{
+            log.warn("findElementByAndroidUIAutomator error, use findElementsByAndroidUIAutomator")
+            driver.asInstanceOf[AndroidDriver[WebElement]].findElementsByAndroidUIAutomator(locator.toString()).asScala.toList
+          }
+        }
+        //driver.asInstanceOf[AndroidDriver[WebElement]].findElementsByAndroidUIAutomator(locator.toString()).asScala.toList
         //todo: 个别时候findElement会报错而实际上控件存在，跟uiautomator的定位算法有关
+        //todo: 结合findElement和findElements
+        //todo: 修复appium bug
         //List(driver.asInstanceOf[AndroidDriver[WebElement]].findElementByAndroidUIAutomator(locator.toString()))
       }
       case _ => {

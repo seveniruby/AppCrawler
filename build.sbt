@@ -59,6 +59,7 @@ libraryDependencies ++= Seq(
   "org.ow2.asm" % "asm" % "5.2",
 //  "org.openimaj" % "openimaj" % "1.3.6",
   "io.qameta.allure" % "allure-junit5" % "2.6.0",
+  "org.apache.commons" % "commons-text" % "1.4",
   "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 

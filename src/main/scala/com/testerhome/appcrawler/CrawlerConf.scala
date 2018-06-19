@@ -16,31 +16,23 @@ import scala.io.Source
   */
 class CrawlerConf {
   /** 插件列表，暂时禁用，太高级了，很多人不会用 */
-  //var pluginList = List[String]()
+  var pluginList = List[String]()
   /** 是否截图 */
-  var saveScreen = false
+  var saveScreen = true
   var reportTitle = ""
-  var swipeRetryMax=2
+  /** 结果目录 */
+  var resultDir = ""
   /**在执行action后等待多少毫秒进行刷新*/
   var waitLoading=500
   var waitLaunch=6000
-  //相似控件最多点击几次
-  var tagLimitMax = 2
-  //个别控件可例外
-  var tagLimit = ListBuffer[Step](
-    //特殊的按钮，可以一直被遍历
-    Step(xpath = "确定", times = 1000),
-    Step(xpath = "取消", times = 1000),
-    Step(xpath = "share_comment_guide_btn_name", times=1000)
-  )
   //var tagLimit=scala.collection.mutable.Map[String, Int]()
   var showCancel = true
   /** 最大运行时间 */
   var maxTime = 3600 * 3
-  /** 结果目录 */
-  var resultDir = ""
+  /** 默认的最大深度10, 结合baseUrl可很好的控制遍历的范围 */
+  var maxDepth = 10
   /** sikuli的数据 */
-  var sikuliImages=""
+  //var sikuliImages=""
   //todo: 通过数据驱动，支持多设备
   /** appium的capability通用配置 */
   var capability = Map[String, Any](
@@ -50,39 +42,41 @@ class CrawlerConf {
   )
   //自动生成的xpath表达式里可以包含的匹配属
   var xpathAttributes = List("name", "label", "value", "resource-id", "content-desc", "instance", "text")
+  /** 先按照深度depth排序，再按照list排序，最后按照selected排序。后排序是优先级别最高的 */
+  var sortByAttribute = List("depth", "list", "selected")
   /** 用来确定url的元素定位xpath 他的text会被取出当作url因素 */
   var defineUrl = List[String]()
   /** 设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度 */
   var baseUrl = List[String]()
   var appWhiteList = ListBuffer[String]()
-  /** 默认的最大深度10, 结合baseUrl可很好的控制遍历的范围 */
-  var maxDepth = 10
-  /** 是否是前向遍历或者后向遍历 */
-  var sortByAttribute = List("depth", "selected")
+
   /** url黑名单.用于排除某些页面 */
   var urlBlackList = ListBuffer[String]()
   var urlWhiteList = ListBuffer[String]()
 
   var defaultBackAction = ListBuffer[String]()
 
-
-  /** 后退按钮标记, 主要用于iOS, xpath */
-  var backButton = ListBuffer[Step]()
+  /** 默认遍历列表，xpath有用，action暂时没启用*/
+  var selectedList = ListBuffer[Step](
+    Step(find="//*[contains(name(), 'Image')]"),
+    Step(find="//*[contains(name(), 'Button')]"),
+    //android专属
+    Step(find="//*[contains(name(), 'Text') and @clickable='true' and string-length(@text)<10]"),
+    Step(find="//*[@clickable='true']//*[contains(name(), 'Text') and string-length(@text)<10]"),
+    //ios专属
+    Step(find="//*[@name!='']"),
+  )
   /** 优先遍历元素 */
   var firstList = ListBuffer[Step](
   )
-  /** 默认遍历列表，xpath有用，action暂时没启用*/
-  var selectedList = ListBuffer[Step](
-    Step(xpath="//*[contains(name(), 'Text') and @clickable='true']"),
-    Step(xpath="//*[@clickable='true']//*[contains(name(), 'Text')]"),
-    Step(xpath="//*[@name!='']"),
-    Step(xpath="//*[contains(name(), 'Image')]"),
-    Step(xpath="//*[contains(name(), 'Button')]"),
-  )
   /** 最后遍历列表 */
   var lastList = ListBuffer[Step](
-    Step(xpath="//*[@selected='true']/..//*"),
-    Step(xpath="//*[@selected='true']/../..//*")
+    Step(find="//*[@selected='true']/..//*"),
+    Step(find="//*[@selected='true']/../..//*")
+  )
+  /** 后退按钮标记, 主要用于iOS, xpath */
+  var backButton = ListBuffer[Step](
+    Step(find="Navigate up")
   )
 
   //包括backButton
@@ -90,25 +84,34 @@ class CrawlerConf {
   var blackList = ListBuffer[String](
     ".*[0-9]{2}.*"
   )
+  //相似控件最多点击几次
+  var tagLimitMax = 2
+  //个别控件可例外
+  var tagLimit = ListBuffer[Step](
+    //特殊的按钮，可以一直被遍历
+    Step(find = "确定", times = 1000),
+    Step(find = "取消", times = 1000),
+    Step(find = "share_comment_guide_btn_name", times=1000)
+  )
+  //todo: 去掉triggerAction
   /** 引导规则. name, value, times三个元素组成 */
   var triggerActions = ListBuffer[Step]()
-  //todo: 用watch代替triggerActions
-  var autoCrawl: Boolean = true
-  var assert = ReactTestCase(
-    name = "TesterHome AppCrawler",
-    steps = List[Step]()
-  )
+  //在执行action之前和之后默认执行的动作，比如等待
+  var beforeElement = ListBuffer[Step]()
+  var afterElement = ListBuffer[Step]()
+  var afterPage = ListBuffer[Step]()
+  //afterPage执行多少次后才不执行，比如连续滑动2次都没新元素即取消
+  var afterPageMax=2
+  //在重启session之前做的事情
+  var beforeRestart=ListBuffer[String]()
+
+  //只需要写given与then即可
+  var assertGlobal = List[Step]()
+  //测试用例
   var testcase = ReactTestCase(
     name = "TesterHome AppCrawler",
     steps = List[Step]()
   )
-
-  var beforeElementAction = ListBuffer[Step]()
-  var afterElementAction = ListBuffer[Step]()
-  var afterUrlFinished = ListBuffer[Step]()
-
-
-  var beforeRestart=ListBuffer[String]()
   var monkeyEvents = ListBuffer[Int]()
   var monkeyRunTimeSeconds = 30
 

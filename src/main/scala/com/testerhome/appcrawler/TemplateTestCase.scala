@@ -69,7 +69,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
               */
               log.debug(ele.reqDom)
 
-              AppCrawler.crawler.conf.assert.steps.foreach(step => {
+              AppCrawler.crawler.conf.assertGlobal.foreach(step => {
                 if (XPathUtil.getListFromXPath(step.when.xpath, ele.reqDom)
                   .map(_.getOrElse("xpath", ""))
                   .headOption == Some(ele.element.xpath)

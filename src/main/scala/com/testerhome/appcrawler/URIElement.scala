@@ -4,7 +4,7 @@ import java.io.File
 
 import javax.xml.bind.annotation.XmlAttribute
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
-import org.apache.commons.lang3.StringUtils
+import org.apache.commons.text.StringEscapeUtils
 import org.openqa.selenium.{Dimension, Point}
 
 import scala.collection.immutable
@@ -108,6 +108,10 @@ case class URIElement(
     if(name.nonEmpty){
       fileName.append(s".name=${name}")
     }
+    if(text.nonEmpty){
+      fileName.append(s".text=${ StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")}")
+    }
+
     fileName.toString().take(100)
   }
 
