@@ -18,15 +18,12 @@ class CrawlerConf {
   /** 插件列表，暂时禁用，太高级了，很多人不会用 */
   //var pluginList = List[String]()
   /** 是否截图 */
-  var saveScreen = true
+  var saveScreen = false
   var reportTitle = ""
-  var currentDriver = "Android"
   var swipeRetryMax=2
   /**在执行action后等待多少毫秒进行刷新*/
   var waitLoading=500
   var waitLaunch=6000
-  //default use id|name|xpath|android, you can set to xpath to only use xpath
-  var findBy="android"
   //相似控件最多点击几次
   var tagLimitMax = 2
   //个别控件可例外
@@ -50,17 +47,6 @@ class CrawlerConf {
     //默认不清空数据，防止有人用于微信和qq
     "noReset" -> "true",
     "fullReset" -> "false",
-  )
-  /** android专属配置 最后会和capability合并 */
-  var androidCapability = Map[String, Any](
-    "app" -> "",
-    "appPackage" -> "",
-    "appActivity" -> ""
-  )
-  var iosCapability = Map[String, Any](
-    "app" -> "",
-    "bundleId" -> "",
-    "autoAcceptAlerts" -> "true",
   )
   //自动生成的xpath表达式里可以包含的匹配属
   var xpathAttributes = List("name", "label", "value", "resource-id", "content-desc", "instance", "text")

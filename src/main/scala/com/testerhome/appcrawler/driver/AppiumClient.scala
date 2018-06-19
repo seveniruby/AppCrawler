@@ -34,18 +34,11 @@ class AppiumClient extends ReactWebDriver{
 
   var currentElement:WebElement=_
 
-  private var platformName = ""
-
   def this(url: String = "http://127.0.0.1:4723/wd/hub", configMap: Map[String, Any]=Map[String, Any]()) {
     this
+    log.addAppender(AppCrawler.crawler.fileAppender)
     appium(url, configMap)
   }
-
-  def setPlatformName(platform: String): Unit = {
-    log.info(s"set platform ${platform}")
-    platformName = platform
-  }
-
 
   //todo: 集成appium进程管理
   def start(port: Int = 4723): Unit = {
@@ -96,19 +89,26 @@ class AppiumClient extends ReactWebDriver{
     if (capabilities.getCapability("deviceName") == null || capabilities.getCapability("deviceName").toString.isEmpty) {
       config("deviceName", "demo")
     }
-    if (
-      capabilities.getCapability("app").toString.matches(".*\\.apk$") ||
-        capabilities.getCapability("appActivity") != null ||
-        capabilities.getCapability("appPackage") != null
-    ) {
-      driver = new AndroidDriver[WebElement](new URL(url), capabilities)
-      setPlatformName("android")
-    } else {
-      driver = new IOSDriver[WebElement](new URL(url), capabilities)
-      setPlatformName("ios")
+
+    //todo: 支持Selenium
+    capabilities.asMap().keySet() match {
+      case android if android.contains("appPackage")
+        | capabilities.getCapability("app").toString.trim.takeRight(4).contains(".apk")  =>{
+        platformName="Android"
+        config("platformName", platformName)
+        driver = new AndroidDriver[WebElement](new URL(url), capabilities)
+      }
+      case ios if ios.contains("bundleId")
+        | ios.contains("udid")
+        | capabilities.getCapability("app").toString.trim.takeRight(4).contains(".ipa")
+        | capabilities.getCapability("app").toString.trim.takeRight(4).contains(".app")  =>{
+        platformName="iOS"
+        config("platformName", platformName)
+        driver = new IOSDriver[WebElement](new URL(url), capabilities)
+      }
     }
 
-    getDeviceInfo
+    getDeviceInfo()
     log.info(s"capture dir = ${new File(".").getAbsolutePath}")
     driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
   }
@@ -216,23 +216,42 @@ class AppiumClient extends ReactWebDriver{
     //todo: 多种策略，使用findElement 使用xml直接分析location 生成平台特定的定位符
 
     element match {
-      case id if element.id.nonEmpty && findBy=="default" =>{
+      case id if element.id.nonEmpty && findBy=="id" =>{
         log.info(s"findElementsById ${element.id}")
         driver.findElementsById(element.id).asScala.toList
       }
-      case name if element.name.nonEmpty && findBy=="default" => {
+      case name if element.name.nonEmpty && findBy=="accessibilityId" => {
         log.info(s"findElementsByAccessibilityId ${element.name}")
         driver.findElementsByAccessibilityId(element.name).asScala.toList
       }
-      case android if findBy=="android" => {
-        val locator="new UiSelector().className(\"" + element.tag + "\").instance(" + element.instance + ")"
-        log.info(s"findElementsByAndroidUIAutomator $locator")
-        driver.asInstanceOf[AndroidDriver[WebElement]].findElementsByAndroidUIAutomator(locator).asScala.toList
+      case android if platformName.toLowerCase=="android" => {
+        val locator=new StringBuilder()
+        locator.append("new UiSelector()")
+        locator.append(".className(\"" + element.tag + "\")")
+        if(element.instance.nonEmpty && element.text.isEmpty){
+          //todo: 如果出现动态出现的控件会影响定位
+          locator.append(".instance(" + element.instance + ")" )
+        }
+        if(element.text.nonEmpty){
+          locator.append(".text(\"" + element.text + "\")" )
+        }
+        if(element.id.nonEmpty){
+          locator.append(".resourceId(\"" + element.id + "\")")
+        }
+        if(element.name.nonEmpty){
+          locator.append(".description(\"" + element.name + "\")" )
+        }
+        log.info(s"findElementsByAndroidUIAutomator ${locator.toString()}")
+        driver.asInstanceOf[AndroidDriver[WebElement]].findElementsByAndroidUIAutomator(locator.toString()).asScala.toList
+        //todo: 个别时候findElement会报错而实际上控件存在，跟uiautomator的定位算法有关
+        //List(driver.asInstanceOf[AndroidDriver[WebElement]].findElementByAndroidUIAutomator(locator.toString()))
       }
       case _ => {
-        //todo: 生成原生定位符
-        log.info(s"findElementsByXPath ${element.loc}")
-        driver.findElementsByXPath(element.loc).asScala.toList
+        //todo: 生成iOS原生定位符
+        //默认使用xpath
+        log.info(s"findElementsByXPath ${element.xpath}")
+        //driver.findElementsByXPath(element.xpath).asScala.toList
+        List(driver.findElementByXPath(element.xpath))
       }
     }
   }

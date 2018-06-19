@@ -36,7 +36,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
     }
     log.info(selected.size)
     selected.foreach(ele => {
-      val testcase = ele.element.loc.replace("\\", "\\\\")
+      val testcase = ele.element.xpath.replace("\\", "\\\\")
         .replace("\"", "\\\"")
         .replace("\n", "")
         .replace("\r", "")
@@ -72,9 +72,9 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
               AppCrawler.crawler.conf.assert.steps.foreach(step => {
                 if (XPathUtil.getListFromXPath(step.when.xpath, ele.reqDom)
                   .map(_.getOrElse("xpath", ""))
-                  .headOption == Some(ele.element.loc)
+                  .headOption == Some(ele.element.xpath)
                 ) {
-                  log.info(s"match testcase ${ele.element.loc}")
+                  log.info(s"match testcase ${ele.element.xpath}")
 
                   if(step.then!=null) {
                     val cp = new scalatest.Checkpoints.Checkpoint

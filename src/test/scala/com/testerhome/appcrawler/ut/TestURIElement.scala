@@ -9,7 +9,7 @@ import org.scalatest.FunSuite
 class TestURIElement extends FunSuite {
   test("windows file name"){
     val element=URIElement("", "", "", "", "//xxfxx[@index=\"11\" and @text=\"fff<xxx->>>dddff\"]")
-    println(element.toFileName())
+    println(element.toString())
   }
 
   test("tag path"){

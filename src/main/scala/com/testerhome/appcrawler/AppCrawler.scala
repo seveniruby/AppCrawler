@@ -212,40 +212,13 @@ object AppCrawler extends CommonLog {
           crawlerConf = crawlerConf.load(config.conf).get
         }
 
-        //判断平台
-        config.app match {
-          case androidApp if androidApp.matches(".*\\.apk$") => {
-            crawlerConf.currentDriver = "Android"
-          }
-          case iosApp if iosApp.matches(".*\\.ipa$") || iosApp.matches(".*\\.app$") => {
-            crawlerConf.currentDriver = "iOS"
-          }
-          case ios if config.platform.toLowerCase == "ios" =>
-            crawlerConf.currentDriver = "iOS"
-          case android if config.platform.toLowerCase == "android" =>
-            crawlerConf.currentDriver = "Android"
-          case _ =>
-            log.warn("can not know what platform, will use default android, please use -p to set the platform")
-        }
-        log.info(s"Set Platform=${crawlerConf.currentDriver}")
-
         //合并capability, 命令行>特定平台的capability>通用capability
-        crawlerConf.currentDriver.toLowerCase match {
-          case "android" => {
-            crawlerConf.capability ++= crawlerConf.androidCapability
-          }
-          case "ios" => {
-            crawlerConf.capability ++= crawlerConf.iosCapability
-          }
-        }
         crawlerConf.capability ++= config.capability
 
         //设定app
         if(config.app.nonEmpty){
           crawlerConf.capability ++=Map("app"-> parsePath(config.app).getOrElse(""))
         }
-        log.info(s"app path = ${crawlerConf.capability("app")}")
-
         //设定appium的端口
 
         config.appium match {
@@ -272,7 +245,7 @@ object AppCrawler extends CommonLog {
           case param if param.nonEmpty => crawlerConf.resultDir = param
           case conf if crawlerConf.resultDir.nonEmpty => log.info("use conf in config file")
           case _ =>
-            crawlerConf.resultDir = s"${crawlerConf.currentDriver}_${startTime}"
+            crawlerConf.resultDir = s"${startTime}"
         }
         log.info(s"result directory = ${crawlerConf.resultDir}")
 

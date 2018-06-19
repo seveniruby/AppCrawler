@@ -3,19 +3,19 @@
 - 支持web
 - 支持游戏app遍历
 - 支持wetest和mqc
-- 支持定位加速[完成]
 - 改进appium
 - 使用节点树模型
 - 优化自动重启逻辑
 - 简化配置文件
-- 更新到java-client 6.0，坑好多 [Done]
 - 完善断言
-
-
-# 2.3.0 [TODO]
 - 支持性能
 - 支持弱网
 - 支持接口数据入报告
+
+# 2.3.1 [TODO]
+- 合并了androidCapability iosCapability到capability
+- 支持定位加速[完成]
+- 更新到java-client 6.0，坑好多[Done]
 
 # 2.2.1
 - 合并triggerAction firstList lastList为orderList

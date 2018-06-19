@@ -29,7 +29,7 @@ trait ReactWebDriver extends CommonLog {
   var currentURIElement: URIElement=_
 
   var imagesDir="images"
-
+  var platformName=""
 
   def config(key: String, value: Any): Unit = {
     capabilities.setCapability(key, value)
@@ -43,34 +43,10 @@ trait ReactWebDriver extends CommonLog {
   }
 
 
-  def findElementsByURI(element: URIElement, findBy:String): List[AnyRef] ={
+  def findElementsByURI(element: URIElement, findBy:String=platformName): List[AnyRef] ={
     List[AnyRef](element)
   }
-  def findElementByURI(element: URIElement, findBy:String): AnyRef= {
-    //为了加速去掉id定位, 测试表明比xpath竟然还慢
-    /*
-    log.info(s"find element by uid ${element}")
-    if (element.id != "") {
-      log.info(s"find by id=${element.id}")
-      MiniAppium.doAppium(driver.findElementsById(element.id)) match {
-        case Some(v) => {
-          val arr = v.toArray().distinct
-          if (arr.length == 1) {
-            log.trace("find by id success")
-            return Some(arr.head.asInstanceOf[WebElement])
-          } else {
-            //有些公司可能存在重名id
-            arr.foreach(log.info)
-            log.info(s"find count ${arr.size}, change to find by xpath")
-          }
-        }
-        case None => {
-          log.warn("find by id error")
-        }
-      }
-    }
-    */
-
+  def findElementByURI(element: URIElement, findBy:String=platformName): AnyRef= {
     //todo: 用其他定位方式优化
     log.info(s"find by uri element= ${element}")
     currentURIElement=element

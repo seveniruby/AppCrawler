@@ -223,13 +223,7 @@ object XPathUtil extends CommonLog {
           //如果是android 转化为和iOS相同的结构
           //name=resource-id label=content-desc value=text
           if (nodeMap.contains("resource-id")) {
-            //todo: /结尾的会被解释为/之前的内容
-            val arr = nodeMap("resource-id").toString.split('/')
-            if (arr.length == 1) {
-              nodeMap("name") = ""
-            } else {
-              nodeMap("name") = nodeMap("resource-id").toString.split('/').last
-            }
+            nodeMap("name") = nodeMap("resource-id").toString
           }
           if (nodeMap.contains("text")) {
             nodeMap("value") = nodeMap("text")
@@ -245,8 +239,6 @@ object XPathUtil extends CommonLog {
 
           if (nodeMap("xpath").toString.nonEmpty && nodeMap("value").toString().size<50) {
             nodesMap += (nodeMap.toMap)
-          } else {
-            log.trace(s"xpath error skip ${nodeMap}")
           }
 
           //android

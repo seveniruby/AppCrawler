@@ -713,7 +713,7 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
 
     val ele=URIElement("", "", "", "", str)
     println(ele.getAncestor())
-    println(ele.toFileName())
+    println(ele.toString())
 
   }
   test("ios to tag path"){
@@ -723,7 +723,7 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
       """.stripMargin
     val ele=URIElement("", "", "", "", str)
     log.info(ele.getAncestor())
-    log.info(ele.toFileName())
+    log.info(ele.toString())
 
   }
 

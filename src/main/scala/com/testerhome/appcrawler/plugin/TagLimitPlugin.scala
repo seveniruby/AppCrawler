@@ -45,10 +45,12 @@ class TagLimitPlugin extends Plugin {
   }
 
   override def afterElementAction(element: URIElement): Unit = {
-    val key = element.getAncestor()
-    if (tagLimit.contains(key)) {
-      tagLimit(key) -= 1
-      log.info(s"tagLimit[${key}]=${tagLimit(key)}")
+    if(getCrawler().getElementAction()!="clear") {
+      val key = element.getAncestor()
+      if (tagLimit.contains(key)) {
+        tagLimit(key) -= 1
+        log.info(s"tagLimit[${key}]=${tagLimit(key)}")
+      }
     }
   }
 

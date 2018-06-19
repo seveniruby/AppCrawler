@@ -31,8 +31,8 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
           log.debug(elementInfo.resDom)
           DiffSuite.range.map(XPathUtil.getListFromXPath(_, elementInfo.resDom))
             .flatten.map(m=>{
-            val ele=URIElement(m, key)
-            ele.loc->ele
+            val ele=new URIElement(m, key)
+            ele.xpath->ele
           }).toMap
         }
         case _ =>{
@@ -45,8 +45,8 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
         case Some(elementInfo) if elementInfo.action==ElementStatus.Clicked && elementInfo.resDom.nonEmpty => {
           DiffSuite.range.map(XPathUtil.getListFromXPath(_, elementInfo.resDom))
             .flatten.map(m=>{
-            val ele=URIElement(m, key)
-            ele.loc->ele
+            val ele=new URIElement(m, key)
+            ele.xpath->ele
           }).toMap
         }
         case _ =>{
@@ -72,9 +72,9 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
             s"""
                |key=${subKey}
                |
-               |candidate=${candidateElement.loc}
+               |candidate=${candidateElement.xpath}
                |
-               |master=${masterElement.loc}
+               |master=${masterElement.xpath}
                |________________
                |
                |
@@ -99,7 +99,7 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
             withClue(message) {
               candidateElement.id should equal(masterElement.id)
               candidateElement.name should equal(masterElement.name)
-              candidateElement.loc should equal(masterElement.loc)
+              candidateElement.xpath should equal(masterElement.xpath)
               //assert(candidate == master, message)
             }
           }

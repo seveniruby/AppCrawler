@@ -14,44 +14,57 @@ import scala.collection.immutable
   */
 case class URIElement(
                        @XmlAttribute(name = "url")
-                       url: String="",
+                       var url: String="",
                        @XmlAttribute(name = "tag")
-                       tag: String="",
+                       var tag: String="",
                        @XmlAttribute(name = "id")
-                       id: String="",
+                       var id: String="",
                        @XmlAttribute(name = "name")
-                       name: String="",
+                       var name: String="",
+                       @XmlAttribute(name = "text")
+                       var text: String="",
                        @XmlAttribute(name = "instance")
-                       instance: String="",
+                       var instance: String="",
                        @XmlAttribute(name = "depth")
-                       depth: String="",
+                       var depth: String="",
                        @XmlAttribute(name = "loc")
-                       loc:String="",
+                       var xpath:String="",
                        @XmlAttribute(name = "ancestor")
-                       ancestor:String="",
+                       var ancestor:String="",
                        @XmlAttribute(name = "x")
-                       x:Int=0,
+                       var x:Int=0,
                        @XmlAttribute(name = "y")
-                       y: Int=0,
+                       var y: Int=0,
                        @XmlAttribute(name = "width")
-                       width: Int=0,
+                       var width: Int=0,
                        @XmlAttribute(name = "height")
-                       height:Int=0
+                       var height:Int=0
                      ) {
   //用来代表唯一的控件, 每个特定的命名控件只被点击一次. 所以这个element的构造决定了控件是否可被点击多次.
   //比如某个输入框被命名为url=xueqiu id=input, 那么就只能被点击一次
   //如果url修改为url=xueqiu/xxxActivity id=input 就可以被点击多次
   //定义url是遍历的关键. 这是一门艺术
 
-  /**
-    * 可被当作文件名的唯一标记
-    * @return
-    */
-  def toFileName(): String ={
-    (s"${url}.tag=${tag.replace("android.widget.", "")}.${instance}.depth=${depth}." +
-      s"id=${id}.name=${name}").replace(File.separator, ".").take(100)
-  }
+  def this(nodeMap:scala.collection.Map[String, Any], uri:String) = {
+    //name为id/name属性. 为空的时候为value属性
+    //id表示android的resource-id或者iOS的name属性
 
+    this()
+    this.url=uri
+    this.tag = nodeMap.getOrElse("tag", "").toString
+    this.id = nodeMap.getOrElse("name", "").toString
+    this.name = nodeMap.getOrElse("label", "").toString
+    this.text = nodeMap.getOrElse("value", "").toString
+    this.instance = nodeMap.getOrElse("instance", "").toString
+    this.depth = nodeMap.getOrElse("depth", "").toString
+    this.xpath = nodeMap.getOrElse("xpath", "").toString
+    this.x=nodeMap.getOrElse("x", "0").toString.toInt
+    this.y=nodeMap.getOrElse("y", "0").toString.toInt
+    this.width=nodeMap.getOrElse("width", "0").toString.toInt
+    this.height=nodeMap.getOrElse("height", "0").toString.toInt
+    this.ancestor=nodeMap.getOrElse("ancestor", "").toString
+
+  }
   /**
     * 提取元素的tag组成的路径
     * @return
@@ -73,14 +86,29 @@ case class URIElement(
   def toXml(): String ={
     s"""
       |<UIAButton dom="" enabled="true" height="${height}" hint="" label="${id}"
-      |        name="${name}" path="/0/0/4" valid="true" value="${loc}" visible="true"
+      |        name="${name}" path="/0/0/4" valid="true" value="${xpath}" visible="true"
       |        width="${width}" x="${x}" y="${y}"/>
     """.stripMargin
 
   }
 
   override def toString: String = {
-    s"${this.url}_${this.loc}"
+    val fileName=new StringBuilder()
+    fileName.append(url)
+    fileName.append(s".tag=${tag.replace("android.widget.", "").replace("Activity", "")}")
+    if(instance.nonEmpty){
+      fileName.append(s".${instance}")
+    }
+    if(depth.nonEmpty){
+      fileName.append(s".depth=${depth}")
+    }
+    if(id.nonEmpty){
+      fileName.append(s".id=${id.split('/').last}")
+    }
+    if(name.nonEmpty){
+      fileName.append(s".name=${name}")
+    }
+    fileName.toString().take(100)
   }
 
 
@@ -91,25 +119,4 @@ case class URIElement(
     new java.math.BigInteger(1,m.digest()).toString(16)
   }
 
-}
-
-object URIElement {
-  //def apply(url: String, tag: String, id: String, name: String, loc: String = ""): UrlElement = new UrlElement(url, tag, id, name, loc)
-
-  //todo: remove
-  def apply(nodeMap:scala.collection.Map[String, Any], uri:String): URIElement = {
-    //name为id/name属性. 为空的时候为value属性
-    //id表示android的resource-id或者iOS的name属性
-    URIElement(url=uri,
-      tag=nodeMap.getOrElse("tag", "NoTag").toString,
-      id=nodeMap.getOrElse("name", "").toString.split('/').last,
-      name=nodeMap.getOrElse("value", "").toString.replace("\n", "\\n").take(30),
-      loc=nodeMap.getOrElse("xpath", "").toString,
-      ancestor = nodeMap.getOrElse("ancestor", "").toString
-    )
-  }
-
-/*  def apply(x: scala.collection.immutable.Map[String, Any], uri:String=""): UrlElement = {
-    apply(scala.collection.mutable.Map[String, Any]()++x, uri)
-  }*/
 }

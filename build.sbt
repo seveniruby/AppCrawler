@@ -33,6 +33,7 @@ libraryDependencies ++= Seq(
   "org.scalactic" %% "scalactic" % "3.0.5" ,
   "org.scalatest" %% "scalatest" % "3.0.5" exclude("org.scala-lang.modules", "scala-xml"),
   "org.apache.directory.studio" % "org.apache.commons.io" % "2.4",
+  //todo:太重，两年不更新了，废弃
   "org.scalatra.scalate" %% "scalate-core" % "1.8.0",
   "org.apache.logging.log4j" % "log4j-core" % "2.7",
   "macaca.webdriver.client" % "macacaclient" % "2.0.20",
@@ -40,6 +41,7 @@ libraryDependencies ++= Seq(
   "com.github.tototoshi" %% "scala-csv" % "1.3.4" ,
   "us.codecraft" % "xsoup" % "0.3.1" ,
   "junit" % "junit" % "4.12" % "test",
+  "org.junit.jupiter" % "junit-jupiter-api" % "5.2.0" % Test,
   //"org.bytedeco" % "javacpp" % "1.3.3",
   //"org.bytedeco" % "javacv-platform" % "1.3.3",
   //"org.bytedeco" % "javacv" % "1.2",
@@ -53,9 +55,10 @@ libraryDependencies ++= Seq(
     exclude("org.apache.logging.log4j", "log4j-core"),
     */
   "com.github.poslegm" %% "scala-phash" % "1.0.3",
+  "com.github.spullara.mustache.java" % "compiler" % "0.9.5",
   "org.ow2.asm" % "asm" % "5.2",
 //  "org.openimaj" % "openimaj" % "1.3.6",
-  "io.qameta.allure" % "allure-junit4" % "2.6.0",
+  "io.qameta.allure" % "allure-junit5" % "2.6.0",
   "org.pegdown" % "pegdown" % "1.6.0" //html report
 )
 

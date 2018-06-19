@@ -65,7 +65,7 @@ class TestDataObject extends FunSuite with CommonLog with Matchers{
     val d2=TData.fromYaml[Map[String,Map[String, String]]](d1)
     val u22=URIElement(d2.get("2").get("url"), d2.get("2").get("tag"),
       d2.get("2").get("id"), d2.get("2").get("name"), d2.get("2").get("loc"))
-    assert(u22.loc==u1(2).loc)
+    assert(u22.xpath==u1(2).xpath)
 
   }
 

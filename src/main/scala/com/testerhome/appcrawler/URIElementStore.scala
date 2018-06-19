@@ -34,6 +34,12 @@ class URIElementStore {
     elementStore(element.toString).action=ElementStatus.Clicked
     elementStore(element.toString).clickedIndex=clickedElementsList.indexOf(element)
   }
+  def setElementClear(element: URIElement=clickedElementsList.last): Unit = {
+    if(elementStore.contains(element.toString)){
+      elementStore.remove(element.toString)
+    }
+  }
+
 
   def saveElement(element: URIElement): Unit = {
     if(elementStore.contains(element.toString)==false){
@@ -142,5 +148,5 @@ case class ElementInfo(
                         var resImg:String="",
                         var clickedIndex: Int = -1,
                         var action: ElementStatus.Value = ElementStatus.Ready,
-                        var element: URIElement = URIElement(url="Init", tag="", id="", name="", loc="")
+                        var element: URIElement = URIElement(url="Init", tag="", id="", name="", xpath="")
                       )
