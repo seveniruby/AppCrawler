@@ -174,15 +174,15 @@ object XPathUtil extends CommonLog {
   }
 
 
-  def getListFromXPath(xpath:String, pageDomString: String): List[Map[String, Any]] ={
+  def getNodeListFromXPath(xpath:String, pageDomString: String): List[Map[String, Any]] ={
     val pageDom=toDocument(pageDomString)
-    getListFromXPath(xpath, pageDom)
+    getNodeListFromXPath(xpath, pageDom)
   }
-  def getListFromXPath(xpath: String, pageDom: Document): List[Map[String, Any]] = {
+  def getNodeListFromXPath(xpath: String, pageDom: Document): List[Map[String, Any]] = {
 
     val node=getNodeListFromXML(pageDom, xpath)
 
-    val nodesMap = ListBuffer[Map[String, Any]]()
+    val nodeMapList = ListBuffer[Map[String, Any]]()
     node match {
       case nodeList: NodeList => {
         0 until nodeList.getLength foreach (i => {
@@ -204,7 +204,9 @@ object XPathUtil extends CommonLog {
           val attributesList=getAttributesFromNode(node)
           //必须在xpath前面
           nodeMap("depth") = attributesList.size
-          nodeMap("menu") = isMenuFromBrotherNode(node)
+
+          //todo: 改进算法
+          //nodeMap("menu") = isMenuFromBrotherNode(node)
           nodeMap("ancestor")=attributesList.map(_.get("tag").get).mkString("/")
           nodeMap("xpath") = getXPathFromAttributes(attributesList)
 
@@ -235,10 +237,13 @@ object XPathUtil extends CommonLog {
           if (nodeMap.contains("instance")) {
             nodeMap("instance") = nodeMap("instance")
           }
-
+          //默认true
+          nodeMap("valid")= nodeMap.getOrElse("visible", "true") == "true" &&
+            nodeMap.getOrElse("enabled", "true") == "true" &&
+            nodeMap.getOrElse("valid", "true") == "true"
 
           if (nodeMap("xpath").toString.nonEmpty && nodeMap("value").toString().size<50) {
-            nodesMap += (nodeMap.toMap)
+            nodeMapList += (nodeMap.toMap)
           }
 
           //android
@@ -253,27 +258,27 @@ object XPathUtil extends CommonLog {
       }
       case attr:String => {
         //如果是提取xpath的属性值, 就返回一个简单的结构
-        nodesMap+=Map("attribute"->attr)
+        nodeMapList+=Map("attribute"->attr)
       }
     }
-    nodesMap.toList
+    nodeMapList.toList
   }
 
-  def findMapByKey(key:String, currentPageDom: Document): List[Map[String, Any]] ={
+  def getNodeListByKey(key:String, currentPageDom: Document): List[Map[String, Any]] ={
     key match {
       //xpath
       case xpath if Array("/.*", "\\(.*", "string\\(/.*\\)").exists(xpath.matches(_)) => {
-        getListFromXPath(xpath, currentPageDom)
+        getNodeListFromXPath(xpath, currentPageDom)
       }
       case regex if regex.contains(".*") || regex.startsWith("^")  => {
-        getListFromXPath("//*", currentPageDom).filter(m=>{
+        getNodeListFromXPath("//*", currentPageDom).filter(m=>{
           m("name").toString.matches(regex) ||
             m("label").toString.matches(regex) ||
             m("value").toString.matches(regex)
         })
       }
       case str: String => {
-        getListFromXPath("//*", currentPageDom).filter(m=>{
+        getNodeListFromXPath("//*", currentPageDom).filter(m=>{
           m("name").toString.contains(str) ||
             m("label").toString.contains(str) ||
             m("value").toString.contains(str)

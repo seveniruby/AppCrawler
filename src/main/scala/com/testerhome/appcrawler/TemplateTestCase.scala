@@ -70,7 +70,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
               log.debug(ele.reqDom)
 
               AppCrawler.crawler.conf.assertGlobal.foreach(step => {
-                if (XPathUtil.getListFromXPath(step.when.xpath, ele.reqDom)
+                if (XPathUtil.getNodeListFromXPath(step.when.xpath, ele.reqDom)
                   .map(_.getOrElse("xpath", ""))
                   .headOption == Some(ele.element.xpath)
                 ) {
@@ -82,7 +82,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
                       log.debug(existAssert)
                       cp {
                         withClue(s"${existAssert} 不存在\n") {
-                          XPathUtil.getListFromXPath(existAssert, ele.resDom).size should be > 0
+                          XPathUtil.getNodeListFromXPath(existAssert, ele.resDom).size should be > 0
                         }
                       }
                     })

@@ -45,7 +45,7 @@ class Crawler extends CommonLog {
   private var backRetry = 0
   //最大重试次数
   var backMaxRetry = 5
-  private var swipeRetry = 0
+  private var afterPageRetry = 0
   //滑动最大重试次数
   var stopAll = false
   val signals = new DataRecord()
@@ -222,13 +222,13 @@ class Crawler extends CommonLog {
     //todo: 采用轮询
     Thread.sleep(conf.waitLaunch)
     refreshPage()
-    doElementAction(URIElement(url=s"${currentUrl}", tag="restart", id="restart", name="restart",
+    doElementAction(URIElement(url=s"${currentUrl}", tag="restart", id="restart",
       xpath=s"restart-${store.clickedElementsList.size}"), "")
   }
 
   def firstRefresh(): Unit = {
     log.info("first refresh")
-    doElementAction(URIElement(url=s"${currentUrl}", tag="start", id="start", name="start",
+    doElementAction(URIElement(url=s"${currentUrl}", tag="start", id="start",
       xpath=s"Start-Start-${store.clickedElementsList.size}"), "")
 
   }
@@ -244,10 +244,10 @@ class Crawler extends CommonLog {
     //implicitlyWait(Span(10, Seconds))
 
     //todo: init all var
-    swipeRetry=0
+    afterPageRetry=0
     backRetry=0
 
-    log.info(s"swipeRetryMax=${conf.afterPageMax}")
+    log.info(s"afterPageMax=${conf.afterPageMax}")
     Util.isLoaded=false
 
     //todo: 主要做遍历测试和异常测试. 所以暂不使用selendroid
@@ -306,7 +306,7 @@ class Crawler extends CommonLog {
     //nodeList = nodeList intersect driver.getListFromXPath("//*[not(ancestor-or-self::android.widget.ListView)]")
 
     //排除iOS状态栏 android不受影响
-    val nodeList = driver.findMapByKey("//*[not(ancestor-or-self::UIAStatusBar)]")
+    val nodeList = driver.getNodeListByKey("//*[not(ancestor-or-self::UIAStatusBar)]")
     val schemaBlackList = List()
     //加value是考虑到某些tab, 他们只有value不同
     //<             label="" name="分时" path="/0/0/6/0/0" valid="true" value="1"
@@ -325,13 +325,13 @@ class Crawler extends CommonLog {
     * 获得布局Hash
     */
   def getSchema(): String = {
-    val nodeList = driver.findMapByKey("//*[not(ancestor-or-self::UIAStatusBar)]")
+    val nodeList = driver.getNodeListByKey("//*[not(ancestor-or-self::UIAStatusBar)]")
     md5(nodeList.map(getUrlElementByMap(_).getAncestor()).distinct.mkString("\n"))
   }
 
   def getUri(): String = {
     val uri=if (conf.defineUrl!=null && conf.defineUrl.nonEmpty) {
-      val urlString = conf.defineUrl.flatMap(driver.findMapByKey(_)).distinct.map(x => {
+      val urlString = conf.defineUrl.flatMap(driver.getNodeListByKey(_)).distinct.map(x => {
         //按照attribute, label, name顺序挨个取第一个非空的指x
         List(
           x.getOrElse("attribute", ""),
@@ -443,120 +443,116 @@ class Crawler extends CommonLog {
 
   }
 
-  def isValid(m: immutable.Map[String, Any]): Boolean = {
-    m.getOrElse("visible", "true") == "true" &&
-      m.getOrElse("enabled", "true") == "true" &&
-      m.getOrElse("valid", "true") == "true"
+  def isValid(element: URIElement): Boolean = {
+    element.valid=="true"
   }
 
 
-  def isSmall(m: immutable.Map[String, Any]): Boolean ={
+  def isSmall(element: URIElement): Boolean ={
 
     var res=false
-    //todo: support ios
-    if(m.getOrElse("bounds", "").toString.nonEmpty){
-      val bounds="\\d+".r().findAllIn(m.get("bounds").get.toString).matchData.map(_.group(0)).toList
-      val startX=bounds(0).toInt
-      val startY=bounds(1).toInt
-      val endX=bounds(2).toInt
-      val endY=bounds(3).toInt
-      val width=endX-startX
-      val height=endY-startY
 
-      if( startY >driver.screenHeight || startX >driver.screenWidth){
-        log.info(bounds)
-        log.info(driver.screenHeight)
-        log.info("not visual")
-        res=true
-      }
-
-      //高度小就跳过
-      if(height<30 && width<30) {
-        log.info(bounds)
-        log.info(driver.screenHeight)
-        log.info("small")
-        res=true
-      }
+    if( element.x >driver.screenHeight || element.y >driver.screenWidth){
+      log.warn(element)
+      log.info("not visual")
+      res=true
     }
+
+    //高度小就跳过
+    if(element.height<30 && element.width<30) {
+      log.warn(element)
+      log.info("small")
+      res=true
+    }
+
     res
   }
 
   //todo: 支持xpath表达式
-  def getSelectedNodes(currentPageDom: Document, skipSmall:Boolean=false ): List[immutable.Map[String, Any]] = {
-    var all = List[immutable.Map[String, Any]]()
-    var firstElements = List[immutable.Map[String, Any]]()
-    var lastElements = List[immutable.Map[String, Any]]()
-    var selectedElements = List[immutable.Map[String, Any]]()
-    var blackElements = List[immutable.Map[String, Any]]()
+  def getAvailableElement(currentPageDom: Document, skipSmall:Boolean=false ): List[URIElement] = {
+    var all = List[URIElement]()
+    var firstElements = List[URIElement]()
+    var lastElements = List[URIElement]()
+    var selectedElements = List[URIElement]()
+    var blackElements = List[URIElement]()
+    var lastSize=0
 
     conf.selectedList.foreach(step => {
       log.trace(s"selectedList xpath =  ${step.getXPath()}")
-      val temp = XPathUtil.findMapByKey(step.getXPath(), currentPageDom)
+      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom).map(new URIElement(_, currentUrl))
+      temp.foreach(log.trace)
       selectedElements ++= temp
     })
     selectedElements=selectedElements.distinct
     log.info(s"selected nodes size = ${selectedElements.size}")
-    selectedElements.foreach(log.trace)
+    lastSize=selectedElements.size
 
     //remove blackList
-    conf.blackList.foreach(xpath => {
-      val temp = XPathUtil.findMapByKey(xpath, currentPageDom)
-      temp.foreach(x=>
-        log.info(s"blackList hit ${xpath} ${x}")
-      )
+    conf.blackList.foreach(step => {
+      log.trace(s"blackList xpath =  ${step.getXPath()}")
+      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom).map(new URIElement(_, currentUrl))
+      temp.foreach(log.trace)
       blackElements ++= temp
     })
     blackElements=blackElements.distinct
     selectedElements = selectedElements diff blackElements
     log.info(s"all - black elements size = ${selectedElements.size}")
-    selectedElements.take(10).foreach(log.trace)
-
-    //remove small
-    if(skipSmall==false){
-      selectedElements=selectedElements.filter(isSmall(_)==false)
+    if(selectedElements.size<lastSize) {
+      selectedElements.foreach(log.trace)
+      lastSize=all.size
     }
-    log.info(s"all - small elements size = ${selectedElements.size}")
-    selectedElements.take(10).foreach(log.trace)
 
     //sort
     conf.firstList.foreach(step => {
       log.trace(s"firstList xpath = ${step.getXPath()}")
-      val temp = XPathUtil.findMapByKey(step.getXPath(), currentPageDom).intersect(selectedElements)
+      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom)
+        .map(new URIElement(_, currentUrl))
+        .intersect(selectedElements)
+      temp.foreach(log.trace)
       firstElements ++= temp
     })
-    log.trace("first elements")
-    firstElements.foreach(log.trace)
 
     conf.lastList.foreach(step => {
       log.trace(s"lastList xpath = ${step.getXPath()}")
-      val temp = XPathUtil.findMapByKey(step.getXPath(), currentPageDom).intersect(selectedElements)
+      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom)
+        .map(new URIElement(_, currentUrl))
+        .intersect(selectedElements)
+      temp.foreach(log.trace)
       lastElements ++= temp
     })
 
+    //再根据先后顺序调整，这样只需要排序同级元素
+    //去掉不在first和last中的元素
+    selectedElements = selectedElements diff firstElements
+    selectedElements = selectedElements diff lastElements
+    log.info(s"all - first - last elements size = ${selectedElements.size}")
+    if(selectedElements.size<lastSize) {
+      selectedElements.foreach(log.trace)
+      lastSize=all.size
+    }
 
-
-    //先根据depth排序
+    //先根据depth排序selectedElements
     conf.sortByAttribute.foreach(attribute=>{
       attribute match {
         case "depth" => {
           selectedElements=selectedElements.sortWith(
-            _("depth").toString.toInt >
-              _("depth").toString.toInt
+            _.depth.toString.toInt >
+              _.depth.toString.toInt
           )
         }
         case "selected" => {
           //todo:同级延后
           //selected=false的优先遍历
           selectedElements=selectedElements.sortWith(
-            _.getOrElse("selected", "").toString.contains("false") >
-              _.getOrElse("selected", "").toString.contains("false")
+            _.selected.toString.contains("false") >
+              _.selected.toString.contains("false")
           )
         }
         case "list" => {
           //列表内元素优先遍历
           selectedElements=selectedElements.sortWith(
-            _.getOrElse("ancestor", "").toString.contains("List") >
-              _.getOrElse("ancestor", "").toString.contains("List")
+            _.ancestor.toString.contains("List") >
+              _.ancestor.toString.contains("List")
           )
         }
         //todo: 居中的优先遍历
@@ -564,35 +560,64 @@ class Crawler extends CommonLog {
       }
       log.trace(s"sort by ${attribute}")
       selectedElements.foreach(e=>log.trace(
-        s"depth=${e.getOrElse("depth", "")}" +
-        s" selected=${e.getOrElse("selected", "")}" +
-        s" list=${e.getOrElse("ancestor", "").toString.contains("List")} e=${e.getOrElse("xpath", "")}")
+        s"depth=${e.depth}" +
+          s" selected=${e}" +
+          s" list=${e.ancestor.toString.contains("List")} e=${e}")
       )
     })
 
 
-    //再根据先后顺序调整，这样只需要排序同级元素
-    //去掉不在first和last中的元素
-    selectedElements = selectedElements diff firstElements
-    selectedElements = selectedElements diff lastElements
     //确保不重, 并保证顺序
     all = (firstElements ++ selectedElements ++ lastElements).distinct.filter(isValid)
 
-    log.trace("sorted nodes")
-    all.foreach(log.trace)
     log.trace(s"sorted nodes length=${all.length}")
+    all.foreach(log.trace)
+    lastSize=all.size
+
+
+    //remove small
+    if(skipSmall==false){
+      all=all.filter(isSmall(_)==false)
+      log.info(s"all - small elements size = ${all.size}")
+      if(all.size<lastSize) {
+        all.foreach(log.trace)
+        lastSize=all.size
+      }
+    }
 
     //去掉back菜单
     all = all diff getBackNodes()
     log.info(s"all - backButton size=${all.length}")
-    all.foreach(log.trace)
+    if(all.size<lastSize) {
+      all.foreach(log.trace)
+      lastSize=all.size
+    }
+
+    //过滤已经被点击过的元素
+    all = all.filter(!store.isClicked(_))
+    log.info(s"all - clicked size=${all.size}")
+    if(all.size<lastSize) {
+      all.foreach(log.trace)
+      lastSize=all.size
+    }
+
+    all = all.filter(!store.isSkiped(_))
+    log.info(s"all - skiped fresh elements size=${all.length}")
+    if(all.size<lastSize) {
+      all.foreach(e=>{
+        log.trace(e)
+        //记录未被点击的元素
+        store.saveElement(e)
+      })
+      lastSize=all.size
+    }
     all
   }
 
 
   def hideKeyBoard(): Unit = {
     //iOS键盘隐藏
-    if (driver.findMapByKey("//UIAKeyboard").size >= 1) {
+    if (driver.getNodeListByKey("//UIAKeyboard").size >= 1) {
       log.info("find keyboard , just hide")
       driver.hideKeyboard()
     }
@@ -665,7 +690,7 @@ class Crawler extends CommonLog {
       conf.beforeElement.foreach(step => {
         val xpath = step.getXPath()
         val action = step.getAction()
-        if (driver.findMapByKey(xpath).contains(element)) {
+        if (driver.getNodeListByKey(xpath).contains(element)) {
           Util.dsl(action)
         }
       })
@@ -708,17 +733,19 @@ class Crawler extends CommonLog {
     }
   }
 
-  def getBackNodes(): ListBuffer[immutable.Map[String, Any]] = {
-    conf.backButton.flatMap(step=>driver.findMapByKey(step.getXPath()).filter(isValid))
+  def getBackNodes(): ListBuffer[URIElement] = {
+    conf.backButton.flatMap(step=>
+      driver.getNodeListByKey(step.getXPath())
+      .map(new URIElement(_, currentUrl))
+      .filter(isValid))
   }
 
   def getBackButton(): Option[URIElement] = {
     log.info("go back")
     //找到可能的关闭按钮, 取第一个可用的关闭按钮
     getBackNodes().headOption match {
-      case Some(v) if appNameRecord.isDiff() == false => {
+      case Some(backElement) if appNameRecord.isDiff() == false => {
         //app相同并且找到back控件才点击. 否则就默认back
-        val backElement = getUrlElementByMap(v)
         setElementAction("click")
         backRetry+=1
         return Some(backElement)
@@ -726,33 +753,12 @@ class Crawler extends CommonLog {
       case _ => {
         log.warn("no back button")
         setElementAction("back")
-        return Some(URIElement(url=s"${currentUrl}", tag="Back", id="Back", name="Back",
+        return Some(URIElement(url=s"${currentUrl}", tag="Back", id="Back",
           xpath=s"Back-${store.clickedElementsList.size}"))
       }
     }
   }
 
-
-  def getAvailableElement(): Seq[URIElement] = {
-    //把元素转换为Element对象
-    var allElements = getSelectedNodes(driver.currentPageDom).map(getUrlElementByMap(_))
-    //获得所有未点击元素
-    log.info(s"all elements size=${allElements.length}")
-
-    //过滤已经被点击过的元素
-    allElements = allElements.filter(!store.isClicked(_))
-    log.info(s"all - clicked size=${allElements.size}")
-    allElements.foreach(log.debug)
-
-    allElements = allElements.filter(!store.isSkiped(_))
-    log.info(s"all - skiped fresh elements size=${allElements.length}")
-    //记录未被点击的元素
-    allElements.foreach(e => {
-      log.trace(e)
-      store.saveElement(e)
-    })
-    allElements
-  }
 
   /**
     * 优化后的递归方法. 尾递归.
@@ -793,7 +799,7 @@ class Crawler extends CommonLog {
     //页面刷新失败自动后退
     if (isRefreshSuccess == false) {
       log.warn("refresh fail")
-      nextElement = Some(URIElement(url=s"${currentUrl}", tag="Back", id="Back", name="Back",
+      nextElement = Some(URIElement(url=s"${currentUrl}", tag="Back", id="Back",
         xpath=s"Back-${store.clickedElementsList.size}"))
       setElementAction("back")
     } else {
@@ -814,7 +820,7 @@ class Crawler extends CommonLog {
 
     //是否需要回退到app
     if (nextElement == None && needBackApp()) {
-      nextElement = Some(URIElement(url=s"${currentUrl}", tag="backApp", id="backApp", name="backApp",
+      nextElement = Some(URIElement(url=s"${currentUrl}", tag="backApp", id="backApp",
         xpath=s"backApp-${appNameRecord.last()}-${store.clickedElementsList.size}"))
       setElementAction("backApp")
     }
@@ -831,7 +837,7 @@ class Crawler extends CommonLog {
 
     //查找正常的元素
     if (nextElement == None) {
-      val allElements = getAvailableElement()
+      val allElements = getAvailableElement(driver.currentPageDom, true)
       allElements.headOption match {
         case Some(e) => {
           log.info(s"found ${e} by first available element")
@@ -839,29 +845,29 @@ class Crawler extends CommonLog {
           //todo: 需要一个action指定表
           setElementAction("click")
           skipBeforeElementAction = false
-          swipeRetry=0
+          afterPageRetry=0
         }
         case None => {
           log.info(s"${currentUrl} all elements had be clicked")
           //滚动多次没有新元素
 
           if (conf.afterPage != null) {
-            val isMatch=conf.afterPage.exists(step=>step.given.forall(g=>driver.findMapByKey(g).size>0))
+            val isMatch=conf.afterPage.exists(step=>step.given.forall(g=>driver.getNodeListByKey(g).size>0))
             if(isMatch==false) {
               log.info("not match afterUrlFinish")
               nextElement = getBackButton()
-            }else if(isMatch==true && swipeRetry<conf.afterPageMax) {
+            }else if(isMatch==true && afterPageRetry<conf.afterPageMax) {
               log.info("match afterUrlFinish")
-              nextElement = Some(URIElement(url=s"${currentUrl}", tag="", id="afterUrlFinished", name="afterUrlFinished",
+              nextElement = Some(URIElement(url=s"${currentUrl}", tag="", id="afterUrlFinished",
                 xpath=s"afterUrlFinished-${appNameRecord.last()}-${store.clickedElementsList.size}"))
               setElementAction("after")
-              swipeRetry += 1
-              log.info(s"swipeRetry=${swipeRetry}")
+              afterPageRetry += 1
+              log.info(s"swipeRetry=${afterPageRetry}")
             }else{
-              log.warn(s"swipeRetry too many times ${swipeRetry} >= ${conf.afterPageMax}")
+              log.warn(s"swipeRetry too many times ${afterPageRetry} >= ${conf.afterPageMax}")
               nextElement = getBackButton()
-              swipeRetry = 0
-              log.info(s"swipeRetry=${swipeRetry}")
+              afterPageRetry = 0
+              log.info(s"swipeRetry=${afterPageRetry}")
             }
           }else{
             nextElement = getBackButton()
@@ -1032,7 +1038,7 @@ class Crawler extends CommonLog {
       case "after" => {
         if (conf.afterPage != null) {
           conf.afterPage.foreach(step => {
-            step.given.forall(g=>driver.findMapByKey(g).size>0) match {
+            step.given.forall(g=>driver.getNodeListByKey(g).size>0) match {
               case true => {
                 log.info(s"match ${step}")
                 //todo: 支持元素动作
@@ -1063,7 +1069,7 @@ class Crawler extends CommonLog {
         //todo: tap的缺点就是点击元素的时候容易点击到元素上层的控件
 
         log.info(s"need input ${str}")
-        driver.findElementByURI(element) match {
+        driver.findElementByURI(element, conf.findBy) match {
           case null => {
             log.error(s"not found ${element}")
             setElementAction("clear")
@@ -1164,7 +1170,7 @@ class Crawler extends CommonLog {
       val action = step.getAction()
       log.debug(s"finding ${step}")
 
-      driver.findMapByKey(xpath).filter(isValid).headOption match {
+      driver.getNodeListByKey(xpath).map(new URIElement(_, currentUrl)).filter(isValid).headOption match {
         case Some(e) => {
           if (step.times == 1) {
             log.info(s"remove rule ${step}")
@@ -1175,9 +1181,9 @@ class Crawler extends CommonLog {
 
           setElementAction(action)
           if (action == "monkey") {
-            return Some(URIElement(url=action, tag=action, id=action, name=action, xpath = action))
+            return Some(URIElement(url=action, tag=action))
           } else {
-            return Some(getUrlElementByMap(e))
+            return Some(e)
           }
 
         }

@@ -141,5 +141,3 @@ testcase:
   - when: { xpath: //*, action: driver.swipe(0.5, 0.2, 0.5, 0.8) }
   - { xpath: 自选, action: click, then: [ "//*[contains(@text, '港股')]" ] }
   - { xpath: 沪深, action: click, then: [ "//*[contains(@text, '中国平安')]" ] }
-  - { xpath: ddd, action: click, then: [ "//*[contains(@text, 'xxx')]" ] }
-  - { xpath: mmmm, action: click, then: [ "//*[contains(@text, 'mmm')]" ] }

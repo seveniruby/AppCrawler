@@ -224,14 +224,10 @@ class AppiumClient extends ReactWebDriver{
         log.info(s"findElementsByAccessibilityId ${element.name}")
         driver.findElementsByAccessibilityId(element.name).asScala.toList
       }
-      case android if platformName.toLowerCase=="android" => {
+      case android if platformName.toLowerCase=="android" && findBy=="default" => {
         val locator=new StringBuilder()
         locator.append("new UiSelector()")
         locator.append(".className(\"" + element.tag + "\")")
-        if(element.instance.nonEmpty && element.text.isEmpty){
-          //todo: 如果出现动态出现的控件会影响定位
-          locator.append(".instance(" + element.instance + ")" )
-        }
         if(element.text.nonEmpty){
           locator.append(".text(\"" + element.text + "\")" )
         }
@@ -241,15 +237,20 @@ class AppiumClient extends ReactWebDriver{
         if(element.name.nonEmpty){
           locator.append(".description(\"" + element.name + "\")" )
         }
+        if(element.instance.nonEmpty && element.text.isEmpty && element.name.isEmpty && element.id.isEmpty){
+          //todo: 如果出现动态出现的控件会影响定位
+          //todo: webview内的元素貌似用instance是不行的，webview内的真实的instance与appium给的不一致
+          locator.append(".instance(" + element.instance + ")" )
+        }
         log.info(s"findElementByAndroidUIAutomator ${locator.toString()}")
-        asyncTask(20){
+        asyncTask(){
           List(driver.asInstanceOf[AndroidDriver[WebElement]].findElementByAndroidUIAutomator(locator.toString()))
         } match {
           case Left(value)=>{
             value
           }
           case Right(value)=>{
-            log.warn("findElementByAndroidUIAutomator error, use findElementsByAndroidUIAutomator")
+            log.warn(s"findElementByAndroidUIAutomator error, use findElementsByAndroidUIAutomator ${locator.toString()}")
             driver.asInstanceOf[AndroidDriver[WebElement]].findElementsByAndroidUIAutomator(locator.toString()).asScala.toList
           }
         }
@@ -278,11 +279,11 @@ class AppiumClient extends ReactWebDriver{
     driver match {
       case android: AndroidDriver[_] => {
         val xpath="(//*[@package!=''])[1]"
-        findMapByKey(xpath).headOption.getOrElse(Map("package"->"")).get("package").getOrElse("").toString
+        getNodeListByKey(xpath).headOption.getOrElse(Map("package"->"")).get("package").getOrElse("").toString
       }
       case ios: IOSDriver[_] => {
         val xpath="//*[contains(name(), 'Application')]"
-        findMapByKey(xpath).head.getOrElse("name", "").toString
+        getNodeListByKey(xpath).head.getOrElse("name", "").toString
       }
     }
 
@@ -298,7 +299,7 @@ class AppiumClient extends ReactWebDriver{
       }
       case ios: IOSDriver[_] => {
         val xpath="//*[contains(name(), 'NavigationBar')]"
-        findMapByKey(xpath).map(_.getOrElse("name", "").toString).mkString("")
+        getNodeListByKey(xpath).map(_.getOrElse("name", "").toString).mkString("")
       }
     }
   }

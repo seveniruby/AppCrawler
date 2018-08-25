@@ -653,49 +653,49 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
 
 
   test("parse xpath"){
-    log.info(XPathUtil.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", domAndroid))
-    val node=XPathUtil.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", domAndroid)(0)
+    log.info(XPathUtil.getNodeListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", domAndroid))
+    val node=XPathUtil.getNodeListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", domAndroid)(0)
     println(node)
     node("resource-id") should be equals("com.xueqiu.android:id/action_search")
     node("content-desc") should be equals("输入股票名称/代码")
   }
 
   test("getPackage"){
-    val node=XPathUtil.getListFromXPath("(//*[@package!=''])[1]", domAndroid)(0)
+    val node=XPathUtil.getNodeListFromXPath("(//*[@package!=''])[1]", domAndroid)(0)
     println(node)
   }
   test("extra attribute from xpath"){
-    val node=XPathUtil.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id", domAndroid)(0)
+    val node=XPathUtil.getNodeListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id", domAndroid)(0)
     println(node)
     node.values.toList(0) should be equals("com.xueqiu.android:id/action_search")
 
     //todo:暂不支持
-    val value=XPathUtil.getListFromXPath("string(//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id)", domAndroid)
+    val value=XPathUtil.getNodeListFromXPath("string(//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id)", domAndroid)
     println(value)
 
   }
 
   test("get parent path"){
-    val value=XPathUtil.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/parent::*", domAndroid)
+    val value=XPathUtil.getNodeListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/parent::*", domAndroid)
     value.foreach(println)
     println(value)
 
-    val ancestor=XPathUtil.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor-or-self::*", domAndroid)
+    val ancestor=XPathUtil.getNodeListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor-or-self::*", domAndroid)
     ancestor.foreach(x=>if(x.contains("tag")) println(x("tag")))
     println(ancestor)
     ancestor.foreach(println)
 
-    val ancestorName=XPathUtil.getListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor::name", domAndroid)
+    val ancestorName=XPathUtil.getNodeListFromXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor::name", domAndroid)
     ancestorName.foreach(println)
   }
 
   test("xpath parse"){
 
-    val value=XPathUtil.getListFromXPath("//UIAApplication[@name=\"雪球\" and @path=\"/0\"]/UIAWindow[@path=\"/0/0\"]/UIAStaticText[@name=\"这里可以批量实盘买卖组合持仓股票\" and @path=\"/0/0/8\"]", domIOS)
+    val value=XPathUtil.getNodeListFromXPath("//UIAApplication[@name=\"雪球\" and @path=\"/0\"]/UIAWindow[@path=\"/0/0\"]/UIAStaticText[@name=\"这里可以批量实盘买卖组合持仓股票\" and @path=\"/0/0/8\"]", domIOS)
     value.foreach(println)
     println(value)
 
-    val appName=XPathUtil.getListFromXPath("//UIAApplication", domIOS)
+    val appName=XPathUtil.getNodeListFromXPath("//UIAApplication", domIOS)
     appName.foreach(println)
     println(appName.head.getOrElse("name", ""))
     appName.head.getOrElse("name", "") should be equals("雪球")
@@ -728,14 +728,14 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
   }
 
   test("get all leaf node"){
-    val value=XPathUtil.getListFromXPath("//node()[not(node())]", domAndroid)
+    val value=XPathUtil.getNodeListFromXPath("//node()[not(node())]", domAndroid)
     value.foreach(log.info)
   }
 
 
   //todo: 支持xpath2.0
   test("text xpath matches"){
-    val value=XPathUtil.getListFromXPath("//*[matches(@text, '买什么')]", domAndroid)
+    val value=XPathUtil.getNodeListFromXPath("//*[matches(@text, '买什么')]", domAndroid)
     value.foreach(log.info)
   }
 
@@ -1240,14 +1240,14 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
       """.stripMargin
     val dom=XPathUtil.toDocument(content)
     val xpath="string(//*[contains(@content-desc, '帐号信息') and @clickable='true']/@content-desc)"
-    val res=XPathUtil.getListFromXPath(xpath, dom)
+    val res=XPathUtil.getNodeListFromXPath(xpath, dom)
 
     log.info(res)
   }
 
 
   test("text xpath"){
-    val value=XPathUtil.getListFromXPath("//*[@text='买什么']", domAndroid)
+    val value=XPathUtil.getNodeListFromXPath("//*[@text='买什么']", domAndroid)
     value.foreach(log.info)
   }
 
@@ -1255,33 +1255,33 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
   test("get back button"){
 
 
-    val value1=XPathUtil.getListFromXPath("//*[@label='nav_icon_back']", domIOS)
+    val value1=XPathUtil.getNodeListFromXPath("//*[@label='nav_icon_back']", domIOS)
     value1.foreach(log.info)
 
-    val value2=XPathUtil.getListFromXPath("//UIANavigationBar/UIAButton[@label=\"nav_icon_back\"]", domIOS)
+    val value2=XPathUtil.getNodeListFromXPath("//UIANavigationBar/UIAButton[@label=\"nav_icon_back\"]", domIOS)
     value2.foreach(log.info)
   }
 
   test("同类型的控件是否具备selected=true属性"){
-    val nodes=XPathUtil.getListFromXPath("//*[../*[@selected='true']]", domAndroid)
+    val nodes=XPathUtil.getNodeListFromXPath("//*[../*[@selected='true']]", domAndroid)
     nodes.foreach(x=>log.info(x.getOrElse("xpath", "")))
 
     log.info("两层以上")
-    val nodes2=XPathUtil.getListFromXPath("//*[../../*[@selected='true']]", domAndroid)
+    val nodes2=XPathUtil.getNodeListFromXPath("//*[../../*[@selected='true']]", domAndroid)
     nodes2.foreach(x=>log.info(x.getOrElse("xpath", "")))
   }
 
 
   test("xpath"){
     XPathUtil.xpathExpr=List("resource-id", "content-desc", "depth", "selected")
-    XPathUtil.getListFromXPath("//*", xmlAndroid).foreach(node=>{
+    XPathUtil.getNodeListFromXPath("//*", xmlAndroid).foreach(node=>{
       println(node.get("xpath"))
       println(node.get("depth"))
     })
 
   }
 
-  test("sort selected nodes"){
+/*  test("sort selected nodes"){
     val xmlAndroid=Source.fromFile("/tmp/xueqiu/1520350511580/16_com.xueqiu.android-MainActivity_decor_content_parent-content-mainContent-public_timeline_content-lis.dom").mkString
     val crawler=new Crawler
     crawler.conf.sortByAttribute=List("depth", "selected")
@@ -1304,7 +1304,7 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
       println(node.get("name").get)
     })
 
-  }
+  }*/
 
 
 

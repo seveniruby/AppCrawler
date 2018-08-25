@@ -44,6 +44,8 @@ class CrawlerConf {
   var xpathAttributes = List("name", "label", "value", "resource-id", "content-desc", "instance", "text")
   /** 先按照深度depth排序，再按照list排序，最后按照selected排序。后排序是优先级别最高的 */
   var sortByAttribute = List("depth", "list", "selected")
+  //可选 default|android|id|xpath，默认状态会自动判断是否使用android定位或者ios定位
+  var findBy="default"
   /** 用来确定url的元素定位xpath 他的text会被取出当作url因素 */
   var defineUrl = List[String]()
   /** 设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度 */
@@ -58,13 +60,15 @@ class CrawlerConf {
 
   /** 默认遍历列表，xpath有用，action暂时没启用*/
   var selectedList = ListBuffer[Step](
-    Step(find="//*[contains(name(), 'Image')]"),
     Step(find="//*[contains(name(), 'Button')]"),
     //android专属
     Step(find="//*[contains(name(), 'Text') and @clickable='true' and string-length(@text)<10]"),
-    Step(find="//*[@clickable='true']//*[contains(name(), 'Text') and string-length(@text)<10]"),
+    Step(find="//*[@clickable='true']/*[contains(name(), 'Text') and string-length(@text)<10]"),
+    Step(find="//*[contains(name(), 'Image') and @clickable='true']"),
+    Step(find="//*[@clickable='true']/*[contains(name(), 'Image')]"),
     //ios专属
-    Step(find="//*[@name!='']"),
+    Step(find="//*[contains(name(), 'Image') and @name!='']"),
+    Step(find="//*[contains(name(), 'Text') and @name!='' and string-length(@label)<10]"),
   )
   /** 优先遍历元素 */
   var firstList = ListBuffer[Step](
@@ -81,8 +85,8 @@ class CrawlerConf {
 
   //包括backButton
   /** 黑名单列表 matches风格, 默认排除内容是2个数字以上的控件. */
-  var blackList = ListBuffer[String](
-    ".*[0-9]{2}.*"
+  var blackList = ListBuffer[Step](
+    Step(find=".*[0-9]{2}.*")
   )
   //相似控件最多点击几次
   var tagLimitMax = 2
@@ -95,7 +99,9 @@ class CrawlerConf {
   )
   //todo: 去掉triggerAction
   /** 引导规则. name, value, times三个元素组成 */
-  var triggerActions = ListBuffer[Step]()
+  var triggerActions = ListBuffer[Step](
+    Step(find="share_comment_guide_btn")
+  )
   //在执行action之前和之后默认执行的动作，比如等待
   var beforeElement = ListBuffer[Step]()
   var afterElement = ListBuffer[Step]()

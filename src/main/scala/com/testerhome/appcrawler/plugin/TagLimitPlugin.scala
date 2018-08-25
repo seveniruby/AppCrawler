@@ -13,18 +13,20 @@ class TagLimitPlugin extends Plugin {
   private var tagLimitMax = 3
 
   override def start(): Unit = {
+    log.addAppender(getCrawler().fileAppender)
     tagLimitMax = getCrawler().conf.tagLimitMax
   }
 
+  //todo: conf.tagLimit未生效
   override def beforeElementAction(element: URIElement): Unit = {
-    val key = element.getAncestor()
-    log.trace(s"tag path = ${key}")
+    val key =getKey(element)
     if (!tagLimit.contains(key)) {
       //跳过具备selected=true的菜单栏
-      getCrawler().driver.findMapByKey("//*[@selected='true']").foreach(m=>{
-        val element=getCrawler().getUrlElementByMap(m)
-        tagLimit(element.getAncestor())=20
-        log.info(s"tagLimit[${element.getAncestor()}]=20")
+      getCrawler().driver.getNodeListByKey("//*[@selected='true']").foreach(m=>{
+        val selectedElement=getCrawler().getUrlElementByMap(m)
+        val selectedKey=getKey(selectedElement)
+        tagLimit(selectedKey)=20
+        log.info(s"tagLimit[${selectedKey}]=20")
       })
       //应用定制化的规则
       getTimesFromTagLimit(element) match {
@@ -46,12 +48,16 @@ class TagLimitPlugin extends Plugin {
 
   override def afterElementAction(element: URIElement): Unit = {
     if(getCrawler().getElementAction()!="clear") {
-      val key = element.getAncestor()
+      val key = getKey(element)
       if (tagLimit.contains(key)) {
         tagLimit(key) -= 1
         log.info(s"tagLimit[${key}]=${tagLimit(key)}")
       }
     }
+  }
+
+  def getKey(element: URIElement): String ={
+    getCrawler().currentUrl + element.getAncestor()
   }
 
 
@@ -61,7 +67,7 @@ class TagLimitPlugin extends Plugin {
 
   def getTimesFromTagLimit(element: URIElement): Option[Int] = {
     this.getCrawler().conf.tagLimit.foreach(tag => {
-      if(getCrawler().driver.findMapByKey(tag.getXPath())
+      if(getCrawler().driver.getNodeListByKey(tag.getXPath())
         .map(new URIElement(_, getCrawler().currentUrl))
         .contains(element)){
         return Some(tag.times)

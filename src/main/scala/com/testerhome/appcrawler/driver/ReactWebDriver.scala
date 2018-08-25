@@ -66,7 +66,7 @@ trait ReactWebDriver extends CommonLog {
             return arr.head
           }
           case len if len == 0 => {
-            log.warn("find by xpath error no element found")
+            log.error("find by xpath error no element found")
           }
         }
       }
@@ -274,29 +274,29 @@ trait ReactWebDriver extends CommonLog {
 
 
   //todo: xpath 2.0 support
-  def findMapByKey(key:String): List[Map[String, Any]] ={
-    XPathUtil.findMapByKey(key, currentPageDom)
+  def getNodeListByKey(key:String): List[Map[String, Any]] ={
+    XPathUtil.getNodeListByKey(key, currentPageDom)
   }
 
   //支持宽松查找，自动刷新查找，自动滚动查找
   def findMapWithRetry(key:String): List[Map[String, Any]] ={
-    var array=findMapByKey(key)
+    var array=getNodeListByKey(key)
     if(array.size==0){
       getPageSourceWithRetry()
       log.trace("retry 1")
-      array=findMapByKey(key)
+      array=getNodeListByKey(key)
     }
 
     if(array.size==0){
       getPageSourceWithRetry()
       log.trace("retry 2")
-      array=findMapByKey(key)
+      array=getNodeListByKey(key)
     }
 
     if(array.size==0){
       getPageSourceWithRetry()
       log.trace("retry 3")
-      array=findMapByKey(key)
+      array=getNodeListByKey(key)
     }
     return array
 
@@ -312,7 +312,7 @@ trait ReactWebDriver extends CommonLog {
   }
 
   def nodes(): List[Map[String, Any]] = {
-    findMapByKey(loc)
+    getNodeListByKey(loc)
   }
 
   //todo: not test

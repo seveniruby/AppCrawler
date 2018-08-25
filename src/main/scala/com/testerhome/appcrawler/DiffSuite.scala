@@ -29,7 +29,7 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
         case Some(elementInfo) if elementInfo.action==ElementStatus.Clicked && elementInfo.resDom.nonEmpty => {
           log.debug(elementInfo)
           log.debug(elementInfo.resDom)
-          DiffSuite.range.map(XPathUtil.getListFromXPath(_, elementInfo.resDom))
+          DiffSuite.range.map(XPathUtil.getNodeListFromXPath(_, elementInfo.resDom))
             .flatten.map(m=>{
             val ele=new URIElement(m, key)
             ele.xpath->ele
@@ -43,7 +43,7 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
       val candidateElements=DiffSuite.candidateStore.get(key) match {
           //todo: 老版本点击过, 新版本没点击过, 没有resDom如何做
         case Some(elementInfo) if elementInfo.action==ElementStatus.Clicked && elementInfo.resDom.nonEmpty => {
-          DiffSuite.range.map(XPathUtil.getListFromXPath(_, elementInfo.resDom))
+          DiffSuite.range.map(XPathUtil.getNodeListFromXPath(_, elementInfo.resDom))
             .flatten.map(m=>{
             val ele=new URIElement(m, key)
             ele.xpath->ele

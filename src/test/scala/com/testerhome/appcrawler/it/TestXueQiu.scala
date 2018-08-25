@@ -32,7 +32,7 @@ class TestXueQiu extends FunSuite{
   test("appcrawler xueqiu by default conf"){
     AppCrawler.main(Array(
       "--capability", "appPackage=com.xueqiu.android,appActivity=.view.WelcomeActivityAlias,noReset=false",
-      "-u", "5723",
+      "-u", "6723",
       "-o", s"/Volumes/ram/xueqiu/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}",
       "--verbose"
     )

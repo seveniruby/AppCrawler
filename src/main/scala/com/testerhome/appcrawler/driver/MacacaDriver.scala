@@ -178,7 +178,7 @@ class MacacaDriver extends ReactWebDriver{
 
   override def getAppName(): String = {
     val xpath="(//*[@package!=''])[1]"
-    findMapByKey(xpath).head.getOrElse("package", "").toString
+    getNodeListByKey(xpath).head.getOrElse("package", "").toString
   }
 
   override def getUrl(): String = {

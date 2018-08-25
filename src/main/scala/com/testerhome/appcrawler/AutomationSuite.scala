@@ -53,7 +53,7 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
         step.then.foreach(existAssert => {
           cp {
             withClue(s"${existAssert} 不存在\n") {
-              val result=driver.findMapByKey(existAssert)
+              val result=driver.getNodeListByKey(existAssert)
               log.info(s"${existAssert}\n${TData.toJson(result)}")
               result.size should be > 0
             }

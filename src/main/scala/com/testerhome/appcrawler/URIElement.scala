@@ -27,6 +27,10 @@ case class URIElement(
                        var instance: String="",
                        @XmlAttribute(name = "depth")
                        var depth: String="",
+                       @XmlAttribute(name = "valid")
+                       var valid: String="true",
+                       @XmlAttribute(name = "selected")
+                       var selected: String="false",
                        @XmlAttribute(name = "loc")
                        var xpath:String="",
                        @XmlAttribute(name = "ancestor")
@@ -63,6 +67,9 @@ case class URIElement(
     this.width=nodeMap.getOrElse("width", "0").toString.toInt
     this.height=nodeMap.getOrElse("height", "0").toString.toInt
     this.ancestor=nodeMap.getOrElse("ancestor", "").toString
+    this.selected=nodeMap.getOrElse("selected", "false").toString
+    this.valid=nodeMap.getOrElse("valid", "true").toString
+
 
   }
   /**
