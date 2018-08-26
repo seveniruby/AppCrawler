@@ -40,6 +40,46 @@ class CrawlerConf {
     "noReset" -> "true",
     "fullReset" -> "false",
   )
+
+  //测试用例
+  var testcase = ReactTestCase(
+    name = "TesterHome AppCrawler",
+    steps = List[Step](
+      Step(xpath = "/*", action = "Thread.sleep(5000)")
+    )
+  )
+
+  /** 默认遍历列表，xpath有用，action暂时没启用*/
+  var selectedList = ListBuffer[Step](
+    Step(xpath="//*[contains(name(), 'Button')]"),
+    //android专属
+    Step(xpath="//*[contains(name(), 'Text') and @clickable='true' and string-length(@text)<10]"),
+    Step(xpath="//*[@clickable='true']/*[contains(name(), 'Text') and string-length(@text)<10]"),
+    Step(xpath="//*[contains(name(), 'Image') and @clickable='true']"),
+    Step(xpath="//*[@clickable='true']/*[contains(name(), 'Image')]"),
+    //ios专属
+    Step(xpath="//*[contains(name(), 'Image') and @name!='']"),
+    Step(xpath="//*[contains(name(), 'Text') and @name!='' and string-length(@label)<10]"),
+  )
+  /** 优先遍历元素 */
+  var firstList = ListBuffer[Step](
+  )
+  /** 最后遍历列表 */
+  var lastList = ListBuffer[Step](
+    Step(xpath="//*[@selected='true']/..//*"),
+    Step(xpath="//*[@selected='true']/../..//*")
+  )
+  /** 后退按钮标记, 主要用于iOS, xpath */
+  var backButton = ListBuffer[Step](
+    Step(xpath="Navigate up")
+  )
+
+  //todo: 去掉triggerAction
+  /** 引导规则. name, value, times三个元素组成 */
+  var triggerActions = ListBuffer[Step](
+    Step(xpath="share_comment_guide_btn")
+  )
+
   //自动生成的xpath表达式里可以包含的匹配属
   var xpathAttributes = List("name", "label", "value", "resource-id", "content-desc", "instance", "text")
   /** 先按照深度depth排序，再按照list排序，最后按照selected排序。后排序是优先级别最高的 */
@@ -51,75 +91,36 @@ class CrawlerConf {
   /** 设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度 */
   var baseUrl = List[String]()
   var appWhiteList = ListBuffer[String]()
-
   /** url黑名单.用于排除某些页面 */
   var urlBlackList = ListBuffer[String]()
   var urlWhiteList = ListBuffer[String]()
-
-  var defaultBackAction = ListBuffer[String]()
-
-  /** 默认遍历列表，xpath有用，action暂时没启用*/
-  var selectedList = ListBuffer[Step](
-    Step(find="//*[contains(name(), 'Button')]"),
-    //android专属
-    Step(find="//*[contains(name(), 'Text') and @clickable='true' and string-length(@text)<10]"),
-    Step(find="//*[@clickable='true']/*[contains(name(), 'Text') and string-length(@text)<10]"),
-    Step(find="//*[contains(name(), 'Image') and @clickable='true']"),
-    Step(find="//*[@clickable='true']/*[contains(name(), 'Image')]"),
-    //ios专属
-    Step(find="//*[contains(name(), 'Image') and @name!='']"),
-    Step(find="//*[contains(name(), 'Text') and @name!='' and string-length(@label)<10]"),
-  )
-  /** 优先遍历元素 */
-  var firstList = ListBuffer[Step](
-  )
-  /** 最后遍历列表 */
-  var lastList = ListBuffer[Step](
-    Step(find="//*[@selected='true']/..//*"),
-    Step(find="//*[@selected='true']/../..//*")
-  )
-  /** 后退按钮标记, 主要用于iOS, xpath */
-  var backButton = ListBuffer[Step](
-    Step(find="Navigate up")
-  )
-
-  //包括backButton
   /** 黑名单列表 matches风格, 默认排除内容是2个数字以上的控件. */
   var blackList = ListBuffer[Step](
-    Step(find=".*[0-9]{2}.*")
+    Step(xpath=".*[0-9]{2}.*")
   )
+
+  //在重启session之前做的事情
+  var beforeRestart=ListBuffer[String]()
+  //在执行action之前和之后默认执行的动作，比如等待
+  var beforeElement = ListBuffer[Step](
+    Step(xpath="/*", action="Thread.sleep(500)")
+  )
+  var afterElement = ListBuffer[Step]()
+  /**是否需要刷新或者滑动*/
+  var afterPage = ListBuffer[Step]()
+  //afterPage执行多少次后才不执行，比如连续滑动2次都没新元素即取消
+  var afterPageMax=2
   //相似控件最多点击几次
   var tagLimitMax = 2
   //个别控件可例外
   var tagLimit = ListBuffer[Step](
     //特殊的按钮，可以一直被遍历
-    Step(find = "确定", times = 1000),
-    Step(find = "取消", times = 1000),
-    Step(find = "share_comment_guide_btn_name", times=1000)
+    Step(xpath = "确定", times = 1000),
+    Step(xpath = "取消", times = 1000),
+    Step(xpath = "share_comment_guide_btn_name", times=1000)
   )
-  //todo: 去掉triggerAction
-  /** 引导规则. name, value, times三个元素组成 */
-  var triggerActions = ListBuffer[Step](
-    Step(find="share_comment_guide_btn")
-  )
-  //在执行action之前和之后默认执行的动作，比如等待
-  var beforeElement = ListBuffer[Step]()
-  var afterElement = ListBuffer[Step]()
-  var afterPage = ListBuffer[Step]()
-  //afterPage执行多少次后才不执行，比如连续滑动2次都没新元素即取消
-  var afterPageMax=2
-  //在重启session之前做的事情
-  var beforeRestart=ListBuffer[String]()
-
   //只需要写given与then即可
   var assertGlobal = List[Step]()
-  //测试用例
-  var testcase = ReactTestCase(
-    name = "TesterHome AppCrawler",
-    steps = List[Step]()
-  )
-  var monkeyEvents = ListBuffer[Int]()
-  var monkeyRunTimeSeconds = 30
 
 
   def loadByJson4s(file: String): Option[this.type] = {

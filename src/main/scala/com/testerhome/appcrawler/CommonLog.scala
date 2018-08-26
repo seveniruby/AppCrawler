@@ -13,7 +13,7 @@ trait CommonLog {
   BasicConfigurator.configure()
   Logger.getRootLogger.setLevel(Level.INFO)
   @JsonIgnore
-  val layout=new PatternLayout("%d{yyyy-MM-dd HH:mm:ss} %p [%c{1}.%M.%L] %m%n")
+  val layout=new PatternLayout("%d{yyyy-MM-dd HH:mm:ss} %p [%c{1}.%L.%M] %m%n")
   @JsonIgnore
   lazy val log = initLog()
 

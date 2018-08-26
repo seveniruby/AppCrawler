@@ -9,7 +9,7 @@ case class ReactTestCase(name: String = "", steps: List[Step] = List[Step]())
   * @param given
   * @param when
   * @param then
-  * @param find
+  * @param xpath
   * @param action
   * @param actions
   * @param times
@@ -18,7 +18,7 @@ case class Step(given: List[String]=List[String](),
                 var when: When=null,
                 //todo: testcase和trigger 遍历都支持断言和报告输出
                 then: List[String]=List[String](),
-                find: String="//*",
+                xpath: String="//*",
                 action: String=null,
                 actions: List[String]=List[String](),
                 var times:Int = 0
@@ -29,10 +29,10 @@ case class Step(given: List[String]=List[String](),
   }
   def getXPath(): String ={
     if(when==null){
-      if(this.find==null){
+      if(this.xpath==null){
         "/*"
       }else{
-        this.find
+        this.xpath
       }
     }else{
       if(when.xpath==null){

@@ -14,6 +14,8 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by seveniruby on 2017/4/17.
   */
+
+//todo: 用标准的class代替
 trait ReactWebDriver extends CommonLog {
 
   val capabilities = new DesiredCapabilities()

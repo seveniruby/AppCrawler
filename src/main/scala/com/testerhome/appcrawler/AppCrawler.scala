@@ -17,16 +17,14 @@ object AppCrawler extends CommonLog {
   val banner=
     """
       |----------------
-      |AppCrawler 2.3.1 [霍格沃兹测试学院特别纪念版]
+      |AppCrawler 2.4.0 [霍格沃兹测试学院特别纪念版]
       |Appium 1.8.1 Java8 tested
       |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
-      |帮助文档: https://github.com/seveniruby/AppCrawler
+      |项目地址: https://github.com/seveniruby/AppCrawler
       |移动测试技术交流: https://testerhome.com
       |联络作者: seveniruby@testerhome.com (思寒)
       |致谢: 晓光 泉龙 杨榕 恒温 mikezhou yaming116 沐木
-      |感谢如下公司提供商业支持: Keep
       |
-      |本版本只提供给TesterHome社区主办的移动互联网测试开发大会参会者
       |--------------------------------
       |
     """.stripMargin
@@ -167,19 +165,13 @@ object AppCrawler extends CommonLog {
           |appcrawler --demo
           |
           |#启动已经安装过的app
-          |appcrawler --capability appPackage=com.xueqiu.android,appActivity=.welcomeActivity
+          |appcrawler --capability "appPackage=com.xueqiu.android,appActivity=.view.WelcomeActivityAlias"
           |
           |#从已经结束的结果中重新生成报告
           |appcrawler --report result/
           |
           |#新老版本对比
           |appcrawler --candidate result/ --master pre/ --report ./
-          |
-          |#自动生成Page Object代码模板文件
-          |appcrawler --template PageObjectDemo.ssp --output result/
-          |
-          |#根据wda的inspector生成测试用例代码
-          |appcrawler --template PageObjectDemo.ssp -u http://localhost:8100
           |
         """.stripMargin)
     }
@@ -289,9 +281,9 @@ object AppCrawler extends CommonLog {
 
         //生成demo示例文件
         if(config.demo){
-          val file=scala.reflect.io.File("example.yml")
+          val file=scala.reflect.io.File("demo.yml")
           file.writeAll(crawlerConf.toYaml())
-          log.info(s"you can read ${file.jfile.getCanonicalPath} for demo example")
+          log.info(s"you can read ${file.jfile.getCanonicalPath} for demo")
           return
         }
 

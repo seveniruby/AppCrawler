@@ -1051,12 +1051,12 @@ class Crawler extends CommonLog {
           log.warn("no afterUrlFinish, do not use after")
         }
       }
-      case "monkey" => {
+/*      case "monkey" => {
         val count = conf.monkeyEvents.size
         val random = util.Random.nextInt(count)
         val code = conf.monkeyEvents(random)
         driver.event(code)
-      }
+      }*/
       case crawl if crawl!=null && crawl.contains("crawl\\(.*\\)") =>{
         store.clickedElementsList.remove(store.clickedElementsList.size-1)
         Util.dsl(crawl)
@@ -1212,7 +1212,11 @@ class Crawler extends CommonLog {
   def handleCtrlC(): Unit = {
     log.info("add shutdown hook")
     Signal.handle(new Signal("INT"), (sig: Signal) => {
-      stop()
+      try{
+        stop()
+      }finally{
+        System.exit(2)
+      }
 
       //todo: 更好的处理退出
       /*

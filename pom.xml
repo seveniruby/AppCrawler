@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ttf.testerhome.com</groupId>
-    <artifactId>AppCrawler</artifactId>
-    <version>2.3.1</version>
-    <name>AppCrawler</name>
-    <description>Test for Java + Scala compilation</description>
+    <artifactId>appcrawler</artifactId>
+    <version>2.4.0</version>
+    <name>appcrawler</name>
+    <description>app crawler for testing, open source by testerhome</description>
 
     <repositories>
         <repository>
@@ -209,6 +209,25 @@
             <systemPath>${java.home}/../lib/tools.jar</systemPath>
             <scope>system</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-reflect</artifactId>
+            <version>2.12.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-compiler</artifactId>
+            <version>2.12.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>24.1-jre</version>
+        </dependency>
+
 
 
     </dependencies>
