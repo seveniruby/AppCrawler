@@ -22,11 +22,11 @@ public class AppiumTouchAction {
         this.width=width;
         this.height=height;
     }
-    public AppiumTouchAction swipe(Double x1, Double y1, Double x2, Double y2){
+    public AppiumTouchAction swipe(Double startX, Double startY, Double endX, Double endY){
         action.press(
-                PointOption.point((int)(width*x1), (int)(height*y1)))
-                .waitAction(WaitOptions.waitOptions(Duration.ofSeconds(2)))
-                .moveTo(PointOption.point((int)(width*x1), (int)(height*y1)))
+                PointOption.point((int)(width*startX), (int)(height*startY)))
+                .waitAction(WaitOptions.waitOptions(Duration.ofSeconds(1)))
+                .moveTo(PointOption.point((int)(width*endX), (int)(height*endY)))
                 .release()
                 .perform();
         return this;
