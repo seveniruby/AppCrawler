@@ -22,8 +22,6 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
       .map(_._2).toList
       .sortBy(_.clickedIndex)
 
-    log.info(sortedElements.size)
-
     val selected = if (Report.showCancel) {
       log.info("show all elements")
       //把未遍历的放到后面
@@ -34,7 +32,6 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
       log.info("only show clicked elements")
       sortedElements.filter(_.action == ElementStatus.Clicked)
     }
-    log.info(selected.size)
     selected.foreach(ele => {
       val testcase = ele.element.xpath.replace("\\", "\\\\")
         .replace("\"", "\\\"")
@@ -67,12 +64,10 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
               """.stripMargin
               )
               */
-              log.debug(ele.reqDom)
 
               AppCrawler.crawler.conf.assertGlobal.foreach(step => {
-                if (XPathUtil.getNodeListFromXPath(step.when.xpath, ele.reqDom)
-                  .map(_.getOrElse("xpath", ""))
-                  .headOption == Some(ele.element.xpath)
+                if (
+                  step.given.forall(g=>XPathUtil.getNodeListByKey(g, ele.reqDom).size>0)
                 ) {
                   log.info(s"match testcase ${ele.element.xpath}")
 
@@ -89,7 +84,10 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
                     cp.reportAll()
                   }
                 } else {
-                  log.info("not match")
+
+/*                  XPathUtil.getNodeListFromXPath(step.getXPath(), ele.reqDom)
+                    .map(_.getOrElse("xpath", "")).foreach(log.warn)
+                  log.warn(s"not match ${step.getXPath()} ${ele.element.xpath}")*/
                 }
               })
 

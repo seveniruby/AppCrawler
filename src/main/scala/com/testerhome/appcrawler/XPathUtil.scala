@@ -265,6 +265,10 @@ object XPathUtil extends CommonLog {
     nodeMapList.toList
   }
 
+  def getNodeListByKey(key:String, currentPageSource:String): List[Map[String, Any]] ={
+    val currentPageDom=toDocument(currentPageSource)
+    getNodeListByKey(key, currentPageDom)
+  }
   def getNodeListByKey(key:String, currentPageDom: Document): List[Map[String, Any]] ={
     key match {
       //xpath

@@ -922,7 +922,8 @@ class Crawler extends CommonLog {
     //记录点击log
     val logName=s"${conf.resultDir}/elements.yml"
     log.info(s"save log to ${logName}")
-    File(logName).writeAll(TData.toYaml(store))
+    val file=File(logName)
+    file.writeAll(TData.toYaml(store))
   }
 
   def getBasePathName(right:Int=1): String = {
@@ -1000,17 +1001,17 @@ class Crawler extends CommonLog {
     store.setElementClicked(element)
     //todo: 如果有相同的控件被重复记录, 会出问题, 比如确定退出的规则
 
-    log.info(s"current element = ${element}")
     log.info(s"current index = ${store.clickedElementsList.size - 1}")
-    log.info(s"current action = ${action}")
     log.info(s"current xpath = ${element.xpath}")
+    log.info(s"current action = ${action}")
+    log.info(s"current element = ${element}")
     log.info(s"current url = ${element.url}")
     log.info(s"current tag path = ${element.getAncestor()}")
     log.info(s"current file name = ${element.toString()}")
 
     store.saveReqHash(contentHash.last().toString)
     store.saveReqImg(getBasePathName() + ".click.png")
-    store.saveReqDom(store.clickedElementsList.takeRight(2).headOption.getOrElse(element).toString())
+    store.saveReqDom(driver.currentPageSource)
 
     val originImageName = getBasePathName(2) + ".clicked.png"
     val newImageName = getBasePathName() + ".click.png"
@@ -1142,7 +1143,7 @@ class Crawler extends CommonLog {
     store.saveResHash(contentHash.last().toString)
     store.saveResImg(getBasePathName() + ".clicked.png")
     //todo: 内存消耗太大，改用文件存储
-    store.saveResDom(element.toString())
+    store.saveResDom(driver.currentPageSource)
 
   }
 
