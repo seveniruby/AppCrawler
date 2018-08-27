@@ -502,6 +502,8 @@ class Crawler extends CommonLog {
       lastSize=all.size
     }
 
+    selectedElements=sortByAttribute(selectedElements)
+
     //sort
     conf.firstList.foreach(step => {
       log.trace(s"firstList xpath = ${step.getXPath()}")
@@ -530,41 +532,6 @@ class Crawler extends CommonLog {
       selectedElements.foreach(log.trace)
       lastSize=all.size
     }
-
-    //先根据depth排序selectedElements
-    conf.sortByAttribute.foreach(attribute=>{
-      attribute match {
-        case "depth" => {
-          selectedElements=selectedElements.sortWith(
-            _.depth.toString.toInt >
-              _.depth.toString.toInt
-          )
-        }
-        case "selected" => {
-          //todo:同级延后
-          //selected=false的优先遍历
-          selectedElements=selectedElements.sortWith(
-            _.selected.toString.contains("false") >
-              _.selected.toString.contains("false")
-          )
-        }
-        case "list" => {
-          //列表内元素优先遍历
-          selectedElements=selectedElements.sortWith(
-            _.ancestor.toString.contains("List") >
-              _.ancestor.toString.contains("List")
-          )
-        }
-        //todo: 居中的优先遍历
-
-      }
-      log.trace(s"sort by ${attribute}")
-      selectedElements.foreach(e=>log.trace(
-        s"depth=${e.depth}" +
-          s" selected=${e}" +
-          s" list=${e.ancestor.toString.contains("List")} e=${e}")
-      )
-    })
 
 
     //确保不重, 并保证顺序
@@ -612,6 +579,46 @@ class Crawler extends CommonLog {
       lastSize=all.size
     }
     all
+  }
+
+
+  def sortByAttribute(list: List[URIElement]):  List[URIElement] ={
+    //先根据depth排序selectedElements
+    var selectedElements=list
+    conf.sortByAttribute.foreach(attribute=>{
+      attribute match {
+        case "depth" => {
+          selectedElements=selectedElements.sortWith(
+            _.depth.toString.toInt >
+              _.depth.toString.toInt
+          )
+        }
+        case "selected" => {
+          //todo:同级延后
+          //selected=false的优先遍历
+          selectedElements=selectedElements.sortWith(
+            _.selected.toString.contains("false") >
+              _.selected.toString.contains("false")
+          )
+        }
+        case "list" => {
+          //列表内元素优先遍历
+          selectedElements=selectedElements.sortWith(
+            _.ancestor.toString.contains("List") >
+              _.ancestor.toString.contains("List")
+          )
+        }
+        //todo: 居中的优先遍历
+
+      }
+      log.trace(s"sort by ${attribute}")
+      selectedElements.foreach(e=>log.trace(
+        s"depth=${e.depth}" +
+          s" selected=${e}" +
+          s" list=${e.ancestor.toString.contains("List")} e=${e}")
+      )
+    })
+    selectedElements
   }
 
 
@@ -1217,7 +1224,7 @@ class Crawler extends CommonLog {
         System.exit(2)
       }
 
-      //todo: 更好的处理退出
+      //fixed: 更好的处理退出
       /*
       log.info("send INT, do you want stop? please input y")
       if(scala.io.StdIn.readChar().toLower=='y'){

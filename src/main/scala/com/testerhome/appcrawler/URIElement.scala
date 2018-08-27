@@ -2,6 +2,7 @@ package com.testerhome.appcrawler
 
 import java.io.File
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import javax.xml.bind.annotation.XmlAttribute
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import org.apache.commons.text.StringEscapeUtils
@@ -12,6 +13,7 @@ import scala.collection.immutable
 /**
   * Created by seveniruby on 15/12/18.
   */
+@JsonCreator
 case class URIElement(
                        @XmlAttribute(name = "url")
                        var url: String="",
@@ -31,7 +33,7 @@ case class URIElement(
                        var valid: String="true",
                        @XmlAttribute(name = "selected")
                        var selected: String="false",
-                       @XmlAttribute(name = "loc")
+                       @XmlAttribute(name = "xpath")
                        var xpath:String="",
                        @XmlAttribute(name = "ancestor")
                        var ancestor:String="",
