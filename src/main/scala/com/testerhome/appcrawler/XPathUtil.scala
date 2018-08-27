@@ -242,10 +242,6 @@ object XPathUtil extends CommonLog {
             nodeMap.getOrElse("enabled", "true") == "true" &&
             nodeMap.getOrElse("valid", "true") == "true"
 
-          if (nodeMap("xpath").toString.nonEmpty && nodeMap("value").toString().size<50) {
-            nodeMapList += (nodeMap.toMap)
-          }
-
           //android
           if(nodeMap.contains("bounds")){
             val rect=nodeMap("bounds").toString.split("[^0-9]+").takeRight(4)
@@ -253,6 +249,11 @@ object XPathUtil extends CommonLog {
             nodeMap("y")=rect(1).toInt
             nodeMap("width")=rect(2).toInt-rect(0).toInt
             nodeMap("height")=rect(3).toInt-rect(1).toInt
+          }
+
+
+          if (nodeMap("xpath").toString.nonEmpty && nodeMap("value").toString().size<50) {
+            nodeMapList += (nodeMap.toMap)
           }
         } )
       }

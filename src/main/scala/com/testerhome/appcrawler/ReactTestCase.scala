@@ -44,10 +44,15 @@ case class Step(given: List[String]=List[String](),
   }
 
   def getAction(): String ={
-    if(when==null){
+    val result=if(when==null){
       action
     }else{
       when.action
+    }
+    if(result==null){
+      ""
+    }else{
+      result
     }
   }
 }

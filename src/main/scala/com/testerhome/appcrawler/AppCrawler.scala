@@ -282,6 +282,7 @@ object AppCrawler extends CommonLog {
         //生成demo示例文件
         if(config.demo){
           val file=scala.reflect.io.File("demo.yml")
+          crawlerConf.resultDir=""
           file.writeAll(crawlerConf.toYaml())
           log.info(s"you can read ${file.jfile.getCanonicalPath} for demo")
           return

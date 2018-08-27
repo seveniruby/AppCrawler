@@ -223,13 +223,13 @@ class Crawler extends CommonLog {
     Thread.sleep(conf.waitLaunch)
     refreshPage()
     doElementAction(URIElement(url=s"${currentUrl}", tag="restart", id="restart",
-      xpath=s"restart-${store.clickedElementsList.size}"), "")
+      xpath=s"restart-${store.clickedElementsList.size}"), "log")
   }
 
   def firstRefresh(): Unit = {
     log.info("first refresh")
     doElementAction(URIElement(url=s"${currentUrl}", tag="start", id="start",
-      xpath=s"Start-Start-${store.clickedElementsList.size}"), "")
+      xpath=s"Start-Start-${store.clickedElementsList.size}"), "log")
 
   }
 
@@ -1008,9 +1008,8 @@ class Crawler extends CommonLog {
     val originImageName = getBasePathName(2) + ".clicked.png"
     val newImageName = getBasePathName() + ".click.png"
 
-    //todo: 支持null
     action match {
-      case ""  | "log" => {
+      case "log" => {
         log.info("just log")
         log.info(TData.toJson(element))
       }
@@ -1064,7 +1063,7 @@ class Crawler extends CommonLog {
       case code if code!=null && code.matches(".*\\(.*\\).*") => {
         Util.dsl(code)
       }
-      case str: String => {
+      case str : String => {
         //todo: tap和click的行为不一致. 在ipad上有时候click会点错位置, 而tap不会
         //todo: tap的缺点就是点击元素的时候容易点击到元素上层的控件
 
@@ -1086,7 +1085,7 @@ class Crawler extends CommonLog {
             driver.asyncTask() {
               //支持各种动作
               str match {
-                case null => {
+                case "" => {
                   //todo: 根据类型自动执行默认动作
                   log.info("default action")
                   driver.tap()

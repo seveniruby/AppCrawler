@@ -154,8 +154,14 @@ class AppiumClient extends ReactWebDriver{
     log.info(s"write png ${fileName}")
     if(img.getWidth>screenWidth){
       log.info("scale the origin image and save")
-      //todo: RasterFormatException: (y + height) is outside of Raster 横屏需要处理异常
-      val subImg=img.getSubimage(0, 0, screenWidth, screenHeight)
+      //fixed: RasterFormatException: (y + height) is outside of Raster 横屏需要处理异常
+      val subImg=tryAndCatch(img.getSubimage(0, 0, screenWidth, screenHeight)) match {
+        case Some(value)=>value
+        case None => {
+          getDeviceInfo()
+          img.getSubimage(0, 0, screenWidth, screenHeight)
+        }
+      }
       ImageIO.write(subImg, "png", new java.io.File(newImageName))
     }else{
       log.info(s"ImageIO.write newImageName ${newImageName}")
@@ -305,9 +311,16 @@ class AppiumClient extends ReactWebDriver{
   }
 
   override def getRect(): Rectangle ={
+
+    //remove getSize
+    /*
     val location=currentElement.getLocation
     val size=currentElement.getSize
+
     new Rectangle(location.x, location.y, size.height, size.width)
+    */
+    //log.info(s"location=${location} size=${size} x=${currentURIElement.x} y=${currentURIElement.y} width=${currentURIElement.width} height=${currentURIElement.height}" )
+    new Rectangle(currentURIElement.x, currentURIElement.y, currentURIElement.height, currentURIElement.width)
   }
 
   override def sendKeys(content: String): Unit = {
