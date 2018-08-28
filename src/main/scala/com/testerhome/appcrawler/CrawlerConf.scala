@@ -22,9 +22,6 @@ class CrawlerConf {
   var reportTitle = ""
   /** 结果目录 */
   var resultDir = ""
-  /**在执行action后等待多少毫秒进行刷新*/
-  var waitLoading=500
-  var waitLaunch=6000
   //var tagLimit=scala.collection.mutable.Map[String, Int]()
   var showCancel = true
   /** 最大运行时间 */
@@ -99,6 +96,8 @@ class CrawlerConf {
     Step(xpath=".*[0-9]{2}.*")
   )
 
+
+  var beforeStartWait=6000
   //在重启session之前做的事情
   var beforeRestart=ListBuffer[String]()
   //在执行action之前和之后默认执行的动作，比如等待
@@ -106,10 +105,12 @@ class CrawlerConf {
     Step(xpath="/*", action="Thread.sleep(500)")
   )
   var afterElement = ListBuffer[Step]()
+  /**在执行action后等待多少毫秒进行刷新*/
+  var afterElementWait=500
   /**是否需要刷新或者滑动*/
-  var afterPage = ListBuffer[Step]()
+  var afterAll = ListBuffer[Step]()
   //afterPage执行多少次后才不执行，比如连续滑动2次都没新元素即取消
-  var afterPageMax=2
+  var afterAllMax=2
   //相似控件最多点击几次
   var tagLimitMax = 2
   //个别控件可例外
@@ -122,17 +123,6 @@ class CrawlerConf {
   //只需要写given与then即可
   var assertGlobal = List[Step]()
 
-
-  def loadByJson4s(file: String): Option[this.type] = {
-    if (new java.io.File(file).exists()) {
-      println(s"load config from ${file}")
-      println(Source.fromFile(file).mkString)
-      Some(TData.fromYaml[this.type](Source.fromFile(file).mkString))
-    } else {
-      println(s"conf file ${file} no exist ")
-      None
-    }
-  }
 
   def save(path: String): Unit = {
 

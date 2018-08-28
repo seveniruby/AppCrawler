@@ -27,6 +27,14 @@ case class Step(given: List[String]=List[String](),
     times-=1
     times
   }
+
+  def getGiven(): List[String] ={
+    if(given==null){
+      List(getXPath())
+    }else{
+      given
+    }
+  }
   def getXPath(): String ={
     if(when==null){
       if(this.xpath==null){

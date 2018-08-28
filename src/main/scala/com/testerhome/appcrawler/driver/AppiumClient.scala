@@ -36,7 +36,7 @@ class AppiumClient extends ReactWebDriver{
 
   def this(url: String = "http://127.0.0.1:4723/wd/hub", configMap: Map[String, Any]=Map[String, Any]()) {
     this
-    log.addAppender(AppCrawler.crawler.fileAppender)
+    log.addAppender(AppCrawler.fileAppender)
     appium(url, configMap)
   }
 

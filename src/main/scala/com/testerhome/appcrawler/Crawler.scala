@@ -29,7 +29,6 @@ class Crawler extends CommonLog {
 
   /** 存放插件类 */
   val pluginClasses = ListBuffer[Plugin]()
-  var fileAppender: FileAppender = _
 
   val store = new URIElementStore
 
@@ -104,26 +103,12 @@ class Crawler extends CommonLog {
     log.setLevel(GA.logLevel)
   }
 
-  //todo: 让其他的文件也支持log输出到文件
-  def addLogFile(): Unit = {
-    AppCrawler.logPath = conf.resultDir + "/appcrawler.log"
-
-    fileAppender = new FileAppender(layout, AppCrawler.logPath, false)
-    log.addAppender(fileAppender)
-
-    val resultDir = new java.io.File(conf.resultDir)
-    if (!resultDir.exists()) {
-      FileUtils.forceMkdir(resultDir)
-      log.info("result dir path = " + resultDir.getAbsolutePath)
-    }
-
-  }
 
   /**
     * 启动爬虫
     */
   def start(existDriver: ReactWebDriver = null): Unit = {
-    addLogFile()
+    log.addAppender(AppCrawler.fileAppender)
     log.debug("crawl config")
     log.debug(conf.toYaml())
     if (conf.xpathAttributes != null) {
@@ -145,7 +130,7 @@ class Crawler extends CommonLog {
     log.info(s"platformName=${platformName} driver=${driver}")
     log.info(AppCrawler.banner)
     log.info("waiting for app load")
-    Thread.sleep(conf.waitLaunch)
+    Thread.sleep(conf.beforeStartWait)
     log.info(s"driver=${existDriver}")
     log.info("get screen info")
     driver.getDeviceInfo()
@@ -220,7 +205,7 @@ class Crawler extends CommonLog {
     conf.capability ++= Map("noReset"->"true")
     setupAppium()
     //todo: 采用轮询
-    Thread.sleep(conf.waitLaunch)
+    Thread.sleep(conf.beforeStartWait)
     refreshPage()
     doElementAction(URIElement(url=s"${currentUrl}", tag="restart", id="restart",
       xpath=s"restart-${store.clickedElementsList.size}"), "log")
@@ -247,7 +232,7 @@ class Crawler extends CommonLog {
     afterPageRetry=0
     backRetry=0
 
-    log.info(s"afterPageMax=${conf.afterPageMax}")
+    log.info(s"afterPageMax=${conf.afterAllMax}")
     Util.isLoaded=false
 
     //todo: 主要做遍历测试和异常测试. 所以暂不使用selendroid
@@ -858,23 +843,23 @@ class Crawler extends CommonLog {
           log.info(s"${currentUrl} all elements had be clicked")
           //滚动多次没有新元素
 
-          if (conf.afterPage != null) {
-            val isMatch=conf.afterPage.exists(step=>step.given.forall(g=>driver.getNodeListByKey(g).size>0))
+          if (conf.afterAll != null) {
+            val isMatch=conf.afterAll.exists(step=>step.getGiven().forall(g=>driver.getNodeListByKey(g).size>0))
             if(isMatch==false) {
               log.info("not match afterUrlFinish")
               nextElement = getBackButton()
-            }else if(isMatch==true && afterPageRetry<conf.afterPageMax) {
+            }else if(isMatch==true && afterPageRetry<conf.afterAllMax) {
               log.info("match afterUrlFinish")
               nextElement = Some(URIElement(url=s"${currentUrl}", tag="", id="afterUrlFinished",
                 xpath=s"afterUrlFinished-${appNameRecord.last()}-${store.clickedElementsList.size}"))
               setElementAction("after")
               afterPageRetry += 1
-              log.info(s"swipeRetry=${afterPageRetry}")
+              log.info(s"afterAll=${afterPageRetry}")
             }else{
-              log.warn(s"swipeRetry too many times ${afterPageRetry} >= ${conf.afterPageMax}")
+              log.warn(s"afterAll too many times ${afterPageRetry} >= ${conf.afterAllMax}")
               nextElement = getBackButton()
               afterPageRetry = 0
-              log.info(s"swipeRetry=${afterPageRetry}")
+              log.info(s"afterAll=${afterPageRetry}")
             }
           }else{
             nextElement = getBackButton()
@@ -1029,7 +1014,7 @@ class Crawler extends CommonLog {
         log.info("backApp")
         driver.launchApp()
         //todo: 改进等待
-        Thread.sleep(conf.waitLaunch)
+        Thread.sleep(conf.beforeStartWait)
         /*if (conf.defaultBackAction.size > 0) {
           log.trace(conf.defaultBackAction)
           conf.defaultBackAction.foreach(Runtimes.eval)
@@ -1043,15 +1028,15 @@ class Crawler extends CommonLog {
         }*/
       }
       case "after" => {
-        if (conf.afterPage != null) {
-          conf.afterPage.foreach(step => {
-            step.given.forall(g=>driver.getNodeListByKey(g).size>0) match {
+        if (conf.afterAll != null) {
+          conf.afterAll.foreach(step => {
+            step.getGiven().forall(g=>driver.getNodeListByKey(g).size>0) match {
               case true => {
                 log.info(s"match ${step}")
                 //todo: 支持元素动作
-                Util.dsl(step.when.action)
+                Util.dsl(step.getAction())
               }
-              case false => {log.info(s"not match ${step.given}")}
+              case false => {log.info(s"not match ${step.getGiven()}")}
             }
           })
         }else{
@@ -1134,8 +1119,8 @@ class Crawler extends CommonLog {
     }
 
     //等待页面加载
-    log.info(s"sleep ${conf.waitLoading} for loading")
-    Thread.sleep(conf.waitLoading)
+    log.info(s"sleep ${conf.afterElementWait} for loading")
+    Thread.sleep(conf.afterElementWait)
     isRefreshSuccess = refreshPage()
     saveDom()
     saveScreen()

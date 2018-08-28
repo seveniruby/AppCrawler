@@ -13,7 +13,7 @@ class TagLimitPlugin extends Plugin {
   private var tagLimitMax = 3
 
   override def start(): Unit = {
-    log.addAppender(getCrawler().fileAppender)
+    //log.addAppender(getCrawler().fileAppender)
     tagLimitMax = getCrawler().conf.tagLimitMax
   }
 

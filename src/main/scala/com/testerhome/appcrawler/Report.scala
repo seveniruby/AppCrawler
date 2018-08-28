@@ -2,10 +2,11 @@ package com.testerhome.appcrawler
 
 import org.apache.commons.io.FileUtils
 import org.scalatest.tools.Runner
+import sun.security.provider.MD5
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-import scala.io.{Source, Codec}
+import scala.io.{Codec, Source}
 import scala.reflect.io.File
 import collection.JavaConversions._
 
@@ -85,6 +86,10 @@ object Report extends Report{
 
 
   def loadResult(elementsFile: String): URIElementStore ={
-    TData.fromYaml[URIElementStore](Source.fromFile(elementsFile).mkString)
+    val content=Source.fromFile(elementsFile).mkString
+    log.info(s"${elementsFile} size = ${content.size}")
+    //todo: cannot deserialize from Object value (no delegate- or property-based Creator)
+    log.warn("一定概率失败，底层依赖库的bug")
+    TData.fromYaml[URIElementStore](content)
   }
 }

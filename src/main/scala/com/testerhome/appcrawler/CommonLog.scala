@@ -3,6 +3,7 @@ package com.testerhome.appcrawler
 import java.io.OutputStreamWriter
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import org.apache.commons.io.FileUtils
 import org.apache.log4j._
 
 
@@ -34,4 +35,5 @@ trait CommonLog {
     log.setAdditivity(false)
     log
   }
+
 }

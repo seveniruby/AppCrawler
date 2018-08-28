@@ -5,7 +5,8 @@ import java.lang.reflect.Field
 import java.nio.charset.Charset
 
 import com.testerhome.appcrawler.plugin.FlowDiff
-import org.apache.log4j.Level
+import org.apache.commons.io.FileUtils
+import org.apache.log4j.{FileAppender, Level}
 import org.scalatest.ConfigMap
 
 import scala.io.Source
@@ -29,8 +30,7 @@ object AppCrawler extends CommonLog {
       |
     """.stripMargin
 
-
-  var logPath = ""
+  var fileAppender: FileAppender = _
   var crawler = new Crawler
   val startTime = new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
   case class Param(
@@ -39,7 +39,6 @@ object AppCrawler extends CommonLog {
                     conf: File = new File(""),
                     verbose: Boolean = false,
                     mode: String = "",
-                    sbt_params: Seq[String] = Seq(),
                     platform: String = "",
                     appium: String = "",
                     resultDir: String = "",
@@ -53,30 +52,26 @@ object AppCrawler extends CommonLog {
                     capability: Map[String, String] = Map[String, String]()
                   )
 
-  def sbt(args: Seq[String]): Unit = {
-    import scala.sys.process._
-    //val sbt="/usr/local/Cellar/sbt/0.13.11/libexec/sbt-launch.jar"
-    val project_dir = getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath.
-      split("/").dropRight(2).mkString("/")
-    val launcherJar = s"${project_dir}/lib/sbt-launch.jar"
-    val cmd = Seq("java", "-jar", launcherJar) ++ args // You
-    log.trace(cmd)
-    cmd ! ProcessLogger(stdout append _ + "\n", stderr append _ + "\n")
+
+  def getGlobalEncoding(): Unit = {
+    log.info("default Charset=" + Charset.defaultCharset())
+    log.info("default file.encoding=" + System.getProperty("file.encoding"))
+    //log.info("project directory=" + (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
   }
 
 
   def setGlobalEncoding(encoding:String="UTF-8"): Unit = {
-    log.info("default Charset=" + Charset.defaultCharset())
-    log.info("default file.encoding=" + System.getProperty("file.encoding"))
+    getGlobalEncoding()
     log.info(s"set file.encoding to ${encoding}")
     System.setProperty("file.encoding", encoding)
     val charset = classOf[Charset].getDeclaredField("defaultCharset")
     charset.setAccessible(true)
     charset.set(null, null)
-    log.info("Charset=" + Charset.defaultCharset())
-    log.info("file.encoding=" + System.getProperty("file.encoding"))
-    //log.info("project directory=" + (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
+    getGlobalEncoding()
+    log.trace("jar path =" + (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
   }
+
+
 
   def main(args: Array[String]) {
     // parser.parse returns Opti on[C]
@@ -145,7 +140,7 @@ object AppCrawler extends CommonLog {
       opt[Unit]("diff") action { (x, c) =>
         c.copy(diff = true)
       } text ("执行diff对比")
-      opt[Unit]("verbose").abbr("vv") action { (_, c) =>
+      opt[Unit]('v',"verbose") action { (_, c) =>
         c.copy(verbose = true)
       } text ("是否展示更多debug信息")
       opt[Unit]("demo") action { (_, c) =>
@@ -193,10 +188,6 @@ object AppCrawler extends CommonLog {
         }
         log.trace("config=")
         log.trace(config)
-        if (config.sbt_params.nonEmpty) {
-          sbt(config.sbt_params)
-          return ()
-        }
         var crawlerConf = new CrawlerConf
         //获取配置模板文件
         if (config.conf.isFile) {
@@ -206,6 +197,8 @@ object AppCrawler extends CommonLog {
 
         //合并capability, 命令行>特定平台的capability>通用capability
         crawlerConf.capability ++= config.capability
+        //避免有人误删微信聊天记录
+        crawlerConf.capability ++= Map("noReset"->"true")
 
         //设定app
         if(config.app.nonEmpty){
@@ -288,6 +281,8 @@ object AppCrawler extends CommonLog {
           return
         }
 
+        addLogFile(crawlerConf)
+        getGlobalEncoding()
         startCrawl(crawlerConf)
 
       }
@@ -321,5 +316,20 @@ object AppCrawler extends CommonLog {
     crawler = new Crawler
     crawler.loadConf(conf)
     crawler.start()
+  }
+
+
+  //todo: 让其他的文件也支持log输出到文件
+  def addLogFile(conf: CrawlerConf): Unit = {
+    fileAppender = new FileAppender(layout,  conf.resultDir + "/appcrawler.log", false)
+    log.addAppender(fileAppender)
+    log.info(banner)
+
+    val resultDir = new java.io.File(conf.resultDir)
+    if (!resultDir.exists()) {
+      FileUtils.forceMkdir(resultDir)
+      log.info("result dir path = " + resultDir.getAbsolutePath)
+    }
+
   }
 }

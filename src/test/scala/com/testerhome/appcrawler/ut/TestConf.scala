@@ -40,14 +40,14 @@ class TestConf extends FunSuite with CommonLog with Matchers{
 
   test("yaml save"){
     val conf=new CrawlerConf
-    conf.waitLaunch=100
+    conf.beforeStartWait=100
     val yaml=conf.toYaml()
     log.info(yaml)
 
     val conf2=new CrawlerConf
     conf2.loadYaml(yaml)
-    conf2.waitLaunch should be equals(conf.waitLaunch)
-    conf2.waitLaunch should be equals(100)
+    conf2.beforeStartWait should be equals(conf.beforeStartWait)
+    conf2.beforeStartWait should be equals(100)
 
   }
 
