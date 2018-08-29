@@ -1055,9 +1055,6 @@ class Crawler extends CommonLog {
         store.clickedElementsList.remove(store.clickedElementsList.size-1)
         Util.dsl(crawl)
       }
-      case code if code!=null && code.matches(".*\\(.*\\).*") => {
-        Util.dsl(code)
-      }
       case str : String => {
         //todo: tap和click的行为不一致. 在ipad上有时候click会点错位置, 而tap不会
         //todo: tap的缺点就是点击元素的时候容易点击到元素上层的控件
@@ -1095,6 +1092,9 @@ class Crawler extends CommonLog {
                 }
                 case "longTap" =>{
                   driver.longTap()
+                }
+                case code if code!=null && code.matches(".*\\(.*\\).*") => {
+                  Util.dsl(code)
                 }
                 case str => {
                   log.info(s"input ${str}")

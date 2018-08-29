@@ -241,7 +241,7 @@ object XPathUtil extends CommonLog {
             attr=>{
               attr.getOrElse("name", "")+attr.getOrElse("resource-id", "").split("/").last
             }
-          ).mkString("/")
+          ).filter(_.nonEmpty).mkString(".")
           val tagList=attributesList.map(
             attr=>{
               attr.getOrElse("tag", "")
