@@ -1178,7 +1178,7 @@ class Crawler extends CommonLog {
           }
 
         }
-        case None => {}
+        case None => { log.trace(s"not found trigger ${xpath}")}
       }
     })
     None

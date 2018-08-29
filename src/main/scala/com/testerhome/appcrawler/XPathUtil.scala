@@ -198,6 +198,19 @@ object XPathUtil extends CommonLog {
           nodeMap("height")="0"
 
           val node = nodeList.item(i)
+
+          //支持导出单个字段
+          nodeMap(node.getNodeName) = node.getNodeValue
+          //获得所有节点属性
+          val nodeAttributes = node.getAttributes
+          if (nodeAttributes != null) {
+            0 until nodeAttributes.getLength foreach (a => {
+              val attr = nodeAttributes.item(a).asInstanceOf[Attr]
+              nodeMap(attr.getName) = attr.getValue
+            })
+          }
+
+
           //如果node为.可能会异常. 不过目前不会
           nodeMap("tag") = node.getNodeName
 
@@ -239,17 +252,6 @@ object XPathUtil extends CommonLog {
 
 
           nodeMap("xpath") = getXPathFromAttributes(attributesList)
-
-          //支持导出单个字段
-          nodeMap(node.getNodeName) = node.getNodeValue
-          //获得所有节点属性
-          val nodeAttributes = node.getAttributes
-          if (nodeAttributes != null) {
-            0 until nodeAttributes.getLength foreach (a => {
-              val attr = nodeAttributes.item(a).asInstanceOf[Attr]
-              nodeMap(attr.getName) = attr.getValue
-            })
-          }
 
 
           //为了加速android定位

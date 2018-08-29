@@ -1307,5 +1307,73 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
   }*/
 
 
+  test("key"){
+    val content=
+      """
+        |<hierarchy rotation="0">
+        |  <android.widget.FrameLayout bounds="[0,1016][1080,1313]"
+        |    checkable="false" checked="false" class="android.widget.FrameLayout"
+        |    clickable="false" content-desc="" enabled="true" focusable="false"
+        |    focused="false" index="0" instance="0" long-clickable="false"
+        |    package="com.sinitek.rqkj.android" password="false" resource-id=""
+        |    scrollable="false" selected="false" text="">
+        |    <android.widget.LinearLayout bounds="[0,1016][1080,1313]"
+        |      checkable="false" checked="false"
+        |      class="android.widget.LinearLayout" clickable="false"
+        |      content-desc="" enabled="true" focusable="false" focused="false"
+        |      index="0" instance="0" long-clickable="false"
+        |      package="com.sinitek.rqkj.android" password="false" resource-id=""
+        |      scrollable="false" selected="false" text="">
+        |      <android.widget.FrameLayout bounds="[0,1016][1080,1313]"
+        |        checkable="false" checked="false"
+        |        class="android.widget.FrameLayout" clickable="false"
+        |        content-desc="" enabled="true" focusable="false" focused="false"
+        |        index="0" instance="1" long-clickable="false"
+        |        package="com.sinitek.rqkj.android" password="false"
+        |        resource-id="android:id/content" scrollable="false"
+        |        selected="false" text="">
+        |        <android.widget.RelativeLayout bounds="[0,1016][1080,1313]"
+        |          checkable="false" checked="false"
+        |          class="android.widget.RelativeLayout" clickable="false"
+        |          content-desc="" enabled="true" focusable="false"
+        |          focused="false" index="0" instance="0" long-clickable="false"
+        |          package="com.sinitek.rqkj.android" password="false"
+        |          resource-id="" scrollable="false" selected="false" text="">
+        |          <android.widget.LinearLayout bounds="[391,1046][688,1313]"
+        |            checkable="false" checked="false"
+        |            class="android.widget.LinearLayout" clickable="false"
+        |            content-desc="" enabled="true" focusable="false"
+        |            focused="false" index="0" instance="1"
+        |            long-clickable="false" package="com.sinitek.rqkj.android"
+        |            password="false" resource-id="" scrollable="false"
+        |            selected="false" text="">
+        |            <android.view.View bounds="[479,1076][599,1196]"
+        |              checkable="false" checked="false"
+        |              class="android.view.View" clickable="false"
+        |              content-desc="" enabled="true" focusable="false"
+        |              focused="false" index="0" instance="0"
+        |              long-clickable="false" package="com.sinitek.rqkj.android"
+        |              password="false" resource-id="" scrollable="false"
+        |              selected="false" text=""/>
+        |            <android.widget.TextView bounds="[460,1226][619,1283]"
+        |              checkable="false" checked="false"
+        |              class="android.widget.TextView" clickable="false"
+        |              content-desc="" enabled="true" focusable="false"
+        |              focused="false" index="1" instance="0"
+        |              long-clickable="false" package="com.sinitek.rqkj.android"
+        |              password="false" resource-id="" scrollable="false"
+        |              selected="false" text="加载中..."/>
+        |          </android.widget.LinearLayout>
+        |        </android.widget.RelativeLayout>
+        |      </android.widget.FrameLayout>
+        |    </android.widget.LinearLayout>
+        |  </android.widget.FrameLayout>
+        |</hierarchy>
+      """.stripMargin
+
+    println(XPathUtil.getNodeListByKey("加载中...", XPathUtil.toDocument(content)))
+  }
+
+
 
 }
