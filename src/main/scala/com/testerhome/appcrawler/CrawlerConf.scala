@@ -42,7 +42,7 @@ class CrawlerConf {
   var testcase = ReactTestCase(
     name = "TesterHome AppCrawler",
     steps = List[Step](
-      Step(xpath = "/*", action = "Thread.sleep(5000)")
+      Step(xpath = "//*", action = "Thread.sleep(3000)")
     )
   )
 
@@ -84,7 +84,7 @@ class CrawlerConf {
   //可选 default|android|id|xpath，默认状态会自动判断是否使用android定位或者ios定位
   var findBy="default"
   /** 用来确定url的元素定位xpath 他的text会被取出当作url因素 */
-  var defineUrl = List[String]()
+  var suiteName = List[String]()
   /** 设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度 */
   var baseUrl = List[String]()
   var appWhiteList = ListBuffer[String]()

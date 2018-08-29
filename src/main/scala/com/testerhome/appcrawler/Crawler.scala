@@ -44,7 +44,9 @@ class Crawler extends CommonLog {
   private var backRetry = 0
   //最大重试次数
   var backMaxRetry = 5
-  private var afterPageRetry = 0
+  private var afterAllRetry = 0
+  private var notFoundRetry=0
+  private var notFoundMax=2
   //滑动最大重试次数
   var stopAll = false
   val signals = new DataRecord()
@@ -229,10 +231,10 @@ class Crawler extends CommonLog {
     //implicitlyWait(Span(10, Seconds))
 
     //todo: init all var
-    afterPageRetry=0
+    afterAllRetry=0
     backRetry=0
 
-    log.info(s"afterPageMax=${conf.afterAllMax}")
+    log.info(s"afterAllMax=${conf.afterAllMax}")
     Util.isLoaded=false
 
     //todo: 主要做遍历测试和异常测试. 所以暂不使用selendroid
@@ -257,8 +259,8 @@ class Crawler extends CommonLog {
       case _ => {
         log.info("use AppiumClient")
         log.info(conf.capability)
-        //appium 6.0.0 has bug with okhttp
-        System.setProperty("webdriver.http.factory", "apache")
+        //todo: appium 6.0.0 has bug with okhttp
+        //System.setProperty("webdriver.http.factory", "apache")
         driver=new AppiumClient(url, conf.capability)
         log.info(driver)
       }
@@ -315,8 +317,8 @@ class Crawler extends CommonLog {
   }
 
   def getUri(): String = {
-    val uri=if (conf.defineUrl!=null && conf.defineUrl.nonEmpty) {
-      val urlString = conf.defineUrl.flatMap(driver.getNodeListByKey(_)).distinct.map(x => {
+    val uri=if (conf.suiteName!=null && conf.suiteName.nonEmpty) {
+      val urlString = conf.suiteName.flatMap(driver.getNodeListByKey(_)).distinct.map(x => {
         //按照attribute, label, name顺序挨个取第一个非空的指x
         List(
           x.getOrElse("attribute", ""),
@@ -607,14 +609,6 @@ class Crawler extends CommonLog {
   }
 
 
-  def hideKeyBoard(): Unit = {
-    //iOS键盘隐藏
-    if (driver.getNodeListByKey("//UIAKeyboard").size >= 1) {
-      log.info("find keyboard , just hide")
-      driver.hideKeyboard()
-    }
-  }
-
   def refreshPage(): Boolean = {
     log.info("refresh page")
     driver.getPageSourceWithRetry()
@@ -775,7 +769,15 @@ class Crawler extends CommonLog {
       }
       case "clear" => {
         log.error(s"last time not found ${store.clickedElementsList.last}")
-        store.setElementClear()
+        notFoundRetry+=1
+        if(notFoundRetry<notFoundMax) {
+          store.setElementClear()
+        }else{
+          //有些特殊元素会卡住流程，所以设置一个跳过机制
+          log.warn(s"notFoundRetry ${notFoundRetry} >= notFoundMax ${notFoundMax} skip")
+          store.setElementClicked(store.clickedElementsList.last)
+          notFoundRetry=0
+        }
         //todo: 调整taglimit的配额
       }
       case _ => {}
@@ -837,7 +839,7 @@ class Crawler extends CommonLog {
           //todo: 需要一个action指定表
           setElementAction("click")
           skipBeforeElementAction = false
-          afterPageRetry=0
+          afterAllRetry=0
         }
         case None => {
           log.info(s"${currentUrl} all elements had be clicked")
@@ -848,18 +850,18 @@ class Crawler extends CommonLog {
             if(isMatch==false) {
               log.info("not match afterUrlFinish")
               nextElement = getBackButton()
-            }else if(isMatch==true && afterPageRetry<conf.afterAllMax) {
+            }else if(isMatch==true && afterAllRetry<conf.afterAllMax) {
               log.info("match afterUrlFinish")
               nextElement = Some(URIElement(url=s"${currentUrl}", tag="", id="afterUrlFinished",
                 xpath=s"afterUrlFinished-${appNameRecord.last()}-${store.clickedElementsList.size}"))
               setElementAction("after")
-              afterPageRetry += 1
-              log.info(s"afterAll=${afterPageRetry}")
+              afterAllRetry += 1
+              log.info(s"afterAll=${afterAllRetry}")
             }else{
-              log.warn(s"afterAll too many times ${afterPageRetry} >= ${conf.afterAllMax}")
+              log.warn(s"afterAll too many times ${afterAllRetry} >= ${conf.afterAllMax}")
               nextElement = getBackButton()
-              afterPageRetry = 0
-              log.info(s"afterAll=${afterPageRetry}")
+              afterAllRetry = 0
+              log.info(s"afterAll=${afterAllRetry}")
             }
           }else{
             nextElement = getBackButton()
@@ -1102,9 +1104,6 @@ class Crawler extends CommonLog {
             }
           }
 
-        }
-        if (List("UIATextField", "UIATextView", "EditText").map(element.tag.contains(_)).contains(true)) {
-          driver.asyncTask()(driver.hideKeyboard())
         }
       }
     }

@@ -164,6 +164,7 @@ object XPathUtil extends CommonLog {
   def getNodeListFromXML(pageDom:Document, xpath:String): AnyRef ={
     val nodesMap = ListBuffer[Map[String, Any]]()
     val xPath: XPath = XPathFactory.newInstance().newXPath()
+    log.trace(s"xpath=${xpath}")
     val compexp = xPath.compile(xpath)
     //val node=compexp.evaluate(pageDom)
     if (xpath.matches("string(.*)") || xpath.matches(".*/@[^/]*")) {
@@ -200,6 +201,19 @@ object XPathUtil extends CommonLog {
           //如果node为.可能会异常. 不过目前不会
           nodeMap("tag") = node.getNodeName
 
+          //todo: 支持selendroid
+          //如果是android 转化为和iOS相同的结构
+          //name=resource-id label=content-desc value=text
+          if (nodeMap.contains("resource-id")) {
+            nodeMap("name") = nodeMap("resource-id").toString
+          }
+          if (nodeMap.contains("text")) {
+            nodeMap("value") = nodeMap("text")
+          }
+          if (nodeMap.contains("content-desc")) {
+            nodeMap("label") = nodeMap("content-desc")
+          }
+
 
           val attributesList=getAttributesFromNode(node)
           //必须在xpath前面
@@ -207,7 +221,23 @@ object XPathUtil extends CommonLog {
 
           //todo: 改进算法
           //nodeMap("menu") = isMenuFromBrotherNode(node)
-          nodeMap("ancestor")=attributesList.map(_.get("tag").get).mkString("/")
+
+          //不同id的祖先可以允许分别遍历，不计算到相同的tagLimit里
+
+          val idList=attributesList.map(
+            attr=>{
+              attr.getOrElse("name", "")+attr.getOrElse("resource-id", "").split("/").last
+            }
+          ).mkString("/")
+          val tagList=attributesList.map(
+            attr=>{
+              attr.getOrElse("tag", "")
+            }
+          ).mkString("/")
+
+          nodeMap("ancestor")=List(idList, tagList).mkString("_")
+
+
           nodeMap("xpath") = getXPathFromAttributes(attributesList)
 
           //支持导出单个字段
@@ -221,18 +251,7 @@ object XPathUtil extends CommonLog {
             })
           }
 
-          //todo: 支持selendroid
-          //如果是android 转化为和iOS相同的结构
-          //name=resource-id label=content-desc value=text
-          if (nodeMap.contains("resource-id")) {
-            nodeMap("name") = nodeMap("resource-id").toString
-          }
-          if (nodeMap.contains("text")) {
-            nodeMap("value") = nodeMap("text")
-          }
-          if (nodeMap.contains("content-desc")) {
-            nodeMap("label") = nodeMap("content-desc")
-          }
+
           //为了加速android定位
           if (nodeMap.contains("instance")) {
             nodeMap("instance") = nodeMap("instance")

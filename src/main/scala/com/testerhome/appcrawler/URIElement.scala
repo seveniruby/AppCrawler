@@ -105,9 +105,10 @@ case class URIElement(
     val fileName=new StringBuilder()
     fileName.append(url)
     fileName.append(s".tag=${tag.replace("android.widget.", "").replace("Activity", "")}")
-    if(instance.nonEmpty){
+    //todo: 在滑动的时候容易导致控件识别问题
+    /*if(instance.nonEmpty){
       fileName.append(s".${instance}")
-    }
+    }*/
     if(depth.nonEmpty){
       fileName.append(s".depth=${depth}")
     }

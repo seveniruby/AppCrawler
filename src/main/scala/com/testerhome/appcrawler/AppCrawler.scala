@@ -230,7 +230,14 @@ object AppCrawler extends CommonLog {
           case param if param.nonEmpty => crawlerConf.resultDir = param
           case conf if crawlerConf.resultDir.nonEmpty => log.info("use conf in config file")
           case _ =>
-            crawlerConf.resultDir = s"${startTime}"
+            crawlerConf.resultDir = s"${startTime}_${
+              List(
+                crawlerConf.capability.getOrElse("appPackage", "").toString,
+                crawlerConf.capability.getOrElse("bundleId", "").toString,
+                crawlerConf.capability.getOrElse("app", "").toString.split(File.separator).last,
+                crawlerConf.capability.getOrElse("browserName", "").toString
+              ).filter(_.nonEmpty).head
+            }"
         }
         log.info(s"result directory = ${crawlerConf.resultDir}")
 

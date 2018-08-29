@@ -114,11 +114,11 @@ class URIElementStore {
   }
 
 
-  def isClicked(ele: URIElement): Boolean = {
-    if (elementStore.contains(ele.toString)) {
-      elementStore(ele.toString).action == ElementStatus.Clicked
+  def isClicked(element: URIElement): Boolean = {
+    if (elementStore.contains(element.toString)) {
+      elementStore(element.toString).action == ElementStatus.Clicked
     } else {
-      AppCrawler.log.trace(s"element=${ele} first show, need click")
+      AppCrawler.log.trace(s"element=${element} first show, need click")
       false
     }
   }
