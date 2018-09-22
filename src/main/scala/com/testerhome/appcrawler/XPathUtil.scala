@@ -2,10 +2,13 @@ package com.testerhome.appcrawler
 
 import java.io.{ByteArrayInputStream, StringWriter}
 import java.nio.charset.StandardCharsets
+
 import javax.xml.parsers.{DocumentBuilder, DocumentBuilderFactory}
+import javax.xml.transform.{OutputKeys, TransformerFactory}
+import javax.xml.transform.dom.DOMSource
+import javax.xml.transform.stream.StreamResult
 import javax.xml.xpath.{XPath, XPathConstants, XPathFactory}
 
-import com.sun.org.apache.xml.internal.serialize.{XMLSerializer, OutputFormat}
 
 //import org.apache.xml.serialize.{OutputFormat, XMLSerializer}
 import org.w3c.dom.{Attr, Document, Node, NodeList}
@@ -32,14 +35,20 @@ object XPathUtil extends CommonLog {
 
   def toPrettyXML(raw: String): String = {
     val document = toDocument(raw)
-    val format = new OutputFormat(document); //document is an instance of org.w3c.dom.Document
-    format.setLineWidth(65)
-    format.setIndenting(true)
-    format.setIndent(2)
-    val out = new StringWriter()
-    val serializer = new XMLSerializer(out, format)
-    serializer.serialize(document)
-    out.toString
+    //done: 不支持java10, use Xalan replace
+    val transformerFactory = TransformerFactory.newInstance
+    val transformer = transformerFactory.newTransformer
+    transformer.setOutputProperty(OutputKeys.INDENT, "yes")
+    transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
+    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")
+    val source = new DOMSource(document)
+    val strWriter = new StringWriter
+    val result = new StreamResult(strWriter)
+
+    transformer.transform(source, result)
+
+    return strWriter.getBuffer.toString
+
   }
 
   def setXPathExpr(expr:List[String]): Unit ={

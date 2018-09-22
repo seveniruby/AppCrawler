@@ -1374,6 +1374,10 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
     println(XPathUtil.getNodeListByKey("加载中...", XPathUtil.toDocument(content)))
   }
 
+  test("pretty print"){
+    println(XPathUtil.toPrettyXML("<xml><node><children>1</children><children>2</children></node></xml>"))
+  }
+
 
 
 }
