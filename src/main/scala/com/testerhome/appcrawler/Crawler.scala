@@ -3,7 +3,7 @@ package com.testerhome.appcrawler
 import java.io
 import java.util.Date
 
-import com.testerhome.appcrawler.driver.{AppiumClient, MacacaDriver, ReactWebDriver}
+import com.testerhome.appcrawler.driver.{AppiumClient, MacacaDriver, ReactWebDriver, SeleniumDriver}
 import com.testerhome.appcrawler.plugin.Plugin
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -43,7 +43,7 @@ class Crawler extends CommonLog {
   private var exitCrawl=false
   private var backRetry = 0
   //最大重试次数
-  var backMaxRetry = 5
+  var backMaxRetry = 3
   private var afterAllRetry = 0
   private var notFoundRetry=0
   private var notFoundMax=2
@@ -239,7 +239,13 @@ class Crawler extends CommonLog {
 
     //todo: 主要做遍历测试和异常测试. 所以暂不使用selendroid
     val url=conf.capability("appium").toString
-    conf.capability.getOrElse("automationName", "").toString match {
+    val automationName=conf.capability.getOrElse("automationName", "").toString
+    log.info(automationName)
+    automationName match {
+      case "selenium" => {
+        driver=new SeleniumDriver(url, conf.capability)
+
+      }
       case "macaca" => {
         log.info("use macaca")
         driver=new MacacaDriver(url, conf.capability)

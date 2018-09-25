@@ -22,7 +22,7 @@ class Template {
     val xml=TData.fromJson[Map[String, String]](page).getOrElse("value", "")
       .asInstanceOf[Map[String, String]].getOrElse("tree", "")
     elements("Demo")=ListBuffer[Map[String, Any]]()
-    elements("Demo")++=XPathUtil.getNodeListFromXPath("//*[]", xml)
+    elements("Demo")++=XPathUtil.getNodeListByXPath("//*[]", xml)
 
   }
   def read(path:String): Unit = {
@@ -38,7 +38,7 @@ class Template {
         if (elements.contains(url) == false) {
           elements.put(url, ListBuffer[Map[String, Any]]())
         }
-        elements(url) ++= XPathUtil.getNodeListFromXPath("//*", reqDom)
+        elements(url) ++= XPathUtil.getNodeListByXPath("//*", reqDom)
         val tagsLimit=List("Image", "Button", "Text")
         elements(url) = elements(url)
           .filter(_.getOrElse("visible", "true")=="true")

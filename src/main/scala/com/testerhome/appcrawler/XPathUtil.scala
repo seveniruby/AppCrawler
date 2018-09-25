@@ -21,15 +21,21 @@ import scala.collection.mutable.ListBuffer
   */
 object XPathUtil extends CommonLog {
   var xpathExpr=List("name", "label", "value", "resource-id", "content-desc", "class", "text", "index")
+  val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
+  val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
 
   def toDocument(raw: String): Document = {
-    val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
-    val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
     //todo: appium有bug, 会返回&#非法字符. 需要给appium打补丁
+    //todo: 解决html的兼容问题 SAXParseException: 注释中不允许出现字符串 "--"
     val document: Document = builder.parse(
       new ByteArrayInputStream(
         //todo: 替换可能存在问题
-        raw.replaceAll("[\\x00-\\x1F]", "").replace("&#", xml.Utility.escape("&#")).getBytes(StandardCharsets.UTF_8)))
+        raw.replaceAll("[\\x00-\\x1F]", "")
+          .replaceAll("&[a-z]{4,5};", "")
+          .replace("&#", xml.Utility.escape("&#"))
+          .getBytes(StandardCharsets.UTF_8)
+      )
+    )
     document
   }
 
@@ -184,11 +190,11 @@ object XPathUtil extends CommonLog {
   }
 
 
-  def getNodeListFromXPath(xpath:String, pageDomString: String): List[Map[String, Any]] ={
+  def getNodeListByXPath(xpath:String, pageDomString: String): List[Map[String, Any]] ={
     val pageDom=toDocument(pageDomString)
-    getNodeListFromXPath(xpath, pageDom)
+    getNodeListByXPath(xpath, pageDom)
   }
-  def getNodeListFromXPath(xpath: String, pageDom: Document): List[Map[String, Any]] = {
+  def getNodeListByXPath(xpath: String, pageDom: Document): List[Map[String, Any]] = {
 
     val node=getNodeListFromXML(pageDom, xpath)
 
@@ -208,8 +214,10 @@ object XPathUtil extends CommonLog {
 
           val node = nodeList.item(i)
 
+          //todo: html有label属性会导致label被覆盖
           //支持导出单个字段
-          nodeMap(node.getNodeName) = node.getNodeValue
+          //nodeMap(node.getNodeName) = node.getNodeValue
+
           //获得所有节点属性
           val nodeAttributes = node.getAttributes
           if (nodeAttributes != null) {
@@ -303,17 +311,17 @@ object XPathUtil extends CommonLog {
     key match {
       //xpath
       case xpath if Array("/.*", "\\(.*", "string\\(/.*\\)").exists(xpath.matches(_)) => {
-        getNodeListFromXPath(xpath, currentPageDom)
+        getNodeListByXPath(xpath, currentPageDom)
       }
       case regex if regex.contains(".*") || regex.startsWith("^")  => {
-        getNodeListFromXPath("//*", currentPageDom).filter(m=>{
+        getNodeListByXPath("//*", currentPageDom).filter(m=>{
           m("name").toString.matches(regex) ||
             m("label").toString.matches(regex) ||
             m("value").toString.matches(regex)
         })
       }
       case str: String => {
-        getNodeListFromXPath("//*", currentPageDom).filter(m=>{
+        getNodeListByXPath("//*", currentPageDom).filter(m=>{
           m("name").toString.contains(str) ||
             m("label").toString.contains(str) ||
             m("value").toString.contains(str)

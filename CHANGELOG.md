@@ -12,8 +12,12 @@
 - 支持弱网
 - 支持接口数据入报告
 
-# 2.3.1 [TODO]
-- 合并了androidCapability iosCapability到capability
+# 2.4.0
+- 支持java10
+- 支持selenium
+
+# 2.3.1
+- 合并了androidCapability iosCapability到capability [done]
 - 支持定位加速[完成]
 - 更新到java-client 6.0，坑好多[Done]
 

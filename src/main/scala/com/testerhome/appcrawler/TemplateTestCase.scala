@@ -77,7 +77,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
                       log.debug(existAssert)
                       cp {
                         withClue(s"${existAssert} 不存在\n") {
-                          XPathUtil.getNodeListFromXPath(existAssert, ele.resDom).size should be > 0
+                          XPathUtil.getNodeListByXPath(existAssert, ele.resDom).size should be > 0
                         }
                       }
                     })

@@ -236,7 +236,7 @@ object AppCrawler extends CommonLog {
                 crawlerConf.capability.getOrElse("bundleId", "").toString,
                 crawlerConf.capability.getOrElse("app", "").toString.split(File.separator).last,
                 crawlerConf.capability.getOrElse("browserName", "").toString
-              ).filter(_.nonEmpty).head
+              ).filter(_.nonEmpty).headOption.getOrElse("")
             }"
         }
         log.info(s"result directory = ${crawlerConf.resultDir}")

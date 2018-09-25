@@ -1,7 +1,6 @@
 package com.testerhome.appcrawler.ut
 
-import com.testerhome.appcrawler.{CommonLog, DataObject, URIElement}
-import com.testerhome.appcrawler._
+import com.testerhome.appcrawler.{CommonLog, URIElement, _}
 import org.scalatest.{FunSuite, Matchers}
 
 /**

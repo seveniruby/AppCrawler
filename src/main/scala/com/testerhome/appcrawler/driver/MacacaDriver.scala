@@ -2,15 +2,12 @@ package com.testerhome.appcrawler.driver
 
 import java.awt.{BasicStroke, Color}
 import java.io.File
-import javax.imageio.ImageIO
 
 import com.alibaba.fastjson.JSONObject
-import com.testerhome.appcrawler.{AppCrawler, CommonLog, DataObject, URIElement}
-import com.testerhome.appcrawler._
+import com.testerhome.appcrawler.{URIElement, _}
+import javax.imageio.ImageIO
 import macaca.client.MacacaClient
-import org.apache.log4j.Level
 import org.openqa.selenium.Rectangle
-import org.scalatest.selenium.WebBrowser
 
 import scala.sys.process._
 
@@ -44,14 +41,6 @@ class MacacaDriver extends ReactWebDriver{
     getDeviceInfo
   }
 
-
-  override def stop(): Unit = {
-    appiumProcess.destroy()
-  }
-
-  override def hideKeyboard(): Unit = {
-    //todo:
-  }
 
 
 /*
@@ -197,7 +186,6 @@ class MacacaDriver extends ReactWebDriver{
     currentElement.sendKeys(content)
   }
 
-
-
+  override def launchApp(): Unit = ???
 }
 

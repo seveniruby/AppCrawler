@@ -28,6 +28,7 @@ case class Step(given: List[String]=List[String](),
     times
   }
 
+  //todo: selectedList也支持given结构
   def getGiven(): List[String] ={
     if(given==null){
       List(getXPath())

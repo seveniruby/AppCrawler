@@ -15,10 +15,8 @@ import scala.util.{Failure, Success, Try}
   * Created by seveniruby on 2017/4/17.
   */
 
-//todo: 用标准的class代替
-trait ReactWebDriver extends CommonLog {
-
-  val capabilities = new DesiredCapabilities()
+//todo: 用标准的class代替，用trait会让很多java工程师无法理解。
+abstract class ReactWebDriver extends CommonLog {
 
   var screenWidth = 0
   var screenHeight = 0
@@ -33,21 +31,9 @@ trait ReactWebDriver extends CommonLog {
   var imagesDir="images"
   var platformName=""
 
-  def config(key: String, value: Any): Unit = {
-    capabilities.setCapability(key, value)
-  }
-
-  def stop(): Unit = {
-  }
-
-  def hideKeyboard(): Unit = {
-
-  }
 
 
-  def findElementsByURI(element: URIElement, findBy:String=platformName): List[AnyRef] ={
-    List[AnyRef](element)
-  }
+  def findElementsByURI(element: URIElement, findBy:String=platformName): List[AnyRef]
   def findElementByURI(element: URIElement, findBy:String=platformName): AnyRef= {
     //todo: 用其他定位方式优化
     log.info(s"find by uri element= ${element}")
@@ -80,21 +66,12 @@ trait ReactWebDriver extends CommonLog {
     null
   }
 
-  def getDeviceInfo(): Unit = {
-  }
-
-  def screenshot(): File = { null }
-
+  def getDeviceInfo(): Unit
+  def screenshot(): File
   def back(): Unit = {}
-
   def backApp(): Unit = {}
-  def launchApp(): Unit ={
-
-  }
-
-  def getPageSource(): String ={
-    ""
-  }
+  def launchApp()
+  def getPageSource(): String
 
   def getPageSourceWithRetry(): String = {
     currentPageSource=null
@@ -151,7 +128,7 @@ trait ReactWebDriver extends CommonLog {
     val point=currentURIElement.center()
   }
   def press(sec: Int): this.type = { this }
-  def tap(): this.type = { this }
+  def tap(): this.type
   def click(): this.type = { this }
   def longTap(): this.type = { this }
   def swipe(direction: String): Unit = {
@@ -260,14 +237,10 @@ trait ReactWebDriver extends CommonLog {
   }
 
   def event(keycode: Int): Unit = {}
-  def mark(fileName: String, newImageName:String,  x: Int, y: Int, w: Int, h: Int): Unit = {}
-  def getRect(): Rectangle ={
-    new Rectangle(0, 0, 0, 0)
-  }
+  def mark(fileName: String, newImageName:String,  x: Int, y: Int, w: Int, h: Int): Unit
+  def getRect(): Rectangle
 
-  def sendKeys(content:String): Unit ={
-
-  }
+  def sendKeys(content:String)
 
   def sleep(seconds: Double = 1.0F): Unit = {
     Thread.sleep((seconds * 1000).toInt)

@@ -1,12 +1,6 @@
 package com.testerhome.appcrawler.plugin
 
-import java.io
-
 import com.testerhome.appcrawler.URIElement
-import com.testerhome.appcrawler.DataObject
-import org.apache.commons.io.FileUtils
-
-import scala.reflect.io.File
 
 /**
   * Created by seveniruby on 16/9/25.

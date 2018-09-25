@@ -2,12 +2,13 @@ package com.testerhome.appcrawler
 
 
 import java.io.{File, StringWriter}
+import java.net.URL
 import java.nio.charset.{Charset, StandardCharsets}
 import java.util
 import java.util.Base64
+
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.{XPathConstants, XPathFactory}
-
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -20,7 +21,7 @@ import net.minidev.json.JSONArray
 import org.apache.commons.io.IOUtils
 
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.reflect.ClassTag
 import scala.reflect.ClassTag
 import scala.reflect._
@@ -34,6 +35,7 @@ import scala.collection.JavaConversions._
 import scala.io.Source
 import collection.JavaConverters._
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule
+import org.jsoup.nodes.Entities.EscapeMode
 
 /**
   * Created by seveniruby on 16/8/13.
@@ -93,6 +95,43 @@ object TData {
     //mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
     //mapper.registerModule(DefaultScalaModule)
     mapper.writerWithDefaultPrettyPrinter().withRootName(root).writeValueAsString(data)
+  }
+
+  def toXMLByAttribute(data: Map[String, _]): String ={
+    def loop(m: Map[String, _]): String ={
+      val attributes=ListBuffer[(String, _)]()
+      val children=new mutable.StringBuilder()
+      m.foreach(mm=>{
+        mm match {
+          case (k, vl:List[Map[String, _]]) =>{
+            children.append(vl.map(loop).mkString)
+          }
+          case (k, v) =>{
+            attributes.append(mm)
+          }
+        }
+      })
+      val tag=m.getOrElse("class", "node").toString.toLowerCase
+      if(children.toString().trim.nonEmpty){
+        s"""
+           |<${tag} ${attributes.map(a=> { a._1 + "=\"" + a._2.toString.replaceAllLiterally("\"", "_").replace('&', '_') + "\""}).mkString(" ")}>
+           |  ${children.toString()}
+           |</${tag}>
+        """.stripMargin
+      }else{
+        s"""
+           |<${tag} ${attributes.map(a=> { a._1 + "=\"" + a._2.toString.replaceAllLiterally("\"", "\\\"").replace('&', '_') + "\""}).mkString(" ")} />
+        """.stripMargin
+      }
+    }
+    "<xml>"+ loop(data).trim + "</xml>"
+  }
+
+  def html2xml(data:String):String={
+    val document = Jsoup.parse(data)
+    document.outputSettings.syntax(Document.OutputSettings.Syntax.xml)
+    document.outputSettings.escapeMode(EscapeMode.xhtml)
+    document.toString
   }
 
 

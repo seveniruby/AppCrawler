@@ -103,7 +103,7 @@ case class URIElement(
 
   override def toString: String = {
     val fileName=new StringBuilder()
-    fileName.append(url)
+    fileName.append(url.replace(File.separatorChar, '_'))
     fileName.append(s".tag=${tag.replace("android.widget.", "").replace("Activity", "")}")
     //todo: 在滑动的时候容易导致控件识别问题
     /*if(instance.nonEmpty){

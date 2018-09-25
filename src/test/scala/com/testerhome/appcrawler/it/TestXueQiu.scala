@@ -32,7 +32,6 @@ class TestXueQiu extends FunSuite{
   test("appcrawler xueqiu by default conf"){
     AppCrawler.main(Array(
       "--capability", "appPackage=com.xueqiu.android,appActivity=.view.WelcomeActivityAlias,noReset=false",
-      "-u", "6723",
       "-o", s"/Volumes/ram/xueqiu/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}",
       "--verbose"
     )
@@ -94,6 +93,17 @@ class TestXueQiu extends FunSuite{
     capability.setCapability("appPackage", "com.xueqiu.android")
     capability.setCapability("appActivity", ".view.WelcomeActivityAlias")
     val driver=new AndroidDriver[AndroidElement](new URL("http://127.0.0.1:4723/wd/hub"), capability)
+
+  }
+
+  test("mjpegServerPort"){
+
+    AppCrawler.main(Array(
+      "--capability", "appPackage=com.xueqiu.android,appActivity=.view.WelcomeActivityAlias,mjpegServerPort=1717,mjpegScreenshotUrl=http://127.0.0.1:9002/",
+      "-o", s"/Volumes/ram/xueqiu/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}",
+      "--verbose"
+    )
+    )
 
   }
 

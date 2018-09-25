@@ -17,11 +17,6 @@ import scala.io.Source
   */
 class TestAppium extends FunSuite{
   val a=new AppiumClient()
-  test("appium success"){
-    a.start()
-    println(Source.fromURL("http://127.0.0.1:4723/wd/hub/sessions").mkString)
-    a.stop()
-  }
 
   test("single session"){
     val capa=new DesiredCapabilities()

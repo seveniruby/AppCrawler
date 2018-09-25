@@ -1,12 +1,8 @@
 package com.testerhome.appcrawler.ut
 
-import java.io
-
-import com.testerhome.appcrawler.{CommonLog, DataObject, URIElement}
-import com.testerhome.appcrawler._
+import com.testerhome.appcrawler.{CommonLog, URIElement, _}
 import org.scalatest.{FunSuite, Matchers}
 
-import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 import scala.reflect.io.File

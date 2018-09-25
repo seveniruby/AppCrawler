@@ -57,6 +57,7 @@ class CrawlerConf {
     //ios专属
     Step(xpath="//*[contains(name(), 'Image') and @name!='']"),
     Step(xpath="//*[contains(name(), 'Text') and @name!='' and string-length(@label)<10]"),
+    Step(xpath="//a"),
   )
   /** 优先遍历元素 */
   var firstList = ListBuffer[Step](
