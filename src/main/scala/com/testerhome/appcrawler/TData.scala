@@ -97,30 +97,32 @@ object TData {
     mapper.writerWithDefaultPrettyPrinter().withRootName(root).writeValueAsString(data)
   }
 
-  def toXMLByAttribute(data: Map[String, _]): String ={
+  def toHtml(data: Map[String, _]): String ={
     def loop(m: Map[String, _]): String ={
       val attributes=ListBuffer[(String, _)]()
       val children=new mutable.StringBuilder()
       m.foreach(mm=>{
         mm match {
-          case (k, vl:List[Map[String, _]]) =>{
+          case (k:String, vl:List[Map[String, _]]) =>{
             children.append(vl.map(loop).mkString)
           }
-          case (k, v) =>{
-            attributes.append(mm)
+          case (k:String, v) =>{
+            if(k.equals("tag")==false && k.equals("innerText")==false ) {
+              attributes.append(mm)
+            }
           }
         }
       })
-      val tag=m.getOrElse("class", "node").toString.toLowerCase
+      val tag=m.getOrElse("tag", "node").toString.toLowerCase
       if(children.toString().trim.nonEmpty){
         s"""
-           |<${tag} ${attributes.map(a=> { a._1 + "=\"" + a._2.toString.replaceAllLiterally("\"", "_").replace('&', '_') + "\""}).mkString(" ")}>
+           |<${tag} ${attributes.map(a=> { a._1 + "=\"" + a._2.toString.replaceAllLiterally("\"", "_").replace('&', '_') + "\""}).mkString(" ")} >
            |  ${children.toString()}
            |</${tag}>
         """.stripMargin
       }else{
         s"""
-           |<${tag} ${attributes.map(a=> { a._1 + "=\"" + a._2.toString.replaceAllLiterally("\"", "\\\"").replace('&', '_') + "\""}).mkString(" ")} />
+           |<${tag} ${attributes.map(a=> { a._1 + "=\"" + a._2.toString.replaceAllLiterally("\"", "\\\"").replace('&', '_') + "\""}).mkString(" ")} ><![CDATA[${m.getOrElse("innerText", "").toString.trim}]]></${tag}>
         """.stripMargin
       }
     }

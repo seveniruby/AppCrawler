@@ -27,6 +27,7 @@ object XPathUtil extends CommonLog {
   def toDocument(raw: String): Document = {
     //todo: appium有bug, 会返回&#非法字符. 需要给appium打补丁
     //todo: 解决html的兼容问题 SAXParseException: 注释中不允许出现字符串 "--"
+    log.trace(raw)
     val document: Document = builder.parse(
       new ByteArrayInputStream(
         //todo: 替换可能存在问题
@@ -67,7 +68,9 @@ object XPathUtil extends CommonLog {
     * @return
     */
   def getXPathFromAttributes(attributes: ListBuffer[Map[String, String]]): String = {
+    var index = attributes.size
     var xpath = attributes.map(attribute => {
+      index-=1
       var newAttribute = attribute
       //如果有值就不需要path了, 基本上两层xpath定位即可唯一
       xpathExpr.foreach(key => {
@@ -87,12 +90,26 @@ object XPathUtil extends CommonLog {
         newAttribute = newAttribute - "resource-id"
       }
 
+      var tag="*"
       var xpathSingle = newAttribute.map(kv => {
         //todo: appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
         //todo: 需要帮appium打补丁
 
         kv._1 match {
-          case "tag" => ""
+          case "tag" => {
+            if(xpathExpr.contains("tag")){
+              tag=kv._2
+            }
+            ""
+          }
+          case "innerText" => {
+            if(xpathExpr.contains("innerText") && index==0 ){
+              s"text()=" + "\"" + kv._2.trim.take(20).replace("\"", "\\\"") + "\""
+            }else{
+              ""
+            }
+
+          }
           //case "index" => ""
           case "name" if kv._2.size>50 => ""
             //todo: 优化长文本的展示
@@ -112,7 +129,7 @@ object XPathUtil extends CommonLog {
         //s"/${attribute.getOrElse("class", attribute.getOrElse("tag", "*"))}"
         ""
       } else {
-        s"//*[${xpathSingle}]"
+        s"//${tag}[${xpathSingle}]"
       }
       xpathSingle
     }
@@ -133,6 +150,7 @@ object XPathUtil extends CommonLog {
           attributeMap ++= Map(kv.getName -> kv.getValue)
         })
         attributeMap ++= Map("tag" -> node.getNodeName)
+        attributeMap ++= Map("innerText" -> node.getTextContent.trim)
         attributesList += attributeMap
       }
 
@@ -168,12 +186,6 @@ object XPathUtil extends CommonLog {
       }
     })
     b
-  }
-
-
-  def getNodeListFromXML(raw:String, xpath:String): AnyRef ={
-    val pageDom=toDocument(raw)
-    getNodeListFromXML(pageDom, xpath)
   }
 
   def getNodeListFromXML(pageDom:Document, xpath:String): AnyRef ={
@@ -242,6 +254,9 @@ object XPathUtil extends CommonLog {
           }
           if (nodeMap.contains("content-desc")) {
             nodeMap("label") = nodeMap("content-desc")
+          }
+          if (nodeMap.contains("innerText")) {
+            nodeMap("text") = nodeMap("innerText")
           }
 
 

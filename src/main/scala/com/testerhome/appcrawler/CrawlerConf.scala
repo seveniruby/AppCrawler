@@ -79,7 +79,11 @@ class CrawlerConf {
   )
 
   //自动生成的xpath表达式里可以包含的匹配属
-  var xpathAttributes = List("name", "label", "value", "resource-id", "content-desc", "instance", "text")
+  var xpathAttributes = List(
+    "name", "label", "value",
+    "resource-id", "content-desc", "instance", "text",
+    "id", "name", "class", "innerText"
+  )
   /** 先按照深度depth排序，再按照list排序，最后按照selected排序。后排序是优先级别最高的 */
   var sortByAttribute = List("depth", "list", "selected")
   //可选 default|android|id|xpath，默认状态会自动判断是否使用android定位或者ios定位

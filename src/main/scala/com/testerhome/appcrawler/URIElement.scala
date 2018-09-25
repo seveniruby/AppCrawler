@@ -64,10 +64,10 @@ case class URIElement(
     this.instance = nodeMap.getOrElse("instance", "").toString
     this.depth = nodeMap.getOrElse("depth", "").toString
     this.xpath = nodeMap.getOrElse("xpath", "").toString
-    this.x=nodeMap.getOrElse("x", "0").toString.toInt
-    this.y=nodeMap.getOrElse("y", "0").toString.toInt
-    this.width=nodeMap.getOrElse("width", "0").toString.toInt
-    this.height=nodeMap.getOrElse("height", "0").toString.toInt
+    this.x=nodeMap.getOrElse("x", "0").toString.toDouble.toInt
+    this.y=nodeMap.getOrElse("y", "0").toString.toDouble.toInt
+    this.width=nodeMap.getOrElse("width", "0").toString.toDouble.toInt
+    this.height=nodeMap.getOrElse("height", "0").toString.toDouble.toInt
     this.ancestor=nodeMap.getOrElse("ancestor", "").toString
     this.selected=nodeMap.getOrElse("selected", "false").toString
     this.valid=nodeMap.getOrElse("valid", "true").toString

@@ -2091,13 +2091,13 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
     val m=TData.from(json)
     log.info(m)
 
-    val content=TData.toXMLByAttribute(m)
+    val content=TData.toHtml(m)
     log.info("content")
     log.info(content)
 
     val dom=XPathUtil.toDocument(content)
 
-    println(XPathUtil.getNodeListByXPath("//*[@class='A']", dom))
+    println(XPathUtil.getNodeListByXPath("//a", dom))
 
   }
 
@@ -2105,6 +2105,24 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
   test("xml"){
     val xml=Source.fromFile("/tmp/4").mkString
     XPathUtil.toDocument(xml)
+  }
+
+  test("getAttributesFromNode"){
+    val nodes=XPathUtil.getNodeListFromXML(
+      XPathUtil.toDocument(
+        Source.fromFile("src/test/scala/com/testerhome/appcrawler/ut/html.xml").mkString
+      ), "//a"
+    ).asInstanceOf[NodeList]
+    0 until nodes.getLength foreach(i=>{
+      val attributes=XPathUtil.getAttributesFromNode(nodes.item(i))
+      log.info(attributes)
+      XPathUtil.xpathExpr=List("class", "name", "id", "tag", "innerText")
+      log.info(XPathUtil.xpathExpr)
+      val xpath=XPathUtil.getXPathFromAttributes(attributes)
+      log.info(xpath)
+
+    })
+
   }
 
 
