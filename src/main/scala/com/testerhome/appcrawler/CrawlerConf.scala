@@ -82,7 +82,7 @@ class CrawlerConf {
   var xpathAttributes = List(
     "name", "label", "value",
     "resource-id", "content-desc", "instance", "text",
-    "id", "name", "class", "innerText"
+    "id", "name", "class", "innerText", "tag"
   )
   /** 先按照深度depth排序，再按照list排序，最后按照selected排序。后排序是优先级别最高的 */
   var sortByAttribute = List("depth", "list", "selected")

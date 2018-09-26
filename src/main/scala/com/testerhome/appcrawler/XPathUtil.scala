@@ -104,7 +104,7 @@ object XPathUtil extends CommonLog {
           }
           case "innerText" => {
             if(xpathExpr.contains("innerText") && index==0 ){
-              s"text()=" + "\"" + kv._2.trim.take(20).replace("\"", "\\\"") + "\""
+              s"contains(text()," + "'" + kv._2.trim.take(20).replace("\"", "\\\"") + "')"
             }else{
               ""
             }
@@ -118,7 +118,7 @@ object XPathUtil extends CommonLog {
             log.trace(newAttribute)
             ""
           }
-          case key if xpathExpr.contains(key) && kv._2.nonEmpty => s"@${kv._1}=" + "\"" + kv._2.replace("\"", "\\\"") + "\""
+          case key if xpathExpr.contains(key) && kv._2.nonEmpty => s"@${kv._1}=" + "'" + kv._2.replace("\"", "\\\"") + "'"
           case _ => ""
         }
       }).filter(x => x.nonEmpty).mkString(" and ")
@@ -242,21 +242,32 @@ object XPathUtil extends CommonLog {
 
           //如果node为.可能会异常. 不过目前不会
           nodeMap("tag") = node.getNodeName
+          nodeMap("innerText")=node.getTextContent.trim
 
           //todo: 支持selendroid
           //如果是android 转化为和iOS相同的结构
           //name=resource-id label=content-desc value=text
           if (nodeMap.contains("resource-id")) {
             nodeMap("name") = nodeMap("resource-id").toString
+            if (nodeMap.contains("text")) {
+              nodeMap("value") = nodeMap("text")
+            }
+            if (nodeMap.contains("content-desc")) {
+              nodeMap("label") = nodeMap("content-desc")
+            }
+
           }
-          if (nodeMap.contains("text")) {
-            nodeMap("value") = nodeMap("text")
-          }
-          if (nodeMap.contains("content-desc")) {
-            nodeMap("label") = nodeMap("content-desc")
-          }
+
+          //selenium
+
           if (nodeMap.contains("innerText")) {
-            nodeMap("text") = nodeMap("innerText")
+            nodeMap("value") = nodeMap("innerText")
+            if (nodeMap.contains("name")) {
+              nodeMap("label") = nodeMap("name")
+            }
+            if (nodeMap.contains("id")) {
+              nodeMap("name") = nodeMap("id")
+            }
           }
 
 
