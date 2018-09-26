@@ -1,6 +1,6 @@
 package com.testerhome.appcrawler
 
-import java.io.{ByteArrayInputStream, StringWriter}
+import java.io.{ByteArrayInputStream, StringReader, StringWriter}
 import java.nio.charset.StandardCharsets
 
 import javax.xml.parsers.{DocumentBuilder, DocumentBuilderFactory}
@@ -8,6 +8,10 @@ import javax.xml.transform.{OutputKeys, TransformerFactory}
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 import javax.xml.xpath.{XPath, XPathConstants, XPathFactory}
+import org.apache.tools.ant.types.resources.Files
+import org.xml.sax.InputSource
+
+import scala.reflect.io.File
 
 
 //import org.apache.xml.serialize.{OutputFormat, XMLSerializer}
@@ -27,17 +31,20 @@ object XPathUtil extends CommonLog {
   def toDocument(raw: String): Document = {
     //todo: appium有bug, 会返回&#非法字符. 需要给appium打补丁
     //todo: 解决html的兼容问题 SAXParseException: 注释中不允许出现字符串 "--"
-    log.trace(raw)
-    val document: Document = builder.parse(
-      new ByteArrayInputStream(
-        //todo: 替换可能存在问题
-        raw.replaceAll("[\\x00-\\x1F]", "")
-          .replaceAll("&[a-z]{4,5};", "")
-          .replace("&#", xml.Utility.escape("&#"))
-          .getBytes(StandardCharsets.UTF_8)
-      )
-    )
-    document
+    val rawFormat=raw.replaceAll("[\\x00-\\x1F]", "")
+        .replaceAll("&", "_")
+    try {
+      val document: Document = builder.parse(
+        new InputSource(
+          new StringReader(rawFormat)))
+      document
+    }catch{
+      case ex:Exception => {
+        log.error(rawFormat)
+        scala.reflect.io.File("/tmp/1.xml").writeAll(rawFormat)
+        throw ex
+      }
+    }
   }
 
   def toPrettyXML(raw: String): String = {

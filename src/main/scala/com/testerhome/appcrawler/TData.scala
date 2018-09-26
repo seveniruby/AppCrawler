@@ -107,7 +107,11 @@ object TData {
             children.append(vl.map(loop).mkString)
           }
           case (k:String, v) =>{
-            if(k.equals("tag")==false && k.equals("innerText")==false ) {
+            if(k.equals("tag")==false
+              && k.equals("innerText")==false
+              && k.equals("alt") ==false
+              && k.equals("title") == false
+              && k.equals("\"")==false) {
               attributes.append(mm)
             }
           }
@@ -122,7 +126,7 @@ object TData {
         """.stripMargin
       }else{
         s"""
-           |<${tag} ${attributes.map(a=> { a._1 + "=\"" + a._2.toString.replaceAllLiterally("\"", "\\\"").replace('&', '_') + "\""}).mkString(" ")} ><![CDATA[${m.getOrElse("innerText", "").toString.trim}]]></${tag}>
+           |<${tag} ${attributes.map(a=> { a._1 + "=\"" + a._2.toString.replaceAllLiterally("\"", "_").replace('&', '_') + "\""}).mkString(" ")} ><![CDATA[${m.getOrElse("innerText", "").toString.trim}]]></${tag}>
         """.stripMargin
       }
     }
