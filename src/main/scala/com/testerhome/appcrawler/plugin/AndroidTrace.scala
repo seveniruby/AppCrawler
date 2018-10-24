@@ -1,3 +1,4 @@
+/*
 package com.testerhome.appcrawler.plugin
 
 import com.sun.jdi.event._
@@ -149,3 +150,4 @@ class AndroidTrace extends CommonLog {
   }
 
 }
+*/

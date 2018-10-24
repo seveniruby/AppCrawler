@@ -71,12 +71,12 @@ class Crawler extends CommonLog {
     defaultPlugins.foreach(name => pluginClasses.append(Class.forName(name).newInstance().asInstanceOf[Plugin]))
 
     //todo: 暂时禁用，很多人不会用
-/*    conf.pluginList.foreach(name => {
+    conf.pluginList.foreach(name => {
       if (defaultPlugins.forall(_ != name)) {
         log.info(s"load com.testerhome.appcrawler.plugin $name")
         pluginClasses.append(Class.forName(name).newInstance().asInstanceOf[Plugin])
       }
-    })*/
+    })
 
 /*    //todo: 放到根目录有bug. 需要解决
 //todo: 暂时禁用，用的人太少
