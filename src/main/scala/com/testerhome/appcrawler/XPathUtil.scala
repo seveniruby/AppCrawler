@@ -231,7 +231,11 @@ object XPathUtil extends CommonLog {
           nodeMap("width")="0"
           nodeMap("height")="0"
 
+
           val node = nodeList.item(i)
+          //如果node为.可能会异常. 不过目前不会
+          nodeMap("tag") = node.getNodeName
+          nodeMap("innerText") = node.getTextContent.trim
 
           //todo: html有label属性会导致label被覆盖
           //支持导出单个字段
@@ -246,10 +250,6 @@ object XPathUtil extends CommonLog {
             })
           }
 
-
-          //如果node为.可能会异常. 不过目前不会
-          nodeMap("tag") = node.getNodeName
-          nodeMap("innerText")=node.getTextContent.trim
 
           //todo: 支持selendroid
           //如果是android 转化为和iOS相同的结构
@@ -266,15 +266,14 @@ object XPathUtil extends CommonLog {
           }
 
           //selenium
-
-          if (nodeMap.contains("innerText")) {
-            nodeMap("value") = nodeMap("innerText")
-            if (nodeMap.contains("name")) {
-              nodeMap("label") = nodeMap("name")
-            }
+          if (nodeMap.contains("href")) {
             if (nodeMap.contains("id")) {
               nodeMap("name") = nodeMap("id")
             }
+            if (nodeMap.contains("name")) {
+              nodeMap("label") = nodeMap("name")
+            }
+            nodeMap("value") = nodeMap("innerText")
           }
 
 

@@ -122,7 +122,7 @@ case class URIElement(
       fileName.append(s".text=${ StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")}")
     }
 
-    fileName.toString().take(100)
+    fileName.toString()
   }
 
 

@@ -62,7 +62,7 @@ class AppiumClient extends SeleniumDriver {
 
     getDeviceInfo()
     log.info(s"capture dir = ${new File(".").getAbsolutePath}")
-    driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
+    //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
 
   }
 

@@ -198,7 +198,9 @@ object AppCrawler extends CommonLog {
         //合并capability, 命令行>特定平台的capability>通用capability
         crawlerConf.capability ++= config.capability
         //避免有人误删微信聊天记录
-        crawlerConf.capability ++= Map("noReset"->"true")
+        if(crawlerConf.capability.contains("noReset")==false) {
+          crawlerConf.capability ++= Map("noReset" -> "true")
+        }
 
         //设定app
         if(config.app.nonEmpty){

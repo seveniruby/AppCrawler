@@ -922,7 +922,7 @@ class Crawler extends CommonLog {
   def getBasePathName(right:Int=1): String = {
     //序号_文件名
     val element=store.clickedElementsList.takeRight(right).head
-    s"${conf.resultDir}/${store.clickedElementsList.size-right}_" + element.toString()
+    s"${conf.resultDir}/${store.clickedElementsList.size-right}_" + element.toString().take(100)
   }
 
   def saveDom(): Unit = {
@@ -1000,7 +1000,7 @@ class Crawler extends CommonLog {
     log.info(s"current element = ${element}")
     log.info(s"current url = ${element.url}")
     log.info(s"current tag path = ${element.getAncestor()}")
-    log.info(s"current file name = ${element.toString()}")
+    log.info(s"current file name = ${element.toString().take(100)}")
 
     store.saveReqHash(contentHash.last().toString)
     store.saveReqImg(getBasePathName() + ".click.png")

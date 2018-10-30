@@ -42,7 +42,7 @@ class CrawlerConf {
   var testcase = ReactTestCase(
     name = "TesterHome AppCrawler",
     steps = List[Step](
-      Step(xpath = "//*", action = "Thread.sleep(3000)")
+      Step(xpath = "//*", action = "Thread.sleep(1000)")
     )
   )
 
