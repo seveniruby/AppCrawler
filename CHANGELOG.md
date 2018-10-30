@@ -1,6 +1,5 @@
 # 3.0.0 [TODO]
 - 支持从历史数据中寻找最优点击路径
-- 支持web
 - 支持游戏app遍历
 - 支持wetest和mqc
 - 改进appium
@@ -12,9 +11,14 @@
 - 支持弱网
 - 支持接口数据入报告
 
+# 2.5.0 [TODO]
+- 支持accessibility service
+- 支持rpc dubbo json-rpc
+- 支持云插件
+
 # 2.4.0
-- 支持java10
-- 支持selenium
+- 支持java10 [done]
+- 支持selenium [done]
 
 # 2.3.1
 - 合并了androidCapability iosCapability到capability [done]
@@ -30,7 +34,7 @@
 - 增强assert配置的模型，与testcase保持一致，只设置given then即可
 - 修复iOS backButton的bug
 - 减少getCurrentActivy api调用，会导致appium不稳定
-- 修复swipe，这个api让然不稳定，moveTo是终点位置
+- 修复swipe，这个api仍然不稳定，moveTo是终点位置
 - 增加restartOnError命令
 
 
