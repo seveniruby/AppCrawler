@@ -39,5 +39,18 @@ class TestAppium extends FunSuite{
     println(driver.getPageSource)
   }
 
+  test("test xueqiu agreen"){
+    val capa=new DesiredCapabilities()
+    capa.setCapability(AndroidMobileCapabilityType.APP_PACKAGE, "com.xueqiu.android")
+    capa.setCapability(AndroidMobileCapabilityType.APP_ACTIVITY, ".view.WelcomeActivityAlias")
+    capa.setCapability(MobileCapabilityType.DEVICE_NAME, "demo")
+    capa.setCapability("uiautomationName", "uiautomator2")
+    val driver=new AndroidDriver[WebElement](new URL("http://127.0.0.1:4723/wd/hub/"), capa)
+    driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS)
+    driver.findElementById("agree").click()
+    println(driver.getPageSource)
+    println(driver.getPageSource)
+  }
+
 
 }

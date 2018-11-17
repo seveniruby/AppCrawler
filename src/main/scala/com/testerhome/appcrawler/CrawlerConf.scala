@@ -58,6 +58,11 @@ class CrawlerConf {
     Step(xpath="//*[contains(name(), 'Image') and @name!='']"),
     Step(xpath="//*[contains(name(), 'Text') and @name!='' and string-length(@label)<10]"),
     Step(xpath="//a"),
+    //adb
+    Step(xpath="//*[contains(@class, 'Text') and @clickable='true' and string-length(@text)<10]"),
+    Step(xpath="//*[@clickable='true']/*[contains(@class, 'Text') and string-length(@text)<10]"),
+    Step(xpath="//*[contains(@class, 'Image') and @clickable='true']"),
+    Step(xpath="//*[@clickable='true']/*[contains(@class, 'Image')]"),
   )
   /** 优先遍历元素 */
   var firstList = ListBuffer[Step](
@@ -111,7 +116,7 @@ class CrawlerConf {
   )
   var afterElement = ListBuffer[Step]()
   /**在执行action后等待多少毫秒进行刷新*/
-  var afterElementWait=500
+  var afterElementWait=1000
   /**是否需要刷新或者滑动*/
   var afterAll = ListBuffer[Step]()
   //afterPage执行多少次后才不执行，比如连续滑动2次都没新元素即取消
@@ -168,7 +173,7 @@ class CrawlerConf {
     mapper.readValue(fileName, classOf[CrawlerConf])
   }
 
-  def loadYaml(content: String): Unit = {
+  def loadYaml(content: String): CrawlerConf = {
     val mapper = new ObjectMapper(new YAMLFactory())
     mapper.registerModule(DefaultScalaModule)
     mapper.readValue(content, classOf[CrawlerConf])

@@ -25,6 +25,7 @@ trait Report extends CommonLog {
     val path = new java.io.File(resultDir).getCanonicalPath
 
     val suites = store.elementStore.map(x => x._2.element.url).toList.distinct
+    var index=0
     suites.foreach(suite => {
       log.info(s"gen testcase class ${suite}")
       //todo: 基于规则的多次点击事件只会被保存到一个状态中. 需要区分

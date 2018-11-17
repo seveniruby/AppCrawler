@@ -11,12 +11,18 @@
 - 支持弱网
 - 支持接口数据入报告
 
-# 2.5.0 [TODO]
+# 2.6.0 [TODO]
 - 支持accessibility service
 - 支持rpc dubbo json-rpc
 - 支持云插件
+- 改进appium的Uiautomator2的性能与bug
 
-# 2.4.0
+# 2.5
+- 支持android native adb遍历 [done]
+- 简化遍历逻辑
+- 支持根据属性排序遍历
+
+# 2.4
 - 支持java10 [done]
 - 支持selenium [done]
 

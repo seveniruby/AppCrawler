@@ -10,7 +10,7 @@ import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
 import io.appium.java_client.touch.offset.{ElementOption, PointOption}
 import io.appium.java_client.touch.{LongPressOptions, TapOptions}
-import io.appium.java_client.{AppiumDriver, MobileElement, TouchAction}
+import io.appium.java_client.{AppiumDriver, MobileElement, Setting, TouchAction}
 
 import scala.collection.JavaConverters._
 
@@ -45,6 +45,7 @@ class AppiumClient extends SeleniumDriver {
         platformName="Android"
         config("platformName", platformName)
         androidDriver = new AndroidDriver[MobileElement](new URL(url), capabilities)
+        androidDriver.setSetting(Setting.WAIT_FOR_IDLE_TIMEOUT, 2000)
         appiumDriver=androidDriver
         driver=appiumDriver
       }

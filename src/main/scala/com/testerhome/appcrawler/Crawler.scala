@@ -3,7 +3,7 @@ package com.testerhome.appcrawler
 import java.io
 import java.util.Date
 
-import com.testerhome.appcrawler.driver.{AppiumClient, MacacaDriver, ReactWebDriver, SeleniumDriver}
+import com.testerhome.appcrawler.driver._
 import com.testerhome.appcrawler.plugin.Plugin
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -249,6 +249,10 @@ class Crawler extends CommonLog {
       case "macaca" => {
         log.info("use macaca")
         driver=new MacacaDriver(url, conf.capability)
+      }
+      case "adb" => {
+        log.info("user adb")
+        driver=new AdbDriver(url, conf.capability)
       }
         //todo: 支持图片
         //todo: 支持web、windows、mac
@@ -691,6 +695,7 @@ class Crawler extends CommonLog {
   }
 
   def afterElementAction(element: URIElement): Unit = {
+    log.info(s"action=${getElementAction()}")
     getElementAction() match {
       case "back"  | "backApp" => {backRetry += 1}
       case nonAfter if nonAfter!="after" => { backRetry = 0 }
@@ -759,6 +764,7 @@ class Crawler extends CommonLog {
   @tailrec
   final def crawl(): Unit = {
     if(exitCrawl==true){
+      log.info("exitCrawl=true, return")
       return
     }
     log.info("\n\ncrawl next")
@@ -786,7 +792,9 @@ class Crawler extends CommonLog {
         }
         //todo: 调整taglimit的配额
       }
-      case _ => {}
+      case _ => {
+        log.error("should not be invoked")
+      }
     }
 
     //判断下一步动作
@@ -854,12 +862,12 @@ class Crawler extends CommonLog {
           if (conf.afterAll != null) {
             val isMatch=conf.afterAll.exists(step=>step.getGiven().forall(g=>driver.getNodeListByKey(g).size>0))
             if(isMatch==false) {
-              log.info("not match afterUrlFinish")
+              log.info("not match afterAll")
               nextElement = getBackButton()
             }else if(isMatch==true && afterAllRetry<conf.afterAllMax) {
-              log.info("match afterUrlFinish")
-              nextElement = Some(URIElement(url=s"${currentUrl}", tag="", id="afterUrlFinished",
-                xpath=s"afterUrlFinished-${appNameRecord.last()}-${store.clickedElementsList.size}"))
+              log.info("match afterAll")
+              nextElement = Some(URIElement(url=s"${currentUrl}", tag="", id="afterAll",
+                xpath=s"afterAll-${appNameRecord.last()}-${store.clickedElementsList.size}"))
               setElementAction("after")
               afterAllRetry += 1
               log.info(s"afterAll=${afterAllRetry}")
@@ -938,7 +946,7 @@ class Crawler extends CommonLog {
         log.error(s"save to ${domPath} error")
         log.error(e.getMessage)
         log.error(e.getCause)
-        log.error(e.getStackTrace)
+        log.error(e.getStackTrace.mkString)
       }
     }
   }
@@ -1048,7 +1056,7 @@ class Crawler extends CommonLog {
             }
           })
         }else{
-          log.warn("no afterUrlFinish, do not use after")
+          log.warn("no afterAll, do not use after")
         }
       }
 /*      case "monkey" => {

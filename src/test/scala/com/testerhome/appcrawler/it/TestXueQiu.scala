@@ -67,8 +67,16 @@ class TestXueQiu extends FunSuite{
 
   test("test default crawler"){
     AppCrawler.main(Array(
-      "--capability", "appPackage=com.xueqiu.android,appActivity=.view.WelcomeActivityAlias,dontStopAppOnReset=true",
-      "-o", s"/tmp/xueqiu/${System.currentTimeMillis()}", "--verbose"
+      "--capability",
+      "appPackage=com.xueqiu.android," +
+        "appActivity=.view.WelcomeActivityAlias," +
+        "noReset=false," +
+        "automationName=uiautomator2",
+      "-o",
+      s"/Volumes/ram/xueqiu/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}",
+      "-y",
+      "blackList: [ {xpath: action_night}, {xpath: action_setting}, {xpath: '.*[0-9\\.]{2}.*'} ]",
+      "--verbose"
     )
     )
   }

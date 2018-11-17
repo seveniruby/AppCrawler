@@ -72,18 +72,15 @@ class URIElementStore {
 
   def saveReqDom(dom: String = ""): Unit = {
     val head = clickedElementsList.last.toString
-    if(elementStore(head).reqDom.isEmpty){
-      AppCrawler.log.info(s"save reqDom to ${clickedElementsList.size-1}")
-      elementStore(head).reqDom=dom
-    }
+    AppCrawler.log.info(s"save reqDom to ${clickedElementsList.size-1}")
+    elementStore(head).reqDom=dom
   }
 
+  //todo: 去掉req和res的单独存储，改用链表查询
   def saveResDom(dom: String = ""): Unit = {
     val head = clickedElementsList.last.toString
-    if(elementStore(head).resDom.isEmpty){
-      AppCrawler.log.info(s"save resDom to ${clickedElementsList.size-1}")
-      elementStore(head).resDom=dom
-    }
+    AppCrawler.log.info(s"save resDom to ${clickedElementsList.size-1}")
+    elementStore(head).resDom=dom
   }
 
   def saveReqImg(imgName:String): Unit = {

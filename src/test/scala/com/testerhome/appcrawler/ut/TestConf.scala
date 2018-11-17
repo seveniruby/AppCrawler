@@ -51,4 +51,10 @@ class TestConf extends FunSuite with CommonLog with Matchers{
 
   }
 
+  test("one line yaml"){
+    val conf=new CrawlerConf().loadYaml("blackList: [ {xpath: action_night}, {xpath: action_setting} ]")
+    println(conf.selectedList)
+    println(conf.blackList)
+  }
+
 }

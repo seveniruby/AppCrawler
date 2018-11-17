@@ -94,20 +94,26 @@ abstract class ReactWebDriver extends CommonLog {
               log.info("xml format ")
               xml
             }
+            case text:String => {
+              log.error("page source format not support")
+              log.error(text)
+              text
+            }
           }
           Try(XPathUtil.toDocument(xmlStr)) match {
             case Success(v) => {
               currentPageDom = v
+              currentPageSource = XPathUtil.toPrettyXML(xmlStr)
+              return currentPageSource
             }
             case Failure(e) => {
               log.warn("convert to xml fail")
               log.warn(xmlStr)
-              currentPageDom=null
+              currentPageDom = null
+              currentPageSource = null
             }
           }
 
-          currentPageSource = XPathUtil.toPrettyXML(xmlStr)
-          return currentPageSource
         }
         case Right(e) => {
           errorCount+=1
@@ -115,13 +121,10 @@ abstract class ReactWebDriver extends CommonLog {
           error=e
         }
       }
+      log.warn(s"retry ${i} times")
+      Thread.sleep(5000)
     })
-    if(currentPageSource==null){
-      throw error
-    }else{
-      currentPageSource
-    }
-
+    currentPageSource
   }
 
   def clickLocation(): Unit = {

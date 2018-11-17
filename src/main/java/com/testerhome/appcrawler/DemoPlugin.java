@@ -12,7 +12,6 @@ public class DemoPlugin extends Plugin {
     @Override
     public void beforeElementAction(URIElement element) {
         log().info(element);
-        log().debug(element.id());
 
     }
 }

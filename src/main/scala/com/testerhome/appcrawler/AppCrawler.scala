@@ -18,12 +18,13 @@ object AppCrawler extends CommonLog {
   val banner=
     """
       |----------------
-      |AppCrawler 2.4.1 [霍格沃兹测试学院特别纪念版]
+      |AppCrawler 2.4.2 [霍格沃兹测试学院特别纪念版]
       |Appium 1.8.1 Java8 tested, author: seveniruby 思寒
       |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
       |项目地址: https://github.com/seveniruby/AppCrawler
       |移动测试技术交流: https://testerhome.com
       |视频教程: https://ke.qq.com/course/271076
+      |维护者：seveniruby 霍格沃兹测试学院 北邮
       |致谢: 晓光 泉龙 杨榕 恒温 mikezhou yaming116 沐木
       |
       |--------------------------------
@@ -49,7 +50,9 @@ object AppCrawler extends CommonLog {
                     diff: Boolean = false,
                     template: String = "",
                     demo:Boolean=false,
-                    capability: Map[String, String] = Map[String, String]()
+                    capability: Map[String, String] = Map[String, String](),
+                    yaml: String = ""
+
                   )
 
 
@@ -125,6 +128,9 @@ object AppCrawler extends CommonLog {
       opt[Map[String, String]]("capability") valueName ("k1=v1,k2=v2...") action { (x, c) =>
         c.copy(capability = x)
       } text ("appium capability选项, 这个参数会覆盖-c指定的配置模板参数, 用于在模板配置之上的参数微调")
+      opt[String]('y', "yaml") action { (x, c) =>
+        c.copy(yaml = x)
+      } text ("代表配置的yaml语法，比如blackList: [ {xpath: action_night } ]，用于避免使用配置文件的情况")
       opt[String]('r', "report") action { (x, c) =>
         c.copy(report = x)
       } text ("输出html和xml报告")
@@ -152,11 +158,11 @@ object AppCrawler extends CommonLog {
           |appcrawler -a xueqiu.apk
           |appcrawler -a xueqiu.apk --capability noReset=true
           |appcrawler -c conf/xueqiu.json -p android -o result/
-          |appcrawler -c xueqiu.json --capability udid=[你的udid] -a Snowball.app
-          |appcrawler -c xueqiu.json -a Snowball.app -u 4730
-          |appcrawler -c xueqiu.json -a Snowball.app -u http://127.0.0.1:4730/wd/hub
+          |appcrawler -c xueqiu.yaml --capability udid=[你的udid] -a Snowball.app
+          |appcrawler -c xueqiu.yaml -a Snowball.app -u 4730
+          |appcrawler -c xueqiu.yaml -a Snowball.app -u http://127.0.0.1:4730/wd/hub
           |
-          |#生成demo例子
+          |#生成demo配置文件到当前目录下的demo.yaml
           |appcrawler --demo
           |
           |#启动已经安装过的app
@@ -193,6 +199,8 @@ object AppCrawler extends CommonLog {
         if (config.conf.isFile) {
           log.info(s"Find Conf ${config.conf.getAbsolutePath}")
           crawlerConf = crawlerConf.load(config.conf).get
+        }else if(config.yaml.nonEmpty){
+          crawlerConf = crawlerConf.loadYaml(config.yaml)
         }
 
         //合并capability, 命令行>特定平台的capability>通用capability
@@ -222,11 +230,11 @@ object AppCrawler extends CommonLog {
             }
           }
         }
-        log.info(s"appium address = ${crawlerConf.capability.get("appium")}")
 
         if (config.maxTime > 0) {
           crawlerConf.maxTime = config.maxTime
         }
+
 
         config.resultDir match {
           case param if param.nonEmpty => crawlerConf.resultDir = param
