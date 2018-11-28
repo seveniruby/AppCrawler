@@ -19,7 +19,14 @@ class TagLimitPlugin extends Plugin {
   }
 
   //fixed: conf.tagLimit未生效
-  override def beforeElementAction(element: URIElement): Unit = {
+  override def fixElementAction(element: URIElement): Unit = {
+    if(element.action.startsWith("_")){
+      //非普通元素点击事件，不需要统计，比如back backApp 等
+      return
+    }
+    if(getCrawler().conf.backButton.map(_.xpath).contains(element.xpath)){
+      return
+    }
     currentKey =getAncestor(element)
     if (!tagLimit.contains(currentKey)) {
       //应用定制化的规则
@@ -43,7 +50,7 @@ class TagLimitPlugin extends Plugin {
     log.info(s"tagLimit[${currentKey}]=${tagLimit(currentKey)}")
     //如果达到限制次数就退出
     if (currentKey.nonEmpty && tagLimit(currentKey) <= 0) {
-      getCrawler().setElementAction("skip")
+      element.action="_skip"
       log.info(s"$element need skip")
     }
   }
@@ -63,11 +70,6 @@ class TagLimitPlugin extends Plugin {
 
   def getAncestor(element: URIElement): String ={
     getCrawler().currentUrl + element.getAncestor()
-  }
-
-
-  override def afterUrlRefresh(url: String): Unit = {
-
   }
 
   def getTimesFromTagLimit(element: URIElement): Option[Int] = {

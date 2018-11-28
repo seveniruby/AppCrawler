@@ -317,6 +317,6 @@ class TestCrawler extends FunSuite with Matchers{
     crawler.conf.appWhiteList.append("a")
     println(crawler.conf.appWhiteList)
 
-    crawler.needBackApp() should be equals (true)
+    crawler.needBackToApp() should be equals (true)
   }
 }

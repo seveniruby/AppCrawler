@@ -44,7 +44,9 @@ case class URIElement(
                        @XmlAttribute(name = "width")
                        var width: Int=0,
                        @XmlAttribute(name = "height")
-                       var height:Int=0
+                       var height:Int=0,
+                       @XmlAttribute(name = "action")
+                       var action: String = ""
                      ) {
   //用来代表唯一的控件, 每个特定的命名控件只被点击一次. 所以这个element的构造决定了控件是否可被点击多次.
   //比如某个输入框被命名为url=xueqiu id=input, 那么就只能被点击一次

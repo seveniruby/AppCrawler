@@ -29,6 +29,9 @@ abstract class Plugin extends CommonLog{
   def beforeBack(): Unit ={
 
   }
+  def fixElementAction(element: URIElement): Unit ={
+
+  }
   def beforeElementAction(element: URIElement): Unit ={
 
   }

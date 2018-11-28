@@ -121,8 +121,6 @@ object XPathUtil extends CommonLog {
           case "name" if kv._2.size>50 => ""
             //todo: 优化长文本的展示
           case "text" if newAttribute("tag").contains("Button")==false && kv._2.length>10 => {
-            log.trace(kv)
-            log.trace(newAttribute)
             ""
           }
           case key if xpathExpr.contains(key) && kv._2.nonEmpty => s"@${kv._1}=" + "'" + kv._2.replace("\"", "\\\"") + "'"
@@ -198,7 +196,6 @@ object XPathUtil extends CommonLog {
   def getNodeListFromXML(pageDom:Document, xpath:String): AnyRef ={
     val nodesMap = ListBuffer[Map[String, Any]]()
     val xPath: XPath = XPathFactory.newInstance().newXPath()
-    log.trace(s"xpath=${xpath}")
     val compexp = xPath.compile(xpath)
     //val node=compexp.evaluate(pageDom)
     if (xpath.matches("string(.*)") || xpath.matches(".*/@[^/]*")) {

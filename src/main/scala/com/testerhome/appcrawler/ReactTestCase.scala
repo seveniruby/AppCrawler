@@ -17,7 +17,7 @@ case class ReactTestCase(name: String = "", steps: List[Step] = List[Step]())
 case class Step(given: List[String]=List[String](),
                 var when: When=null,
                 //todo: testcase和trigger 遍历都支持断言和报告输出
-                then: List[String]=List[String](),
+                `then`: List[String]=List[String](),
                 xpath: String="//*",
                 action: String=null,
                 actions: List[String]=List[String](),

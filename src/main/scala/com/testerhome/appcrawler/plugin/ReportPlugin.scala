@@ -35,6 +35,7 @@ class ReportPlugin extends Plugin with Report {
     val count=getCrawler().store.clickedElementsList.length
     log.info(s"clickedElementsList size = ${count}")
     val curSize=getCrawler().store.clickedElementsList.size
+    //todo: 子线程处理
 /*    if(curSize-lastSize > curSize/10+20 ){
       log.info(s"${curSize}-${lastSize} > ${curSize}/10+20  ")
       log.info("generate test report ")
@@ -42,6 +43,7 @@ class ReportPlugin extends Plugin with Report {
     }*/
   }
 
+  //todo: 使用独立工具出报告
   def generateReport(): Unit ={
     Report.saveTestCase(getCrawler().store, getCrawler().conf.resultDir)
     Report.store=getCrawler().store

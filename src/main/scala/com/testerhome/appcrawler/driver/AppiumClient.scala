@@ -30,6 +30,7 @@ class AppiumClient extends SeleniumDriver {
     log.addAppender(AppCrawler.fileAppender)
 
     configMap.foreach(c=>config(c._1, c._2))
+    config("newCommandTimeout", 120)
     //todo: 无法通过url来确定是否是android, 需要改进
     if (capabilities.getCapability("app") == null) {
       config("app", "")
@@ -45,7 +46,9 @@ class AppiumClient extends SeleniumDriver {
         platformName="Android"
         config("platformName", platformName)
         androidDriver = new AndroidDriver[MobileElement](new URL(url), capabilities)
-        androidDriver.setSetting(Setting.WAIT_FOR_IDLE_TIMEOUT, 2000)
+        //todo: 8.0上的idle的问题
+        androidDriver.setSetting(Setting.WAIT_FOR_IDLE_TIMEOUT, 0)
+        //androidDriver.setSetting(Setting.WAIT_FOR_SELECTOR_TIMEOUT, 0)
         appiumDriver=androidDriver
         driver=appiumDriver
       }
@@ -64,6 +67,8 @@ class AppiumClient extends SeleniumDriver {
     getDeviceInfo()
     log.info(s"capture dir = ${new File(".").getAbsolutePath}")
     //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
+    //动态页面 http://appium.io/docs/en/advanced-concepts/settings/
+
 
   }
 

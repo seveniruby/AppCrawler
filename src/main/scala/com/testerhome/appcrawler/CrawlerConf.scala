@@ -91,8 +91,9 @@ class CrawlerConf {
   )
   /** 先按照深度depth排序，再按照list排序，最后按照selected排序。后排序是优先级别最高的 */
   var sortByAttribute = List("depth", "list", "selected")
+  //todo: 通过不同的driver实现自动判别
   //可选 default|android|id|xpath，默认状态会自动判断是否使用android定位或者ios定位
-  var findBy="default"
+  var findBy="xpath"
   /** 用来确定url的元素定位xpath 他的text会被取出当作url因素 */
   var suiteName = List[String]()
   /** 设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度 */
@@ -111,10 +112,10 @@ class CrawlerConf {
   //在重启session之前做的事情
   var beforeRestart=ListBuffer[String]()
   //在执行action之前和之后默认执行的动作，比如等待
-  var beforeElement = ListBuffer[Step](
+  var beforeElement = ListBuffer[Step]()
+  var afterElement = ListBuffer[Step](
     Step(xpath="/*", action="Thread.sleep(500)")
   )
-  var afterElement = ListBuffer[Step]()
   /**在执行action后等待多少毫秒进行刷新*/
   var afterElementWait=1000
   /**是否需要刷新或者滑动*/

@@ -110,7 +110,6 @@ class SeleniumDriver extends ReactWebDriver{
     new Actions(driver).moveByOffset(point.x, point.y).click().perform();
   }
   override def click(): this.type ={
-    log.info(currentElement)
     currentElement.click()
     this
   }

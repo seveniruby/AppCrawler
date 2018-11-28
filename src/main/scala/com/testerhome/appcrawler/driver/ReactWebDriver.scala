@@ -26,7 +26,7 @@ abstract class ReactWebDriver extends CommonLog {
 
   var loc = ""
   var index = 0
-  var currentURIElement: URIElement=_
+  var currentURIElement: URIElement= URIElement()
 
   var imagesDir="images"
   var platformName=""
@@ -81,7 +81,7 @@ abstract class ReactWebDriver extends CommonLog {
     var errorCount=0
     var error: Throwable=null
     1 to 3 foreach (i => {
-      asyncTask(20)(getPageSource) match {
+      asyncTask(40)(getPageSource) match {
         case Left(v) => {
           log.trace("get page source success")
           //todo: wda返回的不是标准的xml
@@ -191,6 +191,7 @@ abstract class ReactWebDriver extends CommonLog {
 
   def asyncTask[T](timeout: Int = 30)(callback: => T): Either[T, Throwable] = {
     //todo: 异步线程消耗资源厉害，需要改进
+    val start=System.currentTimeMillis()
     Try({
       val task = Executors.newSingleThreadExecutor().submit(new Callable[T]() {
         def call(): T = {
@@ -205,7 +206,12 @@ abstract class ReactWebDriver extends CommonLog {
 
     }) match {
       case Success(v) => {
+        val end=System.currentTimeMillis()
         appiumExecResults.append("success")
+        val use=((end-start)/1000).toDouble
+        if(use>=1){
+          log.info(s"use time $use seconds")
+        }
         Left(v)
       }
       case Failure(e) => {
