@@ -188,7 +188,7 @@ class SeleniumDriver extends ReactWebDriver{
     val dataMap=TData.fromJson[Map[String, Any]](res)
     log.trace(dataMap)
     val xml=TData.toHtml(dataMap)
-    log.trace(xml)
+    log.debug(xml)
     xml
   }
 

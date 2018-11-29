@@ -103,7 +103,9 @@ abstract class ReactWebDriver extends CommonLog {
           Try(XPathUtil.toDocument(xmlStr)) match {
             case Success(v) => {
               currentPageDom = v
+              log.debug(v)
               currentPageSource = XPathUtil.toPrettyXML(xmlStr)
+              log.debug(currentPageSource)
               return currentPageSource
             }
             case Failure(e) => {
@@ -267,19 +269,19 @@ abstract class ReactWebDriver extends CommonLog {
     var array=getNodeListByKey(key)
     if(array.size==0){
       getPageSourceWithRetry()
-      log.trace("retry 1")
+      log.debug("retry 1")
       array=getNodeListByKey(key)
     }
 
     if(array.size==0){
       getPageSourceWithRetry()
-      log.trace("retry 2")
+      log.debug("retry 2")
       array=getNodeListByKey(key)
     }
 
     if(array.size==0){
       getPageSourceWithRetry()
-      log.trace("retry 3")
+      log.debug("retry 3")
       array=getNodeListByKey(key)
     }
     return array

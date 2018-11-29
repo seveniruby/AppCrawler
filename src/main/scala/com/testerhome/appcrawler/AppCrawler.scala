@@ -19,12 +19,12 @@ object AppCrawler extends CommonLog {
     """
       |----------------
       |AppCrawler 2.5.0 [霍格沃兹测试学院特别纪念版]
-      |Appium v1.10.0-beta.4 Pass Test, author: seveniruby 思寒
+      |Appium v1.10.0-beta.4 Pass Test
       |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
       |项目地址: https://github.com/seveniruby/AppCrawler
       |移动测试技术交流: https://testerhome.com
       |视频教程: https://ke.qq.com/course/271076
-      |维护者：seveniruby 霍格沃兹测试学院 北邮
+      |维护者：seveniruby(思寒) 霍格沃兹测试学院 北邮
       |致谢: 晓光 泉龙 杨榕 恒温 mikezhou yaming116 沐木
       |
       |--------------------------------
@@ -38,7 +38,8 @@ object AppCrawler extends CommonLog {
                     app: String = "",
                     encoding: String="",
                     conf: File = new File(""),
-                    verbose: Boolean = false,
+                    debug: Boolean = false,
+                    trace: Boolean = false,
                     mode: String = "",
                     platform: String = "",
                     appium: String = "",
@@ -47,7 +48,6 @@ object AppCrawler extends CommonLog {
                     report: String = "",
                     candidate: String = "",
                     master: String = "",
-                    diff: Boolean = false,
                     template: String = "",
                     demo:Boolean=false,
                     capability: Map[String, String] = Map[String, String](),
@@ -143,12 +143,12 @@ object AppCrawler extends CommonLog {
       opt[String]("candidate") action { (x, c) =>
         c.copy(candidate = x)
       } text ("candidate环境的diff.yml文件")
-      opt[Unit]("diff") action { (x, c) =>
-        c.copy(diff = true)
-      } text ("执行diff对比")
-      opt[Unit]('v',"verbose") action { (_, c) =>
-        c.copy(verbose = true)
+      opt[Unit]('v',"verbose-debug").abbr("v") action { (_, c) =>
+        c.copy(debug = true)
       } text ("是否展示更多debug信息")
+      opt[Unit]("verbose-trace").abbr("vv") action { (_, c) =>
+        c.copy(trace = true)
+      } text ("是否展示更多trace信息")
       opt[Unit]("demo") action { (_, c) =>
         c.copy(demo = true)
       } text ("生成demo配置文件学习使用方法")
@@ -168,11 +168,11 @@ object AppCrawler extends CommonLog {
           |#启动已经安装过的app
           |appcrawler --capability "appPackage=com.xueqiu.android,appActivity=.view.WelcomeActivityAlias"
           |
+          |#使用yaml参数
+          |appcrawler -a xueqiu.apk -y "blackList: [ {xpath: action_night}, {xpath: '.*[0-9\\.]{2}.*'} ]"
+          |
           |#从已经结束的结果中重新生成报告
           |appcrawler --report result/
-          |
-          |#新老版本对比
-          |appcrawler --candidate result/ --master pre/ --report ./
           |
         """.stripMargin)
     }
@@ -182,18 +182,19 @@ object AppCrawler extends CommonLog {
   def parseParams(parser: scopt.OptionParser[Param], args_new:Array[String]): Unit ={
     parser.parse(args_new, Param()) match {
       case Some(config) => {
-        if (config.verbose) {
+        if (config.trace) {
           GA.logLevel = Level.TRACE
-          log.info(s"verbose=${config.verbose}")
-          log.info(s"set global log level to ${GA.logLevel}")
-          XPathUtil.initLog()
+        }else if (config.debug) {
+          GA.logLevel = Level.DEBUG
         }
+        log.info(s"set global log level to ${GA.logLevel}")
+        XPathUtil.initLog()
 
         if(config.encoding.nonEmpty){
           setGlobalEncoding(config.encoding)
         }
-        log.trace("config=")
-        log.trace(config)
+        log.debug("config=")
+        log.debug(config)
         var crawlerConf = new CrawlerConf
         //获取配置模板文件
         if (config.conf.isFile) {
@@ -256,8 +257,8 @@ object AppCrawler extends CommonLog {
           Report.title = crawlerConf.reportTitle
         }
 
-        log.trace("yaml config")
-        log.trace(TData.toYaml(crawlerConf))
+        log.debug("yaml config")
+        log.debug(TData.toYaml(crawlerConf))
 
         //todo: 用switch替代
         if (config.report != "" && config.candidate.isEmpty && config.template=="") {

@@ -220,7 +220,11 @@ class Crawler extends CommonLog {
   }
 
   def getEventElement(actionName:String): URIElement ={
-    val element=driver.asyncTask()(new URIElement(XPathUtil.getNodeListByKey("/*", driver.currentPageDom).head, currentUrl)) match {
+    val element=driver.asyncTask()(
+      new URIElement(
+        XPathUtil.getNodeListByKey("/*/*", driver.currentPageDom
+        ).head, currentUrl)
+    ) match {
       case Left(value) => value
       case Right(value) => new URIElement(url = currentUrl, xpath="/*",
         x = 0, y=0, height = driver.screenHeight, width = driver.screenWidth)
@@ -377,8 +381,8 @@ class Crawler extends CommonLog {
   }
 
   def needBackToApp(): Option[URIElement] = {
-    log.trace(conf.appWhiteList)
-    log.trace(appNameRecord.last(10))
+    log.debug(conf.appWhiteList)
+    log.debug(appNameRecord.last(10))
 
     //跳到了其他app. 排除点一次就没有的弹框
     if (conf.appWhiteList.forall(appNameRecord.last().toString.matches(_) == false)) {
@@ -638,7 +642,6 @@ class Crawler extends CommonLog {
   def refreshPage(): Boolean = {
     log.info("refresh page")
     driver.getPageSourceWithRetry()
-    log.trace(driver.currentPageSource)
 
     if (driver.currentPageSource != null) {
       parsePageContext()
@@ -723,9 +726,13 @@ class Crawler extends CommonLog {
       log.info("mark image exist")
     }
 
-    //等待页面加载
-    log.info(s"sleep ${conf.afterElementWait} for loading")
-    Thread.sleep(conf.afterElementWait)
+    if (conf.afterElement != null) {
+      log.info("afterElementAction eval")
+      conf.afterElement.foreach(step => {
+        Util.dsl(step.getAction())
+      })
+    }
+
     isRefreshSuccess = refreshPage()
     saveDom()
     saveScreen()
@@ -749,13 +756,6 @@ class Crawler extends CommonLog {
 
     log.info(s"backRetry=${backRetry}")
 
-    //todo: 可以用来替换afterElementWait
-    if (conf.afterElement != null) {
-      log.info("afterElementAction eval")
-      conf.afterElement.foreach(step => {
-        Util.dsl(step.getAction())
-      })
-    }
     pluginClasses.foreach(p => p.afterElementAction(element))
   }
 
@@ -786,9 +786,9 @@ class Crawler extends CommonLog {
     var urlList=ListBuffer[String]()
 
     (3 until store.clickedElementsList.size).map(i => {
-      urlList.append(curElement.url)
       val curElement = store.clickedElementsList(i)
       val preElement = store.clickedElementsList(i - 1)
+      urlList.append(curElement.url)
       if (curElement.url != preElement.url
         && urlList.indexOf(curElement.url) < i-3-2 ) {
         log.info(s"get nearby back button from history = ${preElement}")
@@ -796,8 +796,12 @@ class Crawler extends CommonLog {
       } else {
         None
       }
-    }).filter(_.nonEmpty).map(step => getURIElementsByStep(step.get))
-      .flatten.distinct.toList
+    }).filter(_.nonEmpty).map(someStep => {
+      getURIElementsByStep(someStep.get).map(e=>{
+        e.action=someStep.get.getAction()
+        e
+      })
+    }).flatten.distinct.toList
       .sortWith(_.depth < _.depth)
       //追加到backButton后面，depth小的放前面
       .map(e => {
@@ -807,6 +811,7 @@ class Crawler extends CommonLog {
     })
   }
 
+  //todo: 增加when支持，当when生效的时候才返回element
   def getURIElementsByStep(step: Step): List[URIElement] = {
     driver.getNodeListByKey(step.getXPath())
       .map(new URIElement(_, currentUrl))
@@ -1176,19 +1181,16 @@ class Crawler extends CommonLog {
     //先判断是否在期望的界面里. 提升速度
     //todo: 让when生效
     conf.triggerActions.filter(step => step.times > 0).foreach(step => {
-      val xpath = step.getXPath()
-      val action = step.getAction()
       log.debug(s"finding ${step}")
-
-      driver.getNodeListByKey(xpath).map(new URIElement(_, currentUrl)).filter(isValid).headOption match {
+      getURIElementsByStep(step).headOption match {
         case Some(e) => {
           step.use()
           log.trace(s"step times = ${step.times}")
-          e.action = action
+          e.action = step.getAction()
           Some(e)
         }
         case None => {
-          log.trace(s"not found trigger ${xpath}")
+          log.trace(s"not found trigger ${step.getXPath()}")
         }
       }
     })

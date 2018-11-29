@@ -36,11 +36,11 @@ class ReportPlugin extends Plugin with Report {
     log.info(s"clickedElementsList size = ${count}")
     val curSize=getCrawler().store.clickedElementsList.size
     //todo: 子线程处理
-/*    if(curSize-lastSize > curSize/10+20 ){
+    if(curSize-lastSize > curSize/10+20 ){
       log.info(s"${curSize}-${lastSize} > ${curSize}/10+20  ")
       log.info("generate test report ")
       generateReport()
-    }*/
+    }
   }
 
   //todo: 使用独立工具出报告

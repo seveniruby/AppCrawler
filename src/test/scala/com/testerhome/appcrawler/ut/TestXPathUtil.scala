@@ -2125,6 +2125,10 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
 
   }
 
+  test("getNodeListByKey"){
+    println(XPathUtil.getNodeListByXPath("/*/*", xmlAndroid))
+  }
+
 
 
 
