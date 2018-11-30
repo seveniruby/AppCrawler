@@ -220,14 +220,20 @@ class Crawler extends CommonLog {
   }
 
   def getEventElement(actionName:String): URIElement ={
+    val defaultElement=new URIElement(url = currentUrl, xpath="/*/*",
+      x = 0, y=0, height = driver.screenHeight, width = driver.screenWidth)
     val element=driver.asyncTask()(
-      new URIElement(
-        XPathUtil.getNodeListByKey("/*/*", driver.currentPageDom
-        ).head, currentUrl)
+      //刷新失败时会报错，所以增加一个判断
+      if(driver.currentPageDom!=null) {
+        new URIElement(
+          XPathUtil.getNodeListByKey("/*/*", driver.currentPageDom
+          ).head, currentUrl)
+      }else{
+        defaultElement
+      }
     ) match {
       case Left(value) => value
-      case Right(value) => new URIElement(url = currentUrl, xpath="/*",
-        x = 0, y=0, height = driver.screenHeight, width = driver.screenWidth)
+      case Right(value) => defaultElement
     }
     element.id=actionName
     element.name=actionName
@@ -327,7 +333,7 @@ class Crawler extends CommonLog {
     //<             label="" name="分时" path="/0/0/6/0/0" valid="true" value="1"
     //---
     //>             label="" name="分时" path="/0/0/6/0/0" valid="true" value="0"
-    md5(nodeList.filter(node => !schemaBlackList.contains(node("tag"))).
+    md5(nodeList.filter(node => !schemaBlackList.contains(node("name()"))).
       map(node => node.getOrElse("xpath", "")
         + node.getOrElse("value", "").toString
         + node.getOrElse("selected", "").toString
@@ -362,9 +368,9 @@ class Crawler extends CommonLog {
       ""
     }
     if (uri.nonEmpty) {
-      List(driver.getAppName(), uri).distinct.filter(_.nonEmpty).mkString("-")
+      List(driver.getAppName(), uri).distinct.filter(_.nonEmpty).mkString(".")
     } else {
-      List(driver.getAppName(), driver.getUrl()).distinct.filter(_.nonEmpty).mkString("-")
+      List(driver.getAppName(), driver.getUrl()).distinct.filter(_.nonEmpty).mkString(".")
     }
 
 
@@ -732,8 +738,8 @@ class Crawler extends CommonLog {
         Util.dsl(step.getAction())
       })
     }
-
-    isRefreshSuccess = refreshPage()
+    //重新刷新，afterElement后内容可能发生变化
+    isRefreshSuccess=refreshPage()
     saveDom()
     saveScreen()
 
@@ -814,8 +820,11 @@ class Crawler extends CommonLog {
   //todo: 增加when支持，当when生效的时候才返回element
   def getURIElementsByStep(step: Step): List[URIElement] = {
     driver.getNodeListByKey(step.getXPath())
-      .map(new URIElement(_, currentUrl))
-      .filter(isValid)
+      .map(e=>{
+        val urlElement=new URIElement(e, currentUrl)
+        urlElement.action=step.getAction()
+        urlElement
+      }).filter(isValid)
   }
 
   def getBackButton(): Option[URIElement] = {
@@ -940,7 +949,12 @@ class Crawler extends CommonLog {
         if (element.action != "_skip") {
           beforeElementAction(element)
           doElementAction(element)
-          afterElementAction(element)
+          isRefreshSuccess=refreshPage()
+          if(isRefreshSuccess){
+            afterElementAction(element)
+          }else{
+            log.error("refresh fail skip afterElementAction")
+          }
         } else {
           store.setElementSkip(element)
         }
@@ -950,6 +964,7 @@ class Crawler extends CommonLog {
         log.error("never access this")
       }
     }
+
     crawl()
   }
 
@@ -1028,7 +1043,7 @@ class Crawler extends CommonLog {
             element.action = "_notFound"
           }
           case _ => {
-            driver.asyncTask() {
+            driver.asyncTask(name = "action") {
               //支持各种动作
               str match {
                 case "" => {
@@ -1065,13 +1080,13 @@ class Crawler extends CommonLog {
   }
 
   def saveElementScreenshot(): Unit ={
-    store.saveReqImg(getBasePathName() + ".click.png")
-    val originImageName = getBasePathName(2) + ".clicked.png"
-    val newImageName = getBasePathName() + ".click.png"
-    val rect = driver.getRect()
-    if (conf.saveScreen) {
+    if (conf.saveScreen && store.clickedElementsList.size>1) {
+      store.saveReqImg(getBasePathName() + ".click.png")
+      val originImageName = getBasePathName(2) + ".clicked.png"
+      val newImageName = getBasePathName() + ".click.png"
+      val rect = driver.getRect()
       log.info(s"mark ${originImageName} to ${newImageName}")
-      driver.asyncTask() {
+      driver.asyncTask(name = "mark") {
         driver.mark(originImageName, newImageName, rect.x, rect.y, rect.width, rect.height)
       }
     }
@@ -1097,16 +1112,8 @@ class Crawler extends CommonLog {
     val domPath = getBasePathName() + ".dom"
     //感谢QQ:434715737的反馈
     log.info(s"save to ${domPath}")
-    Try(File(domPath).writeAll(driver.currentPageSource)) match {
-      case Success(v) => {
-        log.trace(s"save to ${domPath}")
-      }
-      case Failure(e) => {
-        log.error(s"save to ${domPath} error")
-        log.error(e.getMessage)
-        log.error(e.getCause)
-        log.error(e.getStackTrace.mkString)
-      }
+    driver.asyncTask(name = "saveDom"){
+      File(domPath).writeAll(driver.currentPageSource)
     }
   }
 
@@ -1119,7 +1126,7 @@ class Crawler extends CommonLog {
     if (conf.saveScreen || force) {
       Thread.sleep(100)
       log.info("start screenshot")
-      driver.asyncTask(60) {
+      driver.asyncTask(60, name = "screenshot") {
         val imgFile = if (store.isDiff()) {
           log.info("ui change screenshot again")
           driver.screenshot()
@@ -1165,7 +1172,7 @@ class Crawler extends CommonLog {
         log.warn("two back action too close")
         Thread.sleep(2000)
       }
-      driver.asyncTask() {
+      driver.asyncTask(name = "back") {
         log.info("navigate back")
         driver.back()
       }

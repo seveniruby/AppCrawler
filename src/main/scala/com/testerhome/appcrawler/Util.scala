@@ -65,7 +65,6 @@ object Util extends CommonLog{
       case Success(v) => log.info(v)
       case Failure(e) => log.warn(e.getMessage)
     }
-    log.info("eval finish")
     //new Eval().inPlace(s"com.testerhome.appcrawler.MiniAppium.${command.trim}")
   }
   private def eval(code:String): Unit ={
@@ -78,7 +77,6 @@ object Util extends CommonLog{
     }
     log.info(code)
     log.info(instance.eval(code))
-    log.info("eval finish")
   }
 
   def compile(fileNames:List[String]): Unit ={

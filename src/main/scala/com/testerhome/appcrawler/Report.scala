@@ -47,6 +47,7 @@ trait Report extends CommonLog {
     if(namespace.nonEmpty){
       cmdArgs++=Array("-s", namespace)
     }
+    log.debug(cmdArgs.mkString)
 
     /*
     val testcaseDirFile=new java.io.File(testcaseDir)

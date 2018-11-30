@@ -3,17 +3,16 @@ package com.testerhome.appcrawler.ut;
 import org.scalatest.junit.JUnitSuite
 
 import scala.collection.mutable.ListBuffer
-import org.junit.Test
-import org.junit.Before
 import io.qameta.allure.Allure
 import io.qameta.allure.model.{Status, TestResult}
+import org.junit.jupiter.api.{BeforeEach, Test}
 
 class TestJUnit extends JUnitSuite {
 
     var sb: StringBuilder = _
     var lb: ListBuffer[String] = _
 
-    @Before def initialize() {
+    @BeforeEach def initialize() {
         sb = new StringBuilder("ScalaTest is ")
         lb = new ListBuffer[String]
     }

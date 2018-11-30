@@ -13,13 +13,17 @@ class TestJUnit5 {
   @Test
   @Description("Some detailed test description")
   def x(): Unit ={
+    println("xxxxxxxx")
     assertTrue(1==2)
   }
 
   @TestFactory
   def dynamicTestsFromCollection: util.Collection[DynamicTest] = {
     util.Arrays.asList(
-      dynamicTest("1st dynamic test", () => assertTrue(true)),
+      dynamicTest("1st dynamic test", () => {
+        println("1")
+        assertTrue(true)
+      }),
       dynamicTest("2nd dynamic test", () => assertEquals(4, 2 * 2)))
   }
 

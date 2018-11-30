@@ -59,7 +59,7 @@ case class URIElement(
 
     this()
     this.url=uri
-    this.tag = nodeMap.getOrElse("tag", "").toString
+    this.tag = nodeMap.getOrElse("name()", "").toString
     this.id = nodeMap.getOrElse("name", "").toString
     this.name = nodeMap.getOrElse("label", "").toString
     this.text = nodeMap.getOrElse("value", "").toString

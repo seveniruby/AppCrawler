@@ -90,7 +90,7 @@ class AppiumClient extends SeleniumDriver {
     if(screenHeight<=0){
       getDeviceInfo()
     }
-    asyncTask()(
+    asyncTask(name = "swipe")(
       new AppiumTouchAction(appiumDriver, screenWidth, screenHeight).swipe(startX, startY, endX, endY)
     )
   }
@@ -155,7 +155,7 @@ class AppiumClient extends SeleniumDriver {
           locator.append(".instance(" + element.instance + ")" )
         }
         log.info(s"findElementByAndroidUIAutomator ${locator.toString()}")
-        asyncTask(){
+        asyncTask(name = "findElementByAndroidUIAutomator"){
           List(androidDriver.findElementByAndroidUIAutomator(locator.toString()))
         } match {
           case Left(value)=>{
@@ -200,7 +200,7 @@ class AppiumClient extends SeleniumDriver {
   override def getUrl(): String = {
     driver match {
       case android: AndroidDriver[_] => {
-        (asyncTask() {
+        (asyncTask(name = "currentActivity") {
           //todo: 此api不稳定，会导致appium在执行几百次api后发生异常
           androidDriver.currentActivity()
         }).left.getOrElse("").split('.').last

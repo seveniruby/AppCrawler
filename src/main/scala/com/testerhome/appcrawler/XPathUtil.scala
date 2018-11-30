@@ -48,7 +48,8 @@ object XPathUtil extends CommonLog {
   }
 
   def toPrettyXML(raw: String): String = {
-    val document = toDocument(raw)
+    //done: android page source不能格式化，但是普通的xml可以, android page source在1.9后多了一些多余的空格
+    val document = toDocument(raw.trim.replaceAll("> *<", "><"))
     //done: 不支持java10, use Xalan replace
     val transformerFactory = TransformerFactory.newInstance
     val transformer = transformerFactory.newTransformer
@@ -97,16 +98,18 @@ object XPathUtil extends CommonLog {
         newAttribute = newAttribute - "resource-id"
       }
 
-      var tag="*"
-      var xpathSingle = newAttribute.map(kv => {
+      val tag=if(xpathExpr.contains("name()")){
+        newAttribute.getOrElse("name()", "*")
+      }else{
+        "*"
+      }
+      val xpathAttributes = newAttribute.map(kv => {
         //todo: appium的bug. 如果控件内有换行getSource会自动去掉换行. 但是xpath表达式里面没换行会找不到元素
         //todo: 需要帮appium打补丁
 
         kv._1 match {
-          case "tag" => {
-            if(xpathExpr.contains("tag")){
-              tag=kv._2
-            }
+          case "name()" => {
+            //屏蔽特殊的name()节点名字属性
             ""
           }
           case "innerText" => {
@@ -120,26 +123,40 @@ object XPathUtil extends CommonLog {
           //case "index" => ""
           case "name" if kv._2.size>50 => ""
             //todo: 优化长文本的展示
-          case "text" if newAttribute("tag").contains("Button")==false && kv._2.length>10 => {
+          case "text" if newAttribute("name()").contains("Button")==false && kv._2.length>10 => {
             ""
           }
-          case key if xpathExpr.contains(key) && kv._2.nonEmpty => s"@${kv._1}=" + "'" + kv._2.replace("\"", "\\\"") + "'"
+          case key if xpathExpr.contains(key) && kv._2.nonEmpty =>
+            s"@${kv._1}=" + "'" + kv._2.replace("\"", "\\\"") + "'"
           case _ => ""
         }
       }).filter(x => x.nonEmpty).mkString(" and ")
 
       //todo: 改进xpath算法，更灵活，更唯一，更简短
       //todo: macaca的source有问题
-      xpathSingle = if (xpathSingle.isEmpty) {
-        //s"/${attribute.getOrElse("class", attribute.getOrElse("tag", "*"))}"
+      if (xpathAttributes.isEmpty) {
         ""
       } else {
-        s"//${tag}[${xpathSingle}]"
+        s"//${tag}[${xpathAttributes}]"
       }
-      xpathSingle
     }
-    ).mkString("")
-    return xpath
+    )
+
+    if(xpath.size>1) {
+      xpath.remove(0)
+    }
+    var shortXPath=false
+    (0 until xpath.size).reverse.foreach(i=>{
+      if(shortXPath==false){
+        if(xpath(i).contains(" and ")){
+          shortXPath=true
+        }
+      }else{
+        xpath.remove(i)
+      }
+    })
+
+    return xpath.mkString("")
   }
 
   def getAttributesFromNode(node: Node): ListBuffer[Map[String, String]] ={
@@ -154,7 +171,7 @@ object XPathUtil extends CommonLog {
           val kv = attributes.item(i).asInstanceOf[Attr]
           attributeMap ++= Map(kv.getName -> kv.getValue)
         })
-        attributeMap ++= Map("tag" -> node.getNodeName)
+        attributeMap ++= Map("name()" -> node.getNodeName)
         attributeMap ++= Map("innerText" -> node.getTextContent.trim)
         attributesList += attributeMap
       }
@@ -231,7 +248,7 @@ object XPathUtil extends CommonLog {
 
           val node = nodeList.item(i)
           //如果node为.可能会异常. 不过目前不会
-          nodeMap("tag") = node.getNodeName
+          nodeMap("name()") = node.getNodeName
           nodeMap("innerText") = node.getTextContent.trim
 
           //todo: html有label属性会导致label被覆盖
@@ -290,7 +307,7 @@ object XPathUtil extends CommonLog {
           ).filter(_.nonEmpty).mkString(".")
           val tagList=attributesList.map(
             attr=>{
-              attr.getOrElse("tag", "")
+              attr.getOrElse("name()", "")
             }
           ).mkString("/")
 

@@ -17,11 +17,14 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
   override def suiteName = name
 
   def addTestCase() {
+    log.trace(s"Report.store.elementStore size = ${Report.store.elementStore.size}")
+    log.trace(s"uri=${uri}")
     val sortedElements = Report.store.elementStore
       .filter(x => x._2.element.url == uri)
       .map(_._2).toList
       .sortBy(_.clickedIndex)
 
+    log.trace(s"sortedElements=${sortedElements.size}")
     val selected = if (Report.showCancel) {
       log.info("show all elements")
       //把未遍历的放到后面
@@ -32,12 +35,14 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
       log.info("only show clicked elements")
       sortedElements.filter(_.action == ElementStatus.Clicked)
     }
+    log.trace(s"selected elements size = ${selected.size}")
     selected.foreach(ele => {
       val testcase = ele.element.xpath.replace("\\", "\\\\")
         .replace("\"", "\\\"")
         .replace("\n", "")
         .replace("\r", "")
 
+      log.debug(s"add testcase ${testcase}")
       //todo: 增加ignore和cancel的区分
       test(s"clickedIndex=${ele.clickedIndex} action=${ele.action}\nxpath=${testcase}") {
         ele.action match {

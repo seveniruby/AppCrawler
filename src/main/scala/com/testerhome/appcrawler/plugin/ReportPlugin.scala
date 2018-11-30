@@ -1,6 +1,7 @@
 package com.testerhome.appcrawler.plugin
 
 import java.io
+import java.nio.file.{Files, Paths}
 
 import com.testerhome.appcrawler.{Report, URIElement}
 import com.testerhome.appcrawler._
@@ -9,15 +10,18 @@ import org.scalatest.tools.Runner
 import sun.misc.{Signal, SignalHandler}
 
 import scala.collection.mutable.ListBuffer
+import scala.io.Source
 import scala.reflect.io.File
 
 /**
   * Created by seveniruby on 16/8/12.
   */
 class ReportPlugin extends Plugin with Report {
-  var lastSize=0
+
+  var requestFile:String=_
   override def start(): Unit ={
     reportPath=new java.io.File(getCrawler().conf.resultDir).getCanonicalPath
+    requestFile=reportPath + File.separator + "request"
     log.info(s"reportPath=${reportPath}")
     val tmpDir=new io.File(s"${reportPath}/tmp/")
     if(tmpDir.exists()==false){
@@ -32,24 +36,50 @@ class ReportPlugin extends Plugin with Report {
   }
 
   override def afterElementAction(element: URIElement): Unit ={
-    val count=getCrawler().store.clickedElementsList.length
-    log.info(s"clickedElementsList size = ${count}")
-    val curSize=getCrawler().store.clickedElementsList.size
-    //todo: 子线程处理
-    if(curSize-lastSize > curSize/10+20 ){
-      log.info(s"${curSize}-${lastSize} > ${curSize}/10+20  ")
-      log.info("generate test report ")
-      generateReport()
+    //todo: 子线程处理，异步处理
+    getCrawler().driver.asyncTask(timeout = 120, name = "report", needThrow = true) {
+      if (needReport()) {
+        log.info("generate test report ")
+        getCrawler().saveLog()
+        generateReport()
+      }
     }
   }
 
+  def needReport(): Boolean ={
+    val curSize=getCrawler().store.clickedElementsList.size
+    if(curSize%5==0){
+      if(curSize%20==0){
+        true
+      }else {
+        log.info(s"read command from ${requestFile}")
+        val command=if(Files.exists(Paths.get(requestFile))){
+          Source.fromFile(requestFile).mkString
+        }else{
+          ""
+        }
+        log.info(command)
+        if (command.contains("stop")) {
+          stop()
+          true
+        } else if (command.contains("save")) {
+          true
+        } else {
+          false
+        }
+      }
+    }else{
+      false
+    }
+  }
+
+
   //todo: 使用独立工具出报告
   def generateReport(): Unit ={
-    Report.saveTestCase(getCrawler().store, getCrawler().conf.resultDir)
+    log.info(s"reportPath=${reportPath}")
+    Report.saveTestCase(getCrawler().store, reportPath)
     Report.store=getCrawler().store
     Report.runTestCase()
-
-    lastSize=getCrawler().store.clickedElementsList.size
   }
 
 

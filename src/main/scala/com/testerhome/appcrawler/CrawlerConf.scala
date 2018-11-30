@@ -42,7 +42,7 @@ class CrawlerConf {
   var testcase = ReactTestCase(
     name = "TesterHome AppCrawler",
     steps = List[Step](
-      Step(xpath = "//*", action = "Thread.sleep(1000)")
+      Step(xpath = "/*/*", action = "Thread.sleep(1000)")
     )
   )
 
@@ -85,9 +85,13 @@ class CrawlerConf {
 
   //自动生成的xpath表达式里可以包含的匹配属
   var xpathAttributes = List(
+    "name()",
+    //iOS
     "name", "label", "value",
+    //android
     "resource-id", "content-desc", "text",
-    "id", "name", "innerText", "tag"
+    //html
+    "id", "name", "innerText", "tag", "class"
   )
   /** 先按照深度depth排序，再按照list排序，最后按照selected排序。后排序是优先级别最高的 */
   var sortByAttribute = List("depth", "list", "selected")
@@ -114,7 +118,7 @@ class CrawlerConf {
   //在执行action之前和之后默认执行的动作，比如等待
   var beforeElement = ListBuffer[Step]()
   var afterElement = ListBuffer[Step](
-    Step(xpath="/*", action="Thread.sleep(1000)")
+    Step(xpath="/*/*", action="Thread.sleep(500)")
   )
   /**是否需要刷新或者滑动*/
   var afterAll = ListBuffer[Step]()

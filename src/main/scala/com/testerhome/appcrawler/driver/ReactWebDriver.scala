@@ -38,7 +38,7 @@ abstract class ReactWebDriver extends CommonLog {
     //todo: 用其他定位方式优化
     log.info(s"find by uri element= ${element}")
     currentURIElement=element
-    asyncTask()(findElementsByURI(element, findBy)) match {
+    asyncTask(name = "findElementsByURI")(findElementsByURI(element, findBy)) match {
       case Left(v) => {
         val arr = v.distinct
         arr.length match {
@@ -80,8 +80,8 @@ abstract class ReactWebDriver extends CommonLog {
     //获取页面结构, 最多重试3次
     var errorCount=0
     var error: Throwable=null
-    1 to 3 foreach (i => {
-      asyncTask(40)(getPageSource) match {
+    1 to 2 foreach (i => {
+      asyncTask(40, name = "getPageSource")(getPageSource) match {
         case Left(v) => {
           log.trace("get page source success")
           //todo: wda返回的不是标准的xml
@@ -191,7 +191,7 @@ abstract class ReactWebDriver extends CommonLog {
     ""
   }
 
-  def asyncTask[T](timeout: Int = 30)(callback: => T): Either[T, Throwable] = {
+  def asyncTask[T](timeout: Int = 30, name:String ="", needThrow:Boolean=false)(callback: => T): Either[T, Throwable] = {
     //todo: 异步线程消耗资源厉害，需要改进
     val start=System.currentTimeMillis()
     Try({
@@ -210,13 +210,16 @@ abstract class ReactWebDriver extends CommonLog {
       case Success(v) => {
         val end=System.currentTimeMillis()
         appiumExecResults.append("success")
-        val use=((end-start)/1000).toDouble
+        val use=(end-start)/1000d
         if(use>=1){
-          log.info(s"use time $use seconds")
+          log.info(s"use time $use seconds name=${name}")
         }
         Left(v)
       }
       case Failure(e) => {
+        if(needThrow){
+          throw e
+        }
         e match {
           case e: TimeoutException => {
             log.error(s"${timeout} seconds timeout")

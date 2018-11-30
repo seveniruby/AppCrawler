@@ -19,7 +19,7 @@ object SuiteToClass extends CommonLog {
       .replaceAllLiterally("\"", "\\\"")
       .replaceAllLiterally("#", "")
       .replaceAllLiterally("&", "")
-      .replaceAllLiterally("-", "")
+      .replaceAllLiterally("-", ".")
       .replaceAll("[#;/\\:]", "")
   }
   /**
@@ -43,6 +43,8 @@ object SuiteToClass extends CommonLog {
         init.setBody(s"{ ${body}\naddTestCase(); }")
         classNew.addConstructor(init)
         classNew.writeFile(directory)
+        log.debug(s"write to ${directory}")
+
       }
       case Failure(e) => {
         log.error(s"makeClass error with ${className}")
