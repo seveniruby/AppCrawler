@@ -30,6 +30,12 @@ object SuiteToClass extends CommonLog {
     val pool = ClassPool.getDefault
     val classNameFormat = format(className)
     log.trace(s"classNameFormat=${classNameFormat}")
+    val clazz=pool.getOrNull(classNameFormat)
+    if(clazz!=null){
+      if(clazz.isFrozen){
+        clazz.defrost()
+      }
+    }
     Try(pool.makeClass(classNameFormat)) match {
       case Success(classNew) => {
         classNew.setSuperclass(pool.get(superClassName))

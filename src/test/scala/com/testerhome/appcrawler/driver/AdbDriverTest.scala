@@ -28,7 +28,10 @@ class AdbDriverTest extends FunSuite {
       "-y",
       "blackList: [ {xpath: action_night}, {xpath: action_setting} ]",
       "--capability",
-      "appPackage=com.xueqiu.android,appActivity=.view.WelcomeActivityAlias,automationName=adb,noReset=false",
+      "appPackage=com.xueqiu.android," +
+        "appActivity=.view.WelcomeActivityAlias," +
+        "automationName=adb,noReset=false," +
+        "udid=adb.wetest.qq.com:40300",
       "-o",
       s"/tmp/xueqiu/adb/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}",
         "-v"

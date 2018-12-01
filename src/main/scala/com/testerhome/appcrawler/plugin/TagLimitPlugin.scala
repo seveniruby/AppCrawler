@@ -56,6 +56,10 @@ class TagLimitPlugin extends Plugin {
   }
 
   override def afterElementAction(element: URIElement): Unit = {
+    if(element.action.startsWith("_")){
+      //非普通元素点击事件，不需要统计，比如back backApp 等
+      return
+    }
     if(getCrawler().getElementAction()!="clear") {
       if (tagLimit.contains(currentKey)) {
         tagLimit(currentKey) -= 1

@@ -99,7 +99,9 @@ class CrawlerConf {
   //可选 default|android|id|xpath，默认状态会自动判断是否使用android定位或者ios定位
   var findBy="xpath"
   /** 用来确定url的元素定位xpath 他的text会被取出当作url因素 */
-  var suiteName = List[String]()
+  var suiteName = List[String](
+    "//*[@selected='true']//android.widget.TextView/@text"
+  )
   /** 设置一个起始url和maxDepth, 用来在遍历时候指定初始状态和遍历深度 */
   var baseUrl = List[String]()
   var appWhiteList = ListBuffer[String]()
@@ -118,8 +120,10 @@ class CrawlerConf {
   //在执行action之前和之后默认执行的动作，比如等待
   var beforeElement = ListBuffer[Step]()
   var afterElement = ListBuffer[Step](
-    Step(xpath="/*/*", action="Thread.sleep(500)")
+    //Step(xpath="/*/*", action="Thread.sleep(500)")
   )
+  var afterElementWait=500
+
   /**是否需要刷新或者滑动*/
   var afterAll = ListBuffer[Step]()
   //afterPage执行多少次后才不执行，比如连续滑动2次都没新元素即取消

@@ -423,7 +423,7 @@ class Crawler extends CommonLog {
     //url黑名单
     var result = false
     if (conf.urlBlackList.exists(urlStack.head.matches(_))) {
-      log.warn(s"${urlStack.head} in urlBlackList should return")
+      log.info(s"${urlStack.head} in urlBlackList should return")
       result = true
     }
 
@@ -437,10 +437,10 @@ class Crawler extends CommonLog {
     }
 
     //超过遍历深度
-    log.info(s"urlStack=${urlStack} baseUrl=${conf.baseUrl} maxDepth=${conf.maxDepth}")
+    log.debug(s"urlStack=${urlStack} baseUrl=${conf.baseUrl} maxDepth=${conf.maxDepth}")
     //大于最大深度并且是在进入过基础Url
     if (urlStack.length > conf.maxDepth) {
-      log.warn(s"urlStack.depth=${urlStack.length} > maxDepth=${conf.maxDepth}")
+      log.info(s"urlStack.depth=${urlStack.length} > maxDepth=${conf.maxDepth}")
       result = true
     }
     /*
@@ -518,12 +518,51 @@ class Crawler extends CommonLog {
     })
     blackElements = blackElements.distinct
     selectedElements = selectedElements diff blackElements
-    log.info(s"all - black elements size = ${selectedElements.size}")
+    log.info(s"selectedElements - black elements size = ${selectedElements.size}")
     if (selectedElements.size < lastSize) {
       selectedElements.foreach(log.trace)
-      lastSize = all.size
+      lastSize = selectedElements.size
     }
 
+    //done: 放到前面加速
+    //remove small
+    if (skipSmall == false) {
+      selectedElements = selectedElements.filter(isSmall(_) == false)
+      log.info(s"selectedElements - small elements size = ${selectedElements.size}")
+      if (selectedElements.size < lastSize) {
+        selectedElements.foreach(log.trace)
+        lastSize = selectedElements.size
+      }
+    }
+
+    //去掉back菜单
+    selectedElements = selectedElements diff conf.backButton.flatMap(step => getURIElementsByStep(step))
+    log.info(s"selectedElements - backButton size=${selectedElements.length}")
+    if (selectedElements.size < lastSize) {
+      selectedElements.foreach(log.trace)
+      lastSize = selectedElements.size
+    }
+
+    //过滤已经被点击过的元素
+    selectedElements = selectedElements.filter(!store.isClicked(_))
+    log.info(s"selectedElements - clicked size=${selectedElements.size}")
+    if (selectedElements.size < lastSize) {
+      selectedElements.foreach(log.trace)
+      lastSize = selectedElements.size
+    }
+
+    selectedElements = selectedElements.filter(!store.isSkiped(_))
+    log.info(s"selectedElements - skiped fresh elements size=${selectedElements.length}")
+    if (selectedElements.size < lastSize) {
+      selectedElements.foreach(e => {
+        log.trace(e)
+        //记录未被点击的元素
+        store.saveElement(e)
+      })
+      lastSize = selectedElements.size
+    }
+
+    //根据属性进行基本排序
     selectedElements = sortByAttribute(selectedElements)
 
     //sort
@@ -549,57 +588,12 @@ class Crawler extends CommonLog {
     //去掉不在first和last中的元素
     selectedElements = selectedElements diff firstElements
     selectedElements = selectedElements diff lastElements
-    log.info(s"all - first - last elements size = ${selectedElements.size}")
-    if (selectedElements.size < lastSize) {
-      selectedElements.foreach(log.trace)
-      lastSize = all.size
-    }
-
-
     //确保不重, 并保证顺序
     all = (firstElements ++ selectedElements ++ lastElements).distinct.filter(isValid)
 
     log.trace(s"sorted nodes length=${all.length}")
     all.foreach(log.trace)
     lastSize = all.size
-
-
-    //remove small
-    if (skipSmall == false) {
-      all = all.filter(isSmall(_) == false)
-      log.info(s"all - small elements size = ${all.size}")
-      if (all.size < lastSize) {
-        all.foreach(log.trace)
-        lastSize = all.size
-      }
-    }
-
-    //去掉back菜单
-    all = all diff conf.backButton.flatMap(step => getURIElementsByStep(step))
-    log.info(s"all - backButton size=${all.length}")
-    if (all.size < lastSize) {
-      all.foreach(log.trace)
-      lastSize = all.size
-    }
-
-    //过滤已经被点击过的元素
-    all = all.filter(!store.isClicked(_))
-    log.info(s"all - clicked size=${all.size}")
-    if (all.size < lastSize) {
-      all.foreach(log.trace)
-      lastSize = all.size
-    }
-
-    all = all.filter(!store.isSkiped(_))
-    log.info(s"all - skiped fresh elements size=${all.length}")
-    if (all.size < lastSize) {
-      all.foreach(e => {
-        log.trace(e)
-        //记录未被点击的元素
-        store.saveElement(e)
-      })
-      lastSize = all.size
-    }
 
     all.headOption
   }
@@ -732,14 +726,15 @@ class Crawler extends CommonLog {
       log.info("mark image exist")
     }
 
-    if (conf.afterElement != null) {
+    if (conf.afterElement!=null && conf.afterElement.nonEmpty) {
       log.info("afterElementAction eval")
       conf.afterElement.foreach(step => {
         Util.dsl(step.getAction())
       })
+      //重新刷新，afterElement后内容可能发生变化
+      isRefreshSuccess=refreshPage()
     }
-    //重新刷新，afterElement后内容可能发生变化
-    isRefreshSuccess=refreshPage()
+
     saveDom()
     saveScreen()
 
@@ -808,11 +803,15 @@ class Crawler extends CommonLog {
         e
       })
     }).flatten.distinct.toList
+      //排序，depth小的在前面，但是带有back action的控件排在最后
       .sortWith(_.depth < _.depth)
+      .sortWith(_.action.indexOf("Back") < _.action.indexOf("Back"))
       //追加到backButton后面，depth小的放前面
       .map(e => {
-      log.info(s"find new back button from history ${e}")
-      conf.backButton.append(Step(xpath = e.xpath, action=e.action))
+      if(conf.backButton.filter(_.getXPath()==e.xpath).size==0) {
+        log.info(s"find new back button from history ${e}")
+        conf.backButton.append(Step(xpath = e.xpath, action = e.action))
+      }
       e
     })
   }
@@ -950,6 +949,7 @@ class Crawler extends CommonLog {
           beforeElementAction(element)
           doElementAction(element)
           isRefreshSuccess=refreshPage()
+          //todo: 使用队列模型替代
           if(isRefreshSuccess){
             afterElementAction(element)
           }else{
@@ -1076,6 +1076,10 @@ class Crawler extends CommonLog {
 
         }
       }
+    }
+    if(conf.afterElementWait>0){
+      log.info(s"sleep ${conf.afterElementWait} ms")
+      Thread.sleep(conf.afterElementWait)
     }
   }
 

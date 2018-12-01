@@ -211,12 +211,14 @@ abstract class ReactWebDriver extends CommonLog {
         val end=System.currentTimeMillis()
         appiumExecResults.append("success")
         val use=(end-start)/1000d
-        if(use>=1){
-          log.info(s"use time $use seconds name=${name}")
-        }
         Left(v)
       }
       case Failure(e) => {
+        val end=System.currentTimeMillis()
+        val use=(end-start)/1000d
+        if(use>=1){
+          log.info(s"use time $use seconds name=${name} result=error")
+        }
         if(needThrow){
           throw e
         }
