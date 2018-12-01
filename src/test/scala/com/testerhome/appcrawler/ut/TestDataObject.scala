@@ -45,7 +45,7 @@ class TestDataObject extends FunSuite with CommonLog with Matchers{
 
   test("read json"){
     val conf=TData.fromJson[CrawlerConf](Source.fromFile("src/test/scala/com/xueqiu/qa/appcrawler/it/xueqiu_private.yml").getLines().mkString("\n"))
-    log.info(conf.saveScreen)
+    log.info(conf.screenshot)
   }
   test("map yaml"){
     val url1=URIElement("a", "b", "c", "d", "e")

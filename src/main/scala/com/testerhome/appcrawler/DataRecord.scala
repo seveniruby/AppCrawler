@@ -7,7 +7,6 @@ import scala.collection.mutable.ListBuffer
   */
 class DataRecord extends CommonLog {
   val record=ListBuffer[(Long, Any)]()
-  private val size=10
   def append(any: Any): Unit ={
     record.append(System.currentTimeMillis()->any)
   }
@@ -38,7 +37,9 @@ class DataRecord extends CommonLog {
     record.last._2
   }
   def pop(): Unit ={
-    record.remove(record.size-1)
+    if(record.size>0) {
+      record.remove(record.size - 1)
+    }
   }
 
 }

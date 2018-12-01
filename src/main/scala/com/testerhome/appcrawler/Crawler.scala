@@ -404,16 +404,18 @@ class Crawler extends CommonLog {
   def needExitApp(): Boolean = {
     //超时退出
     if ((new Date().getTime - startTime) > conf.maxTime * 1000) {
-      log.warn("maxTime out Quit need exit")
+      log.fatal("maxTime out Quit need exit")
       return true
     }
     if (backRetry > backMaxRetry) {
-      log.warn(s"backRetry ${backRetry} > backMaxRetry ${backMaxRetry} need exit")
+      log.fatal(s"backRetry ${backRetry} > backMaxRetry ${backMaxRetry} need exit")
       return true
     }
 
     if (appNameRecord.last(5).forall(conf.appWhiteList.contains(_) == false)) {
-      log.error(s"appNameRecord last 5 ${appNameRecord.last(5)}")
+      log.error(appNameRecord.last(10))
+      log.error(conf.appWhiteList)
+      log.fatal(s"appNameRecord last 5 ${appNameRecord.last(5)}")
       return true
     }
     return false
@@ -760,23 +762,6 @@ class Crawler extends CommonLog {
     pluginClasses.foreach(p => p.afterElementAction(element))
   }
 
-  def getElementAction(): String = {
-    currentElementAction
-  }
-
-  /**
-    * 允许插件重新设定当前控件的行为
-    **/
-  def setElementAction(action: String): Unit = {
-    log.info(s"set action to ${action}")
-    if (action == null) {
-      currentElementAction = "click"
-    } else {
-      currentElementAction = action
-    }
-  }
-
-
   /**
     * 从历史数据中寻找可能的back按键，实现自动分析发现
     *
@@ -829,6 +814,7 @@ class Crawler extends CommonLog {
   def getBackButton(): Option[URIElement] = {
     log.info("go back")
     //找到可能的关闭按钮, 取第一个可用的关闭按钮
+    log.trace(conf.backButton)
     conf.backButton.flatMap(step => getURIElementsByStep(step)).headOption match {
       case Some(backElement) if appNameRecord.isDiff() == false => {
         //app相同并且找到back控件才点击. 否则就默认back
@@ -1084,7 +1070,7 @@ class Crawler extends CommonLog {
   }
 
   def saveElementScreenshot(): Unit ={
-    if (conf.saveScreen && store.clickedElementsList.size>1) {
+    if (conf.screenshot && store.clickedElementsList.size>1) {
       store.saveReqImg(getBasePathName() + ".click.png")
       val originImageName = getBasePathName(2) + ".clicked.png"
       val newImageName = getBasePathName() + ".click.png"
@@ -1127,7 +1113,7 @@ class Crawler extends CommonLog {
     if (pluginClasses.map(p => p.screenshot(originPath)).contains(true)) {
       return
     }
-    if (conf.saveScreen || force) {
+    if (conf.screenshot || force) {
       Thread.sleep(100)
       log.info("start screenshot")
       driver.asyncTask(60, name = "screenshot") {
@@ -1181,7 +1167,6 @@ class Crawler extends CommonLog {
         driver.back()
       }
       backDistance.append("back")
-      appNameRecord.pop()
     }
   }
 
@@ -1214,9 +1199,7 @@ class Crawler extends CommonLog {
     Try(pluginClasses.foreach(_.stop())) match {
       case Success(v) => {}
       case Failure(e) => {
-        log.error(e.getMessage)
-        log.error(e.getCause)
-        e.getStackTrace.foreach(log.error)
+        driver.handleException(e)
       }
     }
     log.info("generate report finish")

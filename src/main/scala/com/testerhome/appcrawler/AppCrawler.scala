@@ -237,6 +237,7 @@ object AppCrawler extends CommonLog {
         }
 
 
+        //todo: 用包名、品牌、分辨率代替
         config.resultDir match {
           case param if param.nonEmpty => crawlerConf.resultDir = param
           case conf if crawlerConf.resultDir.nonEmpty => log.info("use conf in config file")

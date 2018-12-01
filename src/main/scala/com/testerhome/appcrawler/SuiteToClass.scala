@@ -53,9 +53,7 @@ object SuiteToClass extends CommonLog {
 
       }
       case Failure(e) => {
-        log.error(s"makeClass error with ${className}")
-        log.error(e.getMessage)
-        log.error(e.getStackTrace.mkString("\n"))
+        AppCrawler.crawler.driver.handleException(e)
       }
     }
   }

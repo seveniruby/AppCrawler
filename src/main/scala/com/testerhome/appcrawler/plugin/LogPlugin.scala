@@ -30,7 +30,7 @@ class LogPlugin extends Plugin {
         }
       })
     }
-    if(getCrawler().getElementAction()!="skip") {
+    if(element.action!="skip") {
       logs.foreach(log => {
         saveLog(log)
       })

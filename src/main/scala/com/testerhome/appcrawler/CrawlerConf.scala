@@ -15,10 +15,8 @@ import scala.io.Source
   * Created by seveniruby on 16/1/6.
   */
 class CrawlerConf {
-  /** 插件列表，暂时禁用，太高级了，很多人不会用 */
-  var pluginList = List[String]()
   /** 是否截图 */
-  var saveScreen = true
+  var screenshot = true
   var reportTitle = ""
   /** 结果目录 */
   var resultDir = ""
@@ -46,6 +44,12 @@ class CrawlerConf {
     )
   )
 
+  //todo: 去掉triggerAction
+  /** 引导规则. name, value, times三个元素组成 */
+  var triggerActions = ListBuffer[Step](
+    Step(xpath="share_comment_guide_btn")
+  )
+
   /** 默认遍历列表，xpath有用，action暂时没启用*/
   var selectedList = ListBuffer[Step](
     Step(xpath="//*[contains(name(), 'Button')]"),
@@ -58,7 +62,8 @@ class CrawlerConf {
     Step(xpath="//*[contains(name(), 'Image') and @name!='']"),
     Step(xpath="//*[contains(name(), 'Text') and @name!='' and string-length(@label)<10]"),
     Step(xpath="//a"),
-    //adb
+    //adb,uiautomatorviewer dump生成的数据中节点名字与appium不一致
+    //todo: 兼容appium
     Step(xpath="//*[contains(@class, 'Text') and @clickable='true' and string-length(@text)<10]"),
     Step(xpath="//*[@clickable='true']/*[contains(@class, 'Text') and string-length(@text)<10]"),
     Step(xpath="//*[contains(@class, 'Image') and @clickable='true']"),
@@ -72,15 +77,9 @@ class CrawlerConf {
     Step(xpath="//*[@selected='true']/..//*"),
     Step(xpath="//*[@selected='true']/../..//*")
   )
-  /** 后退按钮标记, 主要用于iOS, xpath */
+  /** 后退按钮标记, 主要用于iOS, xpath，目前具备了自动判断返回按钮的能力 */
   var backButton = ListBuffer[Step](
     Step(xpath="Navigate up")
-  )
-
-  //todo: 去掉triggerAction
-  /** 引导规则. name, value, times三个元素组成 */
-  var triggerActions = ListBuffer[Step](
-    Step(xpath="share_comment_guide_btn")
   )
 
   //自动生成的xpath表达式里可以包含的匹配属
@@ -113,7 +112,7 @@ class CrawlerConf {
     Step(xpath=".*[0-9]{2}.*")
   )
 
-
+  //todo: 准备废除
   var beforeStartWait=6000
   //在重启session之前做的事情
   var beforeRestart=ListBuffer[String]()
@@ -129,6 +128,7 @@ class CrawlerConf {
   //afterPage执行多少次后才不执行，比如连续滑动2次都没新元素即取消
   var afterAllMax=2
   //相似控件最多点击几次
+  //todo: 改名为elementsInListMax
   var tagLimitMax = 2
   //个别控件可例外
   var tagLimit = ListBuffer[Step](
@@ -139,6 +139,9 @@ class CrawlerConf {
   )
   //只需要写given与then即可
   var assertGlobal = List[Step]()
+
+  /** 插件列表，暂时禁用，太高级了，很多人不会用 */
+  var pluginList = List[String]()
 
 
   def save(path: String): Unit = {

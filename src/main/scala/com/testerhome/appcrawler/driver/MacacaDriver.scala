@@ -97,7 +97,7 @@ class MacacaDriver extends ReactWebDriver{
       log.info("scale the origin image")
       graph.drawImage(img, 0, 0, screenWidth, screenHeight, null)
     }
-    graph.setStroke(new BasicStroke(5))
+    graph.setStroke(new BasicStroke(6))
     graph.setColor(Color.RED)
     graph.drawRect(x, y, w, h)
     graph.dispose()

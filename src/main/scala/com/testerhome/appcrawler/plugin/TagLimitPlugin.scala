@@ -11,7 +11,7 @@ import com.testerhome.appcrawler.ElementStatus
 class TagLimitPlugin extends Plugin {
   private val tagLimit = scala.collection.mutable.Map[String, Int]()
   private var tagLimitMax = 3
-  private var currentKey=""
+  private var currentKey = ""
 
   override def start(): Unit = {
     //log.addAppender(getCrawler().fileAppender)
@@ -20,29 +20,29 @@ class TagLimitPlugin extends Plugin {
 
   //fixed: conf.tagLimit未生效
   override def fixElementAction(element: URIElement): Unit = {
-    if(element.action.startsWith("_")){
+    if (element.action.startsWith("_")) {
       //非普通元素点击事件，不需要统计，比如back backApp 等
       return
     }
-    if(getCrawler().conf.backButton.map(_.xpath).contains(element.xpath)){
+    if (getCrawler().conf.backButton.map(_.xpath).contains(element.xpath)) {
       return
     }
-    currentKey =getAncestor(element)
+    currentKey = getAncestor(element)
     if (!tagLimit.contains(currentKey)) {
       //应用定制化的规则
       getTimesFromTagLimit(element) match {
-        case Some(v)=> {
-          tagLimit(currentKey)=v
+        case Some(v) => {
+          tagLimit(currentKey) = v
           log.info(s"tagLimit[${currentKey}]=${tagLimit(currentKey)} with conf.tagLimit")
         }
-        case None => tagLimit(currentKey)=tagLimitMax
+        case None => tagLimit(currentKey) = tagLimitMax
       }
 
       //跳过具备selected=true的菜单栏
-      getCrawler().driver.getNodeListByKey("//*[@selected='true']").foreach(m=>{
-        val selectedElement=getCrawler().getUrlElementByMap(m)
-        val selectedKey=getAncestor(selectedElement)
-        tagLimit(selectedKey)=20
+      getCrawler().driver.getNodeListByKey("//*[@selected='true']").foreach(m => {
+        val selectedElement = getCrawler().getUrlElementByMap(m)
+        val selectedKey = getAncestor(selectedElement)
+        tagLimit(selectedKey) = 20
         log.info(s"tagLimit[${selectedKey}]=20")
       })
     }
@@ -50,39 +50,36 @@ class TagLimitPlugin extends Plugin {
     log.info(s"tagLimit[${currentKey}]=${tagLimit(currentKey)}")
     //如果达到限制次数就退出
     if (currentKey.nonEmpty && tagLimit(currentKey) <= 0) {
-      element.action="_skip"
+      element.action = "_skip"
       log.info(s"$element need skip")
     }
   }
 
   override def afterElementAction(element: URIElement): Unit = {
-    if(element.action.startsWith("_")){
+    if (element.action.startsWith("_")) {
       //非普通元素点击事件，不需要统计，比如back backApp 等
       return
     }
-    if(getCrawler().getElementAction()!="clear") {
-      if (tagLimit.contains(currentKey)) {
-        tagLimit(currentKey) -= 1
-        log.info(s"tagLimit[${currentKey}]=${tagLimit(currentKey)}")
-      }else{
-        log.trace(s"not contains ${currentKey}")
-      }
-    }else{
-      log.trace("action=clear")
+    //todo: 因为afterElement不一定在doElement后执行，所以这个地方可能会漏掉统计，刷新报错时会发生
+    if (tagLimit.contains(currentKey)) {
+      tagLimit(currentKey) -= 1
+      log.info(s"tagLimit[${currentKey}]=${tagLimit(currentKey)}")
+    } else {
+      log.trace(s"not contains ${currentKey}")
     }
   }
 
-  def getAncestor(element: URIElement): String ={
+  def getAncestor(element: URIElement): String = {
     getCrawler().currentUrl + element.getAncestor()
   }
 
   def getTimesFromTagLimit(element: URIElement): Option[Int] = {
     this.getCrawler().conf.tagLimit.foreach(tag => {
-      if(getCrawler().driver.getNodeListByKey(tag.getXPath())
+      if (getCrawler().driver.getNodeListByKey(tag.getXPath())
         .map(new URIElement(_, getCrawler().currentUrl))
-        .contains(element)){
+        .contains(element)) {
         return Some(tag.times)
-      }else{
+      } else {
         None
       }
     })

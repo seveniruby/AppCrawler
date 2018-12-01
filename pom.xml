@@ -77,12 +77,6 @@
         </dependency>
 
         <dependency>
-            <groupId>net.lightbody.bmp</groupId>
-            <artifactId>browsermob-core</artifactId>
-            <version>2.1.5</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.lucee</groupId>
             <artifactId>commons-codec</artifactId>
             <version>1.10.L001</version>
