@@ -829,6 +829,7 @@ class Crawler extends CommonLog {
   def getBackButton(): Option[URIElement] = {
     log.info("go back")
     //找到可能的关闭按钮, 取第一个可用的关闭按钮
+    log.trace(conf.backButton)
     conf.backButton.flatMap(step => getURIElementsByStep(step)).headOption match {
       case Some(backElement) if appNameRecord.isDiff() == false => {
         //app相同并且找到back控件才点击. 否则就默认back
@@ -1214,9 +1215,7 @@ class Crawler extends CommonLog {
     Try(pluginClasses.foreach(_.stop())) match {
       case Success(v) => {}
       case Failure(e) => {
-        log.error(e.getMessage)
-        log.error(e.getCause)
-        e.getStackTrace.foreach(log.error)
+        driver.handleException(e)
       }
     }
     log.info("generate report finish")

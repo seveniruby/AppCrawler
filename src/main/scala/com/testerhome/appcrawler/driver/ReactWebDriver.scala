@@ -211,6 +211,9 @@ abstract class ReactWebDriver extends CommonLog {
         val end=System.currentTimeMillis()
         appiumExecResults.append("success")
         val use=(end-start)/1000d
+        if(use>=1){
+          log.info(s"use time $use seconds name=${name} result=success")
+        }
         Left(v)
       }
       case Failure(e) => {
@@ -227,14 +230,26 @@ abstract class ReactWebDriver extends CommonLog {
             log.error(s"${timeout} seconds timeout")
           }
           case _ => {
-            log.error("exception")
-            log.error(e.getMessage)
-            log.error(e.getStackTrace.mkString("\n"))
+            handleException(e)
           }
         }
         Right(e)
       }
     }
+  }
+
+  def handleException(e: Throwable): Unit ={
+    var exception = e
+    do {
+      log.error(exception.getLocalizedMessage)
+      exception.getStackTrace.foreach(log.error)
+      if(exception.getCause!=null){
+        log.error("find more cause")
+      }else{
+        log.error("exception finish")
+      }
+      exception=exception.getCause
+    }while(exception!=null)
   }
 
   def tryAndCatch[T](r: => T): Option[T] = {
@@ -244,9 +259,7 @@ abstract class ReactWebDriver extends CommonLog {
         Some(v)
       }
       case Failure(e) => {
-        log.warn("message=" + e.getMessage)
-        log.warn("cause=" + e.getCause)
-        //log.trace(e.getStackTrace.mkString("\n"))
+        handleException(e)
         None
       }
     }

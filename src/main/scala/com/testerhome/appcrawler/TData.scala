@@ -16,7 +16,6 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.github.tototoshi.csv.CSVReader
 import com.jayway.jsonpath.{Configuration, JsonPath}
 import com.sun.org.apache.xml.internal.dtm.ref.DTMNodeList
-import net.lightbody.bmp.core.har.Har
 import net.minidev.json.JSONArray
 import org.apache.commons.io.IOUtils
 
@@ -328,14 +327,6 @@ object TData {
     charset.setAccessible(true)
     charset.set(null, null)
   }
-
-
-  def har2string(har:Har): String ={
-    val writer=new StringWriter()
-    har.writeTo(writer)
-    writer.toString
-  }
-
 
   def decodeBase64(raw: String): String = {
     return new String(Base64.getDecoder.decode(raw))
