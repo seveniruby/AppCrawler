@@ -8,23 +8,29 @@ import java.util
 
 import io.qameta.allure.Description
 
+import scala.io.Source
+import scala.collection.JavaConverters._
 
 class TestJUnit5 {
   @Test
   @Description("Some detailed test description")
-  def x(): Unit ={
+  def x(): Unit = {
     println("xxxxxxxx")
-    assertTrue(1==2)
+    assertTrue(1 == 2)
   }
 
   @TestFactory
   def dynamicTestsFromCollection: util.Collection[DynamicTest] = {
-    util.Arrays.asList(
-      dynamicTest("1st dynamic test", () => {
-        println("1")
+    Source.fromFile("/tmp/1.data").mkString.split("\n").map(line => {
+      dynamicTest(line, () => {
+        println(line)
+        println("xpath")
+        println("screenshot")
+        println("after clicked")
+        println("screenshot2")
         assertTrue(true)
-      }),
-      dynamicTest("2nd dynamic test", () => assertEquals(4, 2 * 2)))
+      })
+    }).toList.asJava
   }
 
 }

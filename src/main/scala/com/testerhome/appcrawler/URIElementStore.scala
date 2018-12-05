@@ -100,10 +100,6 @@ class URIElementStore {
     }
   }
 
-  def getLastResponseImage(): Unit ={
-
-  }
-
 
   def isDiff(): Boolean = {
     val currentElement = clickedElementsList.last
@@ -135,15 +131,3 @@ class URIElementStore {
 object ElementStatus extends Enumeration {
   val Ready, Clicked, Skipped = Value
 }
-
-case class ElementInfo(
-                        var reqDom: String = "",
-                        var resDom: String = "",
-                        var reqHash: String = "",
-                        var resHash: String = "",
-                        var reqImg:String="",
-                        var resImg:String="",
-                        var clickedIndex: Int = -1,
-                        var action: ElementStatus.Value = ElementStatus.Ready,
-                        var element: URIElement = URIElement(url="Init", tag="", id="", name="", xpath="")
-                      )
