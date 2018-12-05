@@ -47,7 +47,8 @@ class CrawlerConf {
   //todo: 去掉triggerAction
   /** 引导规则. name, value, times三个元素组成 */
   var triggerActions = ListBuffer[Step](
-    Step(xpath="share_comment_guide_btn")
+    Step(xpath="permission_allow_button", times = 3),
+    Step(xpath="允许", times = 3)
   )
 
   /** 默认遍历列表，xpath有用，action暂时没启用*/
@@ -68,6 +69,7 @@ class CrawlerConf {
     Step(xpath="//*[@clickable='true']/*[contains(@class, 'Text') and string-length(@text)<10]"),
     Step(xpath="//*[contains(@class, 'Image') and @clickable='true']"),
     Step(xpath="//*[@clickable='true']/*[contains(@class, 'Image')]"),
+    Step(xpath="//*[@clickable='true' and contains(@class, 'Button')]"),
   )
   /** 优先遍历元素 */
   var firstList = ListBuffer[Step](

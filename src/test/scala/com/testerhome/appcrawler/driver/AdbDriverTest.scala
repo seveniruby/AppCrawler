@@ -31,10 +31,13 @@ class AdbDriverTest extends FunSuite {
       "appPackage=com.xueqiu.android," +
         "appActivity=.view.WelcomeActivityAlias," +
         "automationName=adb,noReset=false," +
-        "udid=adb.wetest.qq.com:40300",
+        "udid=adb.wetest.qq.com:41272," +
+        "autoGrantPermissions=true," +
+        "ignoreUnimportantViews=true," +
+        "disableAndroidWatchers=true",
       "-o",
       s"/tmp/xueqiu/adb/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}",
-        "-v"
+        "-vv"
     )
     )
   }

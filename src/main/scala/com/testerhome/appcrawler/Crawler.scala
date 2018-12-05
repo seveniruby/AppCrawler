@@ -910,7 +910,11 @@ class Crawler extends CommonLog {
       log.info(s"${currentUrl} all elements had be clicked")
       //滚动多次没有新元素
 
-      if (conf.afterAll != null) {
+      if(store.clickedElementsList.size<10){
+        log.info("just start, maybe loading is slow ,so just wait")
+        nextElement=Some(getEventElement("Log"))
+      }
+      else if (conf.afterAll != null && conf.afterAll.nonEmpty) {
         val isMatch = conf.afterAll.exists(step => step.getGiven().forall(g => driver.getNodeListByKey(g).size > 0))
         if (isMatch == false) {
           log.info("not match afterAll")
@@ -1183,7 +1187,7 @@ class Crawler extends CommonLog {
           step.use()
           log.trace(s"step times = ${step.times}")
           e.action = step.getAction()
-          Some(e)
+          return Some(e)
         }
         case None => {
           log.trace(s"not found trigger ${step.getXPath()}")
