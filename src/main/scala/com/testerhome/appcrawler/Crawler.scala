@@ -43,7 +43,7 @@ class Crawler extends CommonLog {
   private var exitCrawl = false
   private var backRetry = 0
   //最大重试次数
-  var backMaxRetry = 3
+  var backMaxRetry = 2
   private var afterAllRetry = 0
   private var notFoundRetry = 0
   private var notFoundMax = 2

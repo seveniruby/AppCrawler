@@ -47,6 +47,7 @@ object XPathUtil extends CommonLog {
     }
   }
 
+  //todo: xml中有$b
   def toPrettyXML(raw: String): String = {
     //done: android page source不能格式化，但是普通的xml可以, android page source在1.9后多了一些多余的空格
     val document = toDocument(raw.trim.replaceAll("> *<", "><"))
