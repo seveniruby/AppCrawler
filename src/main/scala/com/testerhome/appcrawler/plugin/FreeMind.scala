@@ -4,6 +4,7 @@ import com.testerhome.appcrawler.TreeNode
 
 import scala.collection.mutable.ListBuffer
 import scala.reflect.io.File
+import collection.JavaConversions._
 
 /**
   * Created by seveniruby on 16/9/19.
@@ -19,7 +20,7 @@ class FreeMind extends Plugin{
   }
 
   def report(): Unit ={
-    getCrawler().store.clickedElementsList.foreach(element=>{
+    getCrawler().store.getClickElementList.foreach(element=>{
       elementTreeList.append(element.url)
       elementTreeList.append(element.xpath)
     })
