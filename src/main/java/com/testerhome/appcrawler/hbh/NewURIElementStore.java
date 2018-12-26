@@ -40,7 +40,9 @@ public class NewURIElementStore {
     }
 
     public void setElementClear(URIElement element) {
-        newElementStore.remove(element.toString());
+        if (newElementStore.containsKey(element.toString())){
+            newElementStore.remove(element.toString());
+        }
     }
 
     public boolean isDiff() {

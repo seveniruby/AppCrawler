@@ -17,7 +17,7 @@ public class JavaAppCrawlerTest {
              "ignoreUnimportantViews=true," +
              "disableAndroidWatchers=true",
              "-o",
-             "/tmp/xueqiu2/" + new java.text.SimpleDateFormat("YYYYMMddHHmmss").
+             "/tmp/xueqiu5/" + new java.text.SimpleDateFormat("YYYYMMddHHmmss").
                                 format(new java.util.Date().getTime()),
              "-y",
              "{ blackList: [ {xpath: action_night}, {xpath: action_setting}, {xpath: '.*[0-9\\.]{2}.*'} ], " +

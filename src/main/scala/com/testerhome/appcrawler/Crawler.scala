@@ -55,6 +55,7 @@ class Crawler extends CommonLog {
   private val startTime = new Date().getTime
 
   val urlStack = mutable.Stack[String]()
+  var urlMap = mutable.Map[String, String]()
 
   protected val backDistance = new DataRecord()
   val appNameRecord = new DataRecord()
@@ -369,9 +370,14 @@ class Crawler extends CommonLog {
       ""
     }
     if (uri.nonEmpty) {
-      List(driver.getAppName(), uri).distinct.filter(_.nonEmpty).mkString(".")
+//      List(driver.getAppName(), uri).distinct.filter(_.nonEmpty).mkString(".")
+      uri
     } else {
-      List(driver.getAppName(), driver.getUrl()).distinct.filter(_.nonEmpty).mkString(".")
+//      List(driver.getAppName(), driver.getUrl()).distinct.filter(_.nonEmpty).mkString(".")
+      if (!urlMap.contains(driver.getUrl())){
+        urlMap.put(driver.getUrl(),store.lastElementInfo().getUriElement.getValidName())
+      }
+      driver.getUrl()
     }
 
 
@@ -680,7 +686,16 @@ class Crawler extends CommonLog {
     }
     log.trace(s"urlStack=${urlStack}")
     //使用当前的页面. 不再记录堆栈.先简化
-
+    var sb = new mutable.StringBuilder()
+    sb.append(driver.getAppName())
+    for (i <- (0 until urlStack.size).reverse){
+      var str = urlStack.toList.get(i)
+      if (urlMap.contains(str)){
+        str = urlMap.get(str).head.toString
+      }
+      sb.append("." + str)
+    }
+    currentUrl = sb.toString()
     //val contexts = MiniAppium.doAppium(driver.getContextHandles).getOrElse("")
     //val windows=MiniAppium.doAppium(driver.getWindowHandles).getOrElse("")
     //val windows = ""
