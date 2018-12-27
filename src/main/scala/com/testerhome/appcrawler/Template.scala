@@ -2,12 +2,14 @@ package com.testerhome.appcrawler
 
 import java.io.File
 
+import com.testerhome.appcrawler.hbh.NewURIElementStore
 import org.apache.commons.io.FileUtils
 import org.fusesource.scalate.TemplateEngine
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
+import collection.JavaConversions._
 
 /**
   * Created by seveniruby on 2017/1/10.
@@ -28,11 +30,11 @@ class Template {
   def read(path:String): Unit = {
 
     //val path = "/Users/seveniruby/projects/AppCrawlerSuite/AppCrawler/android_20170109145102/elements.yml"
-    val store = (TData.fromYaml[URIElementStore](Source.fromFile(path).mkString)).elementStore
+    val store = (TData.fromYaml[NewURIElementStore](Source.fromFile(path).mkString)).getNewElementStore
 
     store.foreach(s => {
-      val reqDom = s._2.reqDom
-      val url = s._2.element.url
+      val reqDom = s._2.getReqDom
+      val url = s._2.getUriElement.url
       if (reqDom.size != 0) {
 
         if (elements.contains(url) == false) {

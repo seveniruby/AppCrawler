@@ -1,10 +1,13 @@
 package com.testerhome.appcrawler
 
+import com.testerhome.appcrawler.hbh.NewElementInfo
+import com.testerhome.appcrawler.hbh.NewURIElementStore.Status
 import com.testerhome.appcrawler.plugin.FlowDiff
 import org.scalatest._
 
 import scala.io.Source
 import scala.reflect.io.File
+import collection.JavaConversions._
 
 /**
   * Created by seveniruby on 16/9/26.
@@ -20,16 +23,16 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
   def addTestCase(): Unit = {
     //每个点击事件
 
-    val allKeys = DiffSuite.masterStore.filter(_._2.element.url==suite).keys ++
-      DiffSuite.candidateStore.filter(_._2.element.url==suite).keys
+    val allKeys = DiffSuite.masterStore.filter(_._2.getUriElement.url==suite).keys ++
+      DiffSuite.candidateStore.filter(_._2.getUriElement.url==suite).keys
     log.debug(allKeys.size)
 
     allKeys.foreach(key => {
       val masterElements=DiffSuite.masterStore.get(key) match {
-        case Some(elementInfo) if elementInfo.action==ElementStatus.Clicked && elementInfo.resDom.nonEmpty => {
+        case Some(elementInfo) if elementInfo.getAction==Status.CLICKED && elementInfo.getResDom.nonEmpty => {
           log.debug(elementInfo)
-          log.debug(elementInfo.resDom)
-          DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.resDom))
+          log.debug(elementInfo.getResDom)
+          DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.getResDom))
             .flatten.map(m=>{
             val ele=new URIElement(m, key)
             ele.xpath->ele
@@ -42,8 +45,8 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
 
       val candidateElements=DiffSuite.candidateStore.get(key) match {
           //todo: 老版本点击过, 新版本没点击过, 没有resDom如何做
-        case Some(elementInfo) if elementInfo.action==ElementStatus.Clicked && elementInfo.resDom.nonEmpty => {
-          DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.resDom))
+        case Some(elementInfo) if elementInfo.getAction==Status.CLICKED && elementInfo.getResDom.nonEmpty => {
+          DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.getResDom))
             .flatten.map(m=>{
             val ele=new URIElement(m, key)
             ele.xpath->ele
@@ -86,11 +89,11 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
               s"""
                  |candidate image
                  |-------
-                 |<img src='${File(DiffSuite.candidateStore.getOrElse(key, ElementInfo()).resImg).name}' width='80%' />
+                 |<img src='${File(DiffSuite.candidateStore.getOrElse(key, new NewElementInfo()).getResImg).name}' width='80%' />
                  |
                  |master image
                  |--------
-                 |<img src='${File(DiffSuite.masterStore.getOrElse(key, ElementInfo()).resImg).name}' width='80%' />
+                 |<img src='${File(DiffSuite.masterStore.getOrElse(key, new NewElementInfo()).getResImg).name}' width='80%' />
                  |
                 """.stripMargin)
           }
@@ -113,12 +116,12 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
 }
 
 object DiffSuite {
-  val masterStore = Report.loadResult(s"${Report.master}/elements.yml").elementStore
-  val candidateStore = Report.loadResult(s"${Report.candidate}/elements.yml").elementStore
+  val masterStore : scala.collection.mutable.Map[String, NewElementInfo] = Report.loadResult(s"${Report.master}/elements.yml").getNewElementStore
+  val candidateStore : scala.collection.mutable.Map[String, NewElementInfo] = Report.loadResult(s"${Report.candidate}/elements.yml").getNewElementStore
   val blackList = List(".*\\.instance.*", ".*bounds.*")
   val range=List("//*[contains(name(), 'Text')]", "//*[contains(name(), 'Image')]", "//*[contains(name(), 'Button')]")
   def saveTestCase(): Unit ={
-    val suites=masterStore.map(_._2.element.url)++candidateStore.map(_._2.element.url)
+    val suites=masterStore.map(_._2.getUriElement.url)++candidateStore.map(_._2.getUriElement.url)
     suites.foreach(suite=> {
       SuiteToClass.genTestCaseClass(suite, "com.testerhome.appcrawler.DiffSuite", Map("suite"->suite, "name"->suite), Report.testcaseDir)
     })

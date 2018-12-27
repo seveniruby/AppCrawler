@@ -12,6 +12,7 @@ import sun.misc.{Signal, SignalHandler}
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 import scala.reflect.io.File
+import collection.JavaConversions._
 
 /**
   * Created by seveniruby on 16/8/12.
@@ -47,7 +48,7 @@ class ReportPlugin extends Plugin with Report {
   }
 
   def needReport(): Boolean ={
-    val curSize=getCrawler().store.clickedElementsList.size
+    val curSize=getCrawler().store.getClickElementList.size
     if(curSize%5==0){
       if(curSize%20==0){
         true

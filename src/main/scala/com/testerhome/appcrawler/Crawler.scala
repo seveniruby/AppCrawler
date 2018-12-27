@@ -4,6 +4,7 @@ import java.io
 import java.util.Date
 
 import com.testerhome.appcrawler.driver._
+import com.testerhome.appcrawler.hbh.NewURIElementStore
 import com.testerhome.appcrawler.plugin.Plugin
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -18,7 +19,7 @@ import scala.collection.mutable.{ListBuffer, Map}
 import scala.collection.{immutable, mutable}
 import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}
-
+import scala.collection.JavaConversions._
 
 /**
   * Created by seveniruby on 15/11/28.
@@ -30,7 +31,7 @@ class Crawler extends CommonLog {
   /** 存放插件类 */
   val pluginClasses = ListBuffer[Plugin]()
 
-  val store = new URIElementStore
+  val store = new NewURIElementStore
 
   private var currentElementAction = "click"
   private var platformName = ""
@@ -54,6 +55,7 @@ class Crawler extends CommonLog {
   private val startTime = new Date().getTime
 
   val urlStack = mutable.Stack[String]()
+  var urlMap = mutable.Map[String, String]()
 
   protected val backDistance = new DataRecord()
   val appNameRecord = new DataRecord()
@@ -368,9 +370,14 @@ class Crawler extends CommonLog {
       ""
     }
     if (uri.nonEmpty) {
-      List(driver.getAppName(), uri).distinct.filter(_.nonEmpty).mkString(".")
+//      List(driver.getAppName(), uri).distinct.filter(_.nonEmpty).mkString(".")
+      uri
     } else {
-      List(driver.getAppName(), driver.getUrl()).distinct.filter(_.nonEmpty).mkString(".")
+//      List(driver.getAppName(), driver.getUrl()).distinct.filter(_.nonEmpty).mkString(".")
+      if (!urlMap.contains(driver.getUrl())){
+        urlMap.put(driver.getUrl(),store.lastElementInfo().getUriElement.getValidName())
+      }
+      driver.getUrl()
     }
 
 
@@ -679,7 +686,16 @@ class Crawler extends CommonLog {
     }
     log.trace(s"urlStack=${urlStack}")
     //使用当前的页面. 不再记录堆栈.先简化
-
+    var sb = new mutable.StringBuilder()
+    sb.append(driver.getAppName())
+    for (i <- (0 until urlStack.size).reverse){
+      var str = urlStack.toList.get(i)
+      if (urlMap.contains(str)){
+        str = urlMap.get(str).head.toString
+      }
+      sb.append("." + str)
+    }
+    currentUrl = sb.toString()
     //val contexts = MiniAppium.doAppium(driver.getContextHandles).getOrElse("")
     //val windows=MiniAppium.doAppium(driver.getWindowHandles).getOrElse("")
     //val windows = ""
@@ -771,9 +787,9 @@ class Crawler extends CommonLog {
     //去掉开头的界面切换
     var urlList=ListBuffer[String]()
 
-    (3 until store.clickedElementsList.size).map(i => {
-      val curElement = store.clickedElementsList(i)
-      val preElement = store.clickedElementsList(i - 1)
+    (3 until store.getClickElementList.size).map(i => {
+      val curElement = store.getClickElementList.get(i)
+      val preElement = store.getClickElementList.get(i - 1)
       urlList.append(curElement.url)
       if (curElement.url != preElement.url
         && urlList.indexOf(curElement.url) < i-3-2 ) {
@@ -910,7 +926,7 @@ class Crawler extends CommonLog {
       log.info(s"${currentUrl} all elements had be clicked")
       //滚动多次没有新元素
 
-      if(store.clickedElementsList.size<10){
+      if(store.getClickElementList.size<10){
         log.info("just start, maybe loading is slow ,so just wait")
         nextElement=Some(getEventElement("Log"))
       }
@@ -960,7 +976,7 @@ class Crawler extends CommonLog {
 
   def doElementAction(element: URIElement): Unit = {
     //todo: 如果有相同的控件被重复记录, 会出问题, 比如确定退出的规则
-    log.info(s"current index = ${store.clickedElementsList.size - 1}")
+    log.info(s"current index = ${store.getClickElementList.size - 1}")
     log.info(s"current xpath = ${element.xpath}")
     log.info(s"current action = ${element.action}")
     log.info(s"current element = ${element}")
@@ -989,7 +1005,7 @@ class Crawler extends CommonLog {
       }
       case "_AfterAll" => {
         if (conf.afterAll != null) {
-          if (store.clickedElementsList.last.action.equals("after")) {
+          if (store.getClickElementList.last.action.equals("after")) {
             afterAllRetry += 1
             log.info(s"afterAll=${afterAllRetry}")
           } else {
@@ -1019,7 +1035,7 @@ class Crawler extends CommonLog {
               driver.event(code)
             }*/
       case crawl if crawl != null && crawl.contains("crawl\\(.*\\)") => {
-        store.clickedElementsList.remove(store.clickedElementsList.size - 1)
+        store.getClickElementList.remove(store.getClickElementList.size - 1)
         Util.dsl(crawl)
       }
       case str: String => {
@@ -1074,7 +1090,7 @@ class Crawler extends CommonLog {
   }
 
   def saveElementScreenshot(): Unit ={
-    if (conf.screenshot && store.clickedElementsList.size>1) {
+    if (conf.screenshot && store.getClickElementList.size>1) {
       store.saveReqImg(getBasePathName() + ".click.png")
       val originImageName = getBasePathName(2) + ".clicked.png"
       val newImageName = getBasePathName() + ".click.png"
@@ -1097,8 +1113,8 @@ class Crawler extends CommonLog {
 
   def getBasePathName(right: Int = 1): String = {
     //序号_文件名
-    val element = store.clickedElementsList.takeRight(right).head
-    s"${conf.resultDir}/${store.clickedElementsList.size - right}_" + element.toString().take(100)
+    val element = store.getClickElementList.takeRight(right).head
+    s"${conf.resultDir}/${store.getClickElementList.size - right}_" + element.toString().take(100)
   }
 
   def saveDom(): Unit = {

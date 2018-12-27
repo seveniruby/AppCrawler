@@ -1,6 +1,7 @@
 package com.testerhome.appcrawler
 
 import java.io.File
+import java.util.regex.{Matcher, Pattern}
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import javax.xml.bind.annotation.XmlAttribute
@@ -106,25 +107,17 @@ case class URIElement(
   override def toString: String = {
     val fileName=new StringBuilder()
     fileName.append(url.replace(File.separatorChar, '_'))
-    fileName.append(s".tag=${tag.replace("android.widget.", "").replace("Activity", "")}")
+    fileName.append("." + getValidName())
+    fileName.append(s"(${tag.replace("android.widget.", "").replace("Activity", "")})")
+
     //todo: 在滑动的时候容易导致控件识别问题
     /*if(instance.nonEmpty){
       fileName.append(s".${instance}")
     }*/
     if(depth.nonEmpty){
-      fileName.append(s".depth=${depth}")
+      fileName.append(s"_depth=${depth}")
     }
-    if(id.nonEmpty){
-      fileName.append(s".id=${id.split('/').last}")
-    }
-    if(name.nonEmpty){
-      fileName.append(s".name=${name}")
-    }
-    if(text.nonEmpty){
-      fileName.append(s".text=${ StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")}")
-    }
-
-    fileName.toString()
+    standardWinFileName(fileName.toString())
   }
 
 
@@ -135,4 +128,22 @@ case class URIElement(
     new java.math.BigInteger(1,m.digest()).toString(16)
   }
 
+  // windows下命名规范
+  def standardWinFileName(s : String) : String = {
+    val pattern = Pattern.compile("[\\s\\\\/:\\*\\?\\\"<>\\|]")
+    val matcher = pattern.matcher(s)
+    matcher.replaceAll("")
+  }
+
+  def getValidName(): String ={
+    if(text.nonEmpty){
+      StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")
+    }else if(id.nonEmpty){
+      id.split('/').last
+    }else if(name.nonEmpty){
+      name
+    }else{
+      tag.replace("android.widget.", "").replace("Activity", "")
+    }
+  }
 }
