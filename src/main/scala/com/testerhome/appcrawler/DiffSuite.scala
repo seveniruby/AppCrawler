@@ -1,7 +1,7 @@
 package com.testerhome.appcrawler
 
-import com.testerhome.appcrawler.hbh.NewElementInfo
-import com.testerhome.appcrawler.hbh.NewURIElementStore.Status
+import com.testerhome.appcrawler.data.PathElementInfo
+import com.testerhome.appcrawler.data.PathElementStore.Status
 import com.testerhome.appcrawler.plugin.FlowDiff
 import org.scalatest._
 
@@ -89,11 +89,11 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
               s"""
                  |candidate image
                  |-------
-                 |<img src='${File(DiffSuite.candidateStore.getOrElse(key, new NewElementInfo()).getResImg).name}' width='80%' />
+                 |<img src='${File(DiffSuite.candidateStore.getOrElse(key, new PathElementInfo()).getResImg).name}' width='80%' />
                  |
                  |master image
                  |--------
-                 |<img src='${File(DiffSuite.masterStore.getOrElse(key, new NewElementInfo()).getResImg).name}' width='80%' />
+                 |<img src='${File(DiffSuite.masterStore.getOrElse(key, new PathElementInfo()).getResImg).name}' width='80%' />
                  |
                 """.stripMargin)
           }
@@ -116,8 +116,8 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
 }
 
 object DiffSuite {
-  val masterStore : scala.collection.mutable.Map[String, NewElementInfo] = Report.loadResult(s"${Report.master}/elements.yml").getNewElementStore
-  val candidateStore : scala.collection.mutable.Map[String, NewElementInfo] = Report.loadResult(s"${Report.candidate}/elements.yml").getNewElementStore
+  val masterStore : scala.collection.mutable.Map[String, PathElementInfo] = Report.loadResult(s"${Report.master}/elements.yml").getLinkedStore
+  val candidateStore : scala.collection.mutable.Map[String, PathElementInfo] = Report.loadResult(s"${Report.candidate}/elements.yml").getLinkedStore
   val blackList = List(".*\\.instance.*", ".*bounds.*")
   val range=List("//*[contains(name(), 'Text')]", "//*[contains(name(), 'Image')]", "//*[contains(name(), 'Button')]")
   def saveTestCase(): Unit ={

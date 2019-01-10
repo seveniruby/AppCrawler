@@ -1,13 +1,13 @@
 package com.testerhome.appcrawler.ut;
 
-import com.testerhome.appcrawler.hbh.NewURIElement;
+import com.testerhome.appcrawler.data.PathElement;
 import org.junit.jupiter.api.Test;
 
 public class ElementUrlTest {
 
     @Test
     public void test1(){
-        NewURIElement element = new NewURIElement("com.xueqiu.android.MainActivity",
+        PathElement element = new PathElement("com.xueqiu.android.MainActivity",
                 "TextView",
                 "agree",
                 "","好的","","7","","","","",

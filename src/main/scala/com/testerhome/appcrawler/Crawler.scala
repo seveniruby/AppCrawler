@@ -4,8 +4,9 @@ import java.io
 import java.util.Date
 
 import com.testerhome.appcrawler.driver._
-import com.testerhome.appcrawler.hbh.NewURIElementStore
+import com.testerhome.appcrawler.data.PathElementStore
 import com.testerhome.appcrawler.plugin.Plugin
+import com.testerhome.appcrawler.report.Utils
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.log4j._
@@ -31,7 +32,7 @@ class Crawler extends CommonLog {
   /** 存放插件类 */
   val pluginClasses = ListBuffer[Plugin]()
 
-  val store = new NewURIElementStore
+  val store = new PathElementStore
 
   private var currentElementAction = "click"
   private var platformName = ""
@@ -1222,6 +1223,9 @@ class Crawler extends CommonLog {
         driver.handleException(e)
       }
     }
+
+    // 使用mvn命令生成allure报告
+    new Utils().start(conf.resultDir)
     log.info("generate report finish")
     System.exit(0)
 

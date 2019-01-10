@@ -1,22 +1,22 @@
-package com.testerhome.appcrawler.hbh;
+package com.testerhome.appcrawler.data;
 
 import com.testerhome.appcrawler.URIElement;
 import scala.collection.Map;
 
 import java.io.File;
 
-public class NewURIElement extends URIElement {
+public class PathElement extends URIElement {
 
-    public NewURIElement(String url, String tag, String id,
-                         String name, String text, String instance,
-                         String depth, String valid, String selected,
-                         String xpath, String ancestor,
-                         int x, int y, int width, int height, String action) {
+    public PathElement(String url, String tag, String id,
+                       String name, String text, String instance,
+                       String depth, String valid, String selected,
+                       String xpath, String ancestor,
+                       int x, int y, int width, int height, String action) {
         super(url, tag, id, name, text, instance, depth, valid,
                 selected, xpath, ancestor, x, y, width, height, action);
     }
 
-    public NewURIElement(Map<String, Object> nodeMap, String uri) {
+    public PathElement(Map<String, Object> nodeMap, String uri) {
         super(nodeMap, uri);
     }
 

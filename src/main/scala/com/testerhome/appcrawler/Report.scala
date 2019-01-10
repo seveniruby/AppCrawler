@@ -1,6 +1,6 @@
 package com.testerhome.appcrawler
 
-import com.testerhome.appcrawler.hbh.NewURIElementStore
+import com.testerhome.appcrawler.data.PathElementStore
 import org.apache.commons.io.FileUtils
 import org.scalatest.tools.Runner
 import sun.security.provider.MD5
@@ -18,14 +18,14 @@ trait Report extends CommonLog {
   var reportPath = ""
   var testcaseDir = ""
 
-  def saveTestCase(store: NewURIElementStore, resultDir: String): Unit = {
+  def saveTestCase(store: PathElementStore, resultDir: String): Unit = {
     log.info("save testcase")
     reportPath = resultDir
     testcaseDir = reportPath + "/tmp/"
     //为了保持独立使用
     val path = new java.io.File(resultDir).getCanonicalPath
 
-    val suites = store.getNewElementStore.map(x => x._2.getUriElement.url).toList.distinct
+    val suites = store.getLinkedStore.map(x => x._2.getUriElement.url).toList.distinct
     var index=0
     suites.foreach(suite => {
       log.info(s"gen testcase class ${suite}")
@@ -85,14 +85,14 @@ object Report extends Report{
   var master=""
   var candidate=""
   var reportDir=""
-  var store=new NewURIElementStore
+  var store=new PathElementStore
 
 
-  def loadResult(elementsFile: String): NewURIElementStore ={
+  def loadResult(elementsFile: String): PathElementStore ={
     val content=Source.fromFile(elementsFile).mkString
     log.info(s"${elementsFile} size = ${content.size}")
     //todo: cannot deserialize from Object value (no delegate- or property-based Creator)
     log.warn("一定概率失败，底层依赖库的bug")
-    TData.fromYaml[NewURIElementStore](content)
+    TData.fromYaml[PathElementStore](content)
   }
 }

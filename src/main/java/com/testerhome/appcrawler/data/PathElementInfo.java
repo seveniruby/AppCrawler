@@ -1,8 +1,8 @@
-package com.testerhome.appcrawler.hbh;
+package com.testerhome.appcrawler.data;
 
 import com.testerhome.appcrawler.URIElement;
 
-public class NewElementInfo{
+public class PathElementInfo {
 
     String reqDom;
     String resDom;
@@ -10,11 +10,11 @@ public class NewElementInfo{
     String resHash;
     String reqImg;
     String resImg;
-    NewURIElementStore.Status action = NewURIElementStore.Status.READY;
+    PathElementStore.Status action = PathElementStore.Status.READY;
     int clickedIndex;
     URIElement uriElement;
 
-    public NewElementInfo(){}
+    public PathElementInfo(){}
 
     public String getReqDom() {
         return reqDom;
@@ -64,7 +64,7 @@ public class NewElementInfo{
         this.resImg = resImg;
     }
 
-    public void setAction(NewURIElementStore.Status action) {
+    public void setAction(PathElementStore.Status action) {
         this.action = action;
     }
 
@@ -72,7 +72,7 @@ public class NewElementInfo{
         this.uriElement = uriElement;
     }
 
-    public NewURIElementStore.Status getAction() {
+    public PathElementStore.Status getAction() {
         return action;
     }
 

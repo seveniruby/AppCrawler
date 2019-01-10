@@ -3,14 +3,14 @@ package com.testerhome.appcrawler.ut;
 import com.testerhome.appcrawler.AppCrawler;
 import com.testerhome.appcrawler.TData;
 import com.testerhome.appcrawler.URIElement;
-import com.testerhome.appcrawler.hbh.NewURIElementStore;
+import com.testerhome.appcrawler.data.PathElementStore;
 import org.junit.jupiter.api.Test;
 
 public class StoreTest {
 
     @Test
     public void test2(){
-        NewURIElementStore store = new NewURIElementStore();
+        PathElementStore store = new PathElementStore();
 
         URIElement element1 = new URIElement("a", "b", "c",
                 "d", "e","","","","",
