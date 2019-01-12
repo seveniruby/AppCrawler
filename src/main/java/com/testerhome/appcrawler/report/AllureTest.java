@@ -1,8 +1,6 @@
-package com.testerhome.appcrawler.allure;
+package com.testerhome.appcrawler.report;
 
-import com.testerhome.appcrawler.CrawlerConf;
-import com.testerhome.appcrawler.plugin.Plugin;
-import com.testerhome.appcrawler.report.ReadYaml;
+import com.testerhome.appcrawler.AppCrawler;
 import io.qameta.allure.Allure;
 import io.qameta.allure.Attachment;
 import io.qameta.allure.Feature;
@@ -25,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 @Feature("雪球app")
-public class AllureTest{
+public class AllureTest {
 
     @Story("控件点击")
     @TestFactory
@@ -33,9 +31,9 @@ public class AllureTest{
 
         List<DynamicTest> dynamicTests = new ArrayList<>();
         ReadYaml read = new ReadYaml();
-
+        String path = AppCrawler.crawler().conf().resultDir();
         // todo : 动态设置目录
-        Map map = read.convert2Map( "testAllureReport/elements.yml");
+        Map map = read.convert2Map(path + "/elements.yaml");
         Map mapTitle = (HashMap) map.get("linkedStore");
         Map mapVal, mapEle;
         for(Object key : mapTitle.keySet()) {
