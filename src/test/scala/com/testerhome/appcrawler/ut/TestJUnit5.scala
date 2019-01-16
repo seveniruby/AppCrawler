@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.DynamicTest
 import java.util
 
+import com.testerhome.appcrawler.AppCrawler
 import io.qameta.allure.Description
 
 import scala.io.Source
@@ -24,6 +25,7 @@ class TestJUnit5 {
     Source.fromFile("/tmp/1.data").mkString.split("\n").map(line => {
       dynamicTest(line, () => {
         println(line)
+        println(AppCrawler.crawler.conf.resultDir)
         println("xpath")
         println("screenshot")
         println("after clicked")
