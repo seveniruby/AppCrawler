@@ -14,34 +14,34 @@ public class PathElementStore {
         READY,CLICKED,SKIPPED
     }
 
-    LinkedHashMap<String, PathElementInfo> linkedStore = new LinkedHashMap();
+    LinkedHashMap<String, AbstractElementInfo> linkedStore = new LinkedHashMap();
 
     List<String> resDomList = new ArrayList<>();
 
-    public LinkedHashMap<String, PathElementInfo> getLinkedStore() {
+    public LinkedHashMap<String, AbstractElementInfo> getLinkedStore() {
         return linkedStore;
     }
 
-    public void setElementSkip(URIElement element) {
-        if (!linkedStore.containsKey(element.toString())){
-            linkedStore.put(element.toString(),new PathElementInfo());
-            linkedStore.get(element.toString()).setUriElement(element);
+    public void setElementSkip(AbstractElement element) {
+        if (!linkedStore.containsKey(element.elementUri())){
+            linkedStore.put(element.elementUri(),ElementFactory.newElementInfo());
+            linkedStore.get(element.elementUri()).setElement(element);
         }
-        linkedStore.get(element.toString()).setAction(Status.SKIPPED);
+        linkedStore.get(element.elementUri()).setAction(Status.SKIPPED);
     }
 
-    public void setElementClicked(URIElement element) {
-        if (!linkedStore.containsKey(element.toString())){
-            linkedStore.put(element.toString(),new PathElementInfo());
-            linkedStore.get(element.toString()).setUriElement(element);
+    public void setElementClicked(AbstractElement element) {
+        if (!linkedStore.containsKey(element.elementUri())){
+            linkedStore.put(element.elementUri(),ElementFactory.newElementInfo());
+            linkedStore.get(element.elementUri()).setElement(element);
         }
-        linkedStore.get(element.toString()).setAction(Status.CLICKED);
-        linkedStore.get(element.toString()).setClickedIndex(getClickElementList().indexOf(element));
+        linkedStore.get(element.elementUri()).setAction(Status.CLICKED);
+        linkedStore.get(element.elementUri()).setClickedIndex(getClickElementList().indexOf(element));
     }
 
-    public void setElementClear(URIElement element) {
-        if (linkedStore.containsKey(element.toString())){
-            linkedStore.remove(element.toString());
+    public void setElementClear(AbstractElement element) {
+        if (linkedStore.containsKey(element.elementUri())){
+            linkedStore.remove(element.elementUri());
         }
     }
 
@@ -49,41 +49,41 @@ public class PathElementStore {
         return lastElementInfo().getReqHash()!=lastElementInfo().getResHash();
     }
 
-    public boolean isClicked(URIElement element) {
-        if (linkedStore.containsKey(element.toString())){
-            return linkedStore.get(element.toString()).getAction()== Status.CLICKED;
+    public boolean isClicked(AbstractElement element) {
+        if (linkedStore.containsKey(element.elementUri())){
+            return linkedStore.get(element.elementUri()).getAction()== Status.CLICKED;
         }else {
-            AppCrawler.log().info("element="+element+"first show, need click");
+            AppCrawler.log().info("element="+element.elementUri()+"first show, need click");
             return false;
         }
     }
 
     //  isSkipped
-    public boolean isSkiped(URIElement element) {
-        if (linkedStore.containsKey(element.toString())){
-            return linkedStore.get(element.toString()).getAction()== Status.SKIPPED;
+    public boolean isSkiped(AbstractElement element) {
+        if (linkedStore.containsKey(element.elementUri())){
+            return linkedStore.get(element.elementUri()).getAction()== Status.SKIPPED;
         }else {
-            AppCrawler.log().info("element="+element+"first show, need click");
+            AppCrawler.log().info("element="+element.elementUri()+"first show, need click");
             return false;
         }
     }
 
-    public void saveElement(URIElement element) {
-        if (!linkedStore.containsKey(element.toString())){
-            linkedStore.put(element.toString(),new PathElementInfo());
-            linkedStore.get(element.toString()).setUriElement(element);
+    public void saveElement(AbstractElement element) {
+        if (!linkedStore.containsKey(element.elementUri())){
+            linkedStore.put(element.elementUri(),ElementFactory.newElementInfo());
+            linkedStore.get(element.elementUri()).setElement(element);
         }
     }
 
     public void saveReqHash(String hash) {
-        if (lastElementInfo().getReqHash()==null){
+        if (lastElementInfo().getReqHash()==""){
             AppCrawler.log().info("save reqHash to "+(linkedStore.size()-1));
             lastElementInfo().setReqHash(hash);
         }
     }
 
     public void saveResHash(String hash) {
-        if (lastElementInfo().getResHash()==null){
+        if (lastElementInfo().getResHash()==""){
             AppCrawler.log().info("save resHash to "+(linkedStore.size()-1));
             lastElementInfo().setResHash(hash);
         }
@@ -105,31 +105,40 @@ public class PathElementStore {
     }
 
     public void saveReqImg(String imgName) {
-        if (lastElementInfo().getReqImg()==null){
+        if (lastElementInfo().getReqImg()==""){
             AppCrawler.log().info("save reqImg " + imgName + "  to "+(linkedStore.size()-1));
             lastElementInfo().setReqImg(imgName);
         }
     }
 
     public void saveResImg(String imgName) {
-        if (lastElementInfo().getResImg()==null){
+        if (lastElementInfo().getResImg()==""){
             AppCrawler.log().info("save resImg " + imgName + " to "+(linkedStore.size()-1));
             lastElementInfo().setResImg(imgName);
         }
     }
 
+    public void setLinkedStore(LinkedHashMap<String, AbstractElementInfo> linkedStore) {
+        this.linkedStore = linkedStore;
+    }
+
     // 获取map中获取最后一个控件的信息
-    public PathElementInfo lastElementInfo(){
-        return linkedStore.get(getClickElementList().get(getClickElementList().size()-1).toString());
+    public AbstractElementInfo lastElementInfo(){
+        int size = getClickElementList().size();
+        if (size>0){
+            return linkedStore.get(getClickElementList().get(size-1).elementUri());
+        }else {
+            return null;
+        }
     }
 
     // 获取map列表中点击控件的列表
     @JsonIgnore
-    public List<URIElement> getClickElementList(){
-        List<URIElement> list = new ArrayList<>();
+    public List<AbstractElement> getClickElementList(){
+        List<AbstractElement> list = new ArrayList<>();
         for (String key : linkedStore.keySet()){
-            if (linkedStore.get(key).action== Status.CLICKED){
-                list.add(linkedStore.get(key).uriElement);
+            if (linkedStore.get(key).getAction()== Status.CLICKED){
+                list.add(linkedStore.get(key).getElement());
             }
         }
         return list;

@@ -13,6 +13,6 @@ public class ElementUrlTest {
                 "","好的","","7","","","","",
                 0,0,0,0,"");
 
-        System.out.println(element.getElementUrl());
+        System.out.println(element.elementUri());
     }
 }

@@ -32,8 +32,8 @@ public class AllureTest {
         List<DynamicTest> dynamicTests = new ArrayList<>();
         ReadYaml read = new ReadYaml();
         String path = AppCrawler.crawler().conf().resultDir();
-        // todo : 动态设置目录
-        Map map = read.convert2Map(path + "/elements.yaml");
+
+        Map map = read.convert2Map(path + "/elements.yml");
         Map mapTitle = (HashMap) map.get("linkedStore");
         Map mapVal, mapEle;
         for(Object key : mapTitle.keySet()) {

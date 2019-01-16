@@ -1,7 +1,9 @@
 package com.testerhome.appcrawler.plugin
 
-import com.testerhome.appcrawler.URIElement
-import com.testerhome.appcrawler.ElementStatus
+import com.testerhome.appcrawler.{ElementStatus, URIElement}
+import com.testerhome.appcrawler.data.{AbstractElement, ElementFactory}
+
+import scala.collection.JavaConverters
 
 /**
   * Created by seveniruby on 16/1/21.
@@ -19,12 +21,12 @@ class TagLimitPlugin extends Plugin {
   }
 
   //fixed: conf.tagLimit未生效
-  override def fixElementAction(element: URIElement): Unit = {
-    if (element.action.startsWith("_")) {
+  override def fixElementAction(element: AbstractElement): Unit = {
+    if (element.getAction.startsWith("_")) {
       //非普通元素点击事件，不需要统计，比如back backApp 等
       return
     }
-    if (getCrawler().conf.backButton.map(_.xpath).contains(element.xpath)) {
+    if (getCrawler().conf.backButton.map(_.xpath).contains(element.getXpath)) {
       return
     }
     currentKey = getAncestor(element)
@@ -50,13 +52,13 @@ class TagLimitPlugin extends Plugin {
     log.info(s"tagLimit[${currentKey}]=${tagLimit(currentKey)}")
     //如果达到限制次数就退出
     if (currentKey.nonEmpty && tagLimit(currentKey) <= 0) {
-      element.action = "_skip"
+      element.setAction("_skip")
       log.info(s"$element need skip")
     }
   }
 
-  override def afterElementAction(element: URIElement): Unit = {
-    if (element.action.startsWith("_")) {
+  override def afterElementAction(element: AbstractElement): Unit = {
+    if (element.getAction.startsWith("_")) {
       //非普通元素点击事件，不需要统计，比如back backApp 等
       return
     }
@@ -69,14 +71,13 @@ class TagLimitPlugin extends Plugin {
     }
   }
 
-  def getAncestor(element: URIElement): String = {
+  def getAncestor(element: AbstractElement): String = {
     getCrawler().currentUrl + element.getAncestor()
   }
 
-  def getTimesFromTagLimit(element: URIElement): Option[Int] = {
+  def getTimesFromTagLimit(element: AbstractElement): Option[Int] = {
     this.getCrawler().conf.tagLimit.foreach(tag => {
-      if (getCrawler().driver.getNodeListByKey(tag.getXPath())
-        .map(new URIElement(_, getCrawler().currentUrl))
+      if (getCrawler().driver.getNodeListByKey(tag.getXPath()).map(x => ElementFactory.newElement(JavaConverters.mapAsJavaMap(x),getCrawler().currentUrl))
         .contains(element)) {
         return Some(tag.times)
       } else {

@@ -25,7 +25,7 @@ trait Report extends CommonLog {
     //为了保持独立使用
     val path = new java.io.File(resultDir).getCanonicalPath
 
-    val suites = store.getLinkedStore.map(x => x._2.getUriElement.url).toList.distinct
+    val suites = store.getLinkedStore.map(x => x._2.getElement.getUrl).toList.distinct
     var index=0
     suites.foreach(suite => {
       log.info(s"gen testcase class ${suite}")

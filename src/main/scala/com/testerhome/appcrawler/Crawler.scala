@@ -4,9 +4,9 @@ import java.io
 import java.util.Date
 
 import com.testerhome.appcrawler.driver._
-import com.testerhome.appcrawler.data.PathElementStore
+import com.testerhome.appcrawler.data.{AbstractElement, ElementFactory, PathElementStore}
 import com.testerhome.appcrawler.plugin.Plugin
-import com.testerhome.appcrawler.report.Utils
+import com.testerhome.appcrawler.report.MvnReplace
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.log4j._
@@ -17,7 +17,7 @@ import sun.misc.{Signal, SignalHandler}
 
 import scala.annotation.tailrec
 import scala.collection.mutable.{ListBuffer, Map}
-import scala.collection.{immutable, mutable}
+import scala.collection.{JavaConverters, immutable, mutable}
 import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}
 import scala.collection.JavaConversions._
@@ -56,7 +56,7 @@ class Crawler extends CommonLog {
   private val startTime = new Date().getTime
 
   val urlStack = mutable.Stack[String]()
-  var urlMap = mutable.Map[String, String]()
+  var urlMap = mutable.Map[String, AbstractElement]()
 
   protected val backDistance = new DataRecord()
   val appNameRecord = new DataRecord()
@@ -222,15 +222,12 @@ class Crawler extends CommonLog {
 
   }
 
-  def getEventElement(actionName:String): URIElement ={
-    val defaultElement=new URIElement(url = currentUrl, xpath="/*/*",
-      x = 0, y=0, height = driver.screenHeight, width = driver.screenWidth)
+  def getEventElement(actionName:String): AbstractElement ={
+    val defaultElement= ElementFactory.newElement(currentUrl,"","","","","","","","","/*/*","",0,0,driver.screenWidth,driver.screenHeight,"")
     val element=driver.asyncTask()(
       //刷新失败时会报错，所以增加一个判断
       if(driver.currentPageDom!=null) {
-        new URIElement(
-          XPathUtil.getNodeListByKey("/*/*", driver.currentPageDom
-          ).head, currentUrl)
+        ElementFactory.newElement(JavaConverters.mapAsJavaMap(XPathUtil.getNodeListByKey("/*/*", driver.currentPageDom).head),currentUrl)
       }else{
         defaultElement
       }
@@ -238,10 +235,10 @@ class Crawler extends CommonLog {
       case Left(value) => value
       case Right(value) => defaultElement
     }
-    element.id=actionName
-    element.name=actionName
-    element.tag=actionName
-    element.action=s"_${actionName}"
+    element.setId(actionName)
+    element.setName(actionName)
+    element.setTag(actionName)
+    element.setAction(s"_${actionName}")
     element
   }
 
@@ -371,12 +368,18 @@ class Crawler extends CommonLog {
       ""
     }
     if (uri.nonEmpty) {
-//      List(driver.getAppName(), uri).distinct.filter(_.nonEmpty).mkString(".")
       uri
     } else {
-//      List(driver.getAppName(), driver.getUrl()).distinct.filter(_.nonEmpty).mkString(".")
       if (!urlMap.contains(driver.getUrl())){
-        urlMap.put(driver.getUrl(),store.lastElementInfo().getUriElement.getValidName())
+        if (store.lastElementInfo()!=null){
+          urlMap.put(driver.getUrl(),store.lastElementInfo().getElement)
+        }
+      }else {
+        val preEleUrl = urlMap.get(driver.getUrl()).head.getUrl
+        val curEleValidName = store.lastElementInfo().getElement.getUrl
+        if (!curEleValidName.contains(preEleUrl) || curEleValidName.equals(preEleUrl)) {
+          urlMap.update(driver.getUrl(), store.lastElementInfo().getElement)
+        }
       }
       driver.getUrl()
     }
@@ -390,11 +393,11 @@ class Crawler extends CommonLog {
     * @param nodeMap
     * @return
     */
-  def getUrlElementByMap(nodeMap: immutable.Map[String, Any]): URIElement = {
-    new URIElement(nodeMap, currentUrl)
+  def getUrlElementByMap(nodeMap: immutable.Map[String, Any]): AbstractElement = {
+    ElementFactory.newElement(nodeMap, currentUrl)
   }
 
-  def needBackToApp(): Option[URIElement] = {
+  def needBackToApp(): Option[AbstractElement] = {
     log.debug(conf.appWhiteList)
     log.debug(appNameRecord.last(10))
 
@@ -429,7 +432,7 @@ class Crawler extends CommonLog {
     return false
   }
 
-  def needBackToPage(): Option[URIElement] = {
+  def needBackToPage(): Option[AbstractElement] = {
     //url黑名单
     var result = false
     if (conf.urlBlackList.exists(urlStack.head.matches(_))) {
@@ -475,23 +478,23 @@ class Crawler extends CommonLog {
 
   }
 
-  def isValid(element: URIElement): Boolean = {
-    element.valid == "true"
+  def isValid(element: AbstractElement): Boolean = {
+    element.getValid == "true"
   }
 
 
-  def isSmall(element: URIElement): Boolean = {
+  def isSmall(element: AbstractElement): Boolean = {
 
     var res = false
 
-    if (element.x > driver.screenHeight || element.y > driver.screenWidth) {
+    if (element.getX > driver.screenHeight || element.getY > driver.screenWidth) {
       log.warn(element)
       log.info("not visual")
       res = true
     }
 
     //高度小就跳过
-    if (element.height < 30 && element.width < 30) {
+    if (element.getHeight < 30 && element.getWidth < 30) {
       log.warn(element)
       log.info("small")
       res = true
@@ -501,17 +504,17 @@ class Crawler extends CommonLog {
   }
 
   //todo: 支持xpath表达式
-  def getAvailableElement(currentPageDom: Document, skipSmall: Boolean = false): Option[URIElement] = {
-    var all = List[URIElement]()
-    var firstElements = List[URIElement]()
-    var lastElements = List[URIElement]()
-    var selectedElements = List[URIElement]()
-    var blackElements = List[URIElement]()
+  def getAvailableElement(currentPageDom: Document, skipSmall: Boolean = false): Option[AbstractElement] = {
+    var all = List[AbstractElement]()
+    var firstElements = List[AbstractElement]()
+    var lastElements = List[AbstractElement]()
+    var selectedElements = List[AbstractElement]()
+    var blackElements = List[AbstractElement]()
     var lastSize = 0
 
     conf.selectedList.foreach(step => {
       log.trace(s"selectedList xpath =  ${step.getXPath()}")
-      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom).map(new URIElement(_, currentUrl))
+      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom).map(ElementFactory.newElement(_, currentUrl))
       temp.foreach(log.trace)
       selectedElements ++= temp
     })
@@ -522,7 +525,7 @@ class Crawler extends CommonLog {
     //remove blackList
     conf.blackList.foreach(step => {
       log.trace(s"blackList xpath =  ${step.getXPath()}")
-      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom).map(new URIElement(_, currentUrl))
+      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom).map(ElementFactory.newElement(_, currentUrl))
       temp.foreach(log.trace)
       blackElements ++= temp
     })
@@ -579,7 +582,7 @@ class Crawler extends CommonLog {
     conf.firstList.foreach(step => {
       log.trace(s"firstList xpath = ${step.getXPath()}")
       val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom)
-        .map(new URIElement(_, currentUrl))
+        .map(ElementFactory.newElement(_, currentUrl))
         .intersect(selectedElements)
       temp.foreach(log.trace)
       firstElements ++= temp
@@ -588,7 +591,7 @@ class Crawler extends CommonLog {
     conf.lastList.foreach(step => {
       log.trace(s"lastList xpath = ${step.getXPath()}")
       val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom)
-        .map(new URIElement(_, currentUrl))
+        .map(ElementFactory.newElement(_, currentUrl))
         .intersect(selectedElements)
       temp.foreach(log.trace)
       lastElements ++= temp
@@ -609,30 +612,30 @@ class Crawler extends CommonLog {
   }
 
 
-  def sortByAttribute(list: List[URIElement]): List[URIElement] = {
+  def sortByAttribute(list: List[AbstractElement]): List[AbstractElement] = {
     //先根据depth排序selectedElements
     var selectedElements = list
     conf.sortByAttribute.foreach(attribute => {
       attribute match {
         case "depth" => {
           selectedElements = selectedElements.sortWith(
-            _.depth.toString.toInt >
-              _.depth.toString.toInt
+            _.getDepth.toInt >
+              _.getDepth.toInt
           )
         }
         case "selected" => {
           //todo:同级延后
           //selected=false的优先遍历
           selectedElements = selectedElements.sortWith(
-            _.selected.toString.contains("false") >
-              _.selected.toString.contains("false")
+            _.getSelected.contains("false") >
+              _.getSelected.contains("false")
           )
         }
         case "list" => {
           //列表内元素优先遍历
           selectedElements = selectedElements.sortWith(
-            _.ancestor.toString.contains("List") >
-              _.ancestor.toString.contains("List")
+            _.getAncestor.contains("List") >
+              _.getAncestor.contains("List")
           )
         }
         //todo: 居中的优先遍历
@@ -640,9 +643,9 @@ class Crawler extends CommonLog {
       }
       log.trace(s"sort by ${attribute}")
       selectedElements.foreach(e => log.trace(
-        s"depth=${e.depth}" +
-          s" selected=${e}" +
-          s" list=${e.ancestor.toString.contains("List")} e=${e}")
+        s"depth=${e.getDepth}" +
+          s" selected=${e.elementUri()}" +
+          s" list=${e.getAncestor.contains("List")} e=${e}")
       )
     })
     selectedElements
@@ -692,7 +695,7 @@ class Crawler extends CommonLog {
     for (i <- (0 until urlStack.size).reverse){
       var str = urlStack.toList.get(i)
       if (urlMap.contains(str)){
-        str = urlMap.get(str).head.toString
+        str = urlMap.get(str).head.getValidName
       }
       sb.append("." + str)
     }
@@ -716,8 +719,8 @@ class Crawler extends CommonLog {
   }
 
 
-  def beforeElementAction(element: URIElement): Unit = {
-    log.debug(s"push ${element}")
+  def beforeElementAction(element: AbstractElement): Unit = {
+    log.debug(s"push ${element.elementUri()}")
     store.setElementClicked(element)
     //todo: 改进设计
     driver.currentURIElement=element
@@ -735,7 +738,7 @@ class Crawler extends CommonLog {
     pluginClasses.foreach(p => p.beforeElementAction(element))
   }
 
-  def afterElementAction(element: URIElement): Unit = {
+  def afterElementAction(element: AbstractElement): Unit = {
     val newImageFile = new io.File(getBasePathName() + ".click.png")
     val originImageFile = new io.File(getBasePathName(2) + ".clicked.png")
     if (newImageFile.exists() == false && originImageFile.exists() == true) {
@@ -762,7 +765,7 @@ class Crawler extends CommonLog {
     //todo: 内存消耗太大，改用文件存储
     store.saveResDom(driver.currentPageSource)
 
-    element.action match {
+    element.getAction match {
       case "_Back" | "_BackApp" => {
         backRetry += 1
       }
@@ -784,51 +787,51 @@ class Crawler extends CommonLog {
     *
     * @return
     */
-  def getPredictBackNodes(): List[URIElement] = {
+  def getPredictBackNodes(): List[AbstractElement] = {
     //去掉开头的界面切换
     var urlList=ListBuffer[String]()
 
     (3 until store.getClickElementList.size).map(i => {
       val curElement = store.getClickElementList.get(i)
       val preElement = store.getClickElementList.get(i - 1)
-      urlList.append(curElement.url)
-      if (curElement.url != preElement.url
-        && urlList.indexOf(curElement.url) < i-3-2 ) {
+      urlList.append(curElement.getUrl)
+      if (curElement.getUrl != preElement.getUrl
+        && urlList.indexOf(curElement.getUrl) < i-3-2 ) {
         log.info(s"get nearby back button from history = ${preElement}")
-        Some(Step(xpath = preElement.xpath, action=preElement.action))
+        Some(Step(xpath = preElement.getXpath, action=preElement.getAction))
       } else {
         None
       }
     }).filter(_.nonEmpty).map(someStep => {
       getURIElementsByStep(someStep.get).map(e=>{
-        e.action=someStep.get.getAction()
+        e.setAction(someStep.get.getAction())
         e
       })
     }).flatten.distinct.toList
       //排序，depth小的在前面，但是带有back action的控件排在最后
-      .sortWith(_.depth < _.depth)
-      .sortWith(_.action.indexOf("Back") < _.action.indexOf("Back"))
+      .sortWith(_.getDepth < _.getDepth)
+      .sortWith(_.getAction.indexOf("Back") < _.getAction.indexOf("Back"))
       //追加到backButton后面，depth小的放前面
       .map(e => {
-      if(conf.backButton.filter(_.getXPath()==e.xpath).size==0) {
+      if(conf.backButton.filter(_.getXPath()==e.getXpath).size==0) {
         log.info(s"find new back button from history ${e}")
-        conf.backButton.append(Step(xpath = e.xpath, action = e.action))
+        conf.backButton.append(Step(xpath = e.getXpath, action = e.getAction))
       }
       e
     })
   }
 
   //todo: 增加when支持，当when生效的时候才返回element
-  def getURIElementsByStep(step: Step): List[URIElement] = {
+  def getURIElementsByStep(step: Step): List[AbstractElement] = {
     driver.getNodeListByKey(step.getXPath())
       .map(e=>{
-        val urlElement=new URIElement(e, currentUrl)
-        urlElement.action=step.getAction()
+        val urlElement= ElementFactory.newElement(e, currentUrl)
+        urlElement.setAction(step.getAction())
         urlElement
       }).filter(isValid)
   }
 
-  def getBackButton(): Option[URIElement] = {
+  def getBackButton(): Option[AbstractElement] = {
     log.info("go back")
     //找到可能的关闭按钮, 取第一个可用的关闭按钮
     log.trace(conf.backButton)
@@ -836,10 +839,10 @@ class Crawler extends CommonLog {
       case Some(backElement) if appNameRecord.isDiff() == false => {
         //app相同并且找到back控件才点击. 否则就默认back
         log.trace(backElement)
-        if(backElement.action.isEmpty) {
-          backElement.action = "click"
+        if(backElement.getAction.isEmpty) {
+          backElement.setAction("click")
         }else{
-          log.info(s"use origin action ${backElement.action}")
+          log.info(s"use origin action ${backElement.getAction}")
         }
         return Some(backElement)
       }
@@ -850,10 +853,10 @@ class Crawler extends CommonLog {
           case Some(backElement) if appNameRecord.isDiff() == false => {
             //app相同并且找到back控件才点击. 否则就默认back
             //todo: bug hierarchy click出现
-            if(backElement.action.isEmpty) {
-              backElement.action = "click"
+            if(backElement.getAction.isEmpty) {
+              backElement.setAction("click")
             }else{
-              log.info(s"use origin action ${backElement.action}")
+              log.info(s"use origin action ${backElement.getAction}")
             }
             log.info(s"find back button ${backElement}")
             return Some(backElement)
@@ -868,7 +871,7 @@ class Crawler extends CommonLog {
   }
 
 
-  def fixElementAction(element: URIElement) = {
+  def fixElementAction(element: AbstractElement) = {
     pluginClasses.foreach(c => c.fixElementAction(element))
   }
 
@@ -884,7 +887,7 @@ class Crawler extends CommonLog {
     }
     log.info("\n\ncrawl next")
     //是否需要退出或者后退, 得到要做的动作
-    var nextElement: Option[URIElement] = None
+    var nextElement: Option[AbstractElement] = None
     //判断下一步动作
 
     //是否应该退出
@@ -952,7 +955,7 @@ class Crawler extends CommonLog {
     nextElement match {
       case Some(element) => {
         fixElementAction(element)
-        if (element.action != "_skip") {
+        if (element.getAction != "_skip") {
           beforeElementAction(element)
           doElementAction(element)
           isRefreshSuccess=refreshPage()
@@ -975,21 +978,21 @@ class Crawler extends CommonLog {
     crawl()
   }
 
-  def doElementAction(element: URIElement): Unit = {
+  def doElementAction(element: AbstractElement): Unit = {
     //todo: 如果有相同的控件被重复记录, 会出问题, 比如确定退出的规则
     log.info(s"current index = ${store.getClickElementList.size - 1}")
-    log.info(s"current xpath = ${element.xpath}")
-    log.info(s"current action = ${element.action}")
-    log.info(s"current element = ${element}")
-    log.info(s"current url = ${element.url}")
+    log.info(s"current xpath = ${element.getXpath}")
+    log.info(s"current action = ${element.getAction}")
+    log.info(s"current element = ${element.elementUri}")
+    log.info(s"current url = ${element.getUrl}")
     log.info(s"current tag path = ${element.getAncestor()}")
-    log.info(s"current file name = ${element.toString().take(100)}")
+    log.info(s"current file name = ${element.elementUri.take(100)}")
 
     store.saveReqHash(contentHash.last().toString)
     store.saveReqDom(driver.currentPageSource)
     saveElementScreenshot()
 
-    element.action match {
+    element.getAction match {
       case "_Log" | "_Start" => {
         log.info("just log")
         log.info(TData.toJson(element))
@@ -1006,7 +1009,7 @@ class Crawler extends CommonLog {
       }
       case "_AfterAll" => {
         if (conf.afterAll != null) {
-          if (store.getClickElementList.last.action.equals("after")) {
+          if (store.getClickElementList.last.getAction.equals("after")) {
             afterAllRetry += 1
             log.info(s"afterAll=${afterAllRetry}")
           } else {
@@ -1047,7 +1050,7 @@ class Crawler extends CommonLog {
         driver.findElementByURI(element, conf.findBy) match {
           case null => {
             log.error(s"not found ${element}")
-            element.action = "_notFound"
+            element.setAction("_notFound")
           }
           case _ => {
             driver.asyncTask(name = "action") {
@@ -1115,7 +1118,7 @@ class Crawler extends CommonLog {
   def getBasePathName(right: Int = 1): String = {
     //序号_文件名
     val element = store.getClickElementList.takeRight(right).head
-    s"${conf.resultDir}/${store.getClickElementList.size - right}_" + element.toString().take(100)
+    s"${conf.resultDir}/${store.getClickElementList.size - right}_" + element.elementUri().take(100)
   }
 
   def saveDom(): Unit = {
@@ -1194,7 +1197,7 @@ class Crawler extends CommonLog {
 
   //todo: 结构化
   //通过规则实现操作. 不管元素是否被点击过
-  def getElementByTriggerActions(): Option[URIElement] = {
+  def getElementByTriggerActions(): Option[AbstractElement] = {
     //先判断是否在期望的界面里. 提升速度
     //todo: 让when生效
     conf.triggerActions.filter(step => step.times > 0).foreach(step => {
@@ -1203,7 +1206,7 @@ class Crawler extends CommonLog {
         case Some(e) => {
           step.use()
           log.trace(s"step times = ${step.times}")
-          e.action = step.getAction()
+          e.setAction(step.getAction())
           return Some(e)
         }
         case None => {
@@ -1223,10 +1226,10 @@ class Crawler extends CommonLog {
         driver.handleException(e)
       }
     }
-
-    // 使用mvn命令生成allure报告
-    new Utils().start(conf.resultDir)
     log.info("generate report finish")
+
+    // 生成allure报告
+    MvnReplace.runTest();
     System.exit(0)
 
   }

@@ -1,12 +1,12 @@
 package com.testerhome.appcrawler.plugin
 
-import com.testerhome.appcrawler.URIElement
+import com.testerhome.appcrawler.data.AbstractElement
 
 /**
   * Created by seveniruby on 16/1/21.
   */
 class DemoPlugin extends Plugin{
-  override def beforeElementAction(element: URIElement): Unit ={
+  override def beforeElementAction(element: AbstractElement): Unit ={
     log.info("demo com.testerhome.appcrawler.plugin before element action")
     log.info(element)
     log.info("demo com.testerhome.appcrawler.plugin end")

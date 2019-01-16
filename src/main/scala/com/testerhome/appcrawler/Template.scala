@@ -34,7 +34,7 @@ class Template {
 
     store.foreach(s => {
       val reqDom = s._2.getReqDom
-      val url = s._2.getUriElement.url
+      val url = s._2.getElement.getUrl
       if (reqDom.size != 0) {
 
         if (elements.contains(url) == false) {

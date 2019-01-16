@@ -15,6 +15,7 @@ import scala.io.Source
   * Created by seveniruby on 16/1/6.
   */
 class CrawlerConf {
+  var useNewData = false
   /** 是否截图 */
   var screenshot = true
   var reportTitle = ""

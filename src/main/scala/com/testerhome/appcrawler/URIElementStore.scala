@@ -1,5 +1,7 @@
 package com.testerhome.appcrawler
 
+import com.testerhome.appcrawler.data.PathElementStore
+
 import scala.beans.BeanProperty
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -22,7 +24,7 @@ class URIElementStore {
       elementStore(element.toString)=ElementInfo()
       elementStore(element.toString).element=element
     }
-    elementStore(element.toString).action=ElementStatus.Skipped
+    elementStore(element.toString).action=PathElementStore.Status.SKIPPED
   }
 
   def setElementClicked(element: URIElement): Unit = {
@@ -31,7 +33,7 @@ class URIElementStore {
       elementStore(element.toString).element=element
     }
     clickedElementsList.append(element)
-    elementStore(element.toString).action=ElementStatus.Clicked
+    elementStore(element.toString).action=PathElementStore.Status.CLICKED
     elementStore(element.toString).clickedIndex=clickedElementsList.indexOf(element)
   }
   def setElementClear(element: URIElement=clickedElementsList.last): Unit = {
@@ -47,7 +49,7 @@ class URIElementStore {
       elementStore(element.toString).element=element
     }
     if (elementStore.contains(element.toString) == false) {
-      elementStore(element.toString).action=ElementStatus.Clicked
+      elementStore(element.toString).action=PathElementStore.Status.CLICKED
       AppCrawler.log.info(s"first found ${element}")
     }
   }
@@ -109,7 +111,7 @@ class URIElementStore {
 
   def isClicked(element: URIElement): Boolean = {
     if (elementStore.contains(element.toString)) {
-      elementStore(element.toString).action == ElementStatus.Clicked
+      elementStore(element.toString).action == PathElementStore.Status.CLICKED
     } else {
       AppCrawler.log.debug(s"element=${element} first show, need click")
       false
@@ -118,7 +120,7 @@ class URIElementStore {
 
   def isSkiped(ele: URIElement): Boolean = {
     if (elementStore.contains(ele.toString)) {
-      elementStore(ele.toString).action == ElementStatus.Skipped
+      elementStore(ele.toString).action == PathElementStore.Status.SKIPPED
     } else {
       AppCrawler.log.debug(s"element=${ele} first show, need click")
       false

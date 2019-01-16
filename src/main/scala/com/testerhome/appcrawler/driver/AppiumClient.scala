@@ -5,6 +5,7 @@ import java.net.URL
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
+import com.testerhome.appcrawler.data.AbstractElement
 import com.testerhome.appcrawler.{AppCrawler, URIElement, _}
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
@@ -123,36 +124,36 @@ class AppiumClient extends SeleniumDriver {
     this
   }
 
-  override def findElementsByURI(element: URIElement, findBy: String): List[AnyRef] = {
+  override def findElementsByURI(element: AbstractElement, findBy: String): List[AnyRef] = {
     //todo: 优化速度，个别时候定位可能超过10s
     //todo: 多种策略，使用findElement 使用xml直接分析location 生成平台特定的定位符
 
     element match {
-      case id if element.id.nonEmpty && findBy=="id" =>{
-        log.info(s"findElementsById ${element.id}")
-        driver.findElementsById(element.id).asScala.toList
+      case id if element.getId.nonEmpty && findBy=="id" =>{
+        log.info(s"findElementsById ${element.getId}")
+        driver.findElementsById(element.getId).asScala.toList
       }
-      case name if element.name.nonEmpty && findBy=="accessibilityId" => {
-        log.info(s"findElementsByAccessibilityId ${element.name}")
-        appiumDriver.findElementsByAccessibilityId(element.name).asScala.toList
+      case name if element.getName.nonEmpty && findBy=="accessibilityId" => {
+        log.info(s"findElementsByAccessibilityId ${element.getName}")
+        appiumDriver.findElementsByAccessibilityId(element.getName).asScala.toList
       }
       case android if platformName.toLowerCase=="android" && findBy=="default" => {
         val locator=new StringBuilder()
         locator.append("new UiSelector()")
-        locator.append(".className(\"" + element.tag + "\")")
-        if(element.text.nonEmpty){
-          locator.append(".text(\"" + element.text + "\")" )
+        locator.append(".className(\"" + element.getTag + "\")")
+        if(element.getText.nonEmpty){
+          locator.append(".text(\"" + element.getText + "\")" )
         }
-        if(element.id.nonEmpty){
-          locator.append(".resourceId(\"" + element.id + "\")")
+        if(element.getId.nonEmpty){
+          locator.append(".resourceId(\"" + element.getId + "\")")
         }
-        if(element.name.nonEmpty){
-          locator.append(".description(\"" + element.name + "\")" )
+        if(element.getName.nonEmpty){
+          locator.append(".description(\"" + element.getName + "\")" )
         }
-        if(element.instance.nonEmpty && element.text.isEmpty && element.name.isEmpty && element.id.isEmpty){
+        if(element.getInstance.nonEmpty && element.getText.isEmpty && element.getName.isEmpty && element.getId.isEmpty){
           //todo: 如果出现动态出现的控件会影响定位
           //todo: webview内的元素貌似用instance是不行的，webview内的真实的instance与appium给的不一致
-          locator.append(".instance(" + element.instance + ")" )
+          locator.append(".instance(" + element.getInstance + ")" )
         }
         log.info(s"findElementByAndroidUIAutomator ${locator.toString()}")
         asyncTask(name = "findElementByAndroidUIAutomator"){
@@ -175,9 +176,9 @@ class AppiumClient extends SeleniumDriver {
       case _ => {
         //todo: 生成iOS原生定位符
         //默认使用xpath
-        log.info(s"findElementsByXPath ${element.xpath}")
+        log.info(s"findElementsByXPath ${element.getXpath}")
         //driver.findElementsByXPath(element.xpath).asScala.toList
-        List(driver.findElementByXPath(element.xpath))
+        List(driver.findElementByXPath(element.getXpath))
       }
     }
   }

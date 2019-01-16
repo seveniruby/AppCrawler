@@ -6,6 +6,7 @@ import java.net.URL
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
+import com.testerhome.appcrawler.data.AbstractElement
 import com.testerhome.appcrawler.{AppCrawler, URIElement, _}
 import io.appium.java_client.touch.offset.{ElementOption, PointOption}
 import io.appium.java_client.touch.{LongPressOptions, TapOptions}
@@ -193,29 +194,29 @@ class SeleniumDriver extends ReactWebDriver{
   }
 
 
-  override def findElementsByURI(element: URIElement, findBy: String): List[AnyRef] = {
+  override def findElementsByURI(element: AbstractElement, findBy: String): List[AnyRef] = {
     //todo: 优化速度，个别时候定位可能超过10s
     //todo: 多种策略，使用findElement 使用xml直接分析location 生成平台特定的定位符
 
     element match {
-      case id if element.id.nonEmpty && findBy=="id" =>{
-        log.info(s"findElementsById ${element.id}")
-        driver.findElementsById(element.id).asScala.toList
+      case id if element.getId.nonEmpty && findBy=="id" =>{
+        log.info(s"findElementsById ${element.getId}")
+        driver.findElementsById(element.getId).asScala.toList
       }
-      case name if element.name.nonEmpty && findBy=="accessibilityId" => {
-        log.info(s"findElementsByAccessibilityId ${element.name}")
-        driver.findElementsByName(element.name).asScala.toList
+      case name if element.getName.nonEmpty && findBy=="accessibilityId" => {
+        log.info(s"findElementsByAccessibilityId ${element.getName}")
+        driver.findElementsByName(element.getName).asScala.toList
       }
       case _ => {
         //默认使用xpath
-        log.info(s"findElementsByXPath ${element.xpath}")
+        log.info(s"findElementsByXPath ${element.getXpath}")
         //driver.findElementsByXPath(element.xpath).asScala.toList
-        List(driver.findElementByXPath(element.xpath))
+        List(driver.findElementByXPath(element.getXpath))
       }
     }
   }
 
-  override def findElementByURI(element: URIElement, findBy:String): AnyRef = {
+  override def findElementByURI(element: AbstractElement, findBy:String): AnyRef = {
     currentElement=super.findElementByURI(element,findBy).asInstanceOf[WebElement]
     currentElement
   }
@@ -231,9 +232,9 @@ class SeleniumDriver extends ReactWebDriver{
 
   override def getRect(): Rectangle ={
     //selenium下还没有正确的赋值，只能通过api获取
-    if(currentURIElement.height!=0){
+    if(currentURIElement.getHeight!=0){
       //log.info(s"location=${location} size=${size} x=${currentURIElement.x} y=${currentURIElement.y} width=${currentURIElement.width} height=${currentURIElement.height}" )
-      new Rectangle(currentURIElement.x, currentURIElement.y, currentURIElement.height, currentURIElement.width)
+      new Rectangle(currentURIElement.getX, currentURIElement.getY, currentURIElement.getHeight, currentURIElement.getWidth)
     }else {
       val location = currentElement.getLocation
       val size = currentElement.getSize
