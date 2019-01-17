@@ -2,9 +2,11 @@ package com.testerhome.appcrawler.ut;
 
 import com.testerhome.appcrawler.Crawler;
 import com.testerhome.appcrawler.URIElement;
-import com.testerhome.appcrawler.hbh.NewElementInfo;
-import com.testerhome.appcrawler.hbh.NewURIElementStore;
+import com.testerhome.appcrawler.data.PathElementInfo;
+import com.testerhome.appcrawler.data.PathElementStore;
+import com.testerhome.appcrawler.diff.CrawlerDiff;
 import com.testerhome.appcrawler.plugin.ReportPlugin;
+import com.testerhome.appcrawler.report.MvnReplace;
 import org.junit.jupiter.api.Test;
 
 public class ReportTest {
@@ -17,26 +19,27 @@ public class ReportTest {
         URIElement element1 = new URIElement("a", "b", "c",
                 "d", "e","","","","",
                 "","",0,0,0,0,"");
-        NewElementInfo info1 = new NewElementInfo();
-        info1.setUriElement(element1);
-        info1.setAction(NewURIElementStore.Status.SKIPPED);
+        PathElementInfo info1 = new PathElementInfo();
+        info1.setElement(element1);
+        info1.setAction(PathElementStore.Status.SKIPPED);
 
         URIElement element2 = new URIElement("aa", "bb", "cc",
                 "dd", "ee","","","","",
                 "","",0,0,0,0,"");
-        NewElementInfo info2 = new NewElementInfo();
-        info2.setUriElement(element2);
-        info2.setAction(NewURIElementStore.Status.SKIPPED);
+        PathElementInfo info2 = new PathElementInfo();
+        info2.setElement(element2);
+        info2.setAction(PathElementStore.Status.SKIPPED);
 
-        NewURIElementStore elementsStore=new NewURIElementStore();
-        elementsStore.getNewElementStore().put(element1.toString(),info1);
-        elementsStore.getNewElementStore().put(element2.toString(),info2);
+        PathElementStore elementsStore=new PathElementStore();
+        elementsStore.getLinkedStore().put(element1.toString(),info1);
+        elementsStore.getLinkedStore().put(element2.toString(),info2);
         reportPlugin.saveTestCase(elementsStore, "/tmp/");
     }
 
     @Test
-    public void test2(){
-
+    public void test2() throws Exception {
+//        MvnReplace.runTest();
+        CrawlerDiff.diffSuite("","","");
     }
 
 }

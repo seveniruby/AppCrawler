@@ -1,7 +1,7 @@
 package com.testerhome.appcrawler
 
-import com.testerhome.appcrawler.hbh.NewElementInfo
-import com.testerhome.appcrawler.hbh.NewURIElementStore.Status
+import com.testerhome.appcrawler.data.{AbstractElement, AbstractElementInfo, ElementFactory, PathElementInfo}
+import com.testerhome.appcrawler.data.PathElementStore.Status
 import com.testerhome.appcrawler.plugin.FlowDiff
 import org.scalatest._
 
@@ -23,8 +23,8 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
   def addTestCase(): Unit = {
     //每个点击事件
 
-    val allKeys = DiffSuite.masterStore.filter(_._2.getUriElement.url==suite).keys ++
-      DiffSuite.candidateStore.filter(_._2.getUriElement.url==suite).keys
+    val allKeys = DiffSuite.masterStore.filter(_._2.getElement.getUrl==suite).keys ++
+      DiffSuite.candidateStore.filter(_._2.getElement.getUrl==suite).keys
     log.debug(allKeys.size)
 
     allKeys.foreach(key => {
@@ -34,12 +34,12 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
           log.debug(elementInfo.getResDom)
           DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.getResDom))
             .flatten.map(m=>{
-            val ele=new URIElement(m, key)
-            ele.xpath->ele
+            val ele=ElementFactory.newElement(m, key)
+            ele.getXpath->ele
           }).toMap
         }
         case _ =>{
-          Map[String, URIElement]()
+          Map[String, AbstractElement]()
         }
       }
 
@@ -48,12 +48,12 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
         case Some(elementInfo) if elementInfo.getAction==Status.CLICKED && elementInfo.getResDom.nonEmpty => {
           DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.getResDom))
             .flatten.map(m=>{
-            val ele=new URIElement(m, key)
-            ele.xpath->ele
+            val ele=ElementFactory.newElement(m, key)
+            ele.getXpath->ele
           }).toMap
         }
         case _ =>{
-          Map[String, URIElement]()
+          Map[String, AbstractElement]()
         }
       }
 
@@ -69,15 +69,15 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
         val cp = new Checkpoints.Checkpoint()
         var markOnce=false
         allElementKeys.foreach(subKey => {
-          val masterElement = masterElements.getOrElse(subKey, URIElement())
-          val candidateElement = candidateElements.getOrElse(subKey, URIElement())
+          val masterElement = masterElements.getOrElse(subKey, ElementFactory.newElement())
+          val candidateElement = candidateElements.getOrElse(subKey, ElementFactory.newElement())
           val message =
             s"""
                |key=${subKey}
                |
-               |candidate=${candidateElement.xpath}
+               |candidate=${candidateElement.getXpath}
                |
-               |master=${masterElement.xpath}
+               |master=${masterElement.getXpath}
                |________________
                |
                |
@@ -89,20 +89,20 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
               s"""
                  |candidate image
                  |-------
-                 |<img src='${File(DiffSuite.candidateStore.getOrElse(key, new NewElementInfo()).getResImg).name}' width='80%' />
+                 |<img src='${File(DiffSuite.candidateStore.getOrElse(key, ElementFactory.newElementInfo()).getResImg).name}' width='80%' />
                  |
                  |master image
                  |--------
-                 |<img src='${File(DiffSuite.masterStore.getOrElse(key, new NewElementInfo()).getResImg).name}' width='80%' />
+                 |<img src='${File(DiffSuite.masterStore.getOrElse(key, ElementFactory.newElementInfo()).getResImg).name}' width='80%' />
                  |
                 """.stripMargin)
           }
 
           cp {
             withClue(message) {
-              candidateElement.id should equal(masterElement.id)
-              candidateElement.name should equal(masterElement.name)
-              candidateElement.xpath should equal(masterElement.xpath)
+              candidateElement.getId should equal(masterElement.getId)
+              candidateElement.getName should equal(masterElement.getName)
+              candidateElement.getXpath should equal(masterElement.getXpath)
               //assert(candidate == master, message)
             }
           }
@@ -116,12 +116,12 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
 }
 
 object DiffSuite {
-  val masterStore : scala.collection.mutable.Map[String, NewElementInfo] = Report.loadResult(s"${Report.master}/elements.yml").getNewElementStore
-  val candidateStore : scala.collection.mutable.Map[String, NewElementInfo] = Report.loadResult(s"${Report.candidate}/elements.yml").getNewElementStore
+  val masterStore : scala.collection.mutable.Map[String, AbstractElementInfo] = Report.loadResult(s"${Report.master}/elements.yml").getLinkedStore
+  val candidateStore : scala.collection.mutable.Map[String, AbstractElementInfo] = Report.loadResult(s"${Report.candidate}/elements.yml").getLinkedStore
   val blackList = List(".*\\.instance.*", ".*bounds.*")
   val range=List("//*[contains(name(), 'Text')]", "//*[contains(name(), 'Image')]", "//*[contains(name(), 'Button')]")
   def saveTestCase(): Unit ={
-    val suites=masterStore.map(_._2.getUriElement.url)++candidateStore.map(_._2.getUriElement.url)
+    val suites=masterStore.map(_._2.getElement.getUrl)++candidateStore.map(_._2.getElement.getUrl)
     suites.foreach(suite=> {
       SuiteToClass.genTestCaseClass(suite, "com.testerhome.appcrawler.DiffSuite", Map("suite"->suite, "name"->suite), Report.testcaseDir)
     })

@@ -1,13 +1,14 @@
 package com.testerhome.appcrawler
 
+import java.awt.{Dimension, Point}
 import java.io.File
 import java.util.regex.{Matcher, Pattern}
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import javax.xml.bind.annotation.XmlAttribute
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.testerhome.appcrawler.data.AbstractElement
 import org.apache.commons.text.StringEscapeUtils
-import org.openqa.selenium.{Dimension, Point}
 
 import scala.collection.immutable
 
@@ -48,11 +49,15 @@ case class URIElement(
                        var height:Int=0,
                        @XmlAttribute(name = "action")
                        var action: String = ""
-                     ) {
+                     ) extends AbstractElement{
   //用来代表唯一的控件, 每个特定的命名控件只被点击一次. 所以这个element的构造决定了控件是否可被点击多次.
   //比如某个输入框被命名为url=xueqiu id=input, 那么就只能被点击一次
   //如果url修改为url=xueqiu/xxxActivity id=input 就可以被点击多次
   //定义url是遍历的关键. 这是一门艺术
+
+  def this(){
+    this("", "", "", "", "", "", "", "", "", "", "", 0, 0, 0, 0, "")
+  }
 
   def this(nodeMap:scala.collection.Map[String, Any], uri:String) = {
     //name为id/name属性. 为空的时候为value属性
@@ -60,7 +65,7 @@ case class URIElement(
 
     this()
     this.url=uri
-    this.tag = nodeMap.getOrElse("name()", "").toString
+    this.tag = nodeMap.getOrElse("name()","").toString
     this.id = nodeMap.getOrElse("name", "").toString
     this.name = nodeMap.getOrElse("label", "").toString
     this.text = nodeMap.getOrElse("value", "").toString
@@ -74,7 +79,7 @@ case class URIElement(
     this.ancestor=nodeMap.getOrElse("ancestor", "").toString
     this.selected=nodeMap.getOrElse("selected", "false").toString
     this.valid=nodeMap.getOrElse("valid", "true").toString
-
+    this.action=nodeMap.getOrElse("action", "").toString
 
   }
   /**
@@ -97,9 +102,9 @@ case class URIElement(
   }
   def toXml(): String ={
     s"""
-      |<UIAButton dom="" enabled="true" height="${height}" hint="" label="${id}"
-      |        name="${name}" path="/0/0/4" valid="true" value="${xpath}" visible="true"
-      |        width="${width}" x="${x}" y="${y}"/>
+       |<UIAButton dom="" enabled="true" height="${height}" hint="" label="${id}"
+       |        name="${name}" path="/0/0/4" valid="true" value="${xpath}" visible="true"
+       |        width="${width}" x="${x}" y="${y}"/>
     """.stripMargin
 
   }
@@ -107,17 +112,25 @@ case class URIElement(
   override def toString: String = {
     val fileName=new StringBuilder()
     fileName.append(url.replace(File.separatorChar, '_'))
-    fileName.append("." + getValidName())
-    fileName.append(s"(${tag.replace("android.widget.", "").replace("Activity", "")})")
-
+    fileName.append(s".tag=${tag.replace("android.widget.", "").replace("Activity", "")}")
     //todo: 在滑动的时候容易导致控件识别问题
     /*if(instance.nonEmpty){
       fileName.append(s".${instance}")
     }*/
     if(depth.nonEmpty){
-      fileName.append(s"_depth=${depth}")
+      fileName.append(s".depth=${depth}")
     }
-    standardWinFileName(fileName.toString())
+    if(id.nonEmpty){
+      fileName.append(s".id=${id.split('/').last}")
+    }
+    if(name.nonEmpty){
+      fileName.append(s".name=${name}")
+    }
+    if(text.nonEmpty){
+      fileName.append(s".text=${ StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")}")
+    }
+
+    fileName.toString()
   }
 
 
@@ -128,22 +141,93 @@ case class URIElement(
     new java.math.BigInteger(1,m.digest()).toString(16)
   }
 
-  // windows下命名规范
-  def standardWinFileName(s : String) : String = {
-    val pattern = Pattern.compile("[\\s\\\\/:\\*\\?\\\"<>\\|]")
-    val matcher = pattern.matcher(s)
-    matcher.replaceAll("")
+  override def elementUri(): String = {
+    this.toString
   }
 
-  def getValidName(): String ={
-    if(text.nonEmpty){
-      StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")
-    }else if(id.nonEmpty){
-      id.split('/').last
-    }else if(name.nonEmpty){
-      name
-    }else{
-      tag.replace("android.widget.", "").replace("Activity", "")
+  def getUrl: String = {
+    url
+  }
+
+  def getXpath: String = {
+    xpath
+  }
+
+  def getAction: String = {
+    action
+  }
+
+  override def setId(id: String): Unit = {
+    this.id = id
+  }
+
+  override def setName(name: String): Unit = {
+    this.name = name
+  }
+
+  override def setTag(tag: String): Unit = {
+    this.tag = tag
+  }
+
+  override def setAction(action: String): Unit = {
+    this.action = action
+  }
+
+  override def getId: String = {
+    id
+  }
+
+  override def getName: String = {
+    name
+  }
+
+  override def getTag: String = {
+    tag
+  }
+
+  override def getText: String = {
+    text
+  }
+
+  override def getInstance(): String = {
+    instance
+  }
+
+  override def getValid: String = {
+    valid
+  }
+
+  override def getX: Int = {
+    x
+  }
+
+  override def getY: Int = {
+    y
+  }
+
+  override def getWidth: Int = {
+    width
+  }
+
+  override def getHeight: Int = {
+    height
+  }
+
+  override def getDepth: String = {
+    depth
+  }
+
+  override def getSelected: String = {
+    selected
+  }
+
+  override def getValidName: String = {
+    if (!text.isEmpty) return StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")
+    else if (!id.isEmpty) {
+      val i: Int = id.split("/").length
+      return id.split("/")(i - 1)
     }
+    else if (!name.isEmpty) return name
+    else return tag.replace("android.widget.", "").replace("Activity", "")
   }
 }

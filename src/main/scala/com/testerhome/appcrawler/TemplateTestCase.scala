@@ -1,7 +1,7 @@
 package com.testerhome.appcrawler
 
-import com.testerhome.appcrawler.hbh.NewURIElementStore
-import com.testerhome.appcrawler.hbh.NewURIElementStore.Status
+import com.testerhome.appcrawler.data.PathElementStore
+import com.testerhome.appcrawler.data.PathElementStore.Status
 import org.apache.commons.lang3.StringUtils
 import org.scalatest
 import org.scalatest._
@@ -19,10 +19,10 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
   override def suiteName = name
 
   def addTestCase() {
-    log.trace(s"Report.store.elementStore size = ${Report.store.getNewElementStore.size}")
+    log.trace(s"Report.store.elementStore size = ${Report.store.getLinkedStore.size}")
     log.trace(s"uri=${uri}")
-    val sortedElements = Report.store.getNewElementStore
-      .filter(x => x._2.getUriElement.url == uri)
+    val sortedElements = Report.store.getLinkedStore
+      .filter(x => x._2.getElement.getUrl == uri)
       .map(_._2).toList
       .sortBy(_.getClickedIndex)
 
@@ -39,7 +39,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
     }
     log.trace(s"selected elements size = ${selected.size}")
     selected.foreach(ele => {
-      val testcase = ele.getUriElement.xpath.replace("\\", "\\\\")
+      val testcase = ele.getElement.getXpath.replace("\\", "\\\\")
         .replace("\"", "\\\"")
         .replace("\n", "")
         .replace("\r", "")
@@ -76,7 +76,7 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
                 if (
                   step.getGiven().forall(g=>XPathUtil.getNodeListByKey(g, ele.getReqDom).size>0)
                 ) {
-                  log.info(s"match testcase ${ele.getUriElement.xpath}")
+                  log.info(s"match testcase ${ele.getElement.getXpath}")
 
                   if(step.then!=null) {
                     val cp = new scalatest.Checkpoints.Checkpoint
@@ -113,14 +113,14 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
 }
 
 object TemplateTestCase extends CommonLog {
-  def saveTestCase(store: NewURIElementStore, resultDir: String): Unit = {
+  def saveTestCase(store: PathElementStore, resultDir: String): Unit = {
     log.info("save testcase")
     Report.reportPath = resultDir
     Report.testcaseDir = Report.reportPath + "/tmp/"
     //为了保持独立使用
     val path = new java.io.File(resultDir).getCanonicalPath
 
-    val suites = store.getNewElementStore.map(x => x._2.getUriElement.url).toList.distinct
+    val suites = store.getLinkedStore.map(x => x._2.getElement.getUrl).toList.distinct
     suites.foreach(suite => {
       log.info(s"gen testcase class ${suite}")
       //todo: 基于规则的多次点击事件只会被保存到一个状态中. 需要区分

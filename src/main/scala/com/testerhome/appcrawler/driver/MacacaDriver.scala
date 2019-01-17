@@ -4,7 +4,8 @@ import java.awt.{BasicStroke, Color}
 import java.io.File
 
 import com.alibaba.fastjson.JSONObject
-import com.testerhome.appcrawler.{URIElement, _}
+import com.testerhome.appcrawler.data.AbstractElement
+import com.testerhome.appcrawler._
 import javax.imageio.ImageIO
 import macaca.client.MacacaClient
 import org.openqa.selenium.Rectangle
@@ -154,13 +155,13 @@ class MacacaDriver extends ReactWebDriver{
     driver.source()
   }
 
-  override def findElementsByURI(element: URIElement, findBy:String): List[AnyRef] = {
+  override def findElementsByURI(element: AbstractElement, findBy:String): List[AnyRef] = {
     //todo: 改进macaca定位
-    val s=driver.elementsByXPath(element.xpath)
+    val s=driver.elementsByXPath(element.getXpath)
     0 until s.size() map(s.getIndex(_)) toList
   }
 
-  override def findElementByURI(element: URIElement, findBy:String): AnyRef = {
+  override def findElementByURI(element: AbstractElement, findBy:String): AnyRef = {
     currentElement=super.findElementByURI(element, findBy).asInstanceOf[macaca.client.commands.Element]
     currentElement
   }

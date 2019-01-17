@@ -1,6 +1,7 @@
 package com.testerhome.appcrawler.plugin
 
-import com.testerhome.appcrawler.{AppCrawler, CommonLog, Crawler, URIElement}
+import com.testerhome.appcrawler.data.AbstractElement
+import com.testerhome.appcrawler.{AppCrawler, CommonLog, Crawler}
 
 /**
   * Created by seveniruby on 16/1/7.
@@ -29,13 +30,13 @@ abstract class Plugin extends CommonLog{
   def beforeBack(): Unit ={
 
   }
-  def fixElementAction(element: URIElement): Unit ={
+  def fixElementAction(element: AbstractElement): Unit ={
 
   }
-  def beforeElementAction(element: URIElement): Unit ={
+  def beforeElementAction(element: AbstractElement): Unit ={
 
   }
-  def afterElementAction(element: URIElement): Unit ={
+  def afterElementAction(element: AbstractElement): Unit ={
 
   }
 

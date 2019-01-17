@@ -3,6 +3,7 @@ package com.testerhome.appcrawler.ut
 import com.testerhome.appcrawler.plugin.ReportPlugin
 import com.testerhome.appcrawler.{CommonLog, URIElement}
 import com.testerhome.appcrawler._
+import com.testerhome.appcrawler.data.PathElementStore
 import com.testerhome.appcrawler.plugin.ReportPlugin
 import org.scalatest.FunSuite
 import org.scalatest.tools.Runner
@@ -19,13 +20,13 @@ class TestReportPlugin extends FunSuite with CommonLog{
     val element_1=URIElement("a", "b", "c", "d", "e")
     val info_1=new ElementInfo()
     info_1.element=element_1
-    info_1.action=ElementStatus.Skipped
+    info_1.action=PathElementStore.Status.SKIPPED
 
 
     val element_2=URIElement("aa", "bb", "cc", "dd", "ee")
     val info_2=new ElementInfo()
     info_2.element=element_2
-    info_2.action=ElementStatus.Clicked
+    info_2.action=PathElementStore.Status.CLICKED
 
     val elementsStore=scala.collection.mutable.Map(
       element_1.toString->info_1,

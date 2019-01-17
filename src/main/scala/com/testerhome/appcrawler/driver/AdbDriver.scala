@@ -5,7 +5,8 @@ import java.io.{File, StringReader}
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
-import com.testerhome.appcrawler.{AppCrawler, URIElement, _}
+import com.testerhome.appcrawler.data.AbstractElement
+import com.testerhome.appcrawler.{AppCrawler, _}
 import javax.imageio.ImageIO
 import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
@@ -151,9 +152,9 @@ class AdbDriver extends ReactWebDriver{
 
   override def getRect(): Rectangle ={
     //selenium下还没有正确的赋值，只能通过api获取
-    if(currentURIElement.height!=0){
+    if(currentURIElement.getHeight!=0){
       //log.info(s"location=${location} size=${size} x=${currentURIElement.x} y=${currentURIElement.y} width=${currentURIElement.width} height=${currentURIElement.height}" )
-      new Rectangle(currentURIElement.x, currentURIElement.y, currentURIElement.height, currentURIElement.width)
+      new Rectangle(currentURIElement.getX, currentURIElement.getY, currentURIElement.getHeight, currentURIElement.getWidth)
     }else {
       log.error("rect height < 0")
       return null
@@ -170,7 +171,7 @@ class AdbDriver extends ReactWebDriver{
     back()
   }
 
-  override def findElementsByURI(element: URIElement, findBy: String): List[AnyRef] = {
+  override def findElementsByURI(element: AbstractElement, findBy: String): List[AnyRef] = {
     List(element)
   }
 

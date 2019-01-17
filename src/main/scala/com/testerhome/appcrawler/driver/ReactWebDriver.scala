@@ -4,6 +4,7 @@ import java.io.File
 import java.util.concurrent.{Callable, Executors, TimeUnit, TimeoutException}
 
 import com.testerhome.appcrawler._
+import com.testerhome.appcrawler.data.{AbstractElement, ElementFactory}
 import org.openqa.selenium.Rectangle
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.w3c.dom.Document
@@ -26,17 +27,17 @@ abstract class ReactWebDriver extends CommonLog {
 
   var loc = ""
   var index = 0
-  var currentURIElement: URIElement= URIElement()
+  var currentURIElement: AbstractElement= ElementFactory.newElement()
 
   var imagesDir="images"
   var platformName=""
 
 
 
-  def findElementsByURI(element: URIElement, findBy:String=platformName): List[AnyRef]
-  def findElementByURI(element: URIElement, findBy:String=platformName): AnyRef= {
+  def findElementsByURI(element: AbstractElement, findBy:String=platformName): List[AnyRef]
+  def findElementByURI(element: AbstractElement, findBy:String=platformName): AnyRef= {
     //todo: 用其他定位方式优化
-    log.info(s"find by uri element= ${element}")
+    log.info(s"find by uri element= ${element.elementUri()}")
     currentURIElement=element
     asyncTask(name = "findElementsByURI")(findElementsByURI(element, findBy)) match {
       case Left(v) => {

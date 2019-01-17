@@ -4,6 +4,7 @@ import java.util.logging.Level
 
 import com.testerhome.appcrawler.driver.AppiumClient
 import com.testerhome.appcrawler.URIElement
+import com.testerhome.appcrawler.data.AbstractElement
 
 import scala.collection.mutable.ListBuffer
 import scala.reflect.io.File
@@ -17,7 +18,7 @@ class LogPlugin extends Plugin {
   private var logs = ListBuffer[String]()
   val driver = getCrawler().driver.asInstanceOf[AppiumClient].driver
 
-  override def afterElementAction(element: URIElement): Unit = {
+  override def afterElementAction(element: AbstractElement): Unit = {
     //第一次先试验可用的log 后续就可以跳过从而加速
     if (logs.isEmpty) {
       driver.manage().logs().getAvailableLogTypes.toArray().foreach(logName => {
@@ -30,7 +31,7 @@ class LogPlugin extends Plugin {
         }
       })
     }
-    if(element.action!="skip") {
+    if(element.getAction!="skip") {
       logs.foreach(log => {
         saveLog(log)
       })

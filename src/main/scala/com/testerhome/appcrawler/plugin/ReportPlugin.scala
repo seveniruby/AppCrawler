@@ -3,8 +3,9 @@ package com.testerhome.appcrawler.plugin
 import java.io
 import java.nio.file.{Files, Paths}
 
-import com.testerhome.appcrawler.{Report, URIElement}
+import com.testerhome.appcrawler.{Report}
 import com.testerhome.appcrawler._
+import com.testerhome.appcrawler.data.AbstractElement
 import org.scalatest.FunSuite
 import org.scalatest.tools.Runner
 import sun.misc.{Signal, SignalHandler}
@@ -36,7 +37,7 @@ class ReportPlugin extends Plugin with Report {
     generateReport()
   }
 
-  override def afterElementAction(element: URIElement): Unit ={
+  override def afterElementAction(element: AbstractElement): Unit ={
     //todo: 子线程处理，异步处理
     getCrawler().driver.asyncTask(timeout = 120, name = "report", needThrow = true) {
       if (needReport()) {

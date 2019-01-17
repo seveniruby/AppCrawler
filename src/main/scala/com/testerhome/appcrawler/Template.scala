@@ -2,7 +2,7 @@ package com.testerhome.appcrawler
 
 import java.io.File
 
-import com.testerhome.appcrawler.hbh.NewURIElementStore
+import com.testerhome.appcrawler.data.PathElementStore
 import org.apache.commons.io.FileUtils
 import org.fusesource.scalate.TemplateEngine
 
@@ -30,11 +30,11 @@ class Template {
   def read(path:String): Unit = {
 
     //val path = "/Users/seveniruby/projects/AppCrawlerSuite/AppCrawler/android_20170109145102/elements.yml"
-    val store = (TData.fromYaml[NewURIElementStore](Source.fromFile(path).mkString)).getNewElementStore
+    val store = (TData.fromYaml[PathElementStore](Source.fromFile(path).mkString)).getLinkedStore
 
     store.foreach(s => {
       val reqDom = s._2.getReqDom
-      val url = s._2.getUriElement.url
+      val url = s._2.getElement.getUrl
       if (reqDom.size != 0) {
 
         if (elements.contains(url) == false) {
