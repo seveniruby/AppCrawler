@@ -19,7 +19,7 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectPacka
 
 public class MvnReplace {
 
-    public void setPro() throws Exception {
+    public static void setPro() throws Exception {
         FileInputStream is = new FileInputStream("src/main/resources/allure.properties");
         Properties pro = new Properties();
         pro.load(is);
@@ -27,8 +27,8 @@ public class MvnReplace {
         FileOutputStream out = new FileOutputStream("src/main/resources/allure.properties");
         pro.store(out, "new file");
     }
-    @Test
-    public void runTest() throws Exception {
+
+    public static void runTest() throws Exception {
         setPro();
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
                 .selectors(

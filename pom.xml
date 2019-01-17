@@ -6,7 +6,7 @@
 
     <groupId>ttf.testerhome.com</groupId>
     <artifactId>appcrawler</artifactId>
-    <version>2.5.0</version>
+    <version>2.6.0</version>
     <name>appcrawler</name>
     <description>app crawler for testing, open source by testerhome</description>
 
