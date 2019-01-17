@@ -1,6 +1,6 @@
 package com.testerhome.appcrawler.data;
 
-import java.awt.*;
+import java.awt.Point;
 
 public abstract class AbstractElement {
     public abstract Point center();

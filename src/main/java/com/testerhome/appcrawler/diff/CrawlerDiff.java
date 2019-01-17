@@ -79,7 +79,7 @@ public class CrawlerDiff {
 		Iterator<String> urlHead = URLs.iterator();
 		while(urlHead.hasNext()){
 			List<String> falseList = new ArrayList<String>();
-			List<String> tureList = new ArrayList<String>();
+			List<String> trueList = new ArrayList<String>();
 			String url = urlHead.next();
 			List<String> masterkeys= masterSuites.get(url);
 			List<String> candidatekeys= candidateSuites.get(url);
@@ -99,12 +99,12 @@ public class CrawlerDiff {
 			while(keyHead.hasNext()){
 				String key = keyHead.next();
 				Boolean flag = XPathUtil.checkDom(JavaConverters.mapAsJavaMap(masterStore.elementStore()).get(key).resDom(),JavaConverters.mapAsJavaMap(candidateStore.elementStore()).get(key).resDom());
-				if(flag) tureList.add(key);
+				if(flag) trueList.add(key);
 				else falseList.add(key);
 			}
 			Map<String,List<String>> tMap = new HashMap<String,List<String>>();
 			tMap.put("false", falseList);
-			tMap.put("ture", tureList);
+			tMap.put("true", trueList);
 			yaml.put(url, tMap);
 		}
 		
