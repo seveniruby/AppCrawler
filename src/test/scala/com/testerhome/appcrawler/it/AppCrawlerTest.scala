@@ -20,7 +20,7 @@ class AppCrawlerTest extends FunSuite with BeforeAndAfterEach {
   test("xueqiu appium crawler"){
     AppCrawler.main(Array(
       "--capability",
-        "app=/Users/seveniruby/Downloads/com.xueqiu.android_11.10.2_190.apk," +
+        //"app=/Users/seveniruby/Downloads/com.xueqiu.android_11.10.2_190.apk," +
         "appPackage=com.xueqiu.android," +
         "appActivity=.view.WelcomeActivityAlias," +
         "noReset=false," +
@@ -32,6 +32,28 @@ class AppCrawlerTest extends FunSuite with BeforeAndAfterEach {
       s"/tmp/xueqiu/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}",
       "-y",
       "{ blackList: [ {xpath: action_night}, {xpath: action_setting}, {xpath: '.*[0-9\\.]{2}.*'} ], " +
+        "urlBlackList: [ .*StockDetail.* ] }",
+      "-vv"
+    )
+    )
+  }
+
+
+  test("xueqiu appium crawler with new data"){
+    AppCrawler.main(Array(
+      "--capability",
+      //"app=/Users/seveniruby/Downloads/com.xueqiu.android_11.10.2_190.apk," +
+      "appPackage=com.xueqiu.android," +
+        "appActivity=.view.WelcomeActivityAlias," +
+        "noReset=false," +
+        "automationName=uiautomator2," +
+        "autoGrantPermissions=true," +
+        "ignoreUnimportantViews=true," +
+        "disableAndroidWatchers=true",
+      "-o",
+      s"/tmp/xueqiu/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}",
+      "-y",
+      "{ blackList: [ {xpath: action_night}, {xpath: action_setting}, {xpath: '.*[0-9\\.]{2}.*'} ], useNewData: true, " +
         "urlBlackList: [ .*StockDetail.* ] }",
       "-vv"
     )
