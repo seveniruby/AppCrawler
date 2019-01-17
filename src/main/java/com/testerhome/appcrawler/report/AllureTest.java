@@ -28,6 +28,7 @@ public class AllureTest {
     @Story("控件点击")
     @TestFactory
     Stream<DynamicTest> dynamicTestsExample() throws Exception {
+        System.out.println("dynamicTestsExample run");
 
         List<DynamicTest> dynamicTests = new ArrayList<>();
         ReadYaml read = new ReadYaml();

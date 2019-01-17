@@ -3,9 +3,10 @@ package com.testerhome.appcrawler.plugin
 import java.io
 import java.nio.file.{Files, Paths}
 
-import com.testerhome.appcrawler.{Report}
+import com.testerhome.appcrawler.Report
 import com.testerhome.appcrawler._
 import com.testerhome.appcrawler.data.AbstractElement
+import com.testerhome.appcrawler.report.MvnReplace
 import org.scalatest.FunSuite
 import org.scalatest.tools.Runner
 import sun.misc.{Signal, SignalHandler}
@@ -78,11 +79,16 @@ class ReportPlugin extends Plugin with Report {
 
   //todo: 使用独立工具出报告
   def generateReport(): Unit ={
-    log.info(s"reportPath=${reportPath}")
-    Report.saveTestCase(getCrawler().store, reportPath)
-    Report.store=getCrawler().store
-    Report.runTestCase()
+
+    if(getCrawler().conf.useNewData){
+      // 生成allure报告
+      log.info("allure report generate")
+      MvnReplace.runTest();
+    }else {
+      log.info(s"reportPath=${reportPath}")
+      Report.saveTestCase(getCrawler().store, reportPath)
+      Report.store = getCrawler().store
+      Report.runTestCase()
+    }
   }
-
-
 }

@@ -1227,9 +1227,6 @@ class Crawler extends CommonLog {
       }
     }
     log.info("generate report finish")
-
-    // 生成allure报告
-    MvnReplace.runTest();
     System.exit(0)
 
   }
