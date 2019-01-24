@@ -1,7 +1,5 @@
 package com.testerhome.appcrawler.data;
 
-import com.testerhome.appcrawler.URIElement;
-
 public class PathElementInfo extends AbstractElementInfo{
 
     String reqDom;
@@ -10,14 +8,14 @@ public class PathElementInfo extends AbstractElementInfo{
     String resHash;
     String reqImg;
     String resImg;
-    PathElementStore.Status action;
+    AbstractElementStore.Status action;
     int clickedIndex;
-    PathElement uriElement;
+    AbstractElement uriElement;
 
     public PathElementInfo(){
-        this("","","","","","",PathElementStore.Status.READY,-1,null);
+        this("","","","","","", AbstractElementStore.Status.READY,-1,ElementFactory.newElement());
     }
-    public PathElementInfo(String reqDom, String resDom, String reqHash, String resHash, String reqImg, String resImg, PathElementStore.Status action, int clickedIndex, PathElement uriElement) {
+    public PathElementInfo(String reqDom, String resDom, String reqHash, String resHash, String reqImg, String resImg, AbstractElementStore.Status action, int clickedIndex, AbstractElement uriElement) {
         this.reqDom = reqDom;
         this.resDom = resDom;
         this.reqHash = reqHash;
@@ -77,19 +75,19 @@ public class PathElementInfo extends AbstractElementInfo{
         this.resImg = resImg;
     }
 
-    public void setAction(PathElementStore.Status action) {
+    public void setAction(AbstractElementStore.Status action) {
         this.action = action;
     }
 
     public void setElement(AbstractElement uriElement) {
-        this.uriElement = (PathElement)uriElement;
+        this.uriElement = uriElement;
     }
 
-    public PathElementStore.Status getAction() {
+    public AbstractElementStore.Status getAction() {
         return action;
     }
 
-    public PathElement getElement() {
+    public AbstractElement getElement() {
         return uriElement;
     }
 

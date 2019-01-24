@@ -85,9 +85,6 @@ public class PathElement extends AbstractElement {
         fileName.append("." + getValidName());
         fileName.append("(" + tag.replace("android.widget.", "").replace("Activity", "")+")");
 
-        if(!depth.isEmpty()){
-            fileName.append("_depth=" + depth);
-        }
         return standardWinFileName(fileName.toString());
     }
 

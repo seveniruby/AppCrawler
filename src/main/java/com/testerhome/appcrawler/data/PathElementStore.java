@@ -2,23 +2,19 @@ package com.testerhome.appcrawler.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.testerhome.appcrawler.AppCrawler;
-import com.testerhome.appcrawler.URIElement;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-public class PathElementStore {
-
-    public enum Status{
-        READY,CLICKED,SKIPPED
-    }
+public class PathElementStore extends AbstractElementStore{
 
     LinkedHashMap<String, AbstractElementInfo> linkedStore = new LinkedHashMap();
 
     List<String> resDomList = new ArrayList<>();
 
-    public LinkedHashMap<String, AbstractElementInfo> getLinkedStore() {
+    public Map<String, AbstractElementInfo> getStore() {
         return linkedStore;
     }
 
@@ -59,7 +55,7 @@ public class PathElementStore {
     }
 
     //  isSkipped
-    public boolean isSkiped(AbstractElement element) {
+    public boolean isSkipped(AbstractElement element) {
         if (linkedStore.containsKey(element.elementUri())){
             return linkedStore.get(element.elementUri()).getAction()== Status.SKIPPED;
         }else {

@@ -31,8 +31,8 @@ public class ReportTest {
         info2.setAction(PathElementStore.Status.SKIPPED);
 
         PathElementStore elementsStore=new PathElementStore();
-        elementsStore.getLinkedStore().put(element1.toString(),info1);
-        elementsStore.getLinkedStore().put(element2.toString(),info2);
+        elementsStore.getStore().put(element1.toString(),info1);
+        elementsStore.getStore().put(element2.toString(),info2);
         reportPlugin.saveTestCase(elementsStore, "/tmp/");
     }
 

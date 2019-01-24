@@ -32,7 +32,7 @@ class Crawler extends CommonLog {
   /** 存放插件类 */
   val pluginClasses = ListBuffer[Plugin]()
 
-  val store = new PathElementStore
+  val store = ElementFactory.newElementStore()
 
   private var currentElementAction = "click"
   private var platformName = ""
@@ -56,7 +56,9 @@ class Crawler extends CommonLog {
   private val startTime = new Date().getTime
 
   val urlStack = mutable.Stack[String]()
-  var urlMap = mutable.Map[String, AbstractElement]()
+
+  val urlPathStack = mutable.Stack[String]()
+  var urlList = ListBuffer[String]()
 
   protected val backDistance = new DataRecord()
   val appNameRecord = new DataRecord()
@@ -350,41 +352,53 @@ class Crawler extends CommonLog {
     md5(nodeList.map(getUrlElementByMap(_).getAncestor()).distinct.mkString("\n"))
   }
 
-  def getUri(): String = {
-    val uri = if (conf.suiteName != null && conf.suiteName.nonEmpty) {
-      val urlString = conf.suiteName.flatMap(driver.getNodeListByKey(_)).distinct.map(x => {
-        //按照attribute, label, name顺序挨个取第一个非空的指x
-        List(
-          x.getOrElse("attribute", ""),
-          x.getOrElse("text", ""),
-          x.getOrElse("value", ""),
-          x.getOrElse("content-desc", ""),
-          x.getOrElse("label", "")
-        ).filter(_.toString.nonEmpty).headOption.getOrElse("")
-      }).filter(_.toString.nonEmpty).mkString("-")
-      log.info(s"defineUrl=$urlString")
-      urlString
-    } else {
-      ""
-    }
-    if (uri.nonEmpty) {
-      uri
-    } else {
-      if (!urlMap.contains(driver.getUrl())){
-        if (store.lastElementInfo()!=null){
-          urlMap.put(driver.getUrl(),store.lastElementInfo().getElement)
+  def shortestPath() : String = {
+    var shortestPath = ""
+    if (store.asInstanceOf[PathElementStore].lastElementInfo()!=null){
+      if (urlPathStack.contains(driver.getUrl())){
+        while (urlPathStack.head != driver.getUrl()) {
+          urlPathStack.pop()
+          urlList.remove(urlList.size-1)
         }
-      }else {
-        val preEleUrl = urlMap.get(driver.getUrl()).head.getUrl
-        val curEleValidName = store.lastElementInfo().getElement.getUrl
-        if (!curEleValidName.contains(preEleUrl) || curEleValidName.equals(preEleUrl)) {
-          urlMap.update(driver.getUrl(), store.lastElementInfo().getElement)
-        }
+        shortestPath = urlList.filter(_.nonEmpty).mkString(".")
+      }else{
+        urlPathStack.push(driver.getUrl())
+        urlList.add(store.asInstanceOf[PathElementStore].lastElementInfo().getElement.getValidName)
+        shortestPath = urlList.filter(_.nonEmpty).mkString(".")
       }
-      driver.getUrl()
+    }else{
+      urlList.add(driver.getAppName())
+      shortestPath = urlList.filter(_.nonEmpty).mkString(".")
     }
+    shortestPath
+  }
 
-
+  def getUri(): String = {
+    if (conf.useNewData) {
+      shortestPath()
+    } else {
+      val uri = if (conf.suiteName != null && conf.suiteName.nonEmpty) {
+        val urlString = conf.suiteName.flatMap(driver.getNodeListByKey(_)).distinct.map(x => {
+          //按照attribute, label, name顺序挨个取第一个非空的指x
+          List(
+            x.getOrElse("attribute", ""),
+            x.getOrElse("text", ""),
+            x.getOrElse("value", ""),
+            x.getOrElse("content-desc", ""),
+            x.getOrElse("label", "")
+          ).filter(_.toString.nonEmpty).headOption.getOrElse("")
+        }).filter(_.toString.nonEmpty).mkString("-")
+        log.info(s"defineUrl=$urlString")
+        urlString
+      } else {
+        ""
+      }
+      if (uri.nonEmpty) {
+        List(driver.getAppName(), uri).distinct.filter(_.nonEmpty).mkString(".")
+      } else {
+        List(driver.getAppName(), driver.getUrl()).distinct.filter(_.nonEmpty).mkString(".")
+      }
+    }
   }
 
   /**
@@ -564,7 +578,7 @@ class Crawler extends CommonLog {
       lastSize = selectedElements.size
     }
 
-    selectedElements = selectedElements.filter(!store.isSkiped(_))
+    selectedElements = selectedElements.filter(!store.isSkipped(_))
     log.info(s"selectedElements - skiped fresh elements size=${selectedElements.length}")
     if (selectedElements.size < lastSize) {
       selectedElements.foreach(e => {
@@ -690,16 +704,7 @@ class Crawler extends CommonLog {
     }
     log.trace(s"urlStack=${urlStack}")
     //使用当前的页面. 不再记录堆栈.先简化
-    var sb = new mutable.StringBuilder()
-    sb.append(driver.getAppName())
-    for (i <- (0 until urlStack.size).reverse){
-      var str = urlStack.toList.get(i)
-      if (urlMap.contains(str)){
-        str = urlMap.get(str).head.getValidName
-      }
-      sb.append("." + str)
-    }
-    currentUrl = sb.toString()
+
     //val contexts = MiniAppium.doAppium(driver.getContextHandles).getOrElse("")
     //val windows=MiniAppium.doAppium(driver.getWindowHandles).getOrElse("")
     //val windows = ""
