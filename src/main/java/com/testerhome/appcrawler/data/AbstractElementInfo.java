@@ -3,10 +3,10 @@ package com.testerhome.appcrawler.data;
 public abstract class AbstractElementInfo {
     public abstract AbstractElement getElement();
     public abstract void setElement(AbstractElement element);
-    public abstract void setAction(PathElementStore.Status status);
+    public abstract void setAction(AbstractElementStore.Status status);
     public abstract void setClickedIndex(int index);
     public abstract int getClickedIndex();
-    public abstract PathElementStore.Status getAction();
+    public abstract AbstractElementStore.Status getAction();
     public abstract void setReqHash(String reqHash);
     public abstract void setResHash(String resHash);
     public abstract void setReqDom(String reqDom);

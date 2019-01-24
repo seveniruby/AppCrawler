@@ -1,6 +1,7 @@
 package com.testerhome.appcrawler
 
-import com.testerhome.appcrawler.data.{AbstractElement, AbstractElementInfo, PathElementStore}
+import com.testerhome.appcrawler.data.AbstractElementStore.Status
+import com.testerhome.appcrawler.data.{AbstractElement, AbstractElementInfo, ElementFactory}
 
 case class ElementInfo(
                         var reqDom: String = "",
@@ -10,21 +11,21 @@ case class ElementInfo(
                         var reqImg:String="",
                         var resImg:String="",
                         var clickedIndex: Int = -1,
-                        var action: PathElementStore.Status = PathElementStore.Status.READY,
-                        var element: URIElement = URIElement(url="Init", tag="", id="", name="", xpath="")
+                        var action: Status = Status.READY,
+                        var element: AbstractElement = ElementFactory.newElement()
                       ) extends AbstractElementInfo{
   def this(){
-    this("","","","","","",-1,PathElementStore.Status.READY,null)
+    this("","","","","","",-1,Status.READY,null)
   }
   override def getElement: AbstractElement = {
     element.asInstanceOf[AbstractElement]
   }
 
   override def setElement(element: AbstractElement): Unit = {
-    this.element = element.asInstanceOf[URIElement]
+    this.element = element
   }
 
-  override def setAction(status: PathElementStore.Status): Unit = {
+  override def setAction(status: Status): Unit = {
     this.action = status
   }
 
@@ -32,7 +33,7 @@ case class ElementInfo(
     this.clickedIndex = index
   }
 
-  override def getAction: PathElementStore.Status = {
+  override def getAction: Status = {
     action
   }
 

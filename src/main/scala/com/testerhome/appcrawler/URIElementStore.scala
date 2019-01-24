@@ -1,55 +1,64 @@
 package com.testerhome.appcrawler
 
-import com.testerhome.appcrawler.data.PathElementStore
+import java.util
+
+import com.testerhome.appcrawler.data.AbstractElementStore.Status
+import com.testerhome.appcrawler.data.{AbstractElement, AbstractElementInfo, AbstractElementStore}
 
 import scala.beans.BeanProperty
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scala.collection.JavaConverters
 
 /**
   * Created by seveniruby on 16/9/8.
   */
-class URIElementStore {
+class URIElementStore extends AbstractElementStore{
   //todo: 用枚举替代  0表示未遍历 1表示已遍历 -1表示跳过
   @BeanProperty
   var elementStore = scala.collection.mutable.Map[String, ElementInfo]()
+
+  def getStore : java.util.Map[String,AbstractElementInfo] = {
+    JavaConverters.mapAsJavaMap(elementStore)
+  }
+
   /** 点击顺序, 留作画图用 */
   @BeanProperty
-  var clickedElementsList = ListBuffer[URIElement]()
+  var clickedElementsList = ListBuffer[AbstractElement]()
 
-  def setElementSkip(element: URIElement): Unit = {
+  def setElementSkip(element: AbstractElement): Unit = {
     //todo: 待改进
     //clickedElementsList.remove(clickedElementsList.size - 1)
     if(elementStore.contains(element.toString)==false){
       elementStore(element.toString)=ElementInfo()
       elementStore(element.toString).element=element
     }
-    elementStore(element.toString).action=PathElementStore.Status.SKIPPED
+    elementStore(element.toString).action=Status.SKIPPED
   }
 
-  def setElementClicked(element: URIElement): Unit = {
+  def setElementClicked(element: AbstractElement): Unit = {
     if(elementStore.contains(element.toString)==false){
       elementStore(element.toString)=ElementInfo()
       elementStore(element.toString).element=element
     }
     clickedElementsList.append(element)
-    elementStore(element.toString).action=PathElementStore.Status.CLICKED
+    elementStore(element.toString).action=Status.CLICKED
     elementStore(element.toString).clickedIndex=clickedElementsList.indexOf(element)
   }
-  def setElementClear(element: URIElement=clickedElementsList.last): Unit = {
+  def setElementClear(element: AbstractElement=clickedElementsList.last): Unit = {
     if(elementStore.contains(element.toString)){
       elementStore.remove(element.toString)
     }
   }
 
 
-  def saveElement(element: URIElement): Unit = {
+  def saveElement(element: AbstractElement): Unit = {
     if(elementStore.contains(element.toString)==false){
       elementStore(element.toString)=ElementInfo()
       elementStore(element.toString).element=element
     }
     if (elementStore.contains(element.toString) == false) {
-      elementStore(element.toString).action=PathElementStore.Status.CLICKED
+      elementStore(element.toString).action=Status.CLICKED
       AppCrawler.log.info(s"first found ${element}")
     }
   }
@@ -109,25 +118,27 @@ class URIElementStore {
   }
 
 
-  def isClicked(element: URIElement): Boolean = {
+  def isClicked(element: AbstractElement): Boolean = {
     if (elementStore.contains(element.toString)) {
-      elementStore(element.toString).action == PathElementStore.Status.CLICKED
+      elementStore(element.toString).action == Status.CLICKED
     } else {
       AppCrawler.log.debug(s"element=${element} first show, need click")
       false
     }
   }
 
-  def isSkiped(ele: URIElement): Boolean = {
+  def isSkipped(ele: AbstractElement): Boolean = {
     if (elementStore.contains(ele.toString)) {
-      elementStore(ele.toString).action == PathElementStore.Status.SKIPPED
+      elementStore(ele.toString).action == Status.SKIPPED
     } else {
       AppCrawler.log.debug(s"element=${ele} first show, need click")
       false
     }
   }
 
-
+  override def getClickElementList: util.List[AbstractElement] = {
+    JavaConverters.bufferAsJavaList(clickedElementsList)
+  }
 }
 
 object ElementStatus extends Enumeration {

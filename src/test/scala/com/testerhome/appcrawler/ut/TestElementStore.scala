@@ -1,5 +1,6 @@
 package com.testerhome.appcrawler.ut
 
+import com.testerhome.appcrawler.data.AbstractElementStore.Status
 import com.testerhome.appcrawler.data.PathElementStore
 import com.testerhome.appcrawler.{CommonLog, URIElement, _}
 import org.scalatest.{FunSuite, Matchers}
@@ -14,13 +15,13 @@ class TestElementStore extends FunSuite with Matchers with CommonLog{
     val element_1=URIElement("a", "b", "c", "d", "e")
     val info_1=new ElementInfo()
     info_1.element=element_1
-    info_1.action=PathElementStore.Status.SKIPPED
+    info_1.action=Status.SKIPPED
 
 
     val element_2=URIElement("aa", "bb", "cc", "dd", "ee")
     val info_2=new ElementInfo()
     info_2.element=element_2
-    info_2.action=PathElementStore.Status.CLICKED
+    info_2.action=Status.CLICKED
 
     store.elementStore ++= scala.collection.mutable.Map(
       element_1.toString->info_1,
