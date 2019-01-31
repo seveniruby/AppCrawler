@@ -3,14 +3,17 @@ package com.testerhome.appcrawler.driver
 import java.awt.{BasicStroke, Color}
 import java.io.File
 import java.net.URL
-import java.time.Duration
-import javax.imageio.ImageIO
 
+import javax.imageio.ImageIO
 import com.testerhome.appcrawler.{AppCrawler, CommonLog, DataObject, URIElement}
 import com.testerhome.appcrawler._
 import io.appium.java_client.{AppiumDriver, TouchAction}
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
+import io.appium.java_client.touch.offset.ElementOption.element
+import io.appium.java_client.touch.offset.PointOption.point
+
+
 import org.apache.log4j.Level
 import org.openqa.selenium.{OutputType, Rectangle, TakesScreenshot, WebElement}
 import org.scalatest.selenium.WebBrowser
@@ -220,12 +223,12 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
     if(screenHeight<=0){
       getDeviceInfo()
     }
+
     retry(
       driver.performTouchAction(
         new TouchAction(driver)
-          .press((screenWidth * startX).toInt, (screenHeight * startY).toInt)
-          .moveTo((screenWidth * (endX-startX)).toInt, (screenHeight * (endY-startY)).toInt)
-          //.waitAction(Duration.ofSeconds(1))
+          .press(point((screenWidth * startX).toInt, (screenHeight * startY).toInt)).asInstanceOf[TouchAction[_]]
+          .moveTo(point((screenWidth * (endX-startX)).toInt, (screenHeight * (endY-startY)).toInt))
           .release()
       )
     )
@@ -275,12 +278,12 @@ class AppiumClient extends CommonLog with WebBrowser with WebDriver{
   }*/
 
   override def tap(): this.type = {
-    driver.performTouchAction(new TouchAction(driver).tap(currentElement))
+    driver.performTouchAction(new TouchAction(driver).tap(element(currentElement)))
     this
   }
 
   override def longTap(): this.type = {
-    driver.performTouchAction(new TouchAction(driver).longPress(currentElement))
+    driver.performTouchAction(new TouchAction(driver).longPress(element(currentElement)))
     this
   }
 

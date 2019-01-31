@@ -6,7 +6,7 @@ libraryDependencies ++= Seq(
   //"org.scala-lang" % "scala-compiler" % scalaVersion.value,
   //"org.scala-lang" % "scala-library" % scalaVersion.value,
   //"org.scala-lang" % "scala-reflect" % scalaVersion.value,
-  "io.appium" % "java-client" % "5.0.4",
+  "io.appium" % "java-client" % "7.0.0",
   "org.seleniumhq.selenium" % "selenium-java" % "2.53.1" % "test",
   //"io.selendroid" % "selendroid" % "0.16.0",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.8.7",
