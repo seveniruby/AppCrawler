@@ -39,7 +39,7 @@ public class ReportTest {
     @Test
     public void test2() throws Exception {
 //        MvnReplace.runTest();
-        CrawlerDiff.diffSuite("","","");
+//        CrawlerDiff.diffSuite("","","");
     }
 
 }

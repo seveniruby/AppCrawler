@@ -4,7 +4,7 @@ import java.io
 import java.util.Date
 
 import com.testerhome.appcrawler.driver._
-import com.testerhome.appcrawler.data.{AbstractElement, ElementFactory, PathElementStore}
+import com.testerhome.appcrawler.data._
 import com.testerhome.appcrawler.plugin.Plugin
 import com.testerhome.appcrawler.report.MvnReplace
 import org.apache.commons.io.FileUtils
@@ -32,7 +32,8 @@ class Crawler extends CommonLog {
   /** 存放插件类 */
   val pluginClasses = ListBuffer[Plugin]()
 
-  val store = ElementFactory.newElementStore()
+  var store:AbstractElementStore = _
+  var domStore:ElementDomStore = _
 
   private var currentElementAction = "click"
   private var platformName = ""
@@ -101,6 +102,11 @@ class Crawler extends CommonLog {
     */
   def loadConf(crawlerConf: CrawlerConf): Unit = {
     conf = crawlerConf
+    AppCrawler.factory.setSwitch(conf.useNewData)
+    if (conf.useNewData){
+      domStore =new ElementDomStore
+    }
+    store = AppCrawler.factory.generateElementStore()
     log.setLevel(GA.logLevel)
   }
 
@@ -225,11 +231,11 @@ class Crawler extends CommonLog {
   }
 
   def getEventElement(actionName:String): AbstractElement ={
-    val defaultElement= ElementFactory.newElement(currentUrl,"","","","","","","","","/*/*","",0,0,driver.screenWidth,driver.screenHeight,"")
+    val defaultElement= AppCrawler.factory.generateElement(currentUrl,"","","","","","","","","/*/*","",0,0,driver.screenWidth,driver.screenHeight,"")
     val element=driver.asyncTask()(
       //刷新失败时会报错，所以增加一个判断
       if(driver.currentPageDom!=null) {
-        ElementFactory.newElement(JavaConverters.mapAsJavaMap(XPathUtil.getNodeListByKey("/*/*", driver.currentPageDom).head),currentUrl)
+        AppCrawler.factory.generateElement(JavaConverters.mapAsJavaMap(XPathUtil.getNodeListByKey("/*/*", driver.currentPageDom).head),currentUrl)
       }else{
         defaultElement
       }
@@ -352,31 +358,10 @@ class Crawler extends CommonLog {
     md5(nodeList.map(getUrlElementByMap(_).getAncestor()).distinct.mkString("\n"))
   }
 
-  def shortestPath() : String = {
-    var shortestPath = ""
-    if (store.asInstanceOf[PathElementStore].lastElementInfo()!=null){
-      if (urlPathStack.contains(driver.getUrl())){
-        while (urlPathStack.head != driver.getUrl()) {
-          urlPathStack.pop()
-          urlList.remove(urlList.size-1)
-        }
-        shortestPath = urlList.filter(_.nonEmpty).mkString(".")
-      }else{
-        urlPathStack.push(driver.getUrl())
-        urlList.add(store.asInstanceOf[PathElementStore].lastElementInfo().getElement.getValidName)
-        shortestPath = urlList.filter(_.nonEmpty).mkString(".")
-      }
-    }else{
-      urlList.add(driver.getAppName())
-      shortestPath = urlList.filter(_.nonEmpty).mkString(".")
-    }
-    shortestPath
-  }
-
   def getUri(): String = {
-    if (conf.useNewData) {
-      shortestPath()
-    } else {
+//    if (conf.useNewData) {
+//      shortestPath()
+//    } else {
       val uri = if (conf.suiteName != null && conf.suiteName.nonEmpty) {
         val urlString = conf.suiteName.flatMap(driver.getNodeListByKey(_)).distinct.map(x => {
           //按照attribute, label, name顺序挨个取第一个非空的指x
@@ -398,7 +383,7 @@ class Crawler extends CommonLog {
       } else {
         List(driver.getAppName(), driver.getUrl()).distinct.filter(_.nonEmpty).mkString(".")
       }
-    }
+//    }
   }
 
   /**
@@ -408,7 +393,7 @@ class Crawler extends CommonLog {
     * @return
     */
   def getUrlElementByMap(nodeMap: immutable.Map[String, Any]): AbstractElement = {
-    ElementFactory.newElement(nodeMap, currentUrl)
+    AppCrawler.factory.generateElement(nodeMap, currentUrl)
   }
 
   def needBackToApp(): Option[AbstractElement] = {
@@ -528,7 +513,7 @@ class Crawler extends CommonLog {
 
     conf.selectedList.foreach(step => {
       log.trace(s"selectedList xpath =  ${step.getXPath()}")
-      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom).map(ElementFactory.newElement(_, currentUrl))
+      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom).map(AppCrawler.factory.generateElement(_, currentUrl))
       temp.foreach(log.trace)
       selectedElements ++= temp
     })
@@ -539,7 +524,7 @@ class Crawler extends CommonLog {
     //remove blackList
     conf.blackList.foreach(step => {
       log.trace(s"blackList xpath =  ${step.getXPath()}")
-      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom).map(ElementFactory.newElement(_, currentUrl))
+      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom).map(AppCrawler.factory.generateElement(_, currentUrl))
       temp.foreach(log.trace)
       blackElements ++= temp
     })
@@ -596,7 +581,7 @@ class Crawler extends CommonLog {
     conf.firstList.foreach(step => {
       log.trace(s"firstList xpath = ${step.getXPath()}")
       val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom)
-        .map(ElementFactory.newElement(_, currentUrl))
+        .map(AppCrawler.factory.generateElement(_, currentUrl))
         .intersect(selectedElements)
       temp.foreach(log.trace)
       firstElements ++= temp
@@ -605,7 +590,7 @@ class Crawler extends CommonLog {
     conf.lastList.foreach(step => {
       log.trace(s"lastList xpath = ${step.getXPath()}")
       val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom)
-        .map(ElementFactory.newElement(_, currentUrl))
+        .map(AppCrawler.factory.generateElement(_, currentUrl))
         .intersect(selectedElements)
       temp.foreach(log.trace)
       lastElements ++= temp
@@ -830,7 +815,7 @@ class Crawler extends CommonLog {
   def getURIElementsByStep(step: Step): List[AbstractElement] = {
     driver.getNodeListByKey(step.getXPath())
       .map(e=>{
-        val urlElement= ElementFactory.newElement(e, currentUrl)
+        val urlElement= AppCrawler.factory.generateElement(e, currentUrl)
         urlElement.setAction(step.getAction())
         urlElement
       }).filter(isValid)
@@ -1115,9 +1100,18 @@ class Crawler extends CommonLog {
   def saveLog(): Unit = {
     //记录点击log
     val logName = s"${conf.resultDir}/elements.yml"
+    val domName = s"${conf.resultDir}/dom.yml"
     log.info(s"save log to ${logName}")
-    val file = File(logName)
-    file.writeAll(TData.toYaml(store))
+    log.info(s"save dom to ${domName}")
+    val logfile = File(logName)
+    val domFile = File(domName)
+    logfile.writeAll(TData.toYaml(store))
+    if (domFile.exists){
+      domFile.appendAll(TData.toYaml(domStore).substring(14))
+    }else{
+      domFile.writeAll(TData.toYaml(domStore))
+    }
+    domStore.clearDom()
   }
 
   def getBasePathName(right: Int = 1): String = {

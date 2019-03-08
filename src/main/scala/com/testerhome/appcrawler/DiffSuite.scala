@@ -1,8 +1,7 @@
 package com.testerhome.appcrawler
 
 import com.testerhome.appcrawler.data.AbstractElementStore.Status
-import com.testerhome.appcrawler.data.{AbstractElement, AbstractElementInfo, ElementFactory, PathElementInfo}
-import com.testerhome.appcrawler.plugin.FlowDiff
+import com.testerhome.appcrawler.data.{AbstractElement, AbstractElementInfo}
 import org.scalatest._
 
 import scala.io.Source
@@ -34,7 +33,7 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
           log.debug(elementInfo.getResDom)
           DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.getResDom))
             .flatten.map(m=>{
-            val ele=ElementFactory.newElement(m, key)
+            val ele=AppCrawler.factory.generateElement(m, key)
             ele.getXpath->ele
           }).toMap
         }
@@ -48,7 +47,7 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
         case Some(elementInfo) if elementInfo.getAction==Status.CLICKED && elementInfo.getResDom.nonEmpty => {
           DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.getResDom))
             .flatten.map(m=>{
-            val ele=ElementFactory.newElement(m, key)
+            val ele=AppCrawler.factory.generateElement(m, key)
             ele.getXpath->ele
           }).toMap
         }
@@ -69,8 +68,8 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
         val cp = new Checkpoints.Checkpoint()
         var markOnce=false
         allElementKeys.foreach(subKey => {
-          val masterElement = masterElements.getOrElse(subKey, ElementFactory.newElement())
-          val candidateElement = candidateElements.getOrElse(subKey, ElementFactory.newElement())
+          val masterElement = masterElements.getOrElse(subKey, AppCrawler.factory.generateElement)
+          val candidateElement = candidateElements.getOrElse(subKey, AppCrawler.factory.generateElement)
           val message =
             s"""
                |key=${subKey}
@@ -89,11 +88,11 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
               s"""
                  |candidate image
                  |-------
-                 |<img src='${File(DiffSuite.candidateStore.getOrElse(key, ElementFactory.newElementInfo()).getResImg).name}' width='80%' />
+                 |<img src='${File(DiffSuite.candidateStore.getOrElse(key, AppCrawler.factory.generateElementInfo()).getResImg).name}' width='80%' />
                  |
                  |master image
                  |--------
-                 |<img src='${File(DiffSuite.masterStore.getOrElse(key, ElementFactory.newElementInfo()).getResImg).name}' width='80%' />
+                 |<img src='${File(DiffSuite.masterStore.getOrElse(key, AppCrawler.factory.generateElementInfo()).getResImg).name}' width='80%' />
                  |
                 """.stripMargin)
           }

@@ -68,7 +68,7 @@ case class URIElement(
     this.tag = nodeMap.getOrElse("name()","").toString
     this.id = nodeMap.getOrElse("name", "").toString
     this.name = nodeMap.getOrElse("label", "").toString
-    this.text = nodeMap.getOrElse("value", "").toString
+    this.text = standardWinFileName(nodeMap.getOrElse("value", "").toString)
     this.instance = nodeMap.getOrElse("instance", "").toString
     this.depth = nodeMap.getOrElse("depth", "").toString
     this.xpath = nodeMap.getOrElse("xpath", "").toString
@@ -221,7 +221,7 @@ case class URIElement(
     selected
   }
 
-  override def getValidName: String = {
+  override def validName: String = {
     if (!text.isEmpty) return StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")
     else if (!id.isEmpty) {
       val i: Int = id.split("/").length
@@ -229,5 +229,11 @@ case class URIElement(
     }
     else if (!name.isEmpty) return name
     else return tag.replace("android.widget.", "").replace("Activity", "")
+  }
+
+  def standardWinFileName (s : String) :String = {
+    val pattern = Pattern.compile("[\\s\\\\/:\\*\\?\\\"<>\\|]")
+    val matcher = pattern.matcher(s)
+    return matcher.replaceAll("")
   }
 }

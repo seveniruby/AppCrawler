@@ -1,9 +1,8 @@
 package com.testerhome.appcrawler.data;
 
-import com.testerhome.appcrawler.URIElement;
 import org.apache.commons.text.StringEscapeUtils;
 
-import java.awt.*;
+import java.awt.Point;
 import java.io.File;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -77,12 +76,11 @@ public class PathElement extends AbstractElement {
         return new Point(x,y);
     }
 
-    // todo: 缺少名字过长时的处理
     @Override
     public String elementUri() {
         StringBuilder fileName = new StringBuilder();
         fileName.append(url.replace(File.separatorChar, '_'));
-        fileName.append("." + getValidName());
+        fileName.append("." + validName());
         fileName.append("(" + tag.replace("android.widget.", "").replace("Activity", "")+")");
 
         return standardWinFileName(fileName.toString());
@@ -95,7 +93,7 @@ public class PathElement extends AbstractElement {
         return matcher.replaceAll("");
     }
 
-    public String getValidName(){
+    public String validName(){
         if(!text.isEmpty()){
             return StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+");
         }else if(!id.isEmpty()){

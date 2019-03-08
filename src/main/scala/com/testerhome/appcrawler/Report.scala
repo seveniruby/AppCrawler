@@ -1,14 +1,8 @@
 package com.testerhome.appcrawler
 
-import com.testerhome.appcrawler.data.{AbstractElementStore, ElementFactory}
-import org.apache.commons.io.FileUtils
+import com.testerhome.appcrawler.data.AbstractElementStore
 import org.scalatest.tools.Runner
-import sun.security.provider.MD5
-
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
-import scala.io.{Codec, Source}
-import scala.reflect.io.File
+import scala.io.Source
 import collection.JavaConversions._
 
 /**
@@ -85,7 +79,7 @@ object Report extends Report{
   var master=""
   var candidate=""
   var reportDir=""
-  var store= ElementFactory.newElementStore()
+  var store: AbstractElementStore = _
 
 
   def loadResult(elementsFile: String): AbstractElementStore ={

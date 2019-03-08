@@ -1,19 +1,16 @@
 package com.testerhome.appcrawler.diff;
 
-import com.testerhome.appcrawler.URIElement;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.*;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
+
+import com.testerhome.appcrawler.URIElement;
+import org.w3c.dom.*;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
 
 public class XPathUtil {
 	
@@ -22,32 +19,77 @@ public class XPathUtil {
 	public static List<String> xpathList = Arrays.asList("//*[contains(name(), 'Text')]", "//*[contains(name(), 'Image')]", "//*[contains(name(), 'Button')]");
 	
 	//用例对比
-	public static boolean checkDom(String mDom,String cDom) throws Exception  {
-		if(mDom.isEmpty()||cDom.isEmpty()) {
-			if (mDom.equals(cDom)) return true;
-			else return false;
+	public static Map<String,String> checkDom(String mDom,String cDom) throws Exception  {
+		
+		Map<String, URIElement> melements=getListFromDom(mDom);
+		Map<String, URIElement> celements=getListFromDom(cDom);
+		
+		Map<String,String> keys = new HashMap<String,String>();
+		HashSet<String> keySet = new HashSet<String>();
+		boolean flag = true;
+		
+		if(melements==null && celements==null) 
+			flag = false;
+		if(flag&&melements==null)
+		{
+			keySet.addAll(celements.keySet());
+			Iterator<String> it = keySet.iterator();  
+			while (it.hasNext()) {
+				String key = it.next();
+				URIElement c=celements.get(key);
+				keys.put("", c.xpath());
+				}
+
+			flag = false;
 		}
-		else {
-			Map<String, URIElement> melements=getListFromDom(mDom);
-			Map<String, URIElement> celements=getListFromDom(cDom);
-			if(melements==null || celements==null) {
-				if(melements==null && celements==null) return true;
-				else return false;
-			}
-			if (melements.equals(celements)) return true;
-			else return false;
+		if(flag&&celements==null)
+		{
+			keySet.addAll(melements.keySet());
+			Iterator<String> it = keySet.iterator();  
+			while (it.hasNext()) {
+				String key = it.next();
+				URIElement m=melements.get(key);
+				keys.put(m.xpath(),"" );
+				}
+
+			flag = false;
 		}
-			
+		if(flag){
+			keySet.addAll(melements.keySet());
+			keySet.addAll(celements.keySet());
+			Iterator<String> it = keySet.iterator();  
+			while (it.hasNext()) {
+				String key = it.next();
+				URIElement m=melements.get(key);
+				URIElement c=celements.get(key);
+				if(m==null&&c==null) flag = false;
+				else {
+					if(m==null||c==null) {
+						if (m==null) keys.put("", c.xpath());
+						else keys.put(m.xpath(), "");
+					}
+					else {
+						if(!(m.name().equals(c.name())&&m.id().equals(c.id())&&m.xpath().equals(c.xpath()))) {
+							keys.put(m.xpath(), c.xpath());
+						}
+					}					
+				}				
+			} 
+		}
+		return keys;			
 	}
 	
 	//从dom中获取一组元素
-	public static Map<String, URIElement> getListFromDom(String dom) throws XPathExpressionException, SAXException, ParserConfigurationException, IOException{
+	private static Map<String, URIElement> getListFromDom(String dom) throws XPathExpressionException, SAXException, ParserConfigurationException, IOException{
+		
+		if (dom.isEmpty()) return null;
+		
 		List<URIElement> elements = new ArrayList<URIElement>();
-		//String nodeString = "";
 		NodeList nodeList = null;
 		StringReader sr = new StringReader(dom);
 		InputSource is = new InputSource(sr);
 		Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(is);
+		
 		for (int x=0;x<xpathList.size();x++) {
 			String xpath = xpathList.get(x);
 			XPath xPath = XPathFactory.newInstance().newXPath();
@@ -57,6 +99,7 @@ public class XPathUtil {
 				return null;   
 			} 
 			else nodeList=(NodeList) xpathExp.evaluate(document, XPathConstants.NODESET);
+			
 			if(nodeList.getLength()>0) {
 				for(int i=0;i<nodeList.getLength();i++) {
 					URIElement temp = new URIElement();
@@ -101,14 +144,14 @@ public class XPathUtil {
 					nodeMap.put("depth", String.valueOf(attributesList.size()));
 					nodeMap.put("ancestor", getAncestorFromAttributes(attributesList));
 					nodeMap.put("xpath", getXPathFromAttributes(attributesList));
-					if((nodeMap.getOrDefault("visible", "true") == "true" &&
-				            nodeMap.getOrDefault("enabled", "true") == "true" &&
-				            nodeMap.getOrDefault("valid", "true") == "true")) {
+					if((nodeMap.getOrDefault("visible", "") == "true" &&
+				            nodeMap.getOrDefault("enabled", "") == "true" &&
+				            nodeMap.getOrDefault("valid", "") == "true")) {
 						nodeMap.put("valid", "true");
 					}
 					else nodeMap.put("valid", "false");
 
-					if (!nodeMap.get("xpath").isEmpty() && nodeMap.get("value").toString().length()<50)
+					if (!nodeMap.get("xpath").isEmpty() && nodeMap.get("value").length()<50)
 					{
 						temp.tag_$eq(nodeMap.getOrDefault("name()", ""));
 						temp.id_$eq(nodeMap.getOrDefault("name", ""));
@@ -143,17 +186,14 @@ public class XPathUtil {
 	}
 	
 	//获得一个结点的所有祖先属性列表，递归
-	public static List<Map<String, String>> getAttributesFromNode(Node node){
+	private static List<Map<String, String>> getAttributesFromNode(Node node){
 		List<Map<String, String>> attributesList =new ArrayList<Map<String, String>>();
 		attributesList=getParent(attributesList,node);
 		return attributesList;
 	}
 	
 	//获得一个结点的所有祖先属性列表，递归
-	public static List<Map<String, String>> getParent(List<Map<String, String>> attributesList,Node node) {
-		if (node.getParentNode() != null) {
-			attributesList=getParent(attributesList,node.getParentNode());
-	      }
+	private static List<Map<String, String>> getParent(List<Map<String, String>> attributesList,Node node) {
 		if (node.hasAttributes()) {
 			NamedNodeMap attributes = node.getAttributes();
 			Map<String, String> attributeMap = new HashMap<String,String>();
@@ -164,13 +204,15 @@ public class XPathUtil {
 			attributeMap.put("name()", node.getNodeName());
 			attributeMap.put("innerText", node.getTextContent().trim());
 			attributesList.add(attributeMap);
-			return attributesList;
 		}
-		else return attributesList;
+		if (node.getParentNode() != null) {
+			attributesList=getParent(attributesList,node.getParentNode());
+	      }
+		return attributesList;
 	}
 	
 	//从属性列表中获取一个元素的Ancestor属性
-	public static String getAncestorFromAttributes(List<Map<String, String>> attributesList) {
+	private static String getAncestorFromAttributes(List<Map<String, String>> attributesList) {
 		List<String> idList=new ArrayList<String>();
 		List<String> tagList=new ArrayList<String>();
 		String idString = "";
@@ -203,25 +245,29 @@ public class XPathUtil {
 	}
 	
 	//确定一个元素的xpath属性
-	@SuppressWarnings({ "rawtypes", "unused", "null" })
-	public static String getXPathFromAttributes(List<Map<String, String>> attributes) {
+	@SuppressWarnings({ "rawtypes", "unused"})
+	private static String getXPathFromAttributes(List<Map<String, String>> attributes) {
 		int index = attributes.size();
-		List<String> xpath=null;
+		List<String> xpath= new ArrayList<String>();
 		Iterator<Map<String, String>> attributesHead = attributes.iterator();
 		while(attributesHead.hasNext()){
 			Map<String, String> attributeMap = attributesHead.next();
 			index-=1;
 			for(int i=0;i<xpathExpr.size();i++) {
-				if(attributeMap.get(xpathExpr.get(i))==null||attributeMap.get(xpathExpr.get(i)).equals("")) 
+				if(attributeMap.get(xpathExpr.get(i))==null) 
 					{attributeMap.remove(xpathExpr.get(i));}
 				else {
-					if(attributeMap.containsKey("path")&&attributeMap.get("path").isEmpty())attributeMap.remove("path");
+					if(attributeMap.containsKey("path"))
+						attributeMap.remove("path");
 				}
 			}
-			if (attributeMap.get("name") == attributeMap.get("label"))  attributeMap.remove("name");
-			if (attributeMap.get("content-desc") == attributeMap.get("resource-id")) attributeMap.remove("resource-id");
+			if (attributeMap.get("name") == attributeMap.get("label"))  
+				attributeMap.remove("name");
+			if (attributeMap.get("content-desc") == attributeMap.get("resource-id")) 
+				attributeMap.remove("resource-id");
 			String tag = "";
-			if(xpathExpr.contains("name()")&&!attributeMap.get("name()").isEmpty()) tag=attributeMap.get("name()");
+			if(xpathExpr.contains("name()")&&!attributeMap.get("name()").isEmpty()) 
+				tag=attributeMap.get("name()");
 		    else tag="*";
 			Iterator<?> head = attributeMap.entrySet().iterator();
 			String xpathAttributes = "";
@@ -247,31 +293,35 @@ public class XPathUtil {
 					flag=false;
 	          }
 				if(flag) {
-					if(xpathExpr.contains(key)&& !value.isEmpty()) temp=key+"'"+value.replace("\"", "\\\"")+ "'";
+					if(xpathExpr.contains(key)&& !value.isEmpty()) temp="@"+key+"='"+value.replace("\"", "\\\"")+ "'";
 				}
 				if (!temp.isEmpty()) {
-					if(xpathAttributes.isEmpty()) xpathAttributes.concat(temp);
+					if(xpathAttributes.isEmpty()) 
+						xpathAttributes=temp;
 					else {
-						xpathAttributes=xpathAttributes+" and ";
-						xpathAttributes.concat(temp);
+						xpathAttributes=xpathAttributes+" and "+temp;
 					}
 				}
 			}
-			if(!xpathAttributes.isEmpty()) xpath.add("//"+tag+"["+xpathAttributes+"]");
+			if(!xpathAttributes.isEmpty()) {
+				String temp ="//"+tag+"["+xpathAttributes+"]";
+				xpath.add(temp);
+			}				
 		}
-		if(!(xpath==null)&&xpath.size()>1) 
-		{
-			xpath.remove(0);
-			boolean shortXPath=false;
-			for(int i=0;i<xpath.size();i++) {
-				if(shortXPath==false){
-			        if(xpath.get(i).contains(" and ")) shortXPath=true;
-			        else xpath.remove(i);
+		if(!(xpath==null)&&xpath.size()>1) xpath.remove(0);
+		boolean shortXPath=false;
+		int k=0;
+		for(int i=0;i<xpath.size();i++) {
+			if(shortXPath==false){
+				if(xpath.get(i).contains(" and ")) k++;
+					if(k>2) shortXPath=true;
 				}
+			else {
+				xpath.remove(i);
+				i--;
 			}
 		}
 		if(xpath==null) return "";
 		else return xpath.toString();
 	}
-	
 }

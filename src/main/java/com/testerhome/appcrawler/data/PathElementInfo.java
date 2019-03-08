@@ -1,5 +1,7 @@
 package com.testerhome.appcrawler.data;
 
+import com.testerhome.appcrawler.AppCrawler;
+
 public class PathElementInfo extends AbstractElementInfo{
 
     String reqDom;
@@ -13,7 +15,7 @@ public class PathElementInfo extends AbstractElementInfo{
     AbstractElement uriElement;
 
     public PathElementInfo(){
-        this("","","","","","", AbstractElementStore.Status.READY,-1,ElementFactory.newElement());
+        this("","","","","","", AbstractElementStore.Status.READY,-1, AppCrawler.factory().generateElement());
     }
     public PathElementInfo(String reqDom, String resDom, String reqHash, String resHash, String reqImg, String resImg, AbstractElementStore.Status action, int clickedIndex, AbstractElement uriElement) {
         this.reqDom = reqDom;
