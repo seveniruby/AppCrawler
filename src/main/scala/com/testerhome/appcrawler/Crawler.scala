@@ -33,7 +33,6 @@ class Crawler extends CommonLog {
   val pluginClasses = ListBuffer[Plugin]()
 
   var store:AbstractElementStore = _
-  var domStore:ElementDomStore = _
 
   private var currentElementAction = "click"
   private var platformName = ""
@@ -46,7 +45,7 @@ class Crawler extends CommonLog {
   private var exitCrawl = false
   private var backRetry = 0
   //最大重试次数
-  var backMaxRetry = 2
+  var backMaxRetry = 5
   private var afterAllRetry = 0
   private var notFoundRetry = 0
   private var notFoundMax = 2
@@ -103,9 +102,6 @@ class Crawler extends CommonLog {
   def loadConf(crawlerConf: CrawlerConf): Unit = {
     conf = crawlerConf
     AppCrawler.factory.setSwitch(conf.useNewData)
-    if (conf.useNewData){
-      domStore =new ElementDomStore
-    }
     store = AppCrawler.factory.generateElementStore()
     log.setLevel(GA.logLevel)
   }
@@ -781,9 +777,9 @@ class Crawler extends CommonLog {
     //去掉开头的界面切换
     var urlList=ListBuffer[String]()
 
-    (3 until store.getClickElementList.size).map(i => {
-      val curElement = store.getClickElementList.get(i)
-      val preElement = store.getClickElementList.get(i - 1)
+    (3 until store.clickElementList.size).map(i => {
+      val curElement = store.clickElementList.get(i)
+      val preElement = store.clickElementList.get(i - 1)
       urlList.append(curElement.getUrl)
       if (curElement.getUrl != preElement.getUrl
         && urlList.indexOf(curElement.getUrl) < i-3-2 ) {
@@ -920,7 +916,7 @@ class Crawler extends CommonLog {
       log.info(s"${currentUrl} all elements had be clicked")
       //滚动多次没有新元素
 
-      if(store.getClickElementList.size<10){
+      if(store.clickElementList.size<10){
         log.info("just start, maybe loading is slow ,so just wait")
         nextElement=Some(getEventElement("Log"))
       }
@@ -970,7 +966,7 @@ class Crawler extends CommonLog {
 
   def doElementAction(element: AbstractElement): Unit = {
     //todo: 如果有相同的控件被重复记录, 会出问题, 比如确定退出的规则
-    log.info(s"current index = ${store.getClickElementList.size - 1}")
+    log.info(s"current index = ${store.clickElementList.size - 1}")
     log.info(s"current xpath = ${element.getXpath}")
     log.info(s"current action = ${element.getAction}")
     log.info(s"current element = ${element.elementUri}")
@@ -999,7 +995,7 @@ class Crawler extends CommonLog {
       }
       case "_AfterAll" => {
         if (conf.afterAll != null) {
-          if (store.getClickElementList.last.getAction.equals("after")) {
+          if (store.clickElementList.last.getAction.equals("after")) {
             afterAllRetry += 1
             log.info(s"afterAll=${afterAllRetry}")
           } else {
@@ -1029,7 +1025,7 @@ class Crawler extends CommonLog {
               driver.event(code)
             }*/
       case crawl if crawl != null && crawl.contains("crawl\\(.*\\)") => {
-        store.getClickElementList.remove(store.getClickElementList.size - 1)
+        store.clickElementList.remove(store.clickElementList.size - 1)
         Util.dsl(crawl)
       }
       case str: String => {
@@ -1084,7 +1080,7 @@ class Crawler extends CommonLog {
   }
 
   def saveElementScreenshot(): Unit ={
-    if (conf.screenshot && store.getClickElementList.size>1) {
+    if (conf.screenshot && store.clickElementList.size>1) {
       store.saveReqImg(getBasePathName() + ".click.png")
       val originImageName = getBasePathName(2) + ".clicked.png"
       val newImageName = getBasePathName() + ".click.png"
@@ -1100,24 +1096,15 @@ class Crawler extends CommonLog {
   def saveLog(): Unit = {
     //记录点击log
     val logName = s"${conf.resultDir}/elements.yml"
-    val domName = s"${conf.resultDir}/dom.yml"
     log.info(s"save log to ${logName}")
-    log.info(s"save dom to ${domName}")
     val logfile = File(logName)
-    val domFile = File(domName)
     logfile.writeAll(TData.toYaml(store))
-    if (domFile.exists){
-      domFile.appendAll(TData.toYaml(domStore).substring(14))
-    }else{
-      domFile.writeAll(TData.toYaml(domStore))
-    }
-    domStore.clearDom()
   }
 
   def getBasePathName(right: Int = 1): String = {
     //序号_文件名
-    val element = store.getClickElementList.takeRight(right).head
-    s"${conf.resultDir}/${store.getClickElementList.size - right}_" + element.elementUri().take(100)
+    val element = store.clickElementList.takeRight(right).head
+    s"${conf.resultDir}/${store.clickElementList.size - right}_" + element.elementUri().take(100)
   }
 
   def saveDom(): Unit = {

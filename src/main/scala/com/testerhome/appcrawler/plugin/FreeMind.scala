@@ -20,7 +20,7 @@ class FreeMind extends Plugin{
   }
 
   def report(): Unit ={
-    getCrawler().store.getClickElementList.foreach(element=>{
+    getCrawler().store.clickElementList.foreach(element=>{
       elementTreeList.append(element.getUrl)
       elementTreeList.append(element.getXpath)
     })

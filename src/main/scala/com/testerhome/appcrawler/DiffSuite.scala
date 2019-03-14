@@ -115,8 +115,8 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
 }
 
 object DiffSuite {
-  val masterStore : scala.collection.mutable.Map[String, AbstractElementInfo] = Report.loadResult(s"${Report.master}/elements.yml").getStore
-  val candidateStore : scala.collection.mutable.Map[String, AbstractElementInfo] = Report.loadResult(s"${Report.candidate}/elements.yml").getStore
+  val masterStore : scala.collection.mutable.Map[String, AbstractElementInfo] = Report.loadResult(s"${Report.master}/elements.yml").storeMap
+  val candidateStore : scala.collection.mutable.Map[String, AbstractElementInfo] = Report.loadResult(s"${Report.candidate}/elements.yml").storeMap
   val blackList = List(".*\\.instance.*", ".*bounds.*")
   val range=List("//*[contains(name(), 'Text')]", "//*[contains(name(), 'Image')]", "//*[contains(name(), 'Button')]")
   def saveTestCase(): Unit ={

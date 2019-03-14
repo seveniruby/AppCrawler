@@ -1,9 +1,6 @@
 package com.testerhome.appcrawler.data;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.testerhome.appcrawler.AppCrawler;
-import com.testerhome.appcrawler.Crawler;
-import scala.App;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -12,39 +9,46 @@ import java.util.Map;
 
 public class PathElementStore extends AbstractElementStore{
 
-    private LinkedHashMap<String, AbstractElementInfo> linkedStore = new LinkedHashMap();
-    List<AbstractElement> elementsList =new ArrayList<>();
+    private LinkedHashMap<String, AbstractElementInfo> elementStore = new LinkedHashMap();
+    private List<AbstractElement> clickedElementsList =new ArrayList<>();
 
-    public Map<String, AbstractElementInfo> getStore() {
-        return linkedStore;
+    public Map<String, AbstractElementInfo> storeMap() {
+        return elementStore;
+    }
+
+    public LinkedHashMap<String, AbstractElementInfo> getElementStore() {
+        return elementStore;
+    }
+
+    public List<AbstractElement> getClickedElementsList() {
+        return clickedElementsList;
     }
 
     public void setElementSkip(AbstractElement element) {
-        if (!linkedStore.containsKey(element.elementUri())){
-            linkedStore.put(element.elementUri(), AppCrawler.factory().generateElementInfo());
-            linkedStore.get(element.elementUri()).setElement(element);
+        if (!elementStore.containsKey(element.elementUri())){
+            elementStore.put(element.elementUri(), AppCrawler.factory().generateElementInfo());
+            elementStore.get(element.elementUri()).setElement(element);
         }
-        linkedStore.get(element.elementUri()).setAction(Status.SKIPPED);
+        elementStore.get(element.elementUri()).setAction(Status.SKIPPED);
     }
 
     public void setElementClicked(AbstractElement element) {
-        if (!linkedStore.containsKey(element.elementUri())){
-            linkedStore.put(element.elementUri(),AppCrawler.factory().generateElementInfo());
-            linkedStore.get(element.elementUri()).setElement(element);
+        if (!elementStore.containsKey(element.elementUri())){
+            elementStore.put(element.elementUri(),AppCrawler.factory().generateElementInfo());
+            elementStore.get(element.elementUri()).setElement(element);
         }
-        elementsList.add(element);
-        linkedStore.get(element.elementUri()).setAction(Status.CLICKED);
-        linkedStore.get(element.elementUri()).setClickedIndex(getClickElementList().indexOf(element));
-        AppCrawler.crawler().domStore().saveDomUrl(element.elementUri());
+        clickedElementsList.add(element);
+        elementStore.get(element.elementUri()).setAction(Status.CLICKED);
+        elementStore.get(element.elementUri()).setClickedIndex(clickElementList().indexOf(element));
     }
 
     public boolean isDiff() {
-        return linkedStore.get(lastElementUri()).getReqHash()!=linkedStore.get(lastElementUri()).getResHash();
+        return elementStore.get(lastElementUri()).getReqHash()!= elementStore.get(lastElementUri()).getResHash();
     }
 
     public boolean isClicked(AbstractElement element) {
-        if (linkedStore.containsKey(element.elementUri())){
-            return linkedStore.get(element.elementUri()).getAction()== Status.CLICKED;
+        if (elementStore.containsKey(element.elementUri())){
+            return elementStore.get(element.elementUri()).getAction()== Status.CLICKED;
         }else {
             AppCrawler.log().info("element="+element.elementUri()+"first show, need click");
             return false;
@@ -53,8 +57,8 @@ public class PathElementStore extends AbstractElementStore{
 
     //  isSkipped
     public boolean isSkipped(AbstractElement element) {
-        if (linkedStore.containsKey(element.elementUri())){
-            return linkedStore.get(element.elementUri()).getAction()== Status.SKIPPED;
+        if (elementStore.containsKey(element.elementUri())){
+            return elementStore.get(element.elementUri()).getAction()== Status.SKIPPED;
         }else {
             AppCrawler.log().info("element="+element.elementUri()+"first show, need click");
             return false;
@@ -62,59 +66,55 @@ public class PathElementStore extends AbstractElementStore{
     }
 
     public void saveElement(AbstractElement element) {
-        if (!linkedStore.containsKey(element.elementUri())){
-            linkedStore.put(element.elementUri(),AppCrawler.factory().generateElementInfo());
-            linkedStore.get(element.elementUri()).setElement(element);
+        if (!elementStore.containsKey(element.elementUri())){
+            elementStore.put(element.elementUri(),AppCrawler.factory().generateElementInfo());
+            elementStore.get(element.elementUri()).setElement(element);
         }
     }
 
     public void saveReqHash(String hash) {
-        if (linkedStore.get(lastElementUri()).getReqHash()==""){
-            AppCrawler.log().info("save reqHash to "+(getClickElementList().size()-1));
-            linkedStore.get(lastElementUri()).setReqHash(hash);
+        if (elementStore.get(lastElementUri()).getReqHash()==""){
+            AppCrawler.log().info("save reqHash to "+(clickElementList().size()-1));
+            elementStore.get(lastElementUri()).setReqHash(hash);
         }
     }
 
     public void saveResHash(String hash) {
-        if (linkedStore.get(lastElementUri()).getResHash()==""){
-            AppCrawler.log().info("save resHash to "+(getClickElementList().size()-1));
-            linkedStore.get(lastElementUri()).setResHash(hash);
+        if (elementStore.get(lastElementUri()).getResHash()==""){
+            AppCrawler.log().info("save resHash to "+(clickElementList().size()-1));
+            elementStore.get(lastElementUri()).setResHash(hash);
         }
     }
 
     public void saveReqDom(String dom) {
-//        lastElementInfo().setReqDom(dom);
-        System.out.println();
-        AppCrawler.crawler().domStore().saveReqDom(lastElementUri(),dom);
-        AppCrawler.log().info("save reqDom to "+(getClickElementList().size()-1));
+        AppCrawler.log().info("save reqDom to "+(clickElementList().size()-1));
+        elementStore.get(lastElementUri()).setReqDom(dom);
     }
 
     public void saveResDom(String dom) {
-        AppCrawler.crawler().domStore().saveResDom(lastElementUri(),dom);
-        AppCrawler.log().info("save resDom to "+(getClickElementList().size()-1));
-//        lastElementInfo().setResDom(dom);
+        AppCrawler.log().info("save resDom to "+(clickElementList().size()-1));
+        elementStore.get(lastElementUri()).setResDom(dom);
     }
 
     public void saveReqImg(String imgName) {
-        if (linkedStore.get(lastElementUri()).getReqImg()==""){
-            AppCrawler.log().info("save reqImg " + imgName + "  to "+(getClickElementList().size()-1));
-            linkedStore.get(lastElementUri()).setReqImg(imgName);
+        if (elementStore.get(lastElementUri()).getReqImg()==""){
+            AppCrawler.log().info("save reqImg " + imgName + "  to "+(clickElementList().size()-1));
+            elementStore.get(lastElementUri()).setReqImg(imgName);
         }
     }
 
     public void saveResImg(String imgName) {
-        if (linkedStore.get(lastElementUri()).getResImg()==""){
-            AppCrawler.log().info("save resImg " + imgName + " to "+(getClickElementList().size()-1));
-            linkedStore.get(lastElementUri()).setResImg(imgName);
+        if (elementStore.get(lastElementUri()).getResImg()==""){
+            AppCrawler.log().info("save resImg " + imgName + " to "+(clickElementList().size()-1));
+            elementStore.get(lastElementUri()).setResImg(imgName);
         }
     }
 
     public String lastElementUri(){
-        return elementsList.get(elementsList.size()-1).elementUri();
+        return clickedElementsList.get(clickedElementsList.size()-1).elementUri();
     }
 
-    @JsonIgnore
-    public List<AbstractElement> getClickElementList(){
-        return elementsList;
+    public List<AbstractElement> clickElementList(){
+        return clickedElementsList;
     }
 }

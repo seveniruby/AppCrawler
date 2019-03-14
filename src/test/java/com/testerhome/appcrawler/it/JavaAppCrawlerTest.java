@@ -60,11 +60,10 @@ public class JavaAppCrawlerTest {
              "ignoreUnimportantViews=true," +
              "disableAndroidWatchers=true",
              "-o",
-             "/tmp/xueqiu11/" + new java.text.SimpleDateFormat("YYYYMMddHHmmss").
+             "/tmp/xueQiuLog/" + new java.text.SimpleDateFormat("YYYYMMddHHmmss").
                 format(new java.util.Date().getTime()),
              "-y",
-             "{ blackList: [ {xpath: action_night}, {xpath: action_setting}, {xpath: '.*[0-9\\.]{2}.*'} ], useNewData: true, " +
-             "urlBlackList: [ .*StockDetail.* ]}",
+             "{ useNewData: true }",
              "-vv"
         });
     }
