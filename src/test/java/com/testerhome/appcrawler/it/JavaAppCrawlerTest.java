@@ -1,10 +1,14 @@
 package com.testerhome.appcrawler.it;
 
 import com.testerhome.appcrawler.AppCrawler;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+
+
 
 public class JavaAppCrawlerTest {
 
+    @Tag("it")
     @Test
     public void test1(){
         AppCrawler.main(new String[]{

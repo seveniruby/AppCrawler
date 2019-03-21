@@ -1,0 +1,20 @@
+{{#items}}
+Name: {{name}}
+Price: {{price}}
+  {{#features}}
+  Feature: {{description}}
+  {{/features}}
+{{/items}}
+
+
+
+
+{{#items}}
+class {{name}}{
+  int a={{price}}
+  {{#features}}
+  @Test
+  pubic void test_{{description}}
+  {{/features}}
+  }
+{{/items}}
