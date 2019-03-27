@@ -68,7 +68,7 @@ case class URIElement(
     this.tag = nodeMap.getOrElse("name()","").toString
     this.id = nodeMap.getOrElse("name", "").toString
     this.name = nodeMap.getOrElse("label", "").toString
-    this.text = standardWinFileName(nodeMap.getOrElse("value", "").toString)
+    this.text = nodeMap.getOrElse("value", "").toString
     this.instance = nodeMap.getOrElse("instance", "").toString
     this.depth = nodeMap.getOrElse("depth", "").toString
     this.xpath = nodeMap.getOrElse("xpath", "").toString
@@ -130,7 +130,7 @@ case class URIElement(
       fileName.append(s".text=${ StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")}")
     }
 
-    fileName.toString()
+    standardWinFileName(fileName.toString())
   }
 
 
@@ -222,18 +222,26 @@ case class URIElement(
   }
 
   override def validName: String = {
-    if (!text.isEmpty) return StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")
-    else if (!id.isEmpty) {
+    var validName : String = ""
+    if (!text.isEmpty) {
+      validName = StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")
+    }else if (!id.isEmpty) {
       val i: Int = id.split("/").length
-      return id.split("/")(i - 1)
+      validName = id.split("/")(i - 1)
     }
-    else if (!name.isEmpty) return name
-    else return tag.replace("android.widget.", "").replace("Activity", "")
+    else if (!name.isEmpty) {
+      validName = name
+    } else {
+      validName = tag.replace("android.widget.", "").replace("Activity", "")
+    }
+    standardWinFileName(validName)
   }
 
   def standardWinFileName (s : String) :String = {
-    val pattern = Pattern.compile("[\\s\\\\/:\\*\\?\\\"<>\\|]")
+
+    val regex = "[^a-zA-Z0-9.=()_\\u4e00-\\u9fa5]"
+    val pattern = Pattern.compile(regex)
     val matcher = pattern.matcher(s)
-    return matcher.replaceAll("")
+    matcher.replaceAll("")
   }
 }

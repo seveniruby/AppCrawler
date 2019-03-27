@@ -5,7 +5,10 @@ import java.io.StringReader;
 import java.util.*;
 
 import com.testerhome.appcrawler.URIElement;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -14,16 +17,25 @@ import javax.xml.xpath.*;
 
 public class XPathUtil {
 	
-	public static List<String> xpathExpr=Arrays.asList("name", "label", "value", "resource-id", "content-desc", "class", "text", "index");
+	public static List<String> xpathExpr= Arrays.asList("name", "label", "value", "resource-id", "content-desc", "class", "text", "index");
 	
 	public static List<String> xpathList = Arrays.asList("//*[contains(name(), 'Text')]", "//*[contains(name(), 'Image')]", "//*[contains(name(), 'Button')]");
 	
 	//用例对比
-	public static Map<String,String> checkDom(String mDom,String cDom) throws Exception  {
+	public static Map<String,String> checkDom(String mDom, String cDom, String keyd) throws Exception  {
+		
+//		if(keyd.equals("com.xueqiu.android.雪球.Start(Start)_depth=2")){
+//			System.out.println("");
+//		}
 		
 		Map<String, URIElement> melements=getListFromDom(mDom);
 		Map<String, URIElement> celements=getListFromDom(cDom);
-		
+//		if(keyd.equals("com.xueqiu.android.雪球.Start(Start)_depth=2")){
+//			for (URIElement entry : celements.values()) {
+//				if(entry.tag.equals("android.widget.TextView"))
+//					System.out.println(entry.text);
+//			}
+//		}
 		Map<String,String> keys = new HashMap<String,String>();
 		HashSet<String> keySet = new HashSet<String>();
 		boolean flag = true;
@@ -37,7 +49,7 @@ public class XPathUtil {
 			while (it.hasNext()) {
 				String key = it.next();
 				URIElement c=celements.get(key);
-				keys.put("", c.xpath());
+				keys.put("", c.toString());
 				}
 
 			flag = false;
@@ -49,7 +61,7 @@ public class XPathUtil {
 			while (it.hasNext()) {
 				String key = it.next();
 				URIElement m=melements.get(key);
-				keys.put(m.xpath(),"" );
+				keys.put(m.toString(),"" );
 				}
 
 			flag = false;
@@ -66,11 +78,11 @@ public class XPathUtil {
 				else {
 					if(m==null||c==null) {
 						if (m==null) keys.put("", c.xpath());
-						else keys.put(m.xpath(), "");
+						else keys.put(m.toString(), "");
 					}
 					else {
-						if(!(m.name().equals(c.name())&&m.id().equals(c.id())&&m.xpath().equals(c.xpath()))) {
-							keys.put(m.xpath(), c.xpath());
+						if(!(m.name().equals(c.name())&&m.id().equals(c.id())&&m.xpath().equals(c.xpath())&&m.text().equals(c.text()))) {
+							keys.put(m.toString(), c.toString());
 						}
 					}					
 				}				
@@ -151,7 +163,7 @@ public class XPathUtil {
 					}
 					else nodeMap.put("valid", "false");
 
-					if (!nodeMap.get("xpath").isEmpty() && nodeMap.get("value").length()<50)
+					if (!nodeMap.get("xpath").isEmpty() && nodeMap.get("value").toString().length()<50)
 					{
 						temp.tag_$eq(nodeMap.getOrDefault("name()", ""));
 						temp.id_$eq(nodeMap.getOrDefault("name", ""));
@@ -162,10 +174,10 @@ public class XPathUtil {
 						temp.xpath_$eq(nodeMap.getOrDefault("xpath", ""));
 						if(nodeMap.containsKey("bounds")){
 				        	String[] rect=nodeMap.get("bounds").toString().split(",");
-				        	temp.x_$eq(Integer.parseInt(rect[0].replace("[","")));
-				        	temp.y_$eq(Integer.parseInt(rect[1].split("\\]")[0]));
-				        	temp.width_$eq(Integer.parseInt(rect[1].split("\\[")[1]));
-				        	temp.height_$eq(Integer.parseInt(rect[2].replace("]","")));
+							temp.x_$eq(Integer.parseInt(rect[0].replace("[","")));
+							temp.y_$eq(Integer.parseInt(rect[1].split("\\]")[0]));
+							temp.width_$eq(Integer.parseInt(rect[1].split("\\[")[1]));
+							temp.height_$eq(Integer.parseInt(rect[2].replace("]","")));
 				          }
 						temp.ancestor_$eq(nodeMap.getOrDefault("ancestor", ""));
 						temp.selected_$eq(nodeMap.getOrDefault("selected", "false"));
@@ -308,19 +320,19 @@ public class XPathUtil {
 				xpath.add(temp);
 			}				
 		}
-		if(!(xpath==null)&&xpath.size()>1) xpath.remove(0);
-		boolean shortXPath=false;
-		int k=0;
-		for(int i=0;i<xpath.size();i++) {
-			if(shortXPath==false){
-				if(xpath.get(i).contains(" and ")) k++;
-					if(k>2) shortXPath=true;
-				}
-			else {
-				xpath.remove(i);
-				i--;
-			}
-		}
+//		if(!(xpath==null)&&xpath.size()>1) xpath.remove(0);
+//		boolean shortXPath=false;
+//		int k=0;
+//		for(int i=0;i<xpath.size();i++) {
+//			if(shortXPath==false){
+//				if(xpath.get(i).contains(" and ")) k++;
+//					if(k>2) shortXPath=true;
+//				}
+//			else {
+//				xpath.remove(i);
+//				i--;
+//			}
+//		}
 		if(xpath==null) return "";
 		else return xpath.toString();
 	}

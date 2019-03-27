@@ -10,9 +10,9 @@ public class DiffTest {
     public void testDiff(){
 
         AppCrawler.main(new String[]{
-                "--report","./eles/report",
-                "--master","./eles/elements1.yml",
-                "--candidate","./eles/elements2.yml"
+                "--report","/tmp/xueQiu400/reportDiff",
+                "--master","/tmp/xueQiu400/20190315164643/elements.yml",
+                "--candidate","/tmp/xueQiu400/20190315161950/elements.yml"
         });
     }
 }

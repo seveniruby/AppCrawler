@@ -45,7 +45,7 @@ class Crawler extends CommonLog {
   private var exitCrawl = false
   private var backRetry = 0
   //最大重试次数
-  var backMaxRetry = 5
+  var backMaxRetry = 1
   private var afterAllRetry = 0
   private var notFoundRetry = 0
   private var notFoundMax = 2
@@ -413,8 +413,8 @@ class Crawler extends CommonLog {
       log.fatal("maxTime out Quit need exit")
       return true
     }
-    if (backRetry > backMaxRetry) {
-      log.fatal(s"backRetry ${backRetry} > backMaxRetry ${backMaxRetry} need exit")
+    if (backRetry >= backMaxRetry) {
+      log.fatal(s"backRetry ${backRetry} >= backMaxRetry ${backMaxRetry} need exit")
       return true
     }
 
@@ -752,7 +752,10 @@ class Crawler extends CommonLog {
     store.saveResDom(driver.currentPageSource)
 
     element.getAction match {
-      case "_Back" | "_BackApp" => {
+//      case "_Back" | "_BackApp" => {
+//        backRetry += 1
+//      }
+      case "_BackApp" => {
         backRetry += 1
       }
       case nonAfter if nonAfter != "_AfterAll" => {

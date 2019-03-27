@@ -60,10 +60,15 @@ public class JavaAppCrawlerTest {
              "ignoreUnimportantViews=true," +
              "disableAndroidWatchers=true",
              "-o",
-             "/tmp/xueQiuLog/" + new java.text.SimpleDateFormat("YYYYMMddHHmmss").
+             "/tmp/xueQiu400/" + new java.text.SimpleDateFormat("YYYYMMddHHmmss").
                 format(new java.util.Date().getTime()),
-             "-y",
-             "{ useNewData: true }",
+//             "-c",
+//             "src/test/java/com/testerhome/appcrawler/it/xueqiu_conf.yml",
+                "-y",
+                "{ tagLimitMax: 3, " +
+                        "blackList: [ {xpath: '更新'},{xpath: '检测'} ] " +
+//                        "urlBlackList: [ .*StockDetail.* ]" +
+                        "}",
              "-vv"
         });
     }
@@ -84,7 +89,7 @@ public class JavaAppCrawlerTest {
                 "/tmp/xueqiu11/" + new java.text.SimpleDateFormat("YYYYMMddHHmmss").
                         format(new java.util.Date().getTime()),
                 "-c",
-                "src/test/java/com/testerhome/appcrawler/it/xueqiu_bigimg.yml",
+                "src/test/java/com/testerhome/appcrawler/it/xueqiu_conf.yml",
                 "-vv"
         });
     }
@@ -94,19 +99,16 @@ public class JavaAppCrawlerTest {
     public void testApiDemo(){
         AppCrawler.main(new String[]{
                 "--capability",
-                "appPackage=io.appium.android.apis," +
-                        "appActivity=.ApiDemos," +
+                "appPackage=com.example.hbh.myshop," +
+                        "appActivity=.app.SplashActivity," +
                         "noReset=false," +
                         "automationName=uiautomator2," +
                         "autoGrantPermissions=true," +
                         "ignoreUnimportantViews=true," +
                         "disableAndroidWatchers=true",
                 "-o",
-                "/tmp/api1/" + new java.text.SimpleDateFormat("YYYYMMddHHmmss").
+                "/tmp/myshop/" + new java.text.SimpleDateFormat("YYYYMMddHHmmss").
                         format(new java.util.Date().getTime()),
-                "-y",
-                "{ blackList: [ {xpath: action_night}, {xpath: action_setting}, {xpath: '.*[0-9\\.]{2}.*'} ], " +
-                        "urlBlackList: [ .*StockDetail.* ], useNewData: true }",
                 "-vv"
         });
     }

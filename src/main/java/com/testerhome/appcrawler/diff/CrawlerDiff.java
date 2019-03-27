@@ -1,10 +1,17 @@
 package com.testerhome.appcrawler.diff;
 
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
+
+import javax.imageio.ImageIO;
 
 import com.testerhome.appcrawler.ElementInfo;
 import com.testerhome.appcrawler.URIElementStore;
@@ -23,14 +30,15 @@ public class CrawlerDiff {
 
 		diffSuite(master,candidate,reportDir);
 	}
+
 	
 	//Diff的主要逻辑流程
 	@SuppressWarnings({"rawtypes"})
-	private static void diffSuite(String master,String candidate,String reportDir)throws Exception{
+	private static void diffSuite(String master,String candidate,String reportDir) throws Exception{
 		Report report = new Report();
 		report.setMaster(master);
 		report.setCandidate(candidate);
-		report.setReportDir(reportDir);		
+		report.setReportDir(reportDir);
 		Map<String,Map<String,Map<String,List<Map<String,String>>>>> checkRes= new HashMap<String,Map<String,Map<String,List<Map<String,String>>>>>();
 		
 		//创建输出文件diff.yml
@@ -52,6 +60,7 @@ public class CrawlerDiff {
 		URLs.addAll(getURLs(masterList));
 		URLs.addAll(getURLs(candidateList));
 		URLs = removeDuplicate(URLs);
+		
 		//获取两组界面Suite信息
 		Map<String,List<String>> masterSuites = getSuites(JavaConverters.mapAsJavaMap(masterStore.elementStore()),URLs);
 		Map<String,List<String>> candidateSuites = getSuites(JavaConverters.mapAsJavaMap(candidateStore.elementStore()),URLs);
@@ -83,11 +92,16 @@ public class CrawlerDiff {
 				String cDom = candidateInfo==null ? "" : candidateInfo.resDom();
 
 				Map<String,String> temp = new HashMap<String,String>();
-				temp = XPathUtil.checkDom(mDom,cDom);
+				temp = XPathUtil.checkDom(mDom,cDom,key);
 				checkOut.add(temp);
 				Map<String,String> temp2 = new HashMap<String,String>();
-				temp2.put("mResImg", masterInfo == null ? "" : masterInfo.resImg());
-				temp2.put("cResImg", candidateInfo == null ? "" : candidateInfo.resImg());
+
+				temp2.put("mResImg", masterInfo == null ? "" : masterInfo.getResImg());
+				temp2.put("mReqImg", masterInfo == null ? "" : masterInfo.getReqImg());
+
+				temp2.put("cResImg", candidateInfo == null ? "" : candidateInfo.getResImg());
+				temp2.put("cReqImg", candidateInfo == null ? "" : candidateInfo.getReqImg());
+
 				checkOut.add(0,temp2);
 				if(temp.isEmpty()) trueList.put(key,checkOut);
 				else falseList.put(key,checkOut);
@@ -119,7 +133,7 @@ public class CrawlerDiff {
 	//获得所有界面和其对应的用例key列表
 	@SuppressWarnings("rawtypes")
 	private static Map<String,List<String>> getSuites (Map<String,ElementInfo> elementStroe, List<String> URLs) {
-		Map<String,List<String>> suites = new HashMap();
+		Map<String,List<String>> suites = new HashMap<String, List<String>>();
 		Iterator<String> urlHead = URLs.iterator();
 		while(urlHead.hasNext()){
 			String url = urlHead.next();
@@ -139,6 +153,16 @@ public class CrawlerDiff {
 		return suites;
 	}
 
+	private static void drawSquare(String path,int x,int y,int len,int hei) throws IOException
+	{
+		BufferedImage image = ImageIO.read(new File(path));
+		Graphics g = image.getGraphics();
+		g.setColor(Color.RED);//画笔颜色
+		g.drawRect(x, y, len, hei);//矩形框(原点x坐标，原点y坐标，矩形的长，矩形的宽)
+		FileOutputStream out = new FileOutputStream("path");//输出图片的地址
+		ImageIO.write(image, "jpeg", out);
+	}
+	
 	//List去重
 	private static List<String> removeDuplicate(List<String> list) {
 		HashSet<String> h = new HashSet<String>(list);
