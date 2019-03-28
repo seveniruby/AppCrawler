@@ -34,7 +34,7 @@ class CrawlerConf {
   var capability = Map[String, Any](
     //默认不清空数据，防止有人用于微信和qq
     "noReset" -> "true",
-    "fullReset" -> "false",
+      "fullReset" -> "false",
   )
 
   //测试用例

@@ -15,15 +15,15 @@ import scala.collection.JavaConverters
   */
 class URIElementStore extends AbstractElementStore{
   //todo: 用枚举替代  0表示未遍历 1表示已遍历 -1表示跳过
-  @BeanProperty
+
   var elementStore = scala.collection.mutable.Map[String, ElementInfo]()
 
-  def getStore : java.util.Map[String,AbstractElementInfo] = {
+  def storeMap : java.util.Map[String,AbstractElementInfo] = {
     JavaConverters.mapAsJavaMap(elementStore)
   }
 
   /** 点击顺序, 留作画图用 */
-  @BeanProperty
+
   var clickedElementsList = ListBuffer[AbstractElement]()
 
   def setElementSkip(element: AbstractElement): Unit = {
@@ -136,7 +136,7 @@ class URIElementStore extends AbstractElementStore{
     }
   }
 
-  override def getClickElementList: util.List[AbstractElement] = {
+  override def clickElementList: util.List[AbstractElement] = {
     JavaConverters.bufferAsJavaList(clickedElementsList)
   }
 }
