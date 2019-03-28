@@ -4,7 +4,7 @@ import java.io.File
 import java.util.concurrent.{Callable, Executors, TimeUnit, TimeoutException}
 
 import com.testerhome.appcrawler._
-import com.testerhome.appcrawler.data.{AbstractElement, ElementFactory}
+import com.testerhome.appcrawler.data.AbstractElement
 import org.openqa.selenium.Rectangle
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.w3c.dom.Document
@@ -27,7 +27,7 @@ abstract class ReactWebDriver extends CommonLog {
 
   var loc = ""
   var index = 0
-  var currentURIElement: AbstractElement= ElementFactory.newElement()
+  var currentURIElement: AbstractElement= AppCrawler.factory.generateElement
 
   var imagesDir="images"
   var platformName=""

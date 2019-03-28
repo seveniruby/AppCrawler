@@ -11,8 +11,7 @@ import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import scala.App;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.util.Properties;
 
 import static org.junit.platform.engine.discovery.ClassNameFilter.includeClassNamePatterns;
@@ -33,6 +32,7 @@ public class MvnReplace {
         pro.setProperty("allure.results.directory", AppCrawler.crawler().conf().resultDir() + "/allure-results");
         FileOutputStream out = new FileOutputStream(MvnReplace.class.getResource("/allure.properties").getPath());
         pro.store(out, "new file");
+
     }
 
     public static void runTest() throws Exception {
@@ -51,5 +51,26 @@ public class MvnReplace {
         launcher.registerTestExecutionListeners(listener);
 
         launcher.execute(request);
+    }
+
+    public static boolean isExist() {
+        for (String path : System.getenv("path").split(File.pathSeparator)) {
+            String allurePath = path + File.separator + "allure";
+            if (new File(allurePath).exists())
+                return true;
+        }
+        return false;
+    }
+
+    public static void executeCommand(String command) throws Exception {
+
+        Runtime r = Runtime.getRuntime();
+        Process p = r.exec(command);
+        BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        String inline;
+        while ((inline = br.readLine()) != null) {
+            System.out.println(inline);
+        }
+        br.close();
     }
 }

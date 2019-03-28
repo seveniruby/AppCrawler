@@ -1,9 +1,8 @@
 package com.testerhome.appcrawler.data;
 
-import com.testerhome.appcrawler.URIElement;
 import org.apache.commons.text.StringEscapeUtils;
 
-import java.awt.*;
+import java.awt.Point;
 import java.io.File;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -51,7 +50,7 @@ public class PathElement extends AbstractElement {
     }
 
     public PathElement(Map<String,Object> nodeMap, String uri){
-        this.url=standardWinFileName(uri);
+        this.url=uri;
         this.tag = nodeMap.getOrDefault("name()", "").toString();
         this.id = nodeMap.getOrDefault("name", "").toString();
         this.name = nodeMap.getOrDefault("label", "").toString();
@@ -77,12 +76,11 @@ public class PathElement extends AbstractElement {
         return new Point(x,y);
     }
 
-    // todo: 缺少名字过长时的处理
     @Override
     public String elementUri() {
         StringBuilder fileName = new StringBuilder();
         fileName.append(url.replace(File.separatorChar, '_'));
-        fileName.append("." + getValidName());
+        fileName.append("." + validName());
         fileName.append("(" + tag.replace("android.widget.", "").replace("Activity", "")+")");
 
         return standardWinFileName(fileName.toString());
@@ -90,22 +88,26 @@ public class PathElement extends AbstractElement {
 
     // windows下命名规范
     public String standardWinFileName(String s){
-        Pattern pattern = Pattern.compile("[\\s\\\\/:\\*\\?\\\"<>\\|]");
-        Matcher matcher = pattern.matcher(s);
-        return matcher.replaceAll("");
+        // a-z  A-Z 0-9 _ 汉字
+        String regex="[^a-zA-Z0-9.=()_\\u4e00-\\u9fa5]";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher match=pattern.matcher(s);
+        return match.replaceAll("");
     }
 
-    public String getValidName(){
+    public String validName(){
+        String validName = "";
         if(!text.isEmpty()){
-            return StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+");
+            validName = StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+");
         }else if(!id.isEmpty()){
             int i = id.split("/").length;
-            return id.split("/")[i-1];
+            validName = id.split("/")[i-1];
         }else if(!name.isEmpty()){
-            return name;
+            validName = name;
         }else{
-            return tag.replace("android.widget.", "").replace("Activity", "");
+            validName = tag.replace("android.widget.", "").replace("Activity", "");
         }
+        return standardWinFileName(validName);
     }
 
     @Override

@@ -4,9 +4,7 @@ import com.testerhome.appcrawler.Crawler;
 import com.testerhome.appcrawler.URIElement;
 import com.testerhome.appcrawler.data.PathElementInfo;
 import com.testerhome.appcrawler.data.PathElementStore;
-import com.testerhome.appcrawler.diff.CrawlerDiff;
 import com.testerhome.appcrawler.plugin.ReportPlugin;
-import com.testerhome.appcrawler.report.MvnReplace;
 import org.junit.jupiter.api.Test;
 
 public class ReportTest {
@@ -31,15 +29,15 @@ public class ReportTest {
         info2.setAction(PathElementStore.Status.SKIPPED);
 
         PathElementStore elementsStore=new PathElementStore();
-        elementsStore.getStore().put(element1.toString(),info1);
-        elementsStore.getStore().put(element2.toString(),info2);
+        elementsStore.storeMap().put(element1.toString(),info1);
+        elementsStore.storeMap().put(element2.toString(),info2);
         reportPlugin.saveTestCase(elementsStore, "/tmp/");
     }
 
     @Test
     public void test2() throws Exception {
 //        MvnReplace.runTest();
-        CrawlerDiff.diffSuite("","","");
+//        CrawlerDiff.diffSuite("","","");
     }
 
 }

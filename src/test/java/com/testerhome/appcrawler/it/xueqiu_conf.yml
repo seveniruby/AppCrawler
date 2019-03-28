@@ -1,0 +1,103 @@
+---
+logLevel: "TRACE"
+screenshot: true
+showCancel: true
+useNewData: true
+reportTitle: AppCrawler雪球内部版
+screenshotTimeout: 20
+currentDriver: "android"
+maxTime: 10800
+maxDepth: 8
+resultDir: ""
+beforeStartWait: 6000
+afterElementWait: 500
+capability:
+  newCommandTimeout: 120
+  launchTimeout: 120000
+  platformVersion: ""
+  platformName: ""
+  autoWebview: "false"
+  autoLaunch: "true"
+  noReset: "false"
+androidCapability:
+  deviceName: "demo"
+  appPackage: "com.xueqiu.android"
+  appActivity: ".view.WelcomeActivityAlias"
+  app: ""
+  appium: "http://127.0.0.1:4723/wd/hub"
+  fullReset: false
+  noReset: true
+  automationName: uiautomator2
+findBy: "xpath"
+#suiteName:
+#  - "//*[@selected='true']//android.widget.TextView/@text"
+baseUrl:
+  - ".*MainActivity"
+appWhiteList:
+  - "com.xueqiu.android"
+urlBlackList:
+  - ".*Talk.*"
+  - ".*Chat.*"
+  - ".*股市直播.*"
+blackList:
+  - xpath: "拉黑"
+  - xpath: "举报"
+  - xpath: ".*[0-9]{2}.*"
+backButton:
+  - xpath: "//*[@resource-id='action_back']"
+  - xpath: "//*[@resource-id='android:id/home']"
+  - xpath: "//*[@name='nav_icon_back']"
+  - xpath: "//*[@name='Back']"
+  - xpath: "//*[@name='返回']"
+  - xpath: "//*[contains(name(), 'Button') and @name='取消']"
+  - xpath: "//*[contains(name(), 'Button') and @label='返回']"
+  - xpath: "//*[contains(name(), 'Button') and @name='关闭']"
+  - xpath: "//*[contains(name(), 'Button') and @name='首页']"
+beforeRestart:
+beforeElement:
+afterElement:
+afterAll:
+afterAllMax:
+selectedList:
+  - xpath: "//*[@clickable='true']//android.widget.TextView[string-length(@text)>0 and string-length(@text)<20]"
+  - xpath: "//android.widget.EditText"
+  - xpath: "//android.widget.TextView[string-length(@text)>0 and string-length(@text)<20 and @clickable='true']"
+  - xpath: "//*[contains(name(), 'Button')]"
+  - xpath: "//*[contains(name(), 'Image')]"
+firstList:
+  - xpath: "//*[contains(name(), 'Popover')]//*"
+  - xpath: "//*[contains(name(), 'Window')][3]//*"
+  - xpath: "//*[contains(name(), 'Window')][2]//*"
+lastList:
+  - xpath: "//*[contains(@resource-id, 'header')]//*"
+  - xpath: "//*[contains(@resource-id, 'indicator')]//*"
+  - xpath: "//*[../*[@selected='true']]"
+  - xpath: "//*[../../*/*[@selected='true'] and @resource-id='']"
+  - xpath: "//*[../../*/*[@selected='true'] and contains(@resource-id, 'tab_')]"
+  - xpath: "//*[contains(@resource-id,'tabs')]//*"
+#xpathAttributes:
+#  - "resource-id"
+#  - "content-desc"
+#  - "text"
+#sortByAttribute:
+#  - "depth"
+#  - "list"
+#  - "selected"
+triggerAction:
+  - action: "1234567890"
+    xpath: "//*[@resource-id='com.xueqiu.android:id/login_account']"
+    times: 1
+tagLimitMax: 2
+tagLimit:
+  - xpath: //*[../*[@selected='true']]
+    count: 12
+  - xpath: //*[../../*/*[@selected='true']]
+    count: 12
+assertGlobal:
+testcase:
+  name: demo1
+  steps:
+    - when:
+        xpath: "//*[@resource-id='com.xueqiu.android:id/pager']"
+        action: driver.swipe(0.5, 0.8, 0.5, 0.2)
+      then: []

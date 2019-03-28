@@ -19,9 +19,9 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
   override def suiteName = name
 
   def addTestCase() {
-    log.trace(s"Report.store.elementStore size = ${Report.store.getStore.size}")
+    log.trace(s"Report.store.elementStore size = ${Report.store.storeMap.size}")
     log.trace(s"uri=${uri}")
-    val sortedElements = Report.store.getStore
+    val sortedElements = Report.store.storeMap
       .filter(x => x._2.getElement.getUrl == uri)
       .map(_._2).toList
       .sortBy(_.getClickedIndex)
@@ -120,7 +120,7 @@ object TemplateTestCase extends CommonLog {
     //为了保持独立使用
     val path = new java.io.File(resultDir).getCanonicalPath
 
-    val suites = store.getStore.map(x => x._2.getElement.getUrl).toList.distinct
+    val suites = store.storeMap.map(x => x._2.getElement.getUrl).toList.distinct
     suites.foreach(suite => {
       log.info(s"gen testcase class ${suite}")
       //todo: 基于规则的多次点击事件只会被保存到一个状态中. 需要区分

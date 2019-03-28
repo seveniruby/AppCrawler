@@ -50,7 +50,7 @@ class ReportPlugin extends Plugin with Report {
   }
 
   def needReport(): Boolean ={
-    val curSize=getCrawler().store.getClickElementList.size
+    val curSize=getCrawler().store.clickElementList.size
     if(curSize%5==0){
       if(curSize%20==0){
         true
@@ -83,7 +83,8 @@ class ReportPlugin extends Plugin with Report {
     if(getCrawler().conf.useNewData){
       // 生成allure报告
       log.info("allure report generate")
-      MvnReplace.runTest();
+      MvnReplace.runTest()
+      if(MvnReplace.isExist) MvnReplace.executeCommand("cmd /c allure generate " + getCrawler().conf.resultDir + "/allure-results" +" -o " + getCrawler().conf.resultDir + "/report")
     }else {
       log.info(s"reportPath=${reportPath}")
       Report.saveTestCase(getCrawler().store, reportPath)

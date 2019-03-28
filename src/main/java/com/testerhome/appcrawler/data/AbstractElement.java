@@ -25,5 +25,5 @@ public abstract class AbstractElement {
     public abstract int getHeight();
     public abstract String getDepth();
     public abstract String getSelected();
-    public abstract String getValidName();
+    public abstract String validName();
 }

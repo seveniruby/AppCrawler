@@ -1,7 +1,7 @@
 package com.testerhome.appcrawler
 
 import com.testerhome.appcrawler.data.AbstractElementStore.Status
-import com.testerhome.appcrawler.data.{AbstractElement, AbstractElementInfo, ElementFactory}
+import com.testerhome.appcrawler.data.{AbstractElement, AbstractElementInfo}
 
 case class ElementInfo(
                         var reqDom: String = "",
@@ -12,7 +12,7 @@ case class ElementInfo(
                         var resImg:String="",
                         var clickedIndex: Int = -1,
                         var action: Status = Status.READY,
-                        var element: AbstractElement = ElementFactory.newElement()
+                        var element: AbstractElement = AppCrawler.factory.generateElement
                       ) extends AbstractElementInfo{
   def this(){
     this("","","","","","",-1,Status.READY,null)

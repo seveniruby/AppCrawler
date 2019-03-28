@@ -1,7 +1,7 @@
 package com.testerhome.appcrawler.plugin
 
-import com.testerhome.appcrawler.{ElementStatus, URIElement}
-import com.testerhome.appcrawler.data.{AbstractElement, ElementFactory}
+import com.testerhome.appcrawler.AppCrawler
+import com.testerhome.appcrawler.data.AbstractElement
 
 import scala.collection.JavaConverters
 
@@ -77,7 +77,7 @@ class TagLimitPlugin extends Plugin {
 
   def getTimesFromTagLimit(element: AbstractElement): Option[Int] = {
     this.getCrawler().conf.tagLimit.foreach(tag => {
-      if (getCrawler().driver.getNodeListByKey(tag.getXPath()).map(x => ElementFactory.newElement(JavaConverters.mapAsJavaMap(x),getCrawler().currentUrl))
+      if (getCrawler().driver.getNodeListByKey(tag.getXPath()).map(x => AppCrawler.factory.generateElement(JavaConverters.mapAsJavaMap(x),getCrawler().currentUrl))
         .contains(element)) {
         return Some(tag.times)
       } else {

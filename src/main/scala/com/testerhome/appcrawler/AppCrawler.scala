@@ -4,6 +4,8 @@ import java.io.File
 import java.lang.reflect.Field
 import java.nio.charset.Charset
 
+import com.testerhome.appcrawler.data.ElementFactory
+import com.testerhome.appcrawler.diff.CrawlerDiff
 import com.testerhome.appcrawler.plugin.FlowDiff
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.{FileAppender, Level}
@@ -33,6 +35,7 @@ object AppCrawler extends CommonLog {
 
   var fileAppender: FileAppender = _
   var crawler = new Crawler
+  var factory = new ElementFactory
   val startTime = new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
   case class Param(
                     app: String = "",
@@ -99,7 +102,7 @@ object AppCrawler extends CommonLog {
       } text ("Android或者iOS的文件地址, 可以是网络地址, 赋值给appium的app选项")
 
       opt[String]('e', "encoding") action { (x, c) => {
-        c.copy(app = x)
+        c.copy(encoding = x)
       }
       } text ("set encoding, such as UTF-8 GBK")
 
@@ -246,7 +249,7 @@ object AppCrawler extends CommonLog {
               List(
                 crawlerConf.capability.getOrElse("appPackage", "").toString,
                 crawlerConf.capability.getOrElse("bundleId", "").toString,
-                crawlerConf.capability.getOrElse("app", "").toString.split(File.separator).last,
+                crawlerConf.capability.getOrElse("app", "").toString.split(File.separator.replace("\\","\\\\")).last,
                 crawlerConf.capability.getOrElse("browserName", "").toString
               ).filter(_.nonEmpty).headOption.getOrElse("")
             }"
@@ -270,13 +273,14 @@ object AppCrawler extends CommonLog {
           Report.runTestCase()
           return
         } else if (config.candidate.nonEmpty) {
-          Report.candidate = config.candidate
-          Report.master = config.master
-          Report.reportDir = config.report
-          Report.reportPath = config.report
-          Report.testcaseDir = config.report+"/tmp/"
-          DiffSuite.saveTestCase()
-          Report.runTestCase()
+//          Report.candidate = config.candidate
+//          Report.master = config.master
+//          Report.reportDir = config.report
+//          Report.reportPath = config.report
+//          Report.testcaseDir = config.report+"/tmp/"
+//          DiffSuite.saveTestCase()
+//          Report.runTestCase()
+          CrawlerDiff.startDiff(config.master,config.candidate,config.report)
           return
         }
 

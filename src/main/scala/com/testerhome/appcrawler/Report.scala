@@ -1,14 +1,8 @@
 package com.testerhome.appcrawler
 
-import com.testerhome.appcrawler.data.{AbstractElementStore, ElementFactory}
-import org.apache.commons.io.FileUtils
+import com.testerhome.appcrawler.data.AbstractElementStore
 import org.scalatest.tools.Runner
-import sun.security.provider.MD5
-
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
-import scala.io.{Codec, Source}
-import scala.reflect.io.File
+import scala.io.Source
 import collection.JavaConversions._
 
 /**
@@ -25,7 +19,7 @@ trait Report extends CommonLog {
     //为了保持独立使用
     val path = new java.io.File(resultDir).getCanonicalPath
 
-    val suites = store.getStore.map(x => x._2.getElement.getUrl).toList.distinct
+    val suites = store.storeMap.map(x => x._2.getElement.getUrl).toList.distinct
     var index=0
     suites.foreach(suite => {
       log.info(s"gen testcase class ${suite}")
@@ -85,7 +79,7 @@ object Report extends Report{
   var master=""
   var candidate=""
   var reportDir=""
-  var store= ElementFactory.newElementStore()
+  var store: AbstractElementStore = _
 
 
   def loadResult(elementsFile: String): AbstractElementStore ={

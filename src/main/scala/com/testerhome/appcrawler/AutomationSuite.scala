@@ -1,6 +1,5 @@
 package com.testerhome.appcrawler
 
-import com.testerhome.appcrawler.data.ElementFactory
 import org.scalatest
 import org.scalatest.{BeforeAndAfterAllConfigMap, ConfigMap, FunSuite, Matchers}
 
@@ -36,12 +35,12 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
 
       driver.findMapWithRetry(xpath).headOption match {
         case Some(v) => {
-          val ele = ElementFactory.newElement(JavaConverters.mapAsJavaMap(v), "Steps")
+          val ele = AppCrawler.factory.generateElement(JavaConverters.mapAsJavaMap(v), "Steps")
           crawler.doElementAction(ele)
         }
         case None => {
           //用于生成steps的用例
-          val ele = ElementFactory.newElement("Steps","","","NOT_FOUND","","","","","","xpath","",0,0,0,0,"")
+          val ele = AppCrawler.factory.generateElement("Steps","","","NOT_FOUND","","","","","","xpath","",0,0,0,0,"")
           crawler.doElementAction(ele)
           withClue("NOT_FOUND"){
             log.info(xpath)

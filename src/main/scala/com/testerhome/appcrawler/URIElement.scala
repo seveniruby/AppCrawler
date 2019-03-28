@@ -130,7 +130,7 @@ case class URIElement(
       fileName.append(s".text=${ StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")}")
     }
 
-    fileName.toString()
+    standardWinFileName(fileName.toString())
   }
 
 
@@ -221,13 +221,27 @@ case class URIElement(
     selected
   }
 
-  override def getValidName: String = {
-    if (!text.isEmpty) return StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")
-    else if (!id.isEmpty) {
+  override def validName: String = {
+    var validName : String = ""
+    if (!text.isEmpty) {
+      validName = StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")
+    }else if (!id.isEmpty) {
       val i: Int = id.split("/").length
-      return id.split("/")(i - 1)
+      validName = id.split("/")(i - 1)
     }
-    else if (!name.isEmpty) return name
-    else return tag.replace("android.widget.", "").replace("Activity", "")
+    else if (!name.isEmpty) {
+      validName = name
+    } else {
+      validName = tag.replace("android.widget.", "").replace("Activity", "")
+    }
+    standardWinFileName(validName)
+  }
+
+  def standardWinFileName (s : String) :String = {
+
+    val regex = "[^a-zA-Z0-9.=()_\\u4e00-\\u9fa5]"
+    val pattern = Pattern.compile(regex)
+    val matcher = pattern.matcher(s)
+    matcher.replaceAll("")
   }
 }

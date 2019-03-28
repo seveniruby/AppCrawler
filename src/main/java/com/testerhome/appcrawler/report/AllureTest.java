@@ -35,7 +35,7 @@ public class AllureTest {
         String path = AppCrawler.crawler().conf().resultDir();
 
         Map map = read.convert2Map(path + "/elements.yml");
-        Map mapTitle = (HashMap) map.get("linkedStore");
+        Map mapTitle = (HashMap) map.get("store");
         Map mapVal, mapEle;
         for(Object key : mapTitle.keySet()) {
             mapVal = (HashMap) mapTitle.get(key);
@@ -43,7 +43,7 @@ public class AllureTest {
             Object res = mapVal.get("resImg");
             Object reqDom = mapVal.get("reqDom");
             Object resDom = mapVal.get("resDom");
-            mapEle = (HashMap) mapVal.get("uriElement");
+            mapEle = (HashMap) mapVal.get("element");
             Object xpath = mapEle.get("xpath");
             Object url = mapEle.get("url");
             Object tag = mapEle.get("tag");
