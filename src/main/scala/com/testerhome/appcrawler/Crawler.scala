@@ -646,12 +646,26 @@ class Crawler extends CommonLog {
     selectedElements
   }
 
+  def isWebViewPage(): Boolean = {
+    if(XPathUtil.getNodeListByKey("//*[contains(@class, 'WebView')]",driver.currentPageDom).size>0){
+      true
+    }else{
+      false
+    }
+  }
 
   def refreshPage(): Boolean = {
     log.info("refresh page")
     driver.getPageSourceWithRetry()
 
     if (driver.currentPageSource != null) {
+
+      // 获取页面信息以后判断是否包含webview，是则等2s
+      if (isWebViewPage()){
+        log.info("this is a webview , wait 2 seconds")
+        Thread.sleep(2000)
+      }
+
       parsePageContext()
       return true
     } else {
