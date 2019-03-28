@@ -144,7 +144,7 @@ public class CrawlerDiff {
 		while(einfo.hasNext()){
 			ElementInfo next = einfo.next();
 			System.out.println(next + "=========");
-			URLs.add(next.element().url());
+			URLs.add(next.element().getUrl());
 		}
 		URLs = removeDuplicate(URLs);
 		return URLs;
@@ -163,7 +163,7 @@ public class CrawlerDiff {
 			while(storeHead.hasNext()){
 				Map.Entry store = (Map.Entry) storeHead.next();
 				ElementInfo info = (ElementInfo)store.getValue();
-				if(info.element().url().equals(url)){
+				if(info.element().getUrl().equals(url)){
 					String key = store.getKey().toString();
 					keys.add(key);
 					//elementStroe.remove(key);

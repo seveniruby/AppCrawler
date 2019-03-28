@@ -1,7 +1,7 @@
 package com.testerhome.appcrawler
 
+import com.testerhome.appcrawler.data.AbstractElementStore.Status
 import com.testerhome.appcrawler.data.{AbstractElement, AbstractElementInfo, ElementFactory, PathElementInfo}
-import com.testerhome.appcrawler.data.PathElementStore.Status
 import com.testerhome.appcrawler.plugin.FlowDiff
 import org.scalatest._
 
@@ -116,8 +116,8 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
 }
 
 object DiffSuite {
-  val masterStore : scala.collection.mutable.Map[String, AbstractElementInfo] = Report.loadResult(s"${Report.master}/elements.yml").getLinkedStore
-  val candidateStore : scala.collection.mutable.Map[String, AbstractElementInfo] = Report.loadResult(s"${Report.candidate}/elements.yml").getLinkedStore
+  val masterStore : scala.collection.mutable.Map[String, AbstractElementInfo] = Report.loadResult(s"${Report.master}/elements.yml").getStore
+  val candidateStore : scala.collection.mutable.Map[String, AbstractElementInfo] = Report.loadResult(s"${Report.candidate}/elements.yml").getStore
   val blackList = List(".*\\.instance.*", ".*bounds.*")
   val range=List("//*[contains(name(), 'Text')]", "//*[contains(name(), 'Image')]", "//*[contains(name(), 'Button')]")
   def saveTestCase(): Unit ={
