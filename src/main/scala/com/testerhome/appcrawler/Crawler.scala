@@ -63,6 +63,7 @@ class Crawler extends CommonLog {
   protected val backDistance = new DataRecord()
   val appNameRecord = new DataRecord()
   protected val contentHash = new DataRecord
+  protected val webViewRecord = new DataRecord
 
   /**
     * 根据类名初始化插件. 插件可以使用java编写. 继承自Plugin即可
@@ -646,11 +647,11 @@ class Crawler extends CommonLog {
     selectedElements
   }
 
-  def isWebViewPage(): Boolean = {
+  def ifWebViewPage(): Unit = {
     if(XPathUtil.getNodeListByKey("//*[contains(@class, 'WebView')]",driver.currentPageDom).size>0){
-      true
+      webViewRecord.append(true)
     }else{
-      false
+      webViewRecord.append(false)
     }
   }
 
@@ -660,10 +661,12 @@ class Crawler extends CommonLog {
 
     if (driver.currentPageSource != null) {
 
-      // 获取页面信息以后判断是否包含webview，是则等2s
-      if (isWebViewPage()){
-        log.info("this is a webview , wait 2 seconds")
-        Thread.sleep(2000)
+      // 获取页面信息以后判断是否包含webView
+      ifWebViewPage
+      // 如果是第一次加载，等3s
+      if (webViewRecord.last()==true && webViewRecord.pre()==false){
+        log.info("The first time to enter a web page , wait 3 seconds")
+        Thread.sleep(3000)
       }
 
       parsePageContext()
