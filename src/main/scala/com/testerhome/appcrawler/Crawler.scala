@@ -272,10 +272,11 @@ class Crawler extends CommonLog {
         driver = new SeleniumDriver(url, conf.capability)
 
       }
-      case "macaca" => {
+        //todo: 以后使用restful接口支持atx和macaca
+/*      case "macaca" => {
         log.info("use macaca")
         driver = new MacacaDriver(url, conf.capability)
-      }
+      }*/
       case "adb" => {
         log.info("user adb")
         driver = new AdbDriver(url, conf.capability)

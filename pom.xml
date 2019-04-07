@@ -22,22 +22,21 @@
     </properties>
 
     <repositories>
-        <repository>
+<!--        <repository>
             <id>central</id>
             <url>http://central.maven.org/maven2/</url>
-        </repository>
+        </repository>-->
         <repository>
-            <id>bintray-ivanyu-bintray-hello-world-repo</id>
-            <url>https://dl.bintray.com/xudafeng/maven/</url>
-        </repository>
-    </repositories>
+            <id>huawei</id>
+            <url>https://mirrors.huaweicloud.com/repository/maven/</url>
+        </repository>    </repositories>
 
 
     <dependencies>
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
-            <version>2.12.7</version>
+            <version>2.12.8</version>
         </dependency>
 
         <dependency>
@@ -49,6 +48,13 @@
             <groupId>io.appium</groupId>
             <artifactId>java-client</artifactId>
             <version>6.1.0</version>
+            <exclusions>
+<!--                可减小66M大小-->
+                <exclusion>
+                    <groupId>org.openpnp</groupId>
+                    <artifactId>opencv</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -141,11 +147,12 @@
             <version>2.7</version>
         </dependency>
 
-        <dependency>
+<!--        移除macaca的支持，依赖atx、macaca等提供java client不现实，后面采用restful接口对接-->
+<!--        <dependency>
             <groupId>macaca.webdriver.client</groupId>
             <artifactId>macacaclient</artifactId>
             <version>2.0.20</version>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>org.javassist</groupId>
@@ -233,13 +240,13 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-reflect</artifactId>
-            <version>2.12.7</version>
+            <version>2.12.8</version>
         </dependency>
 
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
-            <version>2.12.7</version>
+            <version>2.12.8</version>
         </dependency>
 
         <dependency>
@@ -309,6 +316,18 @@
             <groupId>com.github.spullara.mustache.java</groupId>
             <artifactId>compiler</artifactId>
             <version>0.9.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom2</artifactId>
+            <version>2.0.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jaxen</groupId>
+            <artifactId>jaxen</artifactId>
+            <version>RELEASE</version>
         </dependency>
 
     </dependencies>
