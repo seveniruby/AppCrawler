@@ -26,14 +26,13 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
 
     val cp = new scalatest.Checkpoints.Checkpoint
 
+    crawler.refreshPage()
     conf.testcase.steps.foreach(step => {
-      log.info(step)
+      log.info(TData.toYaml(step))
       val xpath=step.getXPath()
       val action=step.getAction()
-      log.info(xpath)
-      log.info(action)
 
-      driver.findMapWithRetry(xpath).headOption match {
+      driver.getNodeListByKeyWithRetry(xpath).headOption match {
         case Some(v) => {
           val ele = AppCrawler.factory.generateElement(JavaConverters.mapAsJavaMap(v), "Steps")
           crawler.doElementAction(ele)
@@ -55,7 +54,7 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
         step.then.foreach(existAssert => {
           cp {
             withClue(s"${existAssert} 不存在\n") {
-              val result=driver.getNodeListByKey(existAssert)
+              val result=driver.getNodeListByKeyWithRetry(existAssert)
               log.info(s"${existAssert}\n${TData.toJson(result)}")
               result.size should be > 0
             }
