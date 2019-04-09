@@ -26,26 +26,31 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
 
     val cp = new scalatest.Checkpoints.Checkpoint
 
-    crawler.refreshPage()
-    conf.testcase.steps.foreach(step => {
+      conf.testcase.steps.foreach(step => {
       log.info(TData.toYaml(step))
       val xpath=step.getXPath()
       val action=step.getAction()
 
-      driver.getNodeListByKeyWithRetry(xpath).headOption match {
+      driver.getNodeListByKey(xpath).headOption match {
         case Some(v) => {
           val ele = AppCrawler.factory.generateElement(JavaConverters.mapAsJavaMap(v), "Steps")
           ele.setAction(action)
           // testcase里的操作也要记录下来
           crawler.beforeElementAction(ele)
           crawler.doElementAction(ele)
+          // doElementAction里的一次刷新获取的xml结构不完整，需要再刷新一次
           crawler.refreshPage()
           crawler.afterElementAction(ele)
         }
         case None => {
           //用于生成steps的用例
           val ele = AppCrawler.factory.generateElement("Steps","","","NOT_FOUND","","","","","","xpath","",0,0,0,0,"")
+
+          ele.setAction("_Log")
+          // testcase里的操作也要记录下来
+          crawler.beforeElementAction(ele)
           crawler.doElementAction(ele)
+          crawler.afterElementAction(ele)
           withClue("NOT_FOUND"){
             log.info(xpath)
             fail(s"ELEMENT_NOT_FOUND xpath=${xpath}")
@@ -59,7 +64,7 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
         step.then.foreach(existAssert => {
           cp {
             withClue(s"${existAssert} 不存在\n") {
-              val result=driver.getNodeListByKeyWithRetry(existAssert)
+              val result=driver.getNodeListByKey(existAssert)
               log.info(s"${existAssert}\n${TData.toJson(result)}")
               result.size should be > 0
             }
