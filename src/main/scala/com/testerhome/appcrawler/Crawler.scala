@@ -26,6 +26,7 @@ import scala.collection.JavaConversions._
   * Created by seveniruby on 15/11/28.
   */
 class Crawler extends CommonLog {
+  //todo: 需要重构为抽象和实现类
   var driver: ReactWebDriver = _
   var conf = new CrawlerConf()
 
@@ -41,7 +42,6 @@ class Crawler extends CommonLog {
   /** 当前的url路径 */
   var currentUrl = ""
 
-  var isRefreshSuccess = true
   private var exitCrawl = false
   private var backRetry = 0
   //最大重试次数
@@ -63,7 +63,11 @@ class Crawler extends CommonLog {
   protected val backDistance = new DataRecord()
   val appNameRecord = new DataRecord()
   protected val contentHash = new DataRecord
+
   protected val webViewRecord = new DataRecord
+
+  private val refreshResult=new DataRecord
+
 
   /**
     * 根据类名初始化插件. 插件可以使用java编写. 继承自Plugin即可
@@ -170,7 +174,7 @@ class Crawler extends CommonLog {
     //清空堆栈 开始重新计数
     conf.maxDepth = depth
     urlStack.clear()
-    isRefreshSuccess = refreshPage()
+    refreshPage()
     handleCtrlC()
 
     //启动第一次
@@ -218,7 +222,7 @@ class Crawler extends CommonLog {
   }
 
   def firstRefresh(): Unit = {
-    isRefreshSuccess = refreshPage()
+    refreshPage()
     log.info("first refresh")
     val element=getEventElement("Start")
     beforeElementAction(element)
@@ -273,10 +277,11 @@ class Crawler extends CommonLog {
         driver = new SeleniumDriver(url, conf.capability)
 
       }
-      case "macaca" => {
+        //todo: 以后使用restful接口支持atx和macaca
+/*      case "macaca" => {
         log.info("use macaca")
         driver = new MacacaDriver(url, conf.capability)
-      }
+      }*/
       case "adb" => {
         log.info("user adb")
         driver = new AdbDriver(url, conf.capability)
@@ -655,6 +660,7 @@ class Crawler extends CommonLog {
     }
   }
 
+  //todo: 刷新失败需要一个异常处理逻辑
   def refreshPage(): Boolean = {
     log.info("refresh page")
     driver.getPageSourceWithRetry()
@@ -670,9 +676,11 @@ class Crawler extends CommonLog {
       }
 
       parsePageContext()
+      refreshResult.append(true)
       return true
     } else {
       log.warn("page source get fail, go back")
+      refreshResult.append(false)
       return false
     }
     //appium解析pageSource有bug. 有些页面会始终无法dump. 改成解析不了就后退
@@ -757,7 +765,7 @@ class Crawler extends CommonLog {
         Util.dsl(step.getAction())
       })
       //重新刷新，afterElement后内容可能发生变化
-      isRefreshSuccess=refreshPage()
+      refreshPage()
     }
 
     saveDom()
@@ -902,7 +910,7 @@ class Crawler extends CommonLog {
       exitCrawl = true
     }
     //页面刷新失败自动后退
-    if (isRefreshSuccess == false) {
+    if (refreshResult.last()==false) {
       log.warn("refresh fail")
       //todo: 使用自动获取的元素
       nextElement = Some(getEventElement("Back"))
@@ -964,9 +972,8 @@ class Crawler extends CommonLog {
         if (element.getAction != "_skip") {
           beforeElementAction(element)
           doElementAction(element)
-          isRefreshSuccess=refreshPage()
           //todo: 使用队列模型替代
-          if(isRefreshSuccess){
+          if(refreshResult.last()==true){
             afterElementAction(element)
           }else{
             log.error("refresh fail skip afterElementAction")
@@ -1097,6 +1104,7 @@ class Crawler extends CommonLog {
       log.info(s"sleep ${conf.afterElementWait} ms")
       Thread.sleep(conf.afterElementWait)
     }
+    refreshPage()
   }
 
   def saveElementScreenshot(): Unit ={
