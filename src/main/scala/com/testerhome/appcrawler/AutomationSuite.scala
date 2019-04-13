@@ -38,8 +38,6 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
           // testcase里的操作也要记录下来
           crawler.beforeElementAction(ele)
           crawler.doElementAction(ele)
-          // doElementAction里的一次刷新获取的xml结构不完整，需要再刷新一次
-          crawler.refreshPage()
           crawler.afterElementAction(ele)
         }
         case None => {

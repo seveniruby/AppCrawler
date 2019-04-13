@@ -73,6 +73,7 @@ abstract class ReactWebDriver extends CommonLog {
   def launchApp()
   def getPageSource(): String
 
+  // todo[huobaohai]: uiautomator2获取页面不完整
   def getPageSourceWithRetry(): String = {
     currentPageSource=null
     currentPageDom=null

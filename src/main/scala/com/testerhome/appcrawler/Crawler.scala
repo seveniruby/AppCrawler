@@ -669,10 +669,10 @@ class Crawler extends CommonLog {
 
       // 获取页面信息以后判断是否包含webView
       ifWebViewPage
-      // 如果是第一次加载，等3s
+      // 如果是第一次加载，等3s 【暴力，暂不使用】
       if (webViewRecord.last()==true && webViewRecord.pre()==false){
-        log.info("The first time to enter a web page , wait 3 seconds")
-        Thread.sleep(3000)
+//        log.info("The first time to enter a web page , wait 3 seconds")
+//        Thread.sleep(3000)
       }
 
       parsePageContext()
@@ -854,7 +854,7 @@ class Crawler extends CommonLog {
         //app相同并且找到back控件才点击. 否则就默认back
         log.trace(backElement)
         if(backElement.getAction.isEmpty) {
-          backElement.setAction("click")
+          backElement.setAction("click_guess")
         }else{
           log.info(s"use origin action ${backElement.getAction}")
         }
@@ -868,7 +868,7 @@ class Crawler extends CommonLog {
             //app相同并且找到back控件才点击. 否则就默认back
             //todo: bug hierarchy click出现
             if(backElement.getAction.isEmpty) {
-              backElement.setAction("click")
+              backElement.setAction("click_guess")
             }else{
               log.info(s"use origin action ${backElement.getAction}")
             }

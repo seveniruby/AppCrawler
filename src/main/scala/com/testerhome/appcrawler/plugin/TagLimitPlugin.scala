@@ -26,9 +26,16 @@ class TagLimitPlugin extends Plugin {
       //非普通元素点击事件，不需要统计，比如back backApp 等
       return
     }
-    if (getCrawler().conf.backButton.map(_.xpath).contains(element.getXpath)) {
+
+    if (element.getAction.equals("click_guess")) {
+      // 用户自定义以及预测的返回键也不需要统计，并修改action
+      element.setAction("click")
       return
     }
+
+//    if (getCrawler().conf.backButton.map(_.xpath).contains(element.getXpath)) {
+//      return
+//    }
     currentKey = getAncestor(element)
     if (!tagLimit.contains(currentKey)) {
       //应用定制化的规则
