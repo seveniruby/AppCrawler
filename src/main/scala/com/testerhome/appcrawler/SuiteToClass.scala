@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringEscapeUtils
 import javassist.{ClassPool, CtConstructor}
 
 import scala.util.{Failure, Success, Try}
+import scala.collection.JavaConverters._
 
 /**
   * Created by seveniruby on 2017/4/15.
@@ -56,6 +57,10 @@ object SuiteToClass extends CommonLog {
         AppCrawler.crawler.driver.handleException(e)
       }
     }
+  }
+
+  def genTestCaseClass2(className: String, superClassName: String, fields: java.util.HashMap[String, Any], directory: String): Unit = {
+    genTestCaseClass(className, superClassName, scala.collection.immutable.Map()++fields.asScala, directory)
   }
 
 }
