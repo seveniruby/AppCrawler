@@ -1,33 +1,33 @@
-package com.testerhome.appcrawler
+package com.testerhome.appcrawler.plugin.scalatest
 
+import com.testerhome.appcrawler.data.AbstractElementStore
 import com.testerhome.appcrawler.data.AbstractElementStore.Status
-import com.testerhome.appcrawler.data.{AbstractElementStore, PathElementStore}
-import org.apache.commons.lang3.StringUtils
+import com.testerhome.appcrawler._
 import org.scalatest
 import org.scalatest._
 
+import scala.collection.JavaConversions._
 import scala.reflect.io.File
-import collection.JavaConversions._
 
 /**
   * Created by seveniruby on 2017/3/25.
   */
-class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Matchers with CommonLog {
+class ScalaTestTemplate extends FunSuite with BeforeAndAfterAllConfigMap with Matchers with CommonLog {
   var name = "template"
   var uri = ""
 
   override def suiteName = name
 
   def addTestCase() {
-    log.trace(s"Report.store.elementStore size = ${Report.store.storeMap.size}")
+    log.trace(s"Report.store.elementStore size = ${ReportFactory.store.storeMap.size}")
     log.trace(s"uri=${uri}")
-    val sortedElements = Report.store.storeMap
+    val sortedElements = ReportFactory.store.storeMap
       .filter(x => x._2.getElement.getUrl == uri)
       .map(_._2).toList
       .sortBy(_.getClickedIndex)
 
     log.trace(s"sortedElements=${sortedElements.size}")
-    val selected = if (Report.showCancel) {
+    val selected = if (ReportFactory.showCancel) {
       log.info("show all elements")
       //把未遍历的放到后面
       sortedElements.filter(_.getAction == Status.CLICKED) ++
@@ -112,11 +112,11 @@ class TemplateTestCase extends FunSuite with BeforeAndAfterAllConfigMap with Mat
   }
 }
 
-object TemplateTestCase extends CommonLog {
+object ScalaTestTemplate extends CommonLog {
   def saveTestCase(store: AbstractElementStore, resultDir: String): Unit = {
     log.info("save testcase")
-    Report.reportPath = resultDir
-    Report.testcaseDir = Report.reportPath + "/tmp/"
+    ReportFactory.reportPath = resultDir
+    ReportFactory.testcaseDir = ReportFactory.reportPath + "/tmp/"
     //为了保持独立使用
     val path = new java.io.File(resultDir).getCanonicalPath
 
@@ -127,9 +127,9 @@ object TemplateTestCase extends CommonLog {
       SuiteToClass.genTestCaseClass(
         //todo: Illegal class name  Ⅱ[@]][()
         suite,
-        "com.testerhome.appcrawler.TemplateTestCase",
+        "com.testerhome.appcrawler.plugin.scalatest.TemplateTestCase",
         Map("uri" -> suite, "name" -> suite),
-        Report.testcaseDir
+        ReportFactory.testcaseDir
       )
     })
   }
