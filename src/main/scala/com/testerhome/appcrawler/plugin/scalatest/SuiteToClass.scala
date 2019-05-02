@@ -1,10 +1,10 @@
-package com.testerhome.appcrawler
+package com.testerhome.appcrawler.plugin.scalatest
 
-import org.apache.commons.lang3.StringEscapeUtils
+import com.testerhome.appcrawler.{AppCrawler, CommonLog}
 import javassist.{ClassPool, CtConstructor}
 
-import scala.util.{Failure, Success, Try}
 import scala.collection.JavaConverters._
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by seveniruby on 2017/4/15.
