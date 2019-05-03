@@ -1,6 +1,6 @@
 package com.testerhome.appcrawler.ut
 
-import com.testerhome.appcrawler.SuiteToClass
+import com.testerhome.appcrawler.plugin.scalatest.SuiteToClass
 import org.scalatest.FunSuite
 
 class SuiteToClassTest extends FunSuite {

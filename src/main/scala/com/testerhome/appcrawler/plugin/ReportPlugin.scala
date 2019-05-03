@@ -19,18 +19,12 @@ import collection.JavaConversions._
 /**
   * Created by seveniruby on 16/8/12.
   */
-class ReportPlugin extends Plugin with Report {
+class ReportPlugin extends Plugin {
 
   var requestFile:String=_
   override def start(): Unit ={
-    reportPath=new java.io.File(getCrawler().conf.resultDir).getCanonicalPath
-    requestFile=reportPath + File.separator + "request"
-    log.info(s"reportPath=${reportPath}")
-    val tmpDir=new io.File(s"${reportPath}/tmp/")
-    if(tmpDir.exists()==false){
-      log.info(s"create ${reportPath}/tmp/ directory")
-      tmpDir.mkdir()
-    }
+    ReportFactory.initReportPath(new java.io.File(getCrawler().conf.resultDir).getCanonicalPath)
+    requestFile=ReportFactory.reportPath + File.separator + "request"
   }
 
   override def stop(): Unit ={
@@ -86,10 +80,11 @@ class ReportPlugin extends Plugin with Report {
       MvnReplace.runTest()
       if(MvnReplace.isExist) MvnReplace.executeCommand("cmd /c allure generate " + getCrawler().conf.resultDir + "/allure-results" +" -o " + getCrawler().conf.resultDir + "/report")
     }else {
-      log.info(s"reportPath=${reportPath}")
-      Report.saveTestCase(getCrawler().store, reportPath)
-      Report.store = getCrawler().store
-      Report.runTestCase()
+      log.info(s"reportPath=${ReportFactory.reportPath}")
+      ReportFactory.initStore(getCrawler().store)
+      ReportFactory.genReport("scalatest")
+      ReportFactory.getInstance().genTestCase(ReportFactory.reportPath)
+      ReportFactory.getInstance().runTestCase()
     }
   }
 }

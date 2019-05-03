@@ -22,7 +22,7 @@ class ScalaTestTemplate extends FunSuite with BeforeAndAfterAllConfigMap with Ma
     log.trace(s"Report.store.elementStore size = ${ReportFactory.store.storeMap.size}")
     log.trace(s"uri=${uri}")
     val sortedElements = ReportFactory.store.storeMap
-      .filter(x => x._2.getElement.getUrl == uri)
+      .filter(x => x._2.getElement.getUrl.replaceAllLiterally("..", ".") == uri)
       .map(_._2).toList
       .sortBy(_.getClickedIndex)
 
