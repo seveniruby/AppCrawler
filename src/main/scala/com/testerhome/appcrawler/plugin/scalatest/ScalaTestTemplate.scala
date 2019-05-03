@@ -111,27 +111,3 @@ class ScalaTestTemplate extends FunSuite with BeforeAndAfterAllConfigMap with Ma
     })
   }
 }
-
-object ScalaTestTemplate extends CommonLog {
-  def saveTestCase(store: AbstractElementStore, resultDir: String): Unit = {
-    log.info("save testcase")
-    ReportFactory.reportPath = resultDir
-    ReportFactory.testcaseDir = ReportFactory.reportPath + "/tmp/"
-    //为了保持独立使用
-    val path = new java.io.File(resultDir).getCanonicalPath
-
-    val suites = store.storeMap.map(x => x._2.getElement.getUrl).toList.distinct
-    suites.foreach(suite => {
-      log.info(s"gen testcase class ${suite}")
-      //todo: 基于规则的多次点击事件只会被保存到一个状态中. 需要区分
-      SuiteToClass.genTestCaseClass(
-        //todo: Illegal class name  Ⅱ[@]][()
-        suite,
-        "com.testerhome.appcrawler.plugin.scalatest.TemplateTestCase",
-        Map("uri" -> suite, "name" -> suite),
-        ReportFactory.testcaseDir
-      )
-    })
-  }
-
-}

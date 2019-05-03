@@ -13,7 +13,7 @@ import collection.JavaConversions._
 abstract class Report extends CommonLog {
 
 
-  def saveTestCase(store: AbstractElementStore, resultDir: String): Unit = {
+  def genTestCase(resultDir: String): Unit = {
   }
 
 

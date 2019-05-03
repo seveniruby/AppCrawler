@@ -1,10 +1,8 @@
 package com.testerhome.appcrawler.ut;
 
 import com.testerhome.appcrawler.Crawler;
-import com.testerhome.appcrawler.Report;
 import com.testerhome.appcrawler.ReportFactory;
 import com.testerhome.appcrawler.URIElement;
-import com.testerhome.appcrawler.data.AbstractElementStore;
 import com.testerhome.appcrawler.data.PathElementInfo;
 import com.testerhome.appcrawler.data.PathElementStore;
 import com.testerhome.appcrawler.plugin.ReportPlugin;
@@ -55,8 +53,8 @@ public class ReportTest {
 
         ReportFactory.showCancel_$eq(true);
         ReportFactory.genReport("scalatest");
-        ReportFactory.store_$eq(elementsStore);
-        ReportFactory.getInstance().saveTestCase(elementsStore, "/tmp/");
+        ReportFactory.initStore(elementsStore);
+        ReportFactory.getInstance().genTestCase("/tmp/");
         ReportFactory.getInstance().runTestCase("");
 
 
