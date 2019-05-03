@@ -21,6 +21,7 @@ class CrawlerConf {
   var reportTitle = ""
   /** 结果目录 */
   var resultDir = ""
+  //todo: 支持重进未完全覆盖的界面
   //var tagLimit=scala.collection.mutable.Map[String, Int]()
   var showCancel = true
   /** 最大运行时间 */
@@ -57,7 +58,7 @@ class CrawlerConf {
     Step(xpath="//*[contains(name(), 'Button')]"),
     //android专属
     Step(xpath="//*[contains(name(), 'Text') and @clickable='true' and string-length(@text)<10]"),
-    Step(xpath="//*[@clickable='true']/*[contains(name(), 'Text') and string-length(@text)<10]"),
+    Step(xpath="//*[@clickable='true']//*[contains(name(), 'Text') and string-length(@text)<10]"),
     Step(xpath="//*[contains(name(), 'Image') and @clickable='true']"),
     Step(xpath="//*[@clickable='true']/*[contains(name(), 'Image')]"),
     //ios专属
@@ -67,7 +68,7 @@ class CrawlerConf {
     //adb,uiautomatorviewer dump生成的数据中节点名字与appium不一致
     //todo: 兼容appium
     Step(xpath="//*[contains(@class, 'Text') and @clickable='true' and string-length(@text)<10]"),
-    Step(xpath="//*[@clickable='true']/*[contains(@class, 'Text') and string-length(@text)<10]"),
+    Step(xpath="//*[@clickable='true']//*[contains(@class, 'Text') and string-length(@text)<10]"),
     Step(xpath="//*[contains(@class, 'Image') and @clickable='true']"),
     Step(xpath="//*[@clickable='true']/*[contains(@class, 'Image')]"),
     Step(xpath="//*[@clickable='true' and contains(@class, 'Button')]"),

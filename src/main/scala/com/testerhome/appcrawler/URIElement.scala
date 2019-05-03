@@ -154,7 +154,11 @@ case class URIElement(
   }
 
   def getAction: String = {
-    action
+    if(action.nonEmpty){
+      action
+    }else{
+      "click"
+    }
   }
 
   override def setId(id: String): Unit = {

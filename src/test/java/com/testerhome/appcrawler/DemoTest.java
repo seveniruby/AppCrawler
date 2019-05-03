@@ -1,18 +1,37 @@
 package com.testerhome.appcrawler;
 
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-class DemoTest {
+public class DemoTest {
+
+    public String dom;
+
 
     @Test
-    void hello() {
+    public void hello() {
+        System.out.println("hello");
+
     }
 
     @Test
-    void report() {
+    public void report() {
 
         //AppCrawler.main();
+    }
+
+    @TestFactory
+    Collection<DynamicTest> dynamicTestsFromCollection() {
+        return Arrays.asList(
+                dynamicTest("1st dynamic test", () -> assertTrue(false)),
+                dynamicTest("2nd dynamic test", () -> assertEquals(4, 3))
+        );
     }
 }

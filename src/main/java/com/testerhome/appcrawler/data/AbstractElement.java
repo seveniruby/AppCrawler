@@ -13,6 +13,7 @@ public abstract class AbstractElement {
     public abstract String getTag();
     public abstract String getText();
     public abstract String getInstance();
+    //todo: adb driver need fix url with package/.activity
     public abstract String getUrl();
     public abstract String getXpath();
     public abstract String getAction();

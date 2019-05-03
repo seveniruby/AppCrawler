@@ -14,7 +14,7 @@ import collection.JavaConversions._
 /**
   * Created by seveniruby on 2017/1/10.
   */
-class Template {
+class TemplateSource {
 
   val elements = mutable.HashMap[String, ListBuffer[Map[String, Any]]]()
 

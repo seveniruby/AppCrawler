@@ -45,7 +45,7 @@ class Crawler extends CommonLog {
   private var exitCrawl = false
   private var backRetry = 0
   //最大重试次数
-  var backMaxRetry = 1
+  var backMaxRetry = 2
   private var afterAllRetry = 0
   private var notFoundRetry = 0
   private var notFoundMax = 2
@@ -896,7 +896,7 @@ class Crawler extends CommonLog {
   @tailrec
   final def crawl(): Unit = {
     if (exitCrawl == true) {
-      log.info("exitCrawl=true, return")
+      log.fatal("exitCrawl=true, return")
       return
     }
     log.info("\n\ncrawl next")
@@ -906,12 +906,12 @@ class Crawler extends CommonLog {
 
     //是否应该退出
     if (needExitApp()) {
-      log.warn("get signal to exit")
+      log.fatal("get signal to exit")
       exitCrawl = true
     }
     //页面刷新失败自动后退
     if (refreshResult.last()==false) {
-      log.warn("refresh fail")
+      log.error("refresh fail")
       //todo: 使用自动获取的元素
       nextElement = Some(getEventElement("Back"))
 
@@ -984,7 +984,7 @@ class Crawler extends CommonLog {
       }
       case None => {
         //当前页面已经遍历完成
-        log.error("never access this")
+        log.fatal("never access this")
       }
     }
 

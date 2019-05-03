@@ -23,6 +23,7 @@ class CrawlerTest {
     @Test
     @Tag("it")
     @Tag("feature")
+
     void runSteps() {
         AppCrawler.main(new String[]{
                 "--capability", caps,
