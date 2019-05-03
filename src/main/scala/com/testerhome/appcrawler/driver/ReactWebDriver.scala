@@ -73,6 +73,14 @@ abstract class ReactWebDriver extends CommonLog {
   def launchApp()
   def getPageSource(): String
 
+
+  //todo: 有的时候会出现极少内容的page source
+  /**
+    * <hierarchy class="hierarchy" height="1794" index="0" rotation="0" width="1080">
+    *   <android.widget.FrameLayout bounds="[0,0][1080,1794]" checkable="false" checked="false" class="android.widget.FrameLayout" clickable="false" displayed="true" enabled="true" focusable="false" focused="false" index="0" long-clickable="false" package="com.example.android.apis" password="false" scrollable="false" selected="false" text=""/>
+    * </hierarchy>
+    *
+    */
   def getPageSourceWithRetry(): String = {
     currentPageSource=null
     currentPageDom=null
@@ -84,8 +92,15 @@ abstract class ReactWebDriver extends CommonLog {
       asyncTask(40, name = "getPageSource")(getPageSource) match {
         case Left(v) => {
           log.trace("get page source success")
+          log.trace(v)
           //todo: wda返回的不是标准的xml
           val xmlStr=v match {
+              //todo: 更严格判断
+            case blank if blank.getBytes.size<500 => {
+              log.error("may be page source is not enought")
+              log.error(blank)
+              null
+            }
             case json if json.trim.charAt(0)=='{' => {
               log.info("json format maybe from wda")
               TData.fromJson[Map[String, String]](v).getOrElse("value", "")
@@ -103,9 +118,8 @@ abstract class ReactWebDriver extends CommonLog {
           Try(XPathUtil.toDocument(xmlStr)) match {
             case Success(v) => {
               currentPageDom = v
-              log.debug(v)
               currentPageSource = XPathUtil.toPrettyXML(xmlStr)
-              log.debug(currentPageSource)
+              //不用循环多次
               return currentPageSource
             }
             case Failure(e) => {
@@ -283,7 +297,7 @@ abstract class ReactWebDriver extends CommonLog {
   }
 
   //支持宽松查找，自动刷新查找，自动滚动查找
-  def findMapWithRetry(key:String): List[Map[String, Any]] ={
+  def getNodeListByKeyWithRetry(key:String): List[Map[String, Any]] ={
     var array=getNodeListByKey(key)
     if(array.size==0){
       getPageSourceWithRetry()
