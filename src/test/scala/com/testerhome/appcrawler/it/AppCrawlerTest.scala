@@ -99,10 +99,44 @@ class AppCrawlerTest extends FunSuite with BeforeAndAfterEach {
         "noReset=false," +
         "automationName=uiautomator2",
       "-o",
-      s"/Volumes/ram/message/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}",
+      s"/tmp/message/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}",
       "-y",
       "blackList: [ {xpath: action_night}, {xpath: action_setting}, {xpath: '.*[0-9\\.]{2}.*'} ]",
-      "--verbose"
+      "-vv"
+    )
+    )
+  }
+
+  test("fund appium crawler"){
+    AppCrawler.main(Array(
+      "--capability",
+      "appPackage=com.xueqiu.fund," +
+        "appActivity=.SplashActvity," +
+        "noReset=false," +
+        "autoGrantPermissions=true," +
+        "automationName=uiautomator2",
+      "-o",
+      s"/tmp/fund/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}",
+      "-y",
+      "blackList: [ {xpath: action_night}, {xpath: action_setting}, {xpath: '.*[0-9\\.]{2}.*'} ]",
+      "-vv"
+    )
+    )
+  }
+
+  test("fund adb crawler"){
+    AppCrawler.main(Array(
+      "--capability",
+      "appPackage=com.xueqiu.fund," +
+        "appActivity=.SplashActvity," +
+        "noReset=false," +
+        "autoGrantPermissions=true," +
+        "automationName=adb",
+      "-o",
+      s"/tmp/fund/${new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)}",
+      "-y",
+      "blackList: [ {xpath: action_night}, {xpath: action_setting}, {xpath: '.*[0-9\\.]{2}.*'} ]",
+      "-vv"
     )
     )
   }

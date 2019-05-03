@@ -2,6 +2,7 @@ package com.testerhome.appcrawler
 
 import com.testerhome.appcrawler.data.AbstractElementStore.Status
 import com.testerhome.appcrawler.data.{AbstractElement, AbstractElementInfo}
+import com.testerhome.appcrawler.plugin.scalatest.SuiteToClass
 import org.scalatest._
 
 import scala.io.Source
@@ -115,14 +116,14 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
 }
 
 object DiffSuite {
-  val masterStore : scala.collection.mutable.Map[String, AbstractElementInfo] = Report.loadResult(s"${Report.master}/elements.yml").storeMap
-  val candidateStore : scala.collection.mutable.Map[String, AbstractElementInfo] = Report.loadResult(s"${Report.candidate}/elements.yml").storeMap
+  val masterStore : scala.collection.mutable.Map[String, AbstractElementInfo] = ReportFactory.getInstance().loadResult(s"${ReportFactory.master}/elements.yml").storeMap
+  val candidateStore : scala.collection.mutable.Map[String, AbstractElementInfo] = ReportFactory.getInstance().loadResult(s"${ReportFactory.candidate}/elements.yml").storeMap
   val blackList = List(".*\\.instance.*", ".*bounds.*")
   val range=List("//*[contains(name(), 'Text')]", "//*[contains(name(), 'Image')]", "//*[contains(name(), 'Button')]")
   def saveTestCase(): Unit ={
     val suites=masterStore.map(_._2.getElement.getUrl)++candidateStore.map(_._2.getElement.getUrl)
     suites.foreach(suite=> {
-      SuiteToClass.genTestCaseClass(suite, "com.testerhome.appcrawler.DiffSuite", Map("suite"->suite, "name"->suite), Report.testcaseDir)
+      SuiteToClass.genTestCaseClass(suite, "com.testerhome.appcrawler.DiffSuite", Map("suite"->suite, "name"->suite), ReportFactory.testcaseDir)
     })
   }
 }

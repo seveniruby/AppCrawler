@@ -1,12 +1,14 @@
 package com.testerhome.appcrawler.it;
 
 import com.testerhome.appcrawler.AppCrawler;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class JavaAppCrawlerTest {
 
     // 测试-o参数
     @Test
+    @Tag("it")
     public void testO(){
         AppCrawler.main(new String[]{
                 "--capability",
@@ -50,6 +52,7 @@ public class JavaAppCrawlerTest {
     // 雪球App
     @Test
     public void test1(){
+        //todo: bug 2.6.0 page source error超过次数后未重启session
         AppCrawler.main(new String[]{
              "--capability",
              "appPackage=com.xueqiu.android," +

@@ -256,21 +256,23 @@ object AppCrawler extends CommonLog {
         }
         log.info(s"result directory = ${crawlerConf.resultDir}")
 
-        Report.showCancel = crawlerConf.showCancel
-        if (crawlerConf.reportTitle.nonEmpty) {
-          Report.title = crawlerConf.reportTitle
-        }
-
         log.debug("yaml config")
         log.debug(TData.toYaml(crawlerConf))
 
         //todo: 用switch替代
         if (config.report != "" && config.candidate.isEmpty && config.template=="") {
-          val store = Report.loadResult(s"${config.report}/elements.yml")
-          Report.saveTestCase(store, config.report)
-          Report.store=store
+
+          val report=ReportFactory.genReport("scalatest")
+
+          ReportFactory.showCancel = crawlerConf.showCancel
+          if (crawlerConf.reportTitle.nonEmpty) {
+            ReportFactory.title = crawlerConf.reportTitle
+          }
+          val store = report.loadResult(s"${config.report}/elements.yml")
+          ReportFactory.initStore(store)
+          report.genTestCase(config.report)
           crawler.conf=crawlerConf
-          Report.runTestCase()
+          report.runTestCase()
           return
         } else if (config.candidate.nonEmpty) {
 //          Report.candidate = config.candidate
@@ -285,7 +287,7 @@ object AppCrawler extends CommonLog {
         }
 
         if(config.template!=""){
-          val template=new Template
+          val template=new TemplateSource
           if(config.appium.nonEmpty){
             template.getPageSource(config.appium)
           }else {
