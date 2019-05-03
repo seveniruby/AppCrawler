@@ -91,7 +91,7 @@ abstract class ReactWebDriver extends CommonLog {
     1 to 2 foreach (i => {
       asyncTask(40, name = "getPageSource")(getPageSource) match {
         case Left(v) => {
-          log.trace("get page source success")
+          log.trace("get raw page source success")
           log.trace(v)
           //todo: wda返回的不是标准的xml
           val xmlStr=v match {
@@ -120,6 +120,8 @@ abstract class ReactWebDriver extends CommonLog {
               currentPageDom = v
               currentPageSource = XPathUtil.toPrettyXML(xmlStr)
               //不用循环多次
+              log.debug("get page source success")
+              log.debug(currentPageSource)
               return currentPageSource
             }
             case Failure(e) => {
@@ -137,7 +139,7 @@ abstract class ReactWebDriver extends CommonLog {
           error=e
         }
       }
-      log.warn(s"retry ${i} times")
+      log.warn(s"retry ${i} times after 5s")
       Thread.sleep(5000)
     })
     currentPageSource
