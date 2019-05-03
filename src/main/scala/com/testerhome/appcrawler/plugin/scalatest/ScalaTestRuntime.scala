@@ -12,14 +12,12 @@ import scala.io.Source
   */
 class ScalaTestRuntime extends Report {
 
-  override def saveTestCase(store: AbstractElementStore, resultDir: String): Unit = {
+  override def genTestCase(resultDir: String): Unit = {
     log.info("save testcase")
-    ReportFactory.reportPath = resultDir
-    ReportFactory.testcaseDir = ReportFactory.reportPath + "/tmp/"
+    ReportFactory.initReportPath(resultDir)
     //为了保持独立使用
-    val path = new java.io.File(resultDir).getCanonicalPath
 
-    val suites = store.storeMap.map(x => x._2.getElement.getUrl).toList.distinct
+    val suites = ReportFactory.store.storeMap.map(x => x._2.getElement.getUrl).toList.distinct
     var index=0
     suites.foreach(suite => {
       log.info(s"gen testcase class ${suite}")

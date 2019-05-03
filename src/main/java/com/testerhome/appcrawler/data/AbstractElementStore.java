@@ -1,8 +1,12 @@
 package com.testerhome.appcrawler.data;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.testerhome.appcrawler.URIElementStore;
+
 import java.util.List;
 import java.util.Map;
 
+@JsonDeserialize(as = URIElementStore.class)
 public abstract class AbstractElementStore {
     public enum Status{
         READY,CLICKED,SKIPPED

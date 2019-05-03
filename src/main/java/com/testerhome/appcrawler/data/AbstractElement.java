@@ -1,7 +1,11 @@
 package com.testerhome.appcrawler.data;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.testerhome.appcrawler.URIElement;
+
 import java.awt.Point;
 
+@JsonDeserialize(as = URIElement.class)
 public abstract class AbstractElement {
     public abstract Point center();
     public abstract String getId();
