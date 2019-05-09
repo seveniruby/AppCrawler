@@ -21,7 +21,6 @@ class JUnit5Runtime extends Report {
   //todo: 用junit+allure代替
   override def runTestCase(namespace: String=""): Unit = {
     //todo:
-    //seveniruby demo test
   }
 
   override def changeTitle(title:String): Unit ={
