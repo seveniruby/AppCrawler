@@ -26,6 +26,7 @@ class JUnit5Runtime extends Report {
   override def changeTitle(title:String): Unit ={
     //todo:
     //malu test demo
+    //naruto test
   }
 
 }
