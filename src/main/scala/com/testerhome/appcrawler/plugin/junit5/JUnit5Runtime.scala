@@ -28,6 +28,7 @@ class JUnit5Runtime extends Report {
     //todo:
     //malu test demo
     //seveniruby need merge
+    //seveniruby2
   }
 
 }
