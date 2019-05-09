@@ -28,6 +28,7 @@ class JUnit5Runtime extends Report {
     //malu test demo
     //seveniruby need merge
     //naruto test
+    //naruto 3
   }
 
 }
