@@ -86,15 +86,6 @@ public class PathElement extends AbstractElement {
         return standardWinFileName(fileName.toString());
     }
 
-    // windows下命名规范
-    public String standardWinFileName(String s){
-        // a-z  A-Z 0-9 _ 汉字
-        String regex="[^a-zA-Z0-9.=()_\\u4e00-\\u9fa5]";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher match=pattern.matcher(s);
-        return match.replaceAll("");
-    }
-
     public String validName(){
         String validName = "";
         if(!text.isEmpty()){

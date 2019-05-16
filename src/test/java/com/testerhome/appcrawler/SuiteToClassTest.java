@@ -34,7 +34,7 @@ class SuiteToClassTest {
     @Test
     void genClass() throws CannotCompileException, IOException {
         ClassPool pool=ClassPool.getDefault();
-        CtClass clazz=pool.getOrNull("com.testerhome.appcrawler.plugin.allure.AlllureTemplate");
+        CtClass clazz=pool.getOrNull("com.testerhome.appcrawler.plugin.junit5.AllureTemplate");
         System.out.println(clazz);
 
         CtClass a=pool.makeClass("AA4Test");

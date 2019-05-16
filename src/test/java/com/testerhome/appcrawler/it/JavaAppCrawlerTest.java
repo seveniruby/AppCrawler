@@ -68,7 +68,7 @@ public class JavaAppCrawlerTest {
 //             "-c",
 //             "src/test/java/com/testerhome/appcrawler/it/xueqiu_conf.yml",
                 "-y",
-                "{ tagLimitMax: 3, " +
+                "{ useNewData: false, tagLimitMax: 3, " +
                         "blackList: [ {xpath: '更新'},{xpath: '检测'} ] " +
 //                        "urlBlackList: [ .*StockDetail.* ]" +
                         "}",

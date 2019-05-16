@@ -1,20 +1,11 @@
 package com.testerhome.appcrawler.plugin
 
-import java.io
 import java.nio.file.{Files, Paths}
-
-import com.testerhome.appcrawler.Report
 import com.testerhome.appcrawler._
 import com.testerhome.appcrawler.data.AbstractElement
 import com.testerhome.appcrawler.report.MvnReplace
-import org.scalatest.FunSuite
-import org.scalatest.tools.Runner
-import sun.misc.{Signal, SignalHandler}
-
-import scala.collection.mutable.ListBuffer
 import scala.io.Source
 import scala.reflect.io.File
-import collection.JavaConversions._
 
 /**
   * Created by seveniruby on 16/8/12.

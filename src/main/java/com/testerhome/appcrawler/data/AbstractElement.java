@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.testerhome.appcrawler.URIElement;
 
 import java.awt.Point;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @JsonDeserialize(as = URIElement.class)
 public abstract class AbstractElement {
@@ -30,5 +32,12 @@ public abstract class AbstractElement {
     public abstract int getHeight();
     public abstract String getDepth();
     public abstract String getSelected();
-    public abstract String validName();
+    // windows下命名规范
+    public String standardWinFileName(String s){
+        // a-z  A-Z 0-9 _ 汉字
+        String regex="[^a-zA-Z0-9.=()_\\u4e00-\\u9fa5]";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher match=pattern.matcher(s);
+        return match.replaceAll("");
+    }
 }

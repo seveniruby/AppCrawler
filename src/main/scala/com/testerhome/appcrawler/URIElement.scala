@@ -2,15 +2,11 @@ package com.testerhome.appcrawler
 
 import java.awt.{Dimension, Point}
 import java.io.File
-import java.util.regex.{Matcher, Pattern}
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import javax.xml.bind.annotation.XmlAttribute
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.testerhome.appcrawler.data.AbstractElement
 import org.apache.commons.text.StringEscapeUtils
-
-import scala.collection.immutable
 
 /**
   * Created by seveniruby on 15/12/18.
@@ -223,29 +219,5 @@ case class URIElement(
 
   override def getSelected: String = {
     selected
-  }
-
-  override def validName: String = {
-    var validName : String = ""
-    if (!text.isEmpty) {
-      validName = StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")
-    }else if (!id.isEmpty) {
-      val i: Int = id.split("/").length
-      validName = id.split("/")(i - 1)
-    }
-    else if (!name.isEmpty) {
-      validName = name
-    } else {
-      validName = tag.replace("android.widget.", "").replace("Activity", "")
-    }
-    standardWinFileName(validName)
-  }
-
-  def standardWinFileName (s : String) :String = {
-
-    val regex = "[^a-zA-Z0-9.=()_\\u4e00-\\u9fa5]"
-    val pattern = Pattern.compile(regex)
-    val matcher = pattern.matcher(s)
-    matcher.replaceAll("")
   }
 }

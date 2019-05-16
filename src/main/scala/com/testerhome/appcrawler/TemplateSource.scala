@@ -2,7 +2,7 @@ package com.testerhome.appcrawler
 
 import java.io.File
 
-import com.testerhome.appcrawler.data.PathElementStore
+import com.testerhome.appcrawler.data.{AbstractElementStore, PathElementStore}
 import org.apache.commons.io.FileUtils
 import org.fusesource.scalate.TemplateEngine
 
@@ -30,7 +30,7 @@ class TemplateSource {
   def read(path:String): Unit = {
 
     //val path = "/Users/seveniruby/projects/AppCrawlerSuite/AppCrawler/android_20170109145102/elements.yml"
-    val store = (TData.fromYaml[PathElementStore](Source.fromFile(path).mkString)).storeMap
+    val store = (TData.fromYaml[AbstractElementStore](Source.fromFile(path).mkString)).storeMap
 
     store.foreach(s => {
       val reqDom = s._2.getReqDom

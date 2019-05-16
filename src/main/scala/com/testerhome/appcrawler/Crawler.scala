@@ -57,9 +57,6 @@ class Crawler extends CommonLog {
 
   val urlStack = mutable.Stack[String]()
 
-  val urlPathStack = mutable.Stack[String]()
-  var urlList = ListBuffer[String]()
-
   protected val backDistance = new DataRecord()
   val appNameRecord = new DataRecord()
   protected val contentHash = new DataRecord
@@ -106,7 +103,7 @@ class Crawler extends CommonLog {
     */
   def loadConf(crawlerConf: CrawlerConf): Unit = {
     conf = crawlerConf
-    AppCrawler.factory.setSwitch(conf.useNewData)
+    AppCrawler.factory = AbstractElementFactory.factorySwitch(conf.useNewData)
     store = AppCrawler.factory.generateElementStore()
     log.setLevel(GA.logLevel)
   }
@@ -361,9 +358,6 @@ class Crawler extends CommonLog {
   }
 
   def getUri(): String = {
-//    if (conf.useNewData) {
-//      shortestPath()
-//    } else {
       val uri = if (conf.suiteName != null && conf.suiteName.nonEmpty) {
         val urlString = conf.suiteName.flatMap(driver.getNodeListByKey(_)).distinct.map(x => {
           //按照attribute, label, name顺序挨个取第一个非空的指x
@@ -385,7 +379,6 @@ class Crawler extends CommonLog {
       } else {
         List(driver.getAppName(), driver.getUrl()).distinct.filter(_.nonEmpty).mkString(".")
       }
-//    }
   }
 
   /**
