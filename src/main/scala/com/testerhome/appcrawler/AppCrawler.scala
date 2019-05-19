@@ -1,17 +1,12 @@
 package com.testerhome.appcrawler
 
 import java.io.File
-import java.lang.reflect.Field
 import java.nio.charset.Charset
 
-import com.testerhome.appcrawler.data.ElementFactory
+import com.testerhome.appcrawler.data.AbstractElementFactory
 import com.testerhome.appcrawler.diff.CrawlerDiff
-import com.testerhome.appcrawler.plugin.FlowDiff
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.{FileAppender, Level}
-import org.scalatest.ConfigMap
-
-import scala.io.Source
 
 /**
   * Created by seveniruby on 16/4/24.
@@ -35,7 +30,7 @@ object AppCrawler extends CommonLog {
 
   var fileAppender: FileAppender = _
   var crawler = new Crawler
-  var factory = new ElementFactory
+  var factory : AbstractElementFactory = _
   val startTime = new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
   case class Param(
                     app: String = "",

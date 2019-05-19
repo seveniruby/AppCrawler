@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-public class AlllureTemplate {
+public class AllureTemplate {
     @TestFactory
     Collection<DynamicTest> AllTestCases() {
         ArrayList<DynamicTest> arrayList = new ArrayList<>();
