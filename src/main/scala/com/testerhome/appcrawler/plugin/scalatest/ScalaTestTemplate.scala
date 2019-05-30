@@ -19,26 +19,8 @@ class ScalaTestTemplate extends FunSuite with BeforeAndAfterAllConfigMap with Ma
   override def suiteName = name
 
   def addTestCase() {
-    log.trace(s"Report.store.elementStore size = ${ReportFactory.store.storeMap.size}")
-    log.trace(s"uri=${uri}")
-    val sortedElements = ReportFactory.store.storeMap
-      .filter(x => x._2.getElement.getUrl.replaceAllLiterally("..", ".") == uri)
-      .map(_._2).toList
-      .sortBy(_.getClickedIndex)
 
-    log.trace(s"sortedElements=${sortedElements.size}")
-    val selected = if (ReportFactory.showCancel) {
-      log.info("show all elements")
-      //把未遍历的放到后面
-      sortedElements.filter(_.getAction == Status.CLICKED) ++
-        //sortedElements.filter(_.action == ElementStatus.Skipped) ++
-        sortedElements.filter(_.getAction == Status.READY)
-    } else {
-      log.info("only show clicked elements")
-      sortedElements.filter(_.getAction == Status.CLICKED)
-    }
-    log.trace(s"selected elements size = ${selected.size}")
-    selected.foreach(ele => {
+    ReportFactory.getSelected(uri).foreach(ele => {
       val testcase = ele.getElement.getXpath.replace("\\", "\\\\")
         .replace("\"", "\\\"")
         .replace("\n", "")

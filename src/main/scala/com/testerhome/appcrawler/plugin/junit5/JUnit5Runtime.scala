@@ -15,6 +15,23 @@ class JUnit5Runtime extends Report {
 
   override def genTestCase(resultDir: String): Unit = {
     //todo:
+
+    log.info("save testcase")
+    ReportFactory.initReportPath(resultDir)
+    //为了保持独立使用
+
+    val suites = ReportFactory.store.storeMap.map(x => x._2.getElement.getUrl.replaceAllLiterally("..", ".")).toList.distinct
+    var index=0
+    suites.foreach(suite => {
+      log.info(s"gen testcase class ${suite}")
+      //todo: 基于规则的多次点击事件只会被保存到一个状态中. 需要区分
+      SuiteToClass.genTestCaseClass(
+        suite,
+        "com.testerhome.appcrawler.plugin.junit5.AllureTemplate",
+        Map("uri"->suite, "name"->suite),
+        ReportFactory.testcaseDir
+      )
+    })
   }
 
 
@@ -22,6 +39,8 @@ class JUnit5Runtime extends Report {
   override def runTestCase(namespace: String=""): Unit = {
     //todo:
     //seveniruby demo test
+    //execute junit5
+    //allure javaagent delay
   }
 
   override def changeTitle(title:String): Unit ={

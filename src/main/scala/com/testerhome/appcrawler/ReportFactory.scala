@@ -1,10 +1,13 @@
 package com.testerhome.appcrawler
 
-import java.io
+import java.{io, util}
 
-import com.testerhome.appcrawler.data.AbstractElementStore
+import com.testerhome.appcrawler.data.{AbstractElementInfo, AbstractElementStore}
+import com.testerhome.appcrawler.data.AbstractElementStore.Status
 import com.testerhome.appcrawler.plugin.junit5.JUnit5Runtime
 import com.testerhome.appcrawler.plugin.scalatest.{ScalaTestRuntime, ScalaTestTemplate}
+
+import collection.JavaConverters._
 
 object ReportFactory extends CommonLog {
 
@@ -51,4 +54,30 @@ object ReportFactory extends CommonLog {
     }
     return report
   }
+
+  def getSelected(uri:String): util.Collection[AbstractElementInfo] ={
+    log.trace(s"Report.store.elementStore size = ${ReportFactory.store.storeMap.size}")
+    log.trace(s"uri=${uri}")
+    val sortedElements = store.storeMap.asScala
+      .filter(x => x._2.getElement.getUrl.replaceAllLiterally("..", ".") == uri)
+      .map(_._2).toList
+      .sortBy(_.getClickedIndex)
+
+    log.trace(s"sortedElements=${sortedElements.size}")
+    val selected = if (ReportFactory.showCancel) {
+      log.info("show all elements")
+      //把未遍历的放到后面
+      sortedElements.filter(_.getAction == Status.CLICKED) ++
+        //sortedElements.filter(_.action == ElementStatus.Skipped) ++
+        sortedElements.filter(_.getAction == Status.READY)
+    } else {
+      log.info("only show clicked elements")
+      sortedElements.filter(_.getAction == Status.CLICKED)
+    }
+    log.trace(s"selected elements size = ${selected.size}")
+    return selected.asJavaCollection
+  }
+
+
+
 }

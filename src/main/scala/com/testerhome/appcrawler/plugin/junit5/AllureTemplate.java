@@ -1,6 +1,9 @@
 package com.testerhome.appcrawler.plugin.junit5;
 
+import com.testerhome.appcrawler.ReportFactory;
+import io.qameta.allure.Allure;
 import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 import java.util.ArrayList;
@@ -12,16 +15,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 public class AllureTemplate {
+    public String pageName="";
     @TestFactory
     Collection<DynamicTest> AllTestCases() {
-        ArrayList<DynamicTest> arrayList = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            arrayList.add(dynamicTest(String.format("testcase %s ", i), () -> {
-                        assertTrue(false);
-                    }
-            ));
-        }
 
+        ArrayList<DynamicTest> arrayList = new ArrayList<>();
+        System.out.println(ReportFactory.getSelected(pageName).size());
+        ReportFactory.getSelected(pageName).forEach(value->{
+            arrayList.add(dynamicTest(String.format("index=%d action=%s, xpath=%s",
+                    value.getClickedIndex(),
+                    value.getAction(),
+                    value.getElement().getXpath()),
+                    ()->{
+                        System.out.println(String.format("req image: %s\nres image: %s\n", value.getReqImg(), value.getResImg()));
+                        Allure.addAttachment("req image", value.getReqImg());
+                Allure.addAttachment("res image", value.getResImg());
+                Allure.addAttachment("res dom", value.getResDom());
+
+            }));
+        });
         return arrayList;
     }
 }

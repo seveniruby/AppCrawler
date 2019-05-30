@@ -66,4 +66,10 @@ public class ReportTest {
 //        CrawlerDiff.diffSuite("","","");
     }
 
+
+    @Test
+    public void testAllureTemplate(){
+
+    }
+
 }
