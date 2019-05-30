@@ -27,15 +27,9 @@ class TagLimitPlugin extends Plugin {
       return
     }
 
-    if (element.getAction.equals("click_guess")) {
-      // 用户自定义以及预测的返回键也不需要统计，并修改action
-      element.setAction("click")
+    if (getCrawler().conf.backButton.map(_.xpath).contains(element.getXpath)) {
       return
     }
-
-//    if (getCrawler().conf.backButton.map(_.xpath).contains(element.getXpath)) {
-//      return
-//    }
     currentKey = getAncestor(element)
     if (!tagLimit.contains(currentKey)) {
       //应用定制化的规则

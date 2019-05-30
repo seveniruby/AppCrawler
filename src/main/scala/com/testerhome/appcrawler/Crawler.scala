@@ -803,7 +803,7 @@ class Crawler extends CommonLog {
       val preElement = store.clickElementList.get(i - 1)
       urlList.append(curElement.getUrl)
       if (curElement.getUrl != preElement.getUrl
-        && urlList.indexOf(curElement.getUrl) < i-3-2 ) {
+        && urlList.indexOf(curElement.getUrl) < i-3-1 ) {
         log.info(s"get nearby back button from history = ${preElement}")
         Some(Step(xpath = preElement.getXpath, action=preElement.getAction))
       } else {
@@ -847,7 +847,7 @@ class Crawler extends CommonLog {
         //app相同并且找到back控件才点击. 否则就默认back
         log.trace(backElement)
         if(backElement.getAction.isEmpty) {
-          backElement.setAction("click_guess")
+          backElement.setAction("click")
         }else{
           log.info(s"use origin action ${backElement.getAction}")
         }
@@ -861,7 +861,7 @@ class Crawler extends CommonLog {
             //app相同并且找到back控件才点击. 否则就默认back
             //todo: bug hierarchy click出现
             if(backElement.getAction.isEmpty) {
-              backElement.setAction("click_guess")
+              backElement.setAction("click")
             }else{
               log.info(s"use origin action ${backElement.getAction}")
             }
