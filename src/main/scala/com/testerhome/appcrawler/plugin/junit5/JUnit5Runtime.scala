@@ -32,14 +32,15 @@ class JUnit5Runtime extends Report {
         ReportFactory.testcaseDir
       )
     })
+    //todo:使用javaassist生成AllureTemplate的子类，并在初始化中修改pageName
   }
 
 
   //todo: 用junit+allure代替
   override def runTestCase(namespace: String=""): Unit = {
-    //todo:
+
     //seveniruby demo test
-    //execute junit5
+    //todo:execute junit5   查看junit5官方文档
     //allure javaagent delay
   }
 

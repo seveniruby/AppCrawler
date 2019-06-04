@@ -50,10 +50,9 @@ public class AutoGenerateTest {
             //测试方法
             CtMethod testsayMethod=CtMethod.make("public void say(){System.out.println(\"Hello World\"); org.junit.jupiter.api.Assertions.assertTrue(false); }",cc);
             cc.addMethod(testsayMethod);
-/*
 
             //构造方法
-            CtConstructor ccs=new CtConstructor(new CtClass[]{CtClass.intType,pool.get("java.lang.String")}, cc);
+            /*CtConstructor ccs=new CtConstructor(new CtClass[]{CtClass.intType,pool.get("java.lang.String")}, cc);
             ccs.setBody("System.out.println(\"HelloWorld\");");
             cc.addConstructor(ccs);*/
 
