@@ -8,6 +8,7 @@ import java.util.Map;
 
 @JsonDeserialize(as = URIElementStore.class)
 public abstract class AbstractElementStore {
+
     public enum Status{
         READY,CLICKED,SKIPPED
     }
