@@ -65,6 +65,7 @@ class Crawler extends CommonLog {
 
   private val refreshResult=new DataRecord
 
+  private var lastBtnIndex = 3;
 
   /**
     * 根据类名初始化插件. 插件可以使用java编写. 继承自Plugin即可
@@ -797,14 +798,21 @@ class Crawler extends CommonLog {
   def getPredictBackNodes(): List[AbstractElement] = {
     //去掉开头的界面切换
     var urlList=ListBuffer[String]()
-
-    (3 until store.clickElementList.size).map(i => {
+    (lastBtnIndex until store.clickElementList.size).map(i => {
       val curElement = store.clickElementList.get(i)
       val preElement = store.clickElementList.get(i - 1)
       urlList.append(curElement.getUrl)
       if (curElement.getUrl != preElement.getUrl
         && urlList.indexOf(curElement.getUrl) < i-3-1 ) {
+
+        // 预测到返回键并将其添加到列表中
         log.info(s"get nearby back button from history = ${preElement}")
+        if(conf.backButton.filter(_.getXPath()==preElement.getXpath).size==0) {
+          log.info(s"find new back button from history ${preElement}")
+          conf.backButton.append(Step(xpath = preElement.getXpath, action = preElement.getAction))
+        }
+        // 更新索引
+        lastBtnIndex = i
         Some(Step(xpath = preElement.getXpath, action=preElement.getAction))
       } else {
         None
@@ -819,13 +827,6 @@ class Crawler extends CommonLog {
       .sortWith(_.getDepth < _.getDepth)
       .sortWith(_.getAction.indexOf("Back") < _.getAction.indexOf("Back"))
       //追加到backButton后面，depth小的放前面
-      .map(e => {
-      if(conf.backButton.filter(_.getXPath()==e.getXpath).size==0) {
-        log.info(s"find new back button from history ${e}")
-        conf.backButton.append(Step(xpath = e.getXpath, action = e.getAction))
-      }
-      e
-    })
   }
 
   //todo: 增加when支持，当when生效的时候才返回element
@@ -851,6 +852,13 @@ class Crawler extends CommonLog {
         }else{
           log.info(s"use origin action ${backElement.getAction}")
         }
+
+        // 通过配置文件设置的Xpath找到返回键，将其真实Xpath添加进List
+        if(conf.backButton.filter(_.getXPath()==backElement.getXpath).size==0) {
+          log.info(s"find new back button from configuration file ${backElement}")
+          conf.backButton.append(Step(xpath = backElement.getXpath, action = backElement.getAction))
+        }
+
         return Some(backElement)
       }
       case _ => {

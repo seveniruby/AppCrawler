@@ -2,7 +2,7 @@
 logLevel: "TRACE"
 screenshot: true
 showCancel: true
-useNewData: true
+useNewData: false
 reportTitle: AppCrawler雪球内部版
 screenshotTimeout: 20
 currentDriver: "android"
@@ -43,16 +43,8 @@ blackList:
   - xpath: "拉黑"
   - xpath: "举报"
   - xpath: ".*[0-9]{2}.*"
-backButton:
-  - xpath: "//*[@resource-id='action_back']"
-  - xpath: "//*[@resource-id='android:id/home']"
-  - xpath: "//*[@name='nav_icon_back']"
-  - xpath: "//*[@name='Back']"
-  - xpath: "//*[@name='返回']"
-  - xpath: "//*[contains(name(), 'Button') and @name='取消']"
-  - xpath: "//*[contains(name(), 'Button') and @label='返回']"
-  - xpath: "//*[contains(name(), 'Button') and @name='关闭']"
-  - xpath: "//*[contains(name(), 'Button') and @name='首页']"
+#backButton:
+#  - xpath: "//*[contains(@content-desc, 'Navigate up')]"
 beforeRestart:
 beforeElement:
 afterElement:
@@ -83,9 +75,9 @@ lastList:
 #  - "depth"
 #  - "list"
 #  - "selected"
-triggerAction:
-  - action: "1234567890"
-    xpath: "//*[@resource-id='com.xueqiu.android:id/login_account']"
+triggerActions:
+  - action: "click"
+    xpath: "//*[contains(@resource-id, 'user_profile_icon')]"
     times: 1
 tagLimitMax: 2
 tagLimit:
@@ -94,10 +86,3 @@ tagLimit:
   - xpath: //*[../../*/*[@selected='true']]
     count: 12
 assertGlobal:
-testcase:
-  name: demo1
-  steps:
-    - when:
-        xpath: "//*[@resource-id='com.xueqiu.android:id/pager']"
-        action: driver.swipe(0.5, 0.8, 0.5, 0.2)
-      then: []
