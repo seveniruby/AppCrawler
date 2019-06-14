@@ -15,24 +15,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 public class AllureTemplate {
+    //pageNum : activity的名字
     public String pageName="";
     @TestFactory
-    Collection<DynamicTest> AllTestCases() {
+    Collection<DynamicTest> AllElementInfo() {
 
         ArrayList<DynamicTest> arrayList = new ArrayList<>();
-        System.out.println(ReportFactory.getSelected(pageName).size());
+        System.out.println(pageName + "getSelected: " + ReportFactory.getSelected(pageName).size());
         ReportFactory.getSelected(pageName).forEach(value->{
             arrayList.add(dynamicTest(String.format("index=%d action=%s, xpath=%s",
-                    value.getClickedIndex(),
-                    value.getAction(),
-                    value.getElement().getXpath()),
+                        value.getClickedIndex(),
+                        value.getAction(),
+                        value.getElement().getXpath()
+                    ),
                     ()->{
                         System.out.println(String.format("req image: %s\nres image: %s\n", value.getReqImg(), value.getResImg()));
                         Allure.addAttachment("req image", value.getReqImg());
-                Allure.addAttachment("res image", value.getResImg());
-                Allure.addAttachment("res dom", value.getResDom());
-
-            }));
+                        Allure.addAttachment("res image", value.getResImg());
+                        Allure.addAttachment("res dom", value.getResDom());
+                    }));
         });
         return arrayList;
     }
