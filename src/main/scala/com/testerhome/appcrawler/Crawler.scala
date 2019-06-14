@@ -1,6 +1,7 @@
 package com.testerhome.appcrawler
 
 import java.io
+import java.text.SimpleDateFormat
 import java.util.Date
 
 import com.testerhome.appcrawler.driver._
@@ -762,6 +763,7 @@ class Crawler extends CommonLog {
       refreshPage()
     }
 
+    store.saveResTime(new SimpleDateFormat("YYYY/MM/dd HH:mm:ss.SSS").format(new Date()))
     saveDom()
     saveScreen()
 
@@ -1005,6 +1007,7 @@ class Crawler extends CommonLog {
     store.saveReqHash(contentHash.last().toString)
     store.saveReqDom(driver.currentPageSource)
     saveElementScreenshot()
+    store.saveReqTime(new SimpleDateFormat("YYYY/MM/dd HH:mm:ss.SSS").format(new Date()))
 
     element.getAction match {
       case "_Log" | "_Start" => {

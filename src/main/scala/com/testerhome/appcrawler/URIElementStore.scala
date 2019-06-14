@@ -139,6 +139,10 @@ class URIElementStore extends AbstractElementStore{
   override def clickElementList: util.List[AbstractElement] = {
     JavaConverters.bufferAsJavaList(clickedElementsList)
   }
+
+  override def saveReqTime(reqTime: String): Unit = {}
+
+  override def saveResTime(resTime: String): Unit = {}
 }
 
 object ElementStatus extends Enumeration {
