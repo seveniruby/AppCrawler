@@ -13,10 +13,14 @@ public abstract class AbstractElementInfo {
     public abstract void setResDom(String resDom);
     public abstract void setReqImg(String reqImg);
     public abstract void setResImg(String resImg);
+    public abstract void setReqTime(String reqTime);
+    public abstract void setResTime(String resTime);
     public abstract String getReqHash();
     public abstract String getReqDom();
     public abstract String getReqImg();
     public abstract String getResHash();
     public abstract String getResDom();
     public abstract String getResImg();
+    public abstract String getReqTime();
+    public abstract String getResTime();
 }

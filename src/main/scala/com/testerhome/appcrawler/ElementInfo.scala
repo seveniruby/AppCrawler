@@ -10,12 +10,14 @@ case class ElementInfo(
                         var resHash: String = "",
                         var reqImg:String="",
                         var resImg:String="",
+                        var reqTime:String="",
+                        var resTime:String="",
                         var clickedIndex: Int = -1,
                         var action: Status = Status.READY,
                         var element: AbstractElement = AppCrawler.factory.generateElement
                       ) extends AbstractElementInfo{
   def this(){
-    this("","","","","","",-1,Status.READY,null)
+    this("","","","","","","","",-1,Status.READY,null)
   }
   override def getElement: AbstractElement = {
     element.asInstanceOf[AbstractElement]
@@ -87,5 +89,21 @@ case class ElementInfo(
 
   override def getClickedIndex: Int = {
     clickedIndex
+  }
+
+  override def setReqTime(reqTime: String): Unit = {
+    this.reqTime = reqTime
+  }
+
+  override def setResTime(resTime: String): Unit = {
+    this.resTime = resTime
+  }
+
+  override def getReqTime: String = {
+    reqTime
+  }
+
+  override def getResTime: String = {
+    resTime
   }
 }

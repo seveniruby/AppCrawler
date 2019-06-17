@@ -2,50 +2,26 @@ package com.testerhome.appcrawler.data;
 
 import com.testerhome.appcrawler.AppCrawler;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class PathElementStore extends AbstractElementStore{
+public class SimpleElementStore extends AbstractElementStore {
 
     private LinkedHashMap<String, AbstractElementInfo> elementStore = new LinkedHashMap();
     private List<AbstractElement> clickedElementsList =new ArrayList<>();
+    private Map<String, String> domInfoMap = new HashMap<>();
 
-    public Map<String, AbstractElementInfo> storeMap() {
-        return elementStore;
-    }
-
+    // toYaml需要展示的数据 ： store、clickedList、domInfo
     public LinkedHashMap<String, AbstractElementInfo> getElementStore() {
         return elementStore;
     }
-
     public List<AbstractElement> getClickedElementsList() {
         return clickedElementsList;
     }
-
-    public void setElementSkip(AbstractElement element) {
-        if (!elementStore.containsKey(element.elementUri())){
-            elementStore.put(element.elementUri(), AppCrawler.factory().generateElementInfo());
-            elementStore.get(element.elementUri()).setElement(element);
-        }
-        elementStore.get(element.elementUri()).setAction(Status.SKIPPED);
+    public Map<String,String> getDomInfoMap(){
+        return domInfoMap;
     }
 
-    public void setElementClicked(AbstractElement element) {
-        if (!elementStore.containsKey(element.elementUri())){
-            elementStore.put(element.elementUri(),AppCrawler.factory().generateElementInfo());
-            elementStore.get(element.elementUri()).setElement(element);
-        }
-        clickedElementsList.add(element);
-        elementStore.get(element.elementUri()).setAction(Status.CLICKED);
-        elementStore.get(element.elementUri()).setClickedIndex(clickElementList().indexOf(element));
-    }
-
-    public boolean isDiff() {
-        return elementStore.get(lastElementUri()).getReqHash()!= elementStore.get(lastElementUri()).getResHash();
-    }
-
+    @Override
     public boolean isClicked(AbstractElement element) {
         if (elementStore.containsKey(element.elementUri())){
             return elementStore.get(element.elementUri()).getAction()== Status.CLICKED;
@@ -55,7 +31,7 @@ public class PathElementStore extends AbstractElementStore{
         }
     }
 
-    //  isSkipped
+    @Override
     public boolean isSkipped(AbstractElement element) {
         if (elementStore.containsKey(element.elementUri())){
             return elementStore.get(element.elementUri()).getAction()== Status.SKIPPED;
@@ -65,13 +41,39 @@ public class PathElementStore extends AbstractElementStore{
         }
     }
 
+    @Override
     public void saveElement(AbstractElement element) {
         if (!elementStore.containsKey(element.elementUri())){
             elementStore.put(element.elementUri(),AppCrawler.factory().generateElementInfo());
-            elementStore.get(element.elementUri()).setElement(element);
         }
     }
 
+    @Override
+    public void setElementClicked(AbstractElement element) {
+        if (!elementStore.containsKey(element.elementUri())){
+            elementStore.put(element.elementUri(),AppCrawler.factory().generateElementInfo());
+        }
+        clickedElementsList.add(element);
+        elementStore.get(element.elementUri()).setElement(null);
+        elementStore.get(element.elementUri()).setAction(Status.CLICKED);
+        elementStore.get(element.elementUri()).setClickedIndex(clickElementList().indexOf(element) + 1);
+    }
+
+    @Override
+    public void setElementSkip(AbstractElement element) {
+        if (!elementStore.containsKey(element.elementUri())){
+            elementStore.put(element.elementUri(), AppCrawler.factory().generateElementInfo());
+        }
+        elementStore.get(element.elementUri()).setElement(element);
+        elementStore.get(element.elementUri()).setAction(Status.SKIPPED);
+    }
+
+    @Override
+    public boolean isDiff() {
+        return elementStore.get(lastElementUri()).getReqHash()!= elementStore.get(lastElementUri()).getResHash();
+    }
+
+    @Override
     public void saveReqHash(String hash) {
         if (elementStore.get(lastElementUri()).getReqHash()==""){
             AppCrawler.log().info("save reqHash to "+(clickElementList().size()-1));
@@ -79,6 +81,7 @@ public class PathElementStore extends AbstractElementStore{
         }
     }
 
+    @Override
     public void saveResHash(String hash) {
         if (elementStore.get(lastElementUri()).getResHash()==""){
             AppCrawler.log().info("save resHash to "+(clickElementList().size()-1));
@@ -86,16 +89,29 @@ public class PathElementStore extends AbstractElementStore{
         }
     }
 
+    @Override
     public void saveReqDom(String dom) {
+        String reqDomMd5 = AppCrawler.crawler().md5(dom);
+        if (!domInfoMap.containsKey(reqDomMd5)){
+            domInfoMap.put(reqDomMd5, dom);
+        }
         AppCrawler.log().info("save reqDom to "+(clickElementList().size()-1));
-        elementStore.get(lastElementUri()).setReqDom(dom);
+
+        // 存储dom的md5索引
+        elementStore.get(lastElementUri()).setReqDom(reqDomMd5);
     }
 
+    @Override
     public void saveResDom(String dom) {
+        String resDomMd5 = AppCrawler.crawler().md5(dom);
+        if (!domInfoMap.containsKey(resDomMd5)){
+            domInfoMap.put(resDomMd5, dom);
+        }
         AppCrawler.log().info("save resDom to "+(clickElementList().size()-1));
-        elementStore.get(lastElementUri()).setResDom(dom);
+        elementStore.get(lastElementUri()).setResDom(resDomMd5);
     }
 
+    @Override
     public void saveReqImg(String imgName) {
         if (elementStore.get(lastElementUri()).getReqImg()==""){
             AppCrawler.log().info("save reqImg " + imgName + "  to "+(clickElementList().size()-1));
@@ -103,10 +119,25 @@ public class PathElementStore extends AbstractElementStore{
         }
     }
 
+    @Override
     public void saveResImg(String imgName) {
         if (elementStore.get(lastElementUri()).getResImg()==""){
             AppCrawler.log().info("save resImg " + imgName + " to "+(clickElementList().size()-1));
             elementStore.get(lastElementUri()).setResImg(imgName);
+        }
+    }
+    @Override
+    public void saveReqTime(String reqTime){
+        if (elementStore.get(lastElementUri()).getReqTime()==""){
+            AppCrawler.log().info("save reqTime " + reqTime + " to "+(clickElementList().size()-1));
+            elementStore.get(lastElementUri()).setReqTime(reqTime);
+        }
+    }
+    @Override
+    public void saveResTime(String resTime){
+        if (elementStore.get(lastElementUri()).getResTime()==""){
+            AppCrawler.log().info("save resTime " + resTime + " to "+(clickElementList().size()-1));
+            elementStore.get(lastElementUri()).setResTime(resTime);
         }
     }
 
@@ -114,17 +145,13 @@ public class PathElementStore extends AbstractElementStore{
         return clickedElementsList.get(clickedElementsList.size()-1).elementUri();
     }
 
-    public List<AbstractElement> clickElementList(){
+    @Override
+    public List<AbstractElement> clickElementList() {
         return clickedElementsList;
     }
 
     @Override
-    public void saveReqTime(String reqTime) {
-
-    }
-
-    @Override
-    public void saveResTime(String resTime) {
-
+    public Map<String, AbstractElementInfo> storeMap() {
+        return elementStore;
     }
 }
