@@ -313,50 +313,12 @@ class Crawler extends CommonLog {
 
   }
 
-  def md5(format: String) = {
-    //import sys.process._
-    //s"echo ${format}" #| "md5" !
-
-    //new java.lang.String(MessageDigest.getInstance("MD5").digest(format.getBytes("UTF-8")))
-    java.security.MessageDigest.getInstance("MD5").digest(format.getBytes("UTF-8")).map(0xFF & _).map {
-      "%02x".format(_)
-    }.foldLeft("") {
-      _ + _
-    }
-  }
-
-
-  /**
-    * 判断内容是否变化
-    *
-    * @return
-    */
-  def getContentHash(): String = {
-    //var nodeList = driver.getListFromXPath("//*[not(ancestor-or-self::UIATableView)]")
-    //nodeList = nodeList intersect driver.getListFromXPath("//*[not(ancestor-or-self::android.widget.ListView)]")
-
-    //排除iOS状态栏 android不受影响
-    val nodeList = driver.getNodeListByKey("//*[not(ancestor-or-self::UIAStatusBar)]")
-    val schemaBlackList = List()
-    //加value是考虑到某些tab, 他们只有value不同
-    //<             label="" name="分时" path="/0/0/6/0/0" valid="true" value="1"
-    //---
-    //>             label="" name="分时" path="/0/0/6/0/0" valid="true" value="0"
-    md5(nodeList.filter(node => !schemaBlackList.contains(node("name()"))).
-      map(node => node.getOrElse("xpath", "")
-        + node.getOrElse("value", "").toString
-        + node.getOrElse("selected", "").toString
-        + node.getOrElse("text", "").toString
-      ).
-      mkString("\n"))
-  }
-
   /**
     * 获得布局Hash
     */
   def getSchema(): String = {
     val nodeList = driver.getNodeListByKey("//*[not(ancestor-or-self::UIAStatusBar)]")
-    md5(nodeList.map(getUrlElementByMap(_).getAncestor()).distinct.mkString("\n"))
+    TData.md5(1, nodeList.map(getUrlElementByMap(_).getAncestor()).distinct.mkString("\n"))
   }
 
   def getUri(): String = {
@@ -710,7 +672,9 @@ class Crawler extends CommonLog {
     //val windows=MiniAppium.doAppium(driver.getWindowHandles).getOrElse("")
     //val windows = ""
     //log.trace(s"windows=${windows}")
-    contentHash.append(getContentHash())
+
+    // 通过标识what取对应的md5值
+    contentHash.append(TData.md5(2,""))
     log.info(s"currentContentHash=${contentHash.last()} lastContentHash=${contentHash.pre()}")
     if (contentHash.isDiff()) {
       log.info("ui change")
@@ -780,7 +744,8 @@ class Crawler extends CommonLog {
         backRetry += 1
       }
       case nonAfter if nonAfter != "_AfterAll" => {
-        backRetry = 0
+        // backRetry判断退出App的次数
+//        backRetry = 0
       }
       case _ => {
         log.info("keep backRetry")
@@ -800,19 +765,14 @@ class Crawler extends CommonLog {
   def getPredictBackNodes(): List[AbstractElement] = {
     //去掉开头的界面切换
     var urlList=ListBuffer[String]()
-    (lastBtnIndex until store.clickElementList.size).map(i => {
-      val curElement = store.clickElementList.get(i)
-      val preElement = store.clickElementList.get(i - 1)
+    (lastBtnIndex until store.getClickedElementsList.size).map(i => {
+      val curElement = store.getClickedElementsList.get(i)
+      val preElement = store.getClickedElementsList.get(i - 1)
       urlList.append(curElement.getUrl)
       if (curElement.getUrl != preElement.getUrl
-        && urlList.indexOf(curElement.getUrl) < i-3-1 ) {
-
-        // 预测到返回键并将其添加到列表中
+        && urlList.indexOf(curElement.getUrl) < i-3-1
+        && preElement.center().getY < driver.screenHeight/8) {
         log.info(s"get nearby back button from history = ${preElement}")
-        if(conf.backButton.filter(_.getXPath()==preElement.getXpath).size==0) {
-          log.info(s"find new back button from history ${preElement}")
-          conf.backButton.append(Step(xpath = preElement.getXpath, action = preElement.getAction))
-        }
         // 更新索引
         lastBtnIndex = i
         Some(Step(xpath = preElement.getXpath, action=preElement.getAction))
@@ -829,6 +789,13 @@ class Crawler extends CommonLog {
       .sortWith(_.getDepth < _.getDepth)
       .sortWith(_.getAction.indexOf("Back") < _.getAction.indexOf("Back"))
       //追加到backButton后面，depth小的放前面
+      .map(e => {
+        if(conf.backButton.filter(_.getXPath()==e.getXpath).size==0 && e.getAction!="_Back") {
+        log.info(s"find new back button from history ${e}")
+        conf.backButton.append(Step(xpath = e.getXpath, action = e.getAction))
+      }
+      e
+    })
   }
 
   //todo: 增加when支持，当when生效的时候才返回element
@@ -841,12 +808,39 @@ class Crawler extends CommonLog {
       }).filter(isValid)
   }
 
+  def isEndlessLoop(): Boolean = {
+    val index = store.getClickedElementsList.size()
+    var curA : AbstractElement = null
+    var curB : AbstractElement = null
+    for (i <- index-1 to index-6){
+      if (i%2==0){
+        if (curA == null ){
+          curA = store.getClickedElementsList.get(i)
+        }else if (curA != store.getClickedElementsList.get(i)){
+          false
+        }
+      }else{
+        if (curB == null ){
+          curB = store.getClickedElementsList.get(i)
+        }else if (curB != store.getClickedElementsList.get(i)){
+          false
+        }
+      }
+    }
+    true
+  }
+
   def getBackButton(): Option[AbstractElement] = {
     log.info("go back")
     //找到可能的关闭按钮, 取第一个可用的关闭按钮
     log.trace(conf.backButton)
     conf.backButton.flatMap(step => getURIElementsByStep(step)).headOption match {
       case Some(backElement) if appNameRecord.isDiff() == false => {
+
+        if (isEndlessLoop()){
+          return Some(getEventElement("Back"))
+        }
+
         //app相同并且找到back控件才点击. 否则就默认back
         log.trace(backElement)
         if(backElement.getAction.isEmpty) {
@@ -856,7 +850,7 @@ class Crawler extends CommonLog {
         }
 
         // 通过配置文件设置的Xpath找到返回键，将其真实Xpath添加进List
-        if(conf.backButton.filter(_.getXPath()==backElement.getXpath).size==0) {
+        if(conf.backButton.filter(_.getXPath()==backElement.getXpath).size==0 && backElement.getAction!="_Back") {
           log.info(s"find new back button from configuration file ${backElement}")
           conf.backButton.append(Step(xpath = backElement.getXpath, action = backElement.getAction))
         }
@@ -947,7 +941,7 @@ class Crawler extends CommonLog {
       log.info(s"${currentUrl} all elements had be clicked")
       //滚动多次没有新元素
 
-      if(store.clickElementList.size<10){
+      if(store.getClickedElementsList.size<10){
         log.info("just start, maybe loading is slow ,so just wait")
         nextElement=Some(getEventElement("Log"))
       }
@@ -996,7 +990,7 @@ class Crawler extends CommonLog {
 
   def doElementAction(element: AbstractElement): Unit = {
     //todo: 如果有相同的控件被重复记录, 会出问题, 比如确定退出的规则
-    log.info(s"current index = ${store.clickElementList.size - 1}")
+    log.info(s"current index = ${store.getClickedElementsList.size - 1}")
     log.info(s"current xpath = ${element.getXpath}")
     log.info(s"current action = ${element.getAction}")
     log.info(s"current element = ${element.elementUri}")
@@ -1026,7 +1020,7 @@ class Crawler extends CommonLog {
       }
       case "_AfterAll" => {
         if (conf.afterAll != null) {
-          if (store.clickElementList.last.getAction.equals("after")) {
+          if (store.getClickedElementsList.last.getAction.equals("after")) {
             afterAllRetry += 1
             log.info(s"afterAll=${afterAllRetry}")
           } else {
@@ -1056,7 +1050,7 @@ class Crawler extends CommonLog {
               driver.event(code)
             }*/
       case crawl if crawl != null && crawl.contains("crawl\\(.*\\)") => {
-        store.clickElementList.remove(store.clickElementList.size - 1)
+        store.getClickedElementsList.remove(store.getClickedElementsList.size - 1)
         Util.dsl(crawl)
       }
       case str: String => {
@@ -1112,7 +1106,7 @@ class Crawler extends CommonLog {
   }
 
   def saveElementScreenshot(): Unit ={
-    if (conf.screenshot && store.clickElementList.size>1) {
+    if (conf.screenshot && store.getClickedElementsList.size>1) {
       store.saveReqImg(getBasePathName() + ".click.png")
       val originImageName = getBasePathName(2) + ".clicked.png"
       val newImageName = getBasePathName() + ".click.png"
@@ -1135,8 +1129,8 @@ class Crawler extends CommonLog {
 
   def getBasePathName(right: Int = 1): String = {
     //序号_文件名
-    val element = store.clickElementList.takeRight(right).head
-    s"${conf.resultDir}/${store.clickElementList.size - right}_" + element.elementUri().take(100)
+    val element = store.getClickedElementsList.takeRight(right).head
+    s"${conf.resultDir}/${store.getClickedElementsList.size - right}_" + element.elementUri().take(100)
   }
 
   def saveDom(): Unit = {

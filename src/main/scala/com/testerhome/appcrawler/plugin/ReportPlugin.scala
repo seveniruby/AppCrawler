@@ -35,7 +35,7 @@ class ReportPlugin extends Plugin {
   }
 
   def needReport(): Boolean ={
-    val curSize=getCrawler().store.clickElementList.size
+    val curSize=getCrawler().store.getClickedElementsList.size
     if(curSize%5==0){
       if(curSize%20==0){
         true

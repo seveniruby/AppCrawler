@@ -4,17 +4,17 @@ import com.testerhome.appcrawler.AppCrawler;
 
 public class PathElementInfo extends AbstractElementInfo{
 
-    String reqDom;
-    String resDom;
-    String reqHash;
-    String resHash;
-    String reqImg;
-    String resImg;
-    String reqTime;
-    String resTime;
-    AbstractElementStore.Status action;
-    int clickedIndex;
-    AbstractElement uriElement;
+    private String reqDom;
+    private String resDom;
+    private String reqHash;
+    private String resHash;
+    private String reqImg;
+    private String resImg;
+    private String reqTime;
+    private String resTime;
+    private AbstractElementStore.Status action;
+    private int clickedIndex;
+    private AbstractElement uriElement;
 
     public PathElementInfo(){
         this("","","","","","", "","",AbstractElementStore.Status.READY,-1, AppCrawler.factory().generateElement());

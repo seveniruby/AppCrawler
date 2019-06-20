@@ -2,7 +2,7 @@
 logLevel: "TRACE"
 screenshot: true
 showCancel: true
-useNewData: false
+useNewData: true
 reportTitle: AppCrawler雪球内部版
 screenshotTimeout: 20
 currentDriver: "android"

@@ -25,8 +25,8 @@ public abstract class AbstractElementStore {
     public abstract void saveResDom(String dom);
     public abstract void saveReqImg(String imgName);
     public abstract void saveResImg(String imgName);
-    public abstract List<AbstractElement> clickElementList();
-    public abstract Map<String,AbstractElementInfo> storeMap();
+    public abstract Map<String,AbstractElementInfo> getElementStoreMap();
+    public abstract List<AbstractElement> getClickedElementsList();
 
     public abstract void saveReqTime(String reqTime);
     public abstract void saveResTime(String resTime);

@@ -31,7 +31,7 @@ public class DataObject
 			entry.setValue(formatElementInfo(val));
 		}
 
-		store.elementStore_$eq(JavaConverters.mapAsScalaMap(eleStore));
+		store.elementStoreMap_$eq(JavaConverters.mapAsScalaMap(eleStore));
 		return store;	
 	}
 

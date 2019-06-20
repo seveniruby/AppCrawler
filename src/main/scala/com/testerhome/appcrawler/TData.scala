@@ -388,4 +388,30 @@ object TData {
     }
   }
 
+  def md5(what: Int, data: String): String = {
+    var dataFormat = ""
+    what match {
+      case 1 =>
+        dataFormat = data
+      case 2 =>
+        val nodeList = AppCrawler.crawler.driver.getNodeListByKey("//*[not(ancestor-or-self::UIAStatusBar)]")
+        val schemaBlackList = List()
+        dataFormat = nodeList.filter(node => !schemaBlackList.contains(node("name()"))).
+            map(node => node.getOrElse("xpath", "")
+            + node.getOrElse("value", "").toString
+            + node.getOrElse("selected", "").toString
+            + node.getOrElse("text", "").toString
+            ).mkString("\n")
+    }
+    if (dataFormat!=""){
+      java.security.MessageDigest.getInstance("MD5").digest(dataFormat.getBytes("UTF-8")).map(0xFF & _).map {
+        "%02x".format(_)
+      }.foldLeft("") {
+        _ + _
+      }
+    }else{
+      ""
+    }
+  }
+
 }

@@ -56,9 +56,9 @@ object ReportFactory extends CommonLog {
   }
 
   def getSelected(uri:String): util.Collection[AbstractElementInfo] ={
-    log.trace(s"Report.store.elementStore size = ${ReportFactory.store.storeMap.size}")
+    log.trace(s"Report.store.elementStore size = ${ReportFactory.store.getElementStoreMap.size}")
     log.trace(s"uri=${uri}")
-    val sortedElements = store.storeMap.asScala
+    val sortedElements = store.getElementStoreMap.asScala
       .filter(x => x._2.getElement.getUrl.replaceAllLiterally("..", ".") == uri)
       .map(_._2).toList
       .sortBy(_.getClickedIndex)
