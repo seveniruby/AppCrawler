@@ -2,6 +2,7 @@ package com.testerhome.appcrawler.data;
 
 import com.testerhome.appcrawler.AppCrawler;
 
+import java.io.Serializable;
 import java.util.*;
 
 public class SimpleElementStore extends AbstractElementStore {
