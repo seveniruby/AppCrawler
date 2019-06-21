@@ -46,10 +46,10 @@ public class ReportTest {
 
 
         PathElementStore elementsStore=new PathElementStore();
-        elementsStore.storeMap().put(element1.toString(),info1);
-        elementsStore.storeMap().put(element2.toString(),info2);
-        elementsStore.storeMap().put(element3.toString(),info3);
-        elementsStore.storeMap().put(element4.toString(),info4);
+        elementsStore.getElementStoreMap().put(element1.toString(),info1);
+        elementsStore.getElementStoreMap().put(element2.toString(),info2);
+        elementsStore.getElementStoreMap().put(element3.toString(),info3);
+        elementsStore.getElementStoreMap().put(element4.toString(),info4);
 
         ReportFactory.showCancel_$eq(true);
         ReportFactory.genReport("scalatest");

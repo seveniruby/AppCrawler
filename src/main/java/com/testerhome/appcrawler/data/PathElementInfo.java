@@ -4,26 +4,30 @@ import com.testerhome.appcrawler.AppCrawler;
 
 public class PathElementInfo extends AbstractElementInfo{
 
-    String reqDom;
-    String resDom;
-    String reqHash;
-    String resHash;
-    String reqImg;
-    String resImg;
-    AbstractElementStore.Status action;
-    int clickedIndex;
-    AbstractElement uriElement;
+    private String reqDom;
+    private String resDom;
+    private String reqHash;
+    private String resHash;
+    private String reqImg;
+    private String resImg;
+    private String reqTime;
+    private String resTime;
+    private AbstractElementStore.Status action;
+    private int clickedIndex;
+    private AbstractElement uriElement;
 
     public PathElementInfo(){
-        this("","","","","","", AbstractElementStore.Status.READY,-1, AppCrawler.factory().generateElement());
+        this("","","","","","", "","",AbstractElementStore.Status.READY,-1, AppCrawler.factory().generateElement());
     }
-    public PathElementInfo(String reqDom, String resDom, String reqHash, String resHash, String reqImg, String resImg, AbstractElementStore.Status action, int clickedIndex, AbstractElement uriElement) {
+    public PathElementInfo(String reqDom, String resDom, String reqHash, String resHash, String reqImg, String resImg,String reqTime, String resTime, AbstractElementStore.Status action, int clickedIndex, AbstractElement uriElement) {
         this.reqDom = reqDom;
         this.resDom = resDom;
         this.reqHash = reqHash;
         this.resHash = resHash;
         this.reqImg = reqImg;
         this.resImg = resImg;
+        this.reqTime = reqTime;
+        this.resTime = resTime;
         this.action = action;
         this.clickedIndex = clickedIndex;
         this.uriElement = uriElement;
@@ -99,5 +103,21 @@ public class PathElementInfo extends AbstractElementInfo{
 
     public void setClickedIndex(int clickedIndex) {
         this.clickedIndex = clickedIndex;
+    }
+
+    public String getReqTime() {
+        return reqTime;
+    }
+
+    public void setReqTime(String reqTime) {
+        this.reqTime = reqTime;
+    }
+
+    public String getResTime() {
+        return resTime;
+    }
+
+    public void setResTime(String resTime) {
+        this.resTime = resTime;
     }
 }

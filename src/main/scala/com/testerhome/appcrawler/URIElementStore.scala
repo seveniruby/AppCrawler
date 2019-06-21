@@ -16,10 +16,10 @@ import scala.collection.JavaConverters
 class URIElementStore extends AbstractElementStore{
   //todo: 用枚举替代  0表示未遍历 1表示已遍历 -1表示跳过
 
-  var elementStore = scala.collection.mutable.Map[String, ElementInfo]()
+  var elementStoreMap = scala.collection.mutable.Map[String, ElementInfo]()
 
-  def storeMap : java.util.Map[String,AbstractElementInfo] = {
-    JavaConverters.mapAsJavaMap(elementStore)
+  def getElementStoreMap : java.util.Map[String,AbstractElementInfo] = {
+    JavaConverters.mapAsJavaMap(elementStoreMap)
   }
 
   /** 点击顺序, 留作画图用 */
@@ -29,36 +29,36 @@ class URIElementStore extends AbstractElementStore{
   def setElementSkip(element: AbstractElement): Unit = {
     //todo: 待改进
     //clickedElementsList.remove(clickedElementsList.size - 1)
-    if(elementStore.contains(element.toString)==false){
-      elementStore(element.toString)=ElementInfo()
-      elementStore(element.toString).element=element
+    if(elementStoreMap.contains(element.toString)==false){
+      elementStoreMap(element.toString)=ElementInfo()
+      elementStoreMap(element.toString).element=element
     }
-    elementStore(element.toString).action=Status.SKIPPED
+    elementStoreMap(element.toString).action=Status.SKIPPED
   }
 
   def setElementClicked(element: AbstractElement): Unit = {
-    if(elementStore.contains(element.toString)==false){
-      elementStore(element.toString)=ElementInfo()
-      elementStore(element.toString).element=element
+    if(elementStoreMap.contains(element.toString)==false){
+      elementStoreMap(element.toString)=ElementInfo()
+      elementStoreMap(element.toString).element=element
     }
     clickedElementsList.append(element)
-    elementStore(element.toString).action=Status.CLICKED
-    elementStore(element.toString).clickedIndex=clickedElementsList.indexOf(element)
+    elementStoreMap(element.toString).action=Status.CLICKED
+    elementStoreMap(element.toString).clickedIndex=clickedElementsList.indexOf(element)
   }
   def setElementClear(element: AbstractElement=clickedElementsList.last): Unit = {
-    if(elementStore.contains(element.toString)){
-      elementStore.remove(element.toString)
+    if(elementStoreMap.contains(element.toString)){
+      elementStoreMap.remove(element.toString)
     }
   }
 
 
   def saveElement(element: AbstractElement): Unit = {
-    if(elementStore.contains(element.toString)==false){
-      elementStore(element.toString)=ElementInfo()
-      elementStore(element.toString).element=element
+    if(elementStoreMap.contains(element.toString)==false){
+      elementStoreMap(element.toString)=ElementInfo()
+      elementStoreMap(element.toString).element=element
     }
-    if (elementStore.contains(element.toString) == false) {
-      elementStore(element.toString).action=Status.CLICKED
+    if (elementStoreMap.contains(element.toString) == false) {
+      elementStoreMap(element.toString).action=Status.CLICKED
       AppCrawler.log.info(s"first found ${element}")
     }
   }
@@ -66,17 +66,17 @@ class URIElementStore extends AbstractElementStore{
 
   def saveReqHash(hash: String = ""): Unit = {
     val head = clickedElementsList.last.toString
-    if(elementStore(head).reqHash.isEmpty){
+    if(elementStoreMap(head).reqHash.isEmpty){
       AppCrawler.log.info(s"save reqHash to ${clickedElementsList.size-1}")
-      elementStore(head).reqHash=hash
+      elementStoreMap(head).reqHash=hash
     }
   }
 
   def saveResHash(hash: String = ""): Unit = {
     val head = clickedElementsList.last.toString
-    if(elementStore(head).resHash.isEmpty){
+    if(elementStoreMap(head).resHash.isEmpty){
       AppCrawler.log.info(s"save resHash to ${clickedElementsList.size-1}")
-      elementStore(head).resHash=hash
+      elementStoreMap(head).resHash=hash
     }
   }
 
@@ -84,43 +84,43 @@ class URIElementStore extends AbstractElementStore{
   def saveReqDom(dom: String = ""): Unit = {
     val head = clickedElementsList.last.toString
     AppCrawler.log.info(s"save reqDom to ${clickedElementsList.size-1}")
-    elementStore(head).reqDom=dom
+    elementStoreMap(head).reqDom=dom
   }
 
   //todo: 去掉req和res的单独存储，改用链表查询
   def saveResDom(dom: String = ""): Unit = {
     val head = clickedElementsList.last.toString
     AppCrawler.log.info(s"save resDom to ${clickedElementsList.size-1}")
-    elementStore(head).resDom=dom
+    elementStoreMap(head).resDom=dom
   }
 
   def saveReqImg(imgName:String): Unit = {
     val head = clickedElementsList.last.toString
-    if (elementStore(head).reqImg.isEmpty) {
+    if (elementStoreMap(head).reqImg.isEmpty) {
       AppCrawler.log.info(s"save reqImg ${imgName} to ${clickedElementsList.size - 1}")
-      elementStore(head.toString).reqImg = imgName
+      elementStoreMap(head.toString).reqImg = imgName
     }
   }
 
 
   def saveResImg(imgName:String): Unit = {
     val head = clickedElementsList.last.toString
-    if (elementStore(head).resImg.isEmpty) {
+    if (elementStoreMap(head).resImg.isEmpty) {
       AppCrawler.log.info(s"save resImg ${imgName} to ${clickedElementsList.size - 1}")
-      elementStore(head).resImg = imgName.split('.').dropRight(2).mkString(".")+".clicked.png"
+      elementStoreMap(head).resImg = imgName.split('.').dropRight(2).mkString(".")+".clicked.png"
     }
   }
 
 
   def isDiff(): Boolean = {
     val currentElement = clickedElementsList.last
-    elementStore(currentElement.toString).reqHash!=elementStore(currentElement.toString).resHash
+    elementStoreMap(currentElement.toString).reqHash!=elementStoreMap(currentElement.toString).resHash
   }
 
 
   def isClicked(element: AbstractElement): Boolean = {
-    if (elementStore.contains(element.toString)) {
-      elementStore(element.toString).action == Status.CLICKED
+    if (elementStoreMap.contains(element.toString)) {
+      elementStoreMap(element.toString).action == Status.CLICKED
     } else {
       AppCrawler.log.debug(s"element=${element} first show, need click")
       false
@@ -128,17 +128,21 @@ class URIElementStore extends AbstractElementStore{
   }
 
   def isSkipped(ele: AbstractElement): Boolean = {
-    if (elementStore.contains(ele.toString)) {
-      elementStore(ele.toString).action == Status.SKIPPED
+    if (elementStoreMap.contains(ele.toString)) {
+      elementStoreMap(ele.toString).action == Status.SKIPPED
     } else {
       AppCrawler.log.debug(s"element=${ele} first show, need click")
       false
     }
   }
 
-  override def clickElementList: util.List[AbstractElement] = {
+  override def getClickedElementsList: util.List[AbstractElement] = {
     JavaConverters.bufferAsJavaList(clickedElementsList)
   }
+
+  override def saveReqTime(reqTime: String): Unit = {}
+
+  override def saveResTime(resTime: String): Unit = {}
 }
 
 object ElementStatus extends Enumeration {

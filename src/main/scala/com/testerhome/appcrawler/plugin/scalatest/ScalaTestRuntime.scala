@@ -17,7 +17,7 @@ class ScalaTestRuntime extends Report {
     ReportFactory.initReportPath(resultDir)
     //为了保持独立使用
 
-    val suites = ReportFactory.store.storeMap.map(x => x._2.getElement.getUrl.replaceAllLiterally("..", ".")).toList.distinct
+    val suites = ReportFactory.store.getElementStoreMap.map(x => x._2.getElement.getUrl.replaceAllLiterally("..", ".")).toList.distinct
     var index=0
     suites.foreach(suite => {
       log.info(s"gen testcase class ${suite}")

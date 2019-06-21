@@ -30,7 +30,7 @@ class TemplateSource {
   def read(path:String): Unit = {
 
     //val path = "/Users/seveniruby/projects/AppCrawlerSuite/AppCrawler/android_20170109145102/elements.yml"
-    val store = (TData.fromYaml[AbstractElementStore](Source.fromFile(path).mkString)).storeMap
+    val store = (TData.fromYaml[AbstractElementStore](Source.fromFile(path).mkString)).getElementStoreMap
 
     store.foreach(s => {
       val reqDom = s._2.getReqDom

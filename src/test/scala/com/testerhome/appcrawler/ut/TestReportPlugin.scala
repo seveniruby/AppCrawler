@@ -34,7 +34,7 @@ class TestReportPlugin extends FunSuite with CommonLog{
       element_2.toString->info_2
     )
     val store=new URIElementStore
-    store.elementStore ++= elementsStore
+    store.elementStoreMap ++= elementsStore
     // 由于更换了store对象，暂时关闭该测试
 //    report.saveTestCase(store, "/tmp/")
 

@@ -23,7 +23,7 @@ class TestElementStore extends FunSuite with Matchers with CommonLog{
     info_2.element=element_2
     info_2.action=Status.CLICKED
 
-    store.elementStore ++= scala.collection.mutable.Map(
+    store.elementStoreMap ++= scala.collection.mutable.Map(
       element_1.toString->info_1,
       element_2.toString->info_2
     )

@@ -52,8 +52,8 @@ public class CrawlerDiff {
 		DataObject dataObject = new DataObject();
 		masterStore = dataObject.fromYaml(report.getMaster());
 		candidateStore = dataObject.fromYaml(report.getCandidate());
-		List<ElementInfo> masterList = JavaConverters.seqAsJavaList(masterStore.elementStore().values().toList());
-		List<ElementInfo> candidateList= JavaConverters.seqAsJavaList(candidateStore.elementStore().values().toList());
+		List<ElementInfo> masterList = JavaConverters.seqAsJavaList(masterStore.elementStoreMap().values().toList());
+		List<ElementInfo> candidateList= JavaConverters.seqAsJavaList(candidateStore.elementStoreMap().values().toList());
 
 		//遍历脚本中涉及界面的URL
 		List<String> URLs = new ArrayList();
@@ -62,8 +62,8 @@ public class CrawlerDiff {
 		URLs = removeDuplicate(URLs);
 		
 		//获取两组界面Suite信息
-		Map<String,List<String>> masterSuites = getSuites(JavaConverters.mapAsJavaMap(masterStore.elementStore()),URLs);
-		Map<String,List<String>> candidateSuites = getSuites(JavaConverters.mapAsJavaMap(candidateStore.elementStore()),URLs);
+		Map<String,List<String>> masterSuites = getSuites(JavaConverters.mapAsJavaMap(masterStore.elementStoreMap()),URLs);
+		Map<String,List<String>> candidateSuites = getSuites(JavaConverters.mapAsJavaMap(candidateStore.elementStoreMap()),URLs);
 
 		//对每一个界面展开对比
 		Iterator<String> urlHead = URLs.iterator();
@@ -85,8 +85,8 @@ public class CrawlerDiff {
 				String key = keyHead.next();
 				List<Map<String,String>> checkOut= new ArrayList<Map<String,String>>();
 
-				ElementInfo masterInfo = JavaConverters.mapAsJavaMap(masterStore.elementStore()).get(key);
-				ElementInfo candidateInfo = JavaConverters.mapAsJavaMap(candidateStore.elementStore()).get(key);
+				ElementInfo masterInfo = JavaConverters.mapAsJavaMap(masterStore.elementStoreMap()).get(key);
+				ElementInfo candidateInfo = JavaConverters.mapAsJavaMap(candidateStore.elementStoreMap()).get(key);
 
 				String mDom = masterInfo==null ? "" : masterInfo.resDom();
 				String cDom = candidateInfo==null ? "" : candidateInfo.resDom();
