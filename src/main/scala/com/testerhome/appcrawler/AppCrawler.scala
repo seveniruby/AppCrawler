@@ -15,7 +15,7 @@ object AppCrawler extends CommonLog {
   val banner=
     """
       |----------------
-      |AppCrawler 2.6.0 [霍格沃兹测试学院特别纪念版]
+      |AppCrawler 2.6.0 [TesterHome TTF旗下开源项目]
       |Appium v1.10.0-beta.4 Pass Test
       |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
       |项目地址: https://github.com/seveniruby/AppCrawler
@@ -257,7 +257,7 @@ object AppCrawler extends CommonLog {
         //todo: 用switch替代
         if (config.report != "" && config.candidate.isEmpty && config.template=="") {
 
-          val report=ReportFactory.genReport("scalatest")
+          val report=ReportFactory.getReportEngine("scalatest")
 
           ReportFactory.showCancel = crawlerConf.showCancel
           if (crawlerConf.reportTitle.nonEmpty) {

@@ -30,6 +30,11 @@ class TagLimitPlugin extends Plugin {
     if (getCrawler().conf.backButton.map(_.xpath).contains(element.getXpath)) {
       return
     }
+
+    //todo: //*[@resource='xxxx'][1]  genXPath=//sssss[@dddd=xxxx and ]
+//    if (getCrawler().conf.backButton.map(_.xpath).contains(element.getXpath)) {
+//      return
+//    }
     currentKey = getAncestor(element)
     if (!tagLimit.contains(currentKey)) {
       //应用定制化的规则

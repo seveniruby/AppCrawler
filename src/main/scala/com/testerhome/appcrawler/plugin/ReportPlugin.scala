@@ -73,7 +73,7 @@ class ReportPlugin extends Plugin {
     }else {
       log.info(s"reportPath=${ReportFactory.reportPath}")
       ReportFactory.initStore(getCrawler().store)
-      ReportFactory.genReport("scalatest")
+      ReportFactory.getReportEngine("scalatest")
       ReportFactory.getInstance().genTestCase(ReportFactory.reportPath)
       ReportFactory.getInstance().runTestCase()
     }

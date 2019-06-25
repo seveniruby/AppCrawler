@@ -39,7 +39,7 @@ object ReportFactory extends CommonLog {
       tmpDir.mkdir()
     }
   }
-  def genReport(`type`: String="scalatest"): Report ={
+  def getReportEngine(`type`: String="scalatest"): Report ={
     report=`type` match {
       case "scalatest" => new ScalaTestRuntime();
       case "junit5" => new JUnit5Runtime();
@@ -50,7 +50,7 @@ object ReportFactory extends CommonLog {
   def getInstance(): Report ={
     if (report == null) {
       log.error("report not init")
-      genReport()
+      getReportEngine()
     }
     return report
   }

@@ -52,7 +52,7 @@ public class ReportTest {
         elementsStore.getElementStoreMap().put(element4.toString(),info4);
 
         ReportFactory.showCancel_$eq(true);
-        ReportFactory.genReport("scalatest");
+        ReportFactory.getReportEngine("scalatest");
         ReportFactory.initStore(elementsStore);
         ReportFactory.getInstance().genTestCase("/tmp/");
         ReportFactory.getInstance().runTestCase("");

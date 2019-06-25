@@ -7,7 +7,7 @@ import com.testerhome.appcrawler.plugin.junit5.AllureTemplate;
 
 public class AllureTemplateTestcase extends AllureTemplate {
     public AllureTemplateTestcase(){
-        Report report=ReportFactory.genReport("junit5");
+        Report report=ReportFactory.getReportEngine("junit5");
         AbstractElementStore store=report.loadResult("E://elements.yml");
         ReportFactory.initStore(store);
 
