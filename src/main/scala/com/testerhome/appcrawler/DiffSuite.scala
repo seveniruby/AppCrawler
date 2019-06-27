@@ -34,6 +34,7 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
           log.debug(elementInfo.getResDom)
           DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.getResDom))
             .flatten.map(m=>{
+            log.info(AppCrawler.factory)
             val ele=AppCrawler.factory.generateElement(m, key)
             ele.getXpath->ele
           }).toMap

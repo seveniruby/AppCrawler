@@ -49,8 +49,9 @@ object ReportFactory extends CommonLog {
 
   def getInstance(): Report ={
     if (report == null) {
-      log.error("report not init")
-      getReportEngine()
+
+      log.info("report not init")
+      report=getReportEngine()
     }
     return report
   }

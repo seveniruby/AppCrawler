@@ -254,6 +254,7 @@ object AppCrawler extends CommonLog {
         log.debug("yaml config")
         log.debug(TData.toYaml(crawlerConf))
 
+        factory = AbstractElementFactory.factorySwitch(crawlerConf.useNewData)
         //todo: 用switch替代
         //重新生成功能
         if (config.report != "" && config.candidate.isEmpty && config.template=="") {
