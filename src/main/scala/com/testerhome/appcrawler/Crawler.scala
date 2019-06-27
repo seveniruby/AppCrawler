@@ -46,7 +46,7 @@ class Crawler extends CommonLog {
   private var exitCrawl = false
   private var backRetry = 0
   //最大重试次数
-  var backMaxRetry = 2
+  var backMaxRetry = 5
   private var afterAllRetry = 0
   private var notFoundRetry = 0
   private var notFoundMax = 2
@@ -128,17 +128,18 @@ class Crawler extends CommonLog {
       XPathUtil.setXPathExpr(conf.xpathAttributes)
     }
 
-
-    log.info("set xpath")
     loadPlugins()
+
     if (existDriver == null) {
       log.info("prepare setup Appium")
       setupAppium()
       //driver.getAppStringMap
     } else {
+      //集成到测试用例中，比如有人写appium测试用例，在自动化后可以直接调用api进行遍历
       log.info("use existed driver")
       this.driver = existDriver
     }
+
     log.info(s"platformName=${platformName} driver=${driver}")
     log.info(AppCrawler.banner)
     log.info("waiting for app load")
@@ -162,16 +163,17 @@ class Crawler extends CommonLog {
     }
 
     if (conf.selectedList.nonEmpty) {
-      crawl(conf.maxDepth)
+      crawlWithRetry(conf.maxDepth)
     } else {
       log.info("no selectedList")
     }
 
   }
 
-  def crawl(depth: Int): Unit = {
+  def crawlWithRetry(depth: Int): Unit = {
     //清空堆栈 开始重新计数
     conf.maxDepth = depth
+    //depth=urlStack.size
     urlStack.clear()
     refreshPage()
     handleCtrlC()
@@ -180,6 +182,7 @@ class Crawler extends CommonLog {
     var errorCount = 1
     while (errorCount > 0) {
       Try(crawl()) match {
+          //todo: exitCrawl变量设置
         case Success(v) => {
           log.info("crawl finish")
           errorCount = 0
@@ -575,6 +578,7 @@ class Crawler extends CommonLog {
     var selectedElements = list
     conf.sortByAttribute.foreach(attribute => {
       attribute match {
+          //一个有趣的算法，将来其他遍历工具也会抄这段逻辑
         case "depth" => {
           selectedElements = selectedElements.sortWith(
             _.getDepth.toInt >
@@ -582,7 +586,7 @@ class Crawler extends CommonLog {
           )
         }
         case "selected" => {
-          //todo:同级延后
+          //todo:同级延后，在未实现之前，先通过lastList去显式声明那些菜单应该最后遍历
           //selected=false的优先遍历
           selectedElements = selectedElements.sortWith(
             _.getSelected.contains("false") >
@@ -737,18 +741,18 @@ class Crawler extends CommonLog {
     store.saveResDom(driver.currentPageSource)
 
     element.getAction match {
-//      case "_Back" | "_BackApp" => {
-//        backRetry += 1
-//      }
+      case "_Back" => {
+        backRetry += 1
+      }
       case "_BackApp" => {
         backRetry += 1
       }
-      case nonAfter if nonAfter != "_AfterAll" => {
-        // backRetry判断退出App的次数
-//        backRetry = 0
+      case  "_AfterAll" => {
+        //afterAllMax可以控制最大尝试次数
       }
       case _ => {
-        log.info("keep backRetry")
+        // backRetry判断退出App的次数
+        backRetry = 0
       }
     }
 
@@ -886,6 +890,7 @@ class Crawler extends CommonLog {
     pluginClasses.foreach(c => c.fixElementAction(element))
   }
 
+  //todo: 可以将来用队列重构下看看效果
   /**
     * 优化后的递归方法. 尾递归.
     * 刷新->找元素->点击第一个未被点击的元素->刷新
@@ -1072,6 +1077,8 @@ class Crawler extends CommonLog {
                   log.info("default action")
                   //driver.tap()
                   driver.click()
+                  //todo: 直接使用xml的位置
+
                 }
                 case "click" => {
                   log.info("click element")
@@ -1231,6 +1238,8 @@ class Crawler extends CommonLog {
 
   def stop(): Unit = {
     stopAll = true
+    //exitCrawl=true
+
     log.info(s"ctrl c interval = ${signals.intervalMS()}")
     Try(pluginClasses.foreach(_.stop())) match {
       case Success(v) => {}

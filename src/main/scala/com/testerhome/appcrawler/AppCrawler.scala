@@ -255,6 +255,7 @@ object AppCrawler extends CommonLog {
         log.debug(TData.toYaml(crawlerConf))
 
         //todo: 用switch替代
+        //重新生成功能
         if (config.report != "" && config.candidate.isEmpty && config.template=="") {
 
           val report=ReportFactory.getReportEngine("scalatest")
@@ -270,17 +271,23 @@ object AppCrawler extends CommonLog {
           report.runTestCase()
           return
         } else if (config.candidate.nonEmpty) {
-//          Report.candidate = config.candidate
-//          Report.master = config.master
-//          Report.reportDir = config.report
-//          Report.reportPath = config.report
-//          Report.testcaseDir = config.report+"/tmp/"
-//          DiffSuite.saveTestCase()
-//          Report.runTestCase()
-          CrawlerDiff.startDiff(config.master,config.candidate,config.report)
+          //todo: diff功能
+          ReportFactory.candidate = config.candidate
+          ReportFactory.master = config.master
+          ReportFactory.reportDir = config.report
+          ReportFactory.reportPath = config.report
+          ReportFactory.testcaseDir = config.report+"/tmp/"
+          DiffSuite.saveTestCase()
+
+          val report=ReportFactory.getReportEngine("scalatest")
+          report.runTestCase()
+
+          //todo: congyue代码重构
+          //CrawlerDiff.startDiff(config.master,config.candidate,config.report)
           return
         }
 
+        //todo: 自动生成基于PO的自动化测试用例
         if(config.template!=""){
           val template=new TemplateSource
           if(config.appium.nonEmpty){

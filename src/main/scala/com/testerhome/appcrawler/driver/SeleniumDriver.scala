@@ -37,7 +37,6 @@ class SeleniumDriver extends ReactWebDriver{
 
     configMap.foreach(c=>config(c._1, c._2))
 
-
     driver=new RemoteWebDriver(new URL(url), capabilities)
     driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS)
     getDeviceInfo()

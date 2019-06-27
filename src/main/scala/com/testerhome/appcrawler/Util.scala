@@ -13,6 +13,7 @@ import scala.util.{Failure, Success, Try}
   * Created by seveniruby on 16/8/13.
   */
 class Util(val outputDir:String="") extends CommonLog{
+  //todo: scala的执行引擎，替换为bean shell
   private val settingsCompile=new Settings()
 
   if(outputDir.nonEmpty){

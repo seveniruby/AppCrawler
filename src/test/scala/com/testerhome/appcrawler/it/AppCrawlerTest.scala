@@ -111,7 +111,7 @@ class AppCrawlerTest extends FunSuite with BeforeAndAfterEach {
     AppCrawler.main(Array(
       "--capability",
       "appPackage=com.xueqiu.fund," +
-        "appActivity=.SplashActvity," +
+        "appActivity=.commonlib.MainActivity," +
         "noReset=false," +
         "autoGrantPermissions=true," +
         "automationName=uiautomator2",

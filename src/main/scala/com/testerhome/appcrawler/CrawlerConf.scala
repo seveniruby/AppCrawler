@@ -134,7 +134,7 @@ class CrawlerConf {
   //相似控件最多点击几次
   //todo: 改名为elementsInListMax
   var tagLimitMax = 2
-  //个别控件可例外
+  //个别控件可例外，选择一类控件，这类控件可自定义最多点击次数
   var tagLimit = ListBuffer[Step](
     //特殊的按钮，可以一直被遍历
     Step(xpath = "确定", times = 1000),

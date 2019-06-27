@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-@JsonDeserialize(as = URIElementStore.class)
+@JsonDeserialize(as = AbstractElementStore.class)
 public abstract class AbstractElementStore implements Serializable {
 
     public enum Status{
