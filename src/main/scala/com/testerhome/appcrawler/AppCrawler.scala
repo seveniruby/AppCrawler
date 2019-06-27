@@ -57,7 +57,7 @@ object AppCrawler extends CommonLog {
   def getGlobalEncoding(): Unit = {
     log.info("default Charset=" + Charset.defaultCharset())
     log.info("default file.encoding=" + System.getProperty("file.encoding"))
-    //log.info("project directory=" + (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
+    log.info("project directory=" + (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
   }
 
 

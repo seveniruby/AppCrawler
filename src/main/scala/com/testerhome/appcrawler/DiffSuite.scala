@@ -86,15 +86,16 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
 
           if (masterElement != candidateElement && !markOnce) {
             markOnce=true
+            //todo: 使用绝对路径展示图片
             markup(
               s"""
                  |candidate image
                  |-------
-                 |<img src='${File(DiffSuite.candidateStore.getOrElse(key, AppCrawler.factory.generateElementInfo()).getResImg).name}' width='80%' />
+                 |<img src='${new java.io.File(".").getCanonicalPath+"/"+ReportFactory.candidate+"/"+File(DiffSuite.candidateStore.getOrElse(key, AppCrawler.factory.generateElementInfo()).getResImg).name}' width='80%' />
                  |
                  |master image
                  |--------
-                 |<img src='${File(DiffSuite.masterStore.getOrElse(key, AppCrawler.factory.generateElementInfo()).getResImg).name}' width='80%' />
+                 |<img src='${new java.io.File(".").getCanonicalPath+"/"+ReportFactory.master+"/"+File(DiffSuite.masterStore.getOrElse(key, AppCrawler.factory.generateElementInfo()).getResImg).name}' width='80%' />
                  |
                 """.stripMargin)
           }
