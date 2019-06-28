@@ -22,40 +22,40 @@ import scala.tools.nsc.interpreter.IMain
 /**
   * Created by seveniruby on 16/8/10.
   */
-class TestUtil extends FunSuite with CommonLog{
+class TestDynamicEval extends FunSuite with CommonLog{
 
   val fileName="/Users/seveniruby/projects/LBSRefresh/iOS_20160813203343/AppCrawler_8.scala"
   test("MiniAppium dsl"){
-    Util.dsl("hello(\"seveniruby\", 30000)")
-    Util.dsl("hello(\"ruby\", 30000)")
-    Util.dsl(" hello(\"seveniruby\", 30000)")
-    Util.dsl("hello(\"seveniruby\", 30000 )  ")
-    Util.dsl("sleep(3)")
-    Util.dsl("hello(\"xxxxx\")")
-    Util.dsl("hello(\"xxxxx\"); hello(\"double\")")
-    Util.dsl("println(com.testerhome.appcrawler.AppCrawler.crawler.driver)")
+    DynamicEval.dsl("hello(\"seveniruby\", 30000)")
+    DynamicEval.dsl("hello(\"ruby\", 30000)")
+    DynamicEval.dsl(" hello(\"seveniruby\", 30000)")
+    DynamicEval.dsl("hello(\"seveniruby\", 30000 )  ")
+    DynamicEval.dsl("sleep(3)")
+    DynamicEval.dsl("hello(\"xxxxx\")")
+    DynamicEval.dsl("hello(\"xxxxx\"); hello(\"double\")")
+    DynamicEval.dsl("println(com.testerhome.appcrawler.AppCrawler.crawler.driver)")
 
   }
 
   test("MiniAppium dsl re eval"){
-    Util.dsl("val a=new java.util.Date")
-    Util.dsl("val b=a")
-    Util.dsl("val a=new java.util.Date")
-    Util.dsl("println(a)")
-    Util.dsl("println(b)")
+    DynamicEval.dsl("val a=new java.util.Date")
+    DynamicEval.dsl("val b=a")
+    DynamicEval.dsl("val a=new java.util.Date")
+    DynamicEval.dsl("println(a)")
+    DynamicEval.dsl("println(b)")
   }
 
   test("shell"){
-    Util.dsl("\"12345\"")
-    //todo: not work
-    Util.dsl("\"sh -c 'adb devices; echo xxx;' \" !")
-    Util.dsl(" \"sh /tmp/1.sh\"!")
+    DynamicEval.dsl("\"12345\"")
+    DynamicEval.dsl(" \"sh /tmp/1.sh\"!")
+    DynamicEval.shell("adb devices; echo xxx;")
 
   }
 
+
   test("compile by scala"){
-    Util.init(new File(fileName).getParent)
-    Util.compile(List(fileName))
+    DynamicEval.init(new File(fileName).getParent)
+    DynamicEval.compile(List(fileName))
 
   }
 
@@ -77,50 +77,9 @@ class TestUtil extends FunSuite with CommonLog{
   }
 
 
-  test("imain"){
-
-    Util.init()
-    Util.dsl(
-      """
-        |import com.testerhome.appcrawler.MiniAppium
-        |println("xxx")
-        |println("ddd")
-        |MiniAppium.hello("222")
-      """.stripMargin)
-
-
-  }
-
-
-  test("imain q"){
-
-    Util.init()
-    Util.dsl("import com.testerhome.appcrawler.MiniAppium")
-    Util.dsl(
-      """
-        |println("xxx")
-        |println("ddd")
-        |MiniAppium.hello("222")
-      """.stripMargin)
-
-
-  }
-
-
-  test("imain with MiniAppium"){
-
-    Util.init()
-    Util.dsl("import com.testerhome.appcrawler.MiniAppium._")
-    Util.dsl(
-      """
-        |hello("222")
-        |println(driver)
-      """.stripMargin)
-  }
-
   test("compile plugin"){
-    Util.init()
-    Util.compile(List("src/universal/plugins/DynamicPlugin.scala"))
+    DynamicEval.init()
+    DynamicEval.compile(List("src/universal/plugins/DynamicPlugin.scala"))
     val p=Class.forName("com.testerhome.appcrawler.plugin.DynamicPlugin").newInstance()
     log.info(p)
 
@@ -129,8 +88,8 @@ class TestUtil extends FunSuite with CommonLog{
 
   test("test classloader"){
     val classPath="target/tmp/"
-    Util.init(classPath)
-    Util.compile(List("/Users/seveniruby/projects/LBSRefresh/src/universal/plugins/"))
+    DynamicEval.init(classPath)
+    DynamicEval.compile(List("/Users/seveniruby/projects/LBSRefresh/src/universal/plugins/"))
     val urls=Seq(new java.io.File(classPath).toURI.toURL)
     val loader=new URLClassLoader(urls, ClassLoader.getSystemClassLoader)
     val x=loader.loadClass("AppCrawler_5").newInstance().asInstanceOf[FunSuite]
@@ -146,14 +105,14 @@ class TestUtil extends FunSuite with CommonLog{
     val a=new DemoPlugin()
     log.info(a.asInstanceOf[Plugin])
     //getClass.getClassLoader.asInstanceOf[URLClassLoader].loadClass("DynamicPlugin")
-    val plugins=Util.loadPlugins("/Users/seveniruby/projects/LBSRefresh/src/universal/plugins/")
+    val plugins=DynamicEval.loadPlugins("/Users/seveniruby/projects/LBSRefresh/src/universal/plugins/")
     plugins.foreach(log.info)
 
   }
 
   test("crawl keyword"){
-    Util.dsl("def crawl(depth:Int)=com.testerhome.appcrawler.AppCrawler.crawler.crawl(depth)")
-    Util.dsl("crawl(1)")
+    DynamicEval.dsl("def crawl(depth:Int)=com.testerhome.appcrawler.AppCrawler.crawler.crawl(depth)")
+    DynamicEval.dsl("crawl(1)")
   }
 
 

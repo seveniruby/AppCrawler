@@ -19,7 +19,7 @@ import scala.collection.JavaConverters._
   * Created by seveniruby on 16/8/9.
   */
 class AppiumClient extends SeleniumDriver {
-  Util.init()
+  DynamicEval.init()
 
   var androidDriver: AndroidDriver[MobileElement] = _
   var iosDriver: IOSDriver[MobileElement] = _

@@ -20,7 +20,7 @@ import sys.process._
   * Created by seveniruby on 18/10/31.
   */
 class AdbDriver extends ReactWebDriver{
-  Util.init()
+  DynamicEval.init()
   var conf: CrawlerConf = _
   val adb=getAdb()
 

@@ -15,7 +15,7 @@ import scala.sys.process._
   * 用于测试用途
   */
 class MockDriver extends ReactWebDriver{
-  Util.init()
+  DynamicEval.init()
   var conf: CrawlerConf = _
   val adb=getAdb()
 

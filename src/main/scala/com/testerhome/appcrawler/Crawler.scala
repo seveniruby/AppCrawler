@@ -211,7 +211,7 @@ class Crawler extends CommonLog {
   def restart(): Unit = {
     if (conf.beforeRestart != null) {
       log.info("execute shell on restart")
-      conf.beforeRestart.foreach(Util.dsl(_))
+      conf.beforeRestart.foreach(DynamicEval.dsl(_))
     }
     log.info("restart appium")
     conf.capability ++= Map("app" -> "")
@@ -268,7 +268,7 @@ class Crawler extends CommonLog {
     backRetry = 0
 
     log.info(s"afterAllMax=${conf.afterAllMax}")
-    Util.isLoaded = false
+    DynamicEval.isLoaded = false
 
     //todo: 主要做遍历测试和异常测试. 所以暂不使用selendroid
     val url = conf.capability("appium").toString
@@ -705,7 +705,7 @@ class Crawler extends CommonLog {
         val xpath = step.getXPath()
         val action = step.getAction()
         if (driver.getNodeListByKey(xpath).contains(element)) {
-          Util.dsl(action)
+          DynamicEval.dsl(action)
         }
       })
     }
@@ -725,7 +725,7 @@ class Crawler extends CommonLog {
     if (conf.afterElement!=null && conf.afterElement.nonEmpty) {
       log.info("afterElementAction eval")
       conf.afterElement.foreach(step => {
-        Util.dsl(step.getAction())
+        DynamicEval.dsl(step.getAction())
       })
       //重新刷新，afterElement后内容可能发生变化
       refreshPage()
@@ -1037,7 +1037,7 @@ class Crawler extends CommonLog {
               case true => {
                 log.info(s"match ${step}")
                 //todo: 支持元素动作
-                Util.dsl(step.getAction())
+                DynamicEval.dsl(step.getAction())
               }
               case false => {
                 log.info(s"not match ${step.getGiven()}")
@@ -1056,7 +1056,7 @@ class Crawler extends CommonLog {
             }*/
       case crawl if crawl != null && crawl.contains("crawl\\(.*\\)") => {
         store.getClickedElementsList.remove(store.getClickedElementsList.size - 1)
-        Util.dsl(crawl)
+        DynamicEval.dsl(crawl)
       }
       case str: String => {
         //todo: tap和click的行为不一致. 在ipad上有时候click会点错位置, 而tap不会
@@ -1091,8 +1091,11 @@ class Crawler extends CommonLog {
                 case "longTap" => {
                   driver.longTap()
                 }
+                case batchCommand if batchCommand.matches("shell:.*") => {
+                  DynamicEval.shell(batchCommand)
+                }
                 case code if code != null && code.matches(".*\\(.*\\).*") => {
-                  Util.dsl(code)
+                  DynamicEval.dsl(code)
                 }
                 case str => {
                   log.info(s"input ${str}")

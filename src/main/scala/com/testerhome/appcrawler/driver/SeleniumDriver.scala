@@ -23,7 +23,7 @@ import scala.sys.process._
   * Created by seveniruby on 16/8/9.
   */
 class SeleniumDriver extends ReactWebDriver{
-  Util.init()
+  DynamicEval.init()
   var conf: CrawlerConf = _
 
   val capabilities = new DesiredCapabilities()
