@@ -599,6 +599,10 @@ class Crawler extends CommonLog {
             _.getAncestor.contains("List") >
               _.getAncestor.contains("List")
           )
+          selectedElements = selectedElements.sortWith(
+            _.getAncestor.contains("RecyclerView") >
+              _.getAncestor.contains("RecyclerView")
+          )
         }
         //todo: 居中的优先遍历
 
@@ -1092,13 +1096,13 @@ class Crawler extends CommonLog {
                   driver.longTap()
                 }
                 case batchCommand if batchCommand.matches("shell:.*") => {
-                  DynamicEval.shell(batchCommand)
+                  DynamicEval.shell(batchCommand.slice(batchCommand.indexOf(":")+1, batchCommand.size))
                 }
                 case code if code != null && code.matches(".*\\(.*\\).*") => {
                   DynamicEval.dsl(code)
                 }
                 case str => {
-                  log.info(s"input ${str}")
+                  log.debug(s"input ${str}")
                   driver.sendKeys(str)
                 }
               }
@@ -1222,15 +1226,16 @@ class Crawler extends CommonLog {
   def getElementByTriggerActions(): Option[AbstractElement] = {
     //先判断是否在期望的界面里. 提升速度
     //todo: 让when生效
-    conf.triggerActions.filter(step => step.times > 0).foreach(step => {
+    //todo: times bug，默认的times为0，默认规则不生效
+    conf.triggerActions.filter(step => step.times !=0 ).foreach(step => {
       log.debug(s"finding ${step}")
       getURIElementsByStep(step).headOption match {
-        case Some(e) => {
-          step.use()
-          log.trace(s"step times = ${step.times}")
-          e.setAction(step.getAction())
-          return Some(e)
-        }
+      case Some(e) => {
+      step.use()
+      log.trace(s"step times = ${step.times}")
+      e.setAction(step.getAction())
+      return Some(e)
+      }
         case None => {
           log.trace(s"not found trigger ${step.getXPath()}")
         }
