@@ -65,7 +65,7 @@ class ScalaTestRuntime extends Report {
   override def changeTitle(title:String): Unit ={
     val originTitle="ScalaTest Results"
     val indexFile=ReportFactory.reportPath+"/index.html"
-    val newContent=Source.fromFile(indexFile).mkString.replace(originTitle, title)
+    val newContent=Source.fromFile(indexFile)(scala.io.Codec.UTF8).mkString.replace(originTitle, title)
     scala.reflect.io.File(indexFile).writeAll(newContent)
   }
 
