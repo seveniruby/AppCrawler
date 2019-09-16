@@ -68,6 +68,12 @@ class Crawler extends CommonLog {
 
   private var lastBtnIndex = 3;
 
+  private val backAction="_Back"
+  private val afterAllAction="_AfterAll"
+  private val backAppAction="_BackApp"
+  private val skipAction="_skip"
+
+
   /**
     * 根据类名初始化插件. 插件可以使用java编写. 继承自Plugin即可
     */
@@ -745,13 +751,13 @@ class Crawler extends CommonLog {
     store.saveResDom(driver.currentPageSource)
 
     element.getAction match {
-      case "_Back" => {
+      case this.backAction => {
         backRetry += 1
       }
-      case "_BackApp" => {
+      case this.backAppAction => {
         backRetry += 1
       }
-      case  "_AfterAll" => {
+      case  this.afterAllAction => {
         //afterAllMax可以控制最大尝试次数
       }
       case _ => {
@@ -798,7 +804,7 @@ class Crawler extends CommonLog {
       .sortWith(_.getAction.indexOf("Back") < _.getAction.indexOf("Back"))
       //追加到backButton后面，depth小的放前面
       .map(e => {
-        if(conf.backButton.filter(_.getXPath()==e.getXpath).size==0 && e.getAction!="_Back") {
+        if(conf.backButton.filter(_.getXPath()==e.getXpath).size==0 && e.getAction!=backAction) {
         log.info(s"find new back button from history ${e}")
         conf.backButton.append(Step(xpath = e.getXpath, action = e.getAction))
       }
@@ -858,7 +864,7 @@ class Crawler extends CommonLog {
         }
 
         // 通过配置文件设置的Xpath找到返回键，将其真实Xpath添加进List
-        if(conf.backButton.filter(_.getXPath()==backElement.getXpath).size==0 && backElement.getAction!="_Back") {
+        if(conf.backButton.filter(_.getXPath()==backElement.getXpath).size==0 && backElement.getAction!=backAction) {
           log.info(s"find new back button from configuration file ${backElement}")
           conf.backButton.append(Step(xpath = backElement.getXpath, action = backElement.getAction))
         }
@@ -975,7 +981,7 @@ class Crawler extends CommonLog {
     nextElement match {
       case Some(element) => {
         fixElementAction(element)
-        if (element.getAction != "_skip") {
+        if (element.getAction != skipAction) {
           beforeElementAction(element)
           doElementAction(element)
           //todo: 使用队列模型替代
@@ -1017,19 +1023,20 @@ class Crawler extends CommonLog {
         log.info("just log")
         log.info(TData.toJson(element))
       }
-      case "_Back" => {
+      case this.backAction => {
         log.info("back")
         back()
       }
-      case "_BackApp" => {
+      case this.backAppAction => {
         log.info("backApp")
         driver.launchApp()
         //todo: 改进等待
         Thread.sleep(conf.beforeStartWait)
       }
-      case "_AfterAll" => {
+      case this.afterAllAction => {
         if (conf.afterAll != null) {
-          if (store.getClickedElementsList.last.getAction.equals("after")) {
+          //todo: bug
+          if (store.getClickedElementsList.last.getAction.equals(afterAllAction)) {
             afterAllRetry += 1
             log.info(s"afterAll=${afterAllRetry}")
           } else {
