@@ -89,7 +89,7 @@ java -jar appcrawler.jar -c conf/xueqiu.yaml -a xueqiu.app
 
 ## 更多技术交流
 
-移动测试技术交流社区: [https://testerhome.com](https://testerhome.com)
+测试技术交流社区: [https://ceshiren.com](https://ceshiren.com/tag/appcrawler)
 
 QQ技术交流群: 177933995
 
