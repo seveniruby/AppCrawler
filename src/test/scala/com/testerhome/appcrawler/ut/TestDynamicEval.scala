@@ -1,13 +1,13 @@
-package com.testerhome.appcrawler.ut
+package com.ceshiren.appcrawler.ut
+
+import com.ceshiren.appcrawler.CommonLog
 
 import java.io.File
 import java.io.File
 import java.util.jar.JarFile
-
-import com.testerhome.appcrawler.CommonLog
-import com.testerhome.appcrawler.plugin.{DemoPlugin, Plugin}
-import com.testerhome.appcrawler._
-import com.testerhome.appcrawler.driver.AppiumClient
+import com.ceshiren.appcrawler.plugin.{DemoPlugin, Plugin}
+import com.ceshiren.appcrawler._
+import com.ceshiren.appcrawler.driver.AppiumClient
 import org.scalatest.FunSuite
 import org.xml.sax.ErrorHandler
 
@@ -33,7 +33,7 @@ class TestDynamicEval extends FunSuite with CommonLog{
     DynamicEval.dsl("sleep(3)")
     DynamicEval.dsl("hello(\"xxxxx\")")
     DynamicEval.dsl("hello(\"xxxxx\"); hello(\"double\")")
-    DynamicEval.dsl("println(com.testerhome.appcrawler.AppCrawler.crawler.driver)")
+    DynamicEval.dsl("println(com.ceshiren.appcrawler.AppCrawler.crawler.driver)")
 
   }
 
@@ -80,7 +80,7 @@ class TestDynamicEval extends FunSuite with CommonLog{
   test("compile plugin"){
     DynamicEval.init()
     DynamicEval.compile(List("src/universal/plugins/DynamicPlugin.scala"))
-    val p=Class.forName("com.testerhome.appcrawler.plugin.DynamicPlugin").newInstance()
+    val p=Class.forName("com.ceshiren.appcrawler.plugin.DynamicPlugin").newInstance()
     log.info(p)
 
 
@@ -111,7 +111,7 @@ class TestDynamicEval extends FunSuite with CommonLog{
   }
 
   test("crawl keyword"){
-    DynamicEval.dsl("def crawl(depth:Int)=com.testerhome.appcrawler.AppCrawler.crawler.crawl(depth)")
+    DynamicEval.dsl("def crawl(depth:Int)=com.ceshiren.appcrawler.AppCrawler.crawler.crawl(depth)")
     DynamicEval.dsl("crawl(1)")
   }
 

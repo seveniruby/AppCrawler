@@ -1,6 +1,7 @@
-package com.testerhome.appcrawler.ut
+package com.ceshiren.appcrawler.ut
 
-import com.testerhome.appcrawler.{CommonLog, URIElement, _}
+import com.ceshiren.appcrawler.{CommonLog, CrawlerConf, Step, TData, URIElement}
+import com.ceshiren.appcrawler.CommonLog
 import org.scalatest.{FunSuite, Matchers}
 
 import scala.collection.mutable.ListBuffer

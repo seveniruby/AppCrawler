@@ -1,11 +1,11 @@
-package com.testerhome.appcrawler.it
+package com.ceshiren.appcrawler.it
+
+import com.ceshiren.appcrawler.XPathUtil
 
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
-
-import com.testerhome.appcrawler.XPathUtil
-import com.testerhome.appcrawler.driver.AppiumClient
+import com.ceshiren.appcrawler.driver.AppiumClient
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.remote.MobileCapabilityType
 import org.openqa.selenium.chrome.ChromeOptions

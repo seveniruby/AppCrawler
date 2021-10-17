@@ -1,6 +1,6 @@
-package com.testerhome.appcrawler.ut
+package com.ceshiren.appcrawler.ut
 
-import com.testerhome.appcrawler.driver.AppiumClient
+import com.ceshiren.appcrawler.driver.AppiumClient
 import org.scalatest.FunSuite
 
 import scala.sys.process.Process

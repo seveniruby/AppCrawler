@@ -1,6 +1,6 @@
-package com.testerhome.appcrawler;
+package com.ceshiren.appcrawler;
 
-import com.testerhome.appcrawler.plugin.scalatest.SuiteToClass$;
+import com.ceshiren.appcrawler.plugin.scalatest.SuiteToClass$;
 import javassist.*;
 import org.junit.jupiter.api.Test;
 
@@ -19,13 +19,13 @@ class SuiteToClassTest {
 
         SuiteToClass$.MODULE$.genTestCaseClass2(
                 "A",
-                "com.testerhome.appcrawler.plugin.scalatest.TemplateTestCase",
+                "com.ceshiren.appcrawler.plugin.scalatest.TemplateTestCase",
                 map,
                 "/tmp/suitetoclass");
 
         SuiteToClass$.MODULE$.genTestCaseClass2(
                 "",
-                "com.testerhome.appcrawler.plugin.scalatest.TemplateTestCase",
+                "com.ceshiren.appcrawler.plugin.scalatest.TemplateTestCase",
                 map,
                 "/tmp/suitetoclass");
     }
@@ -34,7 +34,7 @@ class SuiteToClassTest {
     @Test
     void genClass() throws CannotCompileException, IOException {
         ClassPool pool=ClassPool.getDefault();
-        CtClass clazz=pool.getOrNull("com.testerhome.appcrawler.plugin.junit5.AllureTemplate");
+        CtClass clazz=pool.getOrNull("com.ceshiren.appcrawler.plugin.junit5.AllureTemplate");
         System.out.println(clazz);
 
         CtClass a=pool.makeClass("AA4Test");

@@ -1,10 +1,9 @@
-package com.testerhome.appcrawler.report;
+package com.ceshiren.appcrawler.report;
 
+import com.ceshiren.appcrawler.report.LoadYaml;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileNotFoundException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class LoadYamlTest {
 

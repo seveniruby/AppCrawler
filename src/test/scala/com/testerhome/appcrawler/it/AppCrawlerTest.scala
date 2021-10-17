@@ -1,6 +1,6 @@
-package com.testerhome.appcrawler.it
+package com.ceshiren.appcrawler.it
 
-import com.testerhome.appcrawler.AppCrawler
+import com.ceshiren.appcrawler.AppCrawler
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
 
 class AppCrawlerTest extends FunSuite with BeforeAndAfterEach {

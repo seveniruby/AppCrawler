@@ -1,6 +1,6 @@
-package com.testerhome.appcrawler.ut
+package com.ceshiren.appcrawler.ut
 
-import com.testerhome.appcrawler.URIElement
+import com.ceshiren.appcrawler.URIElement
 import org.scalatest.FunSuite
 
 /**

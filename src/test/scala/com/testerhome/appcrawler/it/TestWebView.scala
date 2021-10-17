@@ -1,8 +1,8 @@
-package com.testerhome.appcrawler.it
+package com.ceshiren.appcrawler.it
+
+import com.ceshiren.appcrawler.XPathUtil
 
 import java.net.URL
-
-import com.testerhome.appcrawler.XPathUtil
 import io.appium.java_client.TouchAction
 import io.appium.java_client.android.AndroidDriver
 import org.openqa.selenium.{By, WebElement}

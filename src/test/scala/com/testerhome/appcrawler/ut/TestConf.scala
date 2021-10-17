@@ -1,7 +1,6 @@
-package com.testerhome.appcrawler.ut
+package com.ceshiren.appcrawler.ut
 
-import com.testerhome.appcrawler.CommonLog
-import com.testerhome.appcrawler.CrawlerConf
+import com.ceshiren.appcrawler.{CommonLog, CrawlerConf}
 import org.scalatest.{FunSuite, Matchers}
 
 /**
@@ -18,7 +17,7 @@ class TestConf extends FunSuite with CommonLog with Matchers{
 
   /*
     test("load config"){
-      var conf=new com.testerhome.appcrawler.CrawlerConf
+      var conf=new com.ceshiren.appcrawler.CrawlerConf
       conf.baseUrl="xxx"
       println(conf.baseUrl)
       conf=conf.loadByJson4s("conf.json").get

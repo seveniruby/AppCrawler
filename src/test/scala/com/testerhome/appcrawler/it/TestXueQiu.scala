@@ -1,8 +1,8 @@
-package com.testerhome.appcrawler.it
+package com.ceshiren.appcrawler.it
+
+import com.ceshiren.appcrawler.AppCrawler
 
 import java.net.URL
-
-import com.testerhome.appcrawler.AppCrawler
 import io.appium.java_client.android.{AndroidDriver, AndroidElement}
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.scalatest.FunSuite

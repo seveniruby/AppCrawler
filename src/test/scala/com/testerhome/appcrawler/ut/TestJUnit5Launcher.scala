@@ -1,4 +1,4 @@
-package com.testerhome.appcrawler.ut
+package com.ceshiren.appcrawler.ut
 
 import org.junit.platform.engine.discovery.DiscoverySelectors._
 import org.junit.platform.engine.discovery.ClassNameFilter._
@@ -14,7 +14,7 @@ import org.junit.platform.launcher.listeners.SummaryGeneratingListener
 class TestJUnit5Launcher extends FunSuite{
   test("xxxx"){
     val request = LauncherDiscoveryRequestBuilder.request.selectors(
-      selectPackage("com.testerhome.appcrawler.ut"),
+      selectPackage("com.ceshiren.appcrawler.ut"),
       selectClass(classOf[TestJUnit5])).build()
       //.filters(includeClassNamePatterns("Test.*")).build
 

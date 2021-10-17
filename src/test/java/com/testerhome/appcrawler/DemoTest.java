@@ -1,4 +1,4 @@
-package com.testerhome.appcrawler;
+package com.ceshiren.appcrawler;
 
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;

@@ -1,12 +1,12 @@
-package com.testerhome.appcrawler.ut
+package com.ceshiren.appcrawler.ut
 
+import com.ceshiren.appcrawler.AppCrawler
 import org.junit.jupiter.api.{Test, TestFactory}
 import org.junit.jupiter.api.Assertions._
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.DynamicTest
-import java.util
 
-import com.testerhome.appcrawler.AppCrawler
+import java.util
 import io.qameta.allure.Description
 
 import scala.io.Source

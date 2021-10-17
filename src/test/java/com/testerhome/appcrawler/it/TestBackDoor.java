@@ -1,4 +1,4 @@
-package com.testerhome.appcrawler.it;
+package com.ceshiren.appcrawler.it;
 
 import com.google.common.collect.ImmutableMap;
 import io.appium.java_client.AppiumDriver;

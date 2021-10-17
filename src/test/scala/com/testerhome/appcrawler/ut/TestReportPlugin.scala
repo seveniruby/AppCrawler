@@ -1,11 +1,12 @@
-package com.testerhome.appcrawler.ut
+package com.ceshiren.appcrawler.ut
 
-import com.testerhome.appcrawler.plugin.ReportPlugin
-import com.testerhome.appcrawler.{CommonLog, URIElement}
-import com.testerhome.appcrawler._
-import com.testerhome.appcrawler.data.AbstractElementStore.Status
-import com.testerhome.appcrawler.data.PathElementStore
-import com.testerhome.appcrawler.plugin.ReportPlugin
+import com.ceshiren.appcrawler.{CommonLog, Crawler, ElementInfo, URIElement, URIElementStore}
+import com.ceshiren.appcrawler.plugin.ReportPlugin
+import com.ceshiren.appcrawler.CommonLog
+import com.ceshiren.appcrawler._
+import com.ceshiren.appcrawler.data.AbstractElementStore.Status
+import com.ceshiren.appcrawler.data.PathElementStore
+import com.ceshiren.appcrawler.plugin.ReportPlugin
 import org.scalatest.FunSuite
 import org.scalatest.tools.Runner
 
@@ -46,10 +47,10 @@ class TestReportPlugin extends FunSuite with CommonLog{
     val crawler=new Crawler()
     report.setCrawer(crawler)
 
-    //Runner.run(Array("-R", "target", "-w", "com.testerhome.appcrawler.report", "-o", "-u", "target/test-reports", "-h", "target/test-reports"))
+    //Runner.run(Array("-R", "target", "-w", "com.ceshiren.appcrawler.report", "-o", "-u", "target/test-reports", "-h", "target/test-reports"))
     Runner.run(Array(
       "-R", "/Users/seveniruby/projects/LBSRefresh/target",
-      "-w", "com.testerhome.appcrawler",
+      "-w", "com.ceshiren.appcrawler",
       "-o", "-u", "target/test-reports", "-h", "target/test-reports"))
 
   }

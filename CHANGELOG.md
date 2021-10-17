@@ -11,6 +11,9 @@
 - 支持弱网
 - 支持接口数据入报告
 
+# 2.7.0
+
+
 # 2.6.0 [TODO]
 - 支持accessibility service
 - 支持rpc dubbo json-rpc

@@ -1,4 +1,4 @@
-package com.testerhome.appcrawler;
+package com.ceshiren.appcrawler;
 
 import javassist.*;
 import javassist.bytecode.AnnotationsAttribute;
@@ -145,6 +145,6 @@ public class AutoGenerateTest {
     @Test
     public void fun3(){
         //System.out.println(System.getProperty("user.dir"));
-        System.out.println(new Integer(2).equals(new Integer(1)));
+        System.out.println(Integer.valueOf(2).equals(Integer.valueOf(1)));
     }
 }

@@ -1,6 +1,6 @@
-package com.testerhome.appcrawler.ut
+package com.ceshiren.appcrawler.ut
 
-import com.testerhome.appcrawler.CommonLog
+import com.ceshiren.appcrawler.CommonLog
 import org.scalatest.FunSuite
 
 /**

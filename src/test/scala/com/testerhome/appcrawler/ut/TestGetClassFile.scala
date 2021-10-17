@@ -1,7 +1,8 @@
-package com.testerhome.appcrawler.ut
+package com.ceshiren.appcrawler.ut
 
-import com.testerhome.appcrawler.plugin.FlowDiff
-import com.testerhome.appcrawler.{DiffSuite, Report}
+import com.ceshiren.appcrawler.DiffSuite
+import com.ceshiren.appcrawler.plugin.FlowDiff
+import com.ceshiren.appcrawler.Report
 import org.apache.commons.io.FileUtils
 import org.scalatest.Checkpoints.Checkpoint
 import org.scalatest.{FunSuite, Matchers}

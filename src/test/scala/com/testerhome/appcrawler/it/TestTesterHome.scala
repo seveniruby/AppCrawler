@@ -1,4 +1,4 @@
-package com.testerhome.appcrawler.it
+package com.ceshiren.appcrawler.it
 
 import java.net.URL
 
@@ -17,7 +17,7 @@ class TestTesterHome extends FunSuite with BeforeAndAfterAll with BeforeAndAfter
   val capabilities=new DesiredCapabilities()
   capabilities.setCapability("deviceName", "emulator-5554")
   capabilities.setCapability("app", "/Users/seveniruby/Downloads/app-release.apk_1.1.0.apk")
-  capabilities.setCapability("appPackage", "com.testerhome.nativeandroid")
+  capabilities.setCapability("appPackage", "com.ceshiren.nativeandroid")
   capabilities.setCapability("appActivity", ".views.MainActivity")
   capabilities.setCapability("unicodeKeyboard", "true")
 

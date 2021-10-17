@@ -1,10 +1,10 @@
-package com.testerhome.appcrawler.it
+package com.ceshiren.appcrawler.it
+
+import com.ceshiren.appcrawler.AppCrawler
 
 import scala.collection.JavaConversions._
 import java.net.URL
 import java.time.Duration
-
-import com.testerhome.appcrawler.AppCrawler
 import io.appium.java_client.ios.{IOSDriver, IOSElement}
 import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
 import org.scalatest.FunSuite
@@ -16,7 +16,7 @@ class TestIOS extends FunSuite{
 
   //val app = "/Users/seveniruby/projects/ios-uicatalog/build/Debug-iphonesimulator/UICatalog.app"
   val app="/Users/seveniruby/Library/Developer/Xcode/DerivedData/UICatalog-ftyzdbgapjmxxobezrnrxsshpdqh/Build/Products/Debug-iphonesimulator/UICatalog.app"
-  val bundleID="com.testerhome.ios"
+  val bundleID="com.ceshiren.ios"
   test("ios测试"){
     val capability=new DesiredCapabilities()
     capability.setCapability("app", app)

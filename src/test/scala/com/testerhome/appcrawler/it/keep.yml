@@ -1,7 +1,7 @@
 ---
 pluginList:
-- "com.testerhome.appcrawler.plugin.TagLimitPlugin"
-- "com.testerhome.appcrawler.plugin.ReportPlugin"
+- "com.ceshiren.appcrawler.plugin.TagLimitPlugin"
+- "com.ceshiren.appcrawler.plugin.ReportPlugin"
 logLevel: "TRACE"
 reportTitle: "Keep"
 saveScreen: true

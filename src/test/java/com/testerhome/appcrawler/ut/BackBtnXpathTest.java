@@ -1,6 +1,6 @@
-package com.testerhome.appcrawler.ut;
+package com.ceshiren.appcrawler.ut;
 
-import com.testerhome.appcrawler.AppCrawler;
+import com.ceshiren.appcrawler.AppCrawler;
 import org.junit.Test;
 
 import java.util.Date;

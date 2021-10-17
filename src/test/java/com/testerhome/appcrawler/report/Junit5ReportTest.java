@@ -1,5 +1,6 @@
-package com.testerhome.appcrawler.report;
+package com.ceshiren.appcrawler.report;
 
+import com.ceshiren.appcrawler.report.Junit5Report;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedInputStream;
@@ -18,7 +19,7 @@ class Junit5ReportTest {
     //todo:ExecuteTest
     @Test
     void runTestCase() throws Exception {
-        String namespace = "com.testerhome.appcrawler.report.generateClass";
+        String namespace = "com.ceshiren.appcrawler.report.generateClass";
         Junit5Report junit5Report = new Junit5Report();
         junit5Report.runTestCase(namespace);
     }

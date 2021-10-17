@@ -1,7 +1,7 @@
 ---
 pluginList:
-- "com.testerhome.appcrawler.plugin.FlowDiff"
-#- "com.testerhome.appcrawler.plugin.ProxyPlugin"
+- "com.ceshiren.appcrawler.plugin.FlowDiff"
+#- "com.ceshiren.appcrawler.plugin.ProxyPlugin"
 logLevel: "TRACE"
 saveScreen: true
 showCancel: true

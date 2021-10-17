@@ -1,4 +1,4 @@
-package com.testerhome.appcrawler.ut
+package com.ceshiren.appcrawler.ut
 
 import org.scalatest.{FunSuite, Sequential}
 

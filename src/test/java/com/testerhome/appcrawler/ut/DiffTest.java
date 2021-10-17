@@ -1,7 +1,6 @@
-package com.testerhome.appcrawler.ut;
+package com.ceshiren.appcrawler.ut;
 
-import com.testerhome.appcrawler.AppCrawler;
-import com.testerhome.appcrawler.diff.CrawlerDiff;
+import com.ceshiren.appcrawler.AppCrawler;
 import org.junit.jupiter.api.Test;
 
 public class DiffTest {

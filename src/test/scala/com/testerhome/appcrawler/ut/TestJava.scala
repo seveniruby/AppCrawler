@@ -1,6 +1,6 @@
-package com.testerhome.appcrawler.ut
+package com.ceshiren.appcrawler.ut
 
-import com.testerhome.appcrawler.Demo
+import com.ceshiren.appcrawler.Demo
 import org.scalatest.FunSuite
 
 class TestJava extends FunSuite{

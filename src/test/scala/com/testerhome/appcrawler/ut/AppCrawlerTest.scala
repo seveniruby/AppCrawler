@@ -1,8 +1,8 @@
-package com.testerhome.appcrawler.ut
+package com.ceshiren.appcrawler.ut
+
+import com.ceshiren.appcrawler.AppCrawler
 
 import java.io.File
-
-import com.testerhome.appcrawler.AppCrawler
 import org.scalatest.FunSuite
 
 /**

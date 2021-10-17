@@ -1,6 +1,6 @@
-package com.testerhome.appcrawler.ut;
+package com.ceshiren.appcrawler.ut;
 
-import com.testerhome.appcrawler.plugin.junit5.AllureTemplate;
+import com.ceshiren.appcrawler.plugin.junit5.AllureTemplate;
 import javassist.*;
 
 
@@ -26,11 +26,11 @@ public class GenerateClassTest {
         //CtConstructor ctConstructor = new CtConstructor(new CtClass[]{pool.get("java.lang.String")}, ctClass);
         CtConstructor ctConstructorNull = new CtConstructor(new CtClass[]{}, ctClass);
         StringBuffer buffer = new StringBuffer();
-        buffer.append("com.testerhome.appcrawler.Report report=com.testerhome.appcrawler.ReportFactory.genReport(\"junit5\");\n" +
-                "        com.testerhome.appcrawler.data.AbstractElementStore store=report.loadResult(\"E://elements.yml\");\n" +
-                "        com.testerhome.appcrawler.ReportFactory.initStore(store);\n" +
+        buffer.append("com.ceshiren.appcrawler.Report report=com.ceshiren.appcrawler.ReportFactory.genReport(\"junit5\");\n" +
+                "        com.ceshiren.appcrawler.data.AbstractElementStore store=report.loadResult(\"E://elements.yml\");\n" +
+                "        com.ceshiren.appcrawler.ReportFactory.initStore(store);\n" +
                 "        this.pageName=\""+ activity +"\";\n" +
-                "        com.testerhome.appcrawler.ReportFactory.showCancel_$eq(true);");
+                "        com.ceshiren.appcrawler.ReportFactory.showCancel_$eq(true);");
         System.out.println("{\n"+ buffer.toString() +"\n}");
         //ctConstructor.setBody("{"+ buffer.toString() +"}");
         ctConstructorNull.setBody("{"+ buffer.toString() +"}");
