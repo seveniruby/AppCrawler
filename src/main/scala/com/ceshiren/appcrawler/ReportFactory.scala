@@ -1,7 +1,5 @@
 package com.ceshiren.appcrawler
 
-import com.ceshiren.appcrawler.data.AbstractElementStore.Status
-import com.ceshiren.appcrawler.data.{AbstractElementInfo, AbstractElementStore}
 import com.ceshiren.appcrawler.plugin.junit5.JUnit5Runtime
 import com.ceshiren.appcrawler.plugin.scalatest.ScalaTestRuntime
 
@@ -15,7 +13,7 @@ object ReportFactory extends CommonLog {
   var master = ""
   var candidate = ""
   var reportDir = ""
-  var store: AbstractElementStore = _
+  var store: URIElementStore = _
 
 
   var reportPath = ""
@@ -23,7 +21,7 @@ object ReportFactory extends CommonLog {
   var report: Report = _
 
 
-  def initStore(store: AbstractElementStore): Unit = {
+  def initStore(store: URIElementStore): Unit = {
     this.store = store
   }
 
@@ -56,7 +54,7 @@ object ReportFactory extends CommonLog {
     return report
   }
 
-  def getSelected(uri: String): util.Collection[AbstractElementInfo] = {
+  def getSelected(uri: String): util.Collection[ElementInfo] = {
     log.trace(s"Report.store.elementStore size = ${ReportFactory.store.getElementStoreMap.size}")
     log.trace(s"uri=${uri}")
     val sortedElements = store.getElementStoreMap.asScala

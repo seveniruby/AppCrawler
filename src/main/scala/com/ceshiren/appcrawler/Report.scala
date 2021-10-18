@@ -1,7 +1,5 @@
 package com.ceshiren.appcrawler
 
-import com.ceshiren.appcrawler.data.AbstractElementStore
-
 import scala.io.Source
 
 /**
@@ -22,12 +20,12 @@ abstract class Report extends CommonLog {
   def changeTitle(title:String): Unit ={
   }
 
-  def loadResult(elementsFile: String): AbstractElementStore ={
+  def loadResult(elementsFile: String): URIElementStore ={
     val content=Source.fromFile(elementsFile).mkString
     log.info(s"${elementsFile} size = ${content.size}")
     //todo: cannot deserialize from Object value (no delegate- or property-based Creator)
     log.warn("一定概率失败，底层依赖库的bug")
-    TData.fromYaml[AbstractElementStore](content)
+    TData.fromYaml[URIElementStore](content)
   }
 
 }

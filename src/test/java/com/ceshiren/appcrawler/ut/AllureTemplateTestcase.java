@@ -2,13 +2,13 @@ package com.ceshiren.appcrawler.ut;
 
 import com.ceshiren.appcrawler.Report;
 import com.ceshiren.appcrawler.ReportFactory;
-import com.ceshiren.appcrawler.data.AbstractElementStore;
+import com.ceshiren.appcrawler.URIElementStore;
 import com.ceshiren.appcrawler.plugin.junit5.AllureTemplate;
 
 public class AllureTemplateTestcase extends AllureTemplate {
     public AllureTemplateTestcase(){
         Report report=ReportFactory.getReportEngine("junit5");
-        AbstractElementStore store=report.loadResult("E://elements.yml");
+        URIElementStore store=report.loadResult("E://elements.yml");
         ReportFactory.initStore(store);
 
         //todo: 老的数据不再兼容新的代码，需要重跑

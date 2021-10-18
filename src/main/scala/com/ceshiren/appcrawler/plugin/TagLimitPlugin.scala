@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler.plugin
 
 import com.ceshiren.appcrawler.AppCrawler
-import com.ceshiren.appcrawler.data.AbstractElement
+import com.ceshiren.appcrawler.URIElement
 
 import scala.collection.JavaConverters
 
@@ -21,7 +21,7 @@ class TagLimitPlugin extends Plugin {
   }
 
   //fixed: conf.tagLimit未生效
-  override def fixElementAction(element: AbstractElement): Unit = {
+  override def fixElementAction(element: URIElement): Unit = {
     if (element.getAction.startsWith("_")) {
       //非普通元素点击事件，不需要统计，比如back backApp 等
       return
@@ -64,7 +64,7 @@ class TagLimitPlugin extends Plugin {
     }
   }
 
-  override def afterElementAction(element: AbstractElement): Unit = {
+  override def afterElementAction(element: URIElement): Unit = {
     if (element.getAction.startsWith("_")) {
       //非普通元素点击事件，不需要统计，比如back backApp 等
       return
@@ -78,13 +78,13 @@ class TagLimitPlugin extends Plugin {
     }
   }
 
-  def getAncestor(element: AbstractElement): String = {
+  def getAncestor(element: URIElement): String = {
     getCrawler().currentUrl + element.getAncestor()
   }
 
-  def getTimesFromTagLimit(element: AbstractElement): Option[Int] = {
+  def getTimesFromTagLimit(element: URIElement): Option[Int] = {
     this.getCrawler().conf.tagLimit.foreach(tag => {
-      if (getCrawler().driver.getNodeListByKey(tag.getXPath()).map(x => AppCrawler.factory.generateElement(JavaConverters.mapAsJavaMap(x),getCrawler().currentUrl))
+      if (getCrawler().driver.getNodeListByKey(tag.getXPath()).map(x => AppCrawler.factory.generateElement(x,getCrawler().currentUrl))
         .contains(element)) {
         return Some(tag.times)
       } else {

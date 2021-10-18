@@ -4,8 +4,8 @@ import com.ceshiren.appcrawler.{CommonLog, Crawler, ElementInfo, URIElement, URI
 import com.ceshiren.appcrawler.plugin.ReportPlugin
 import com.ceshiren.appcrawler.CommonLog
 import com.ceshiren.appcrawler._
-import com.ceshiren.appcrawler.data.AbstractElementStore.Status
-import com.ceshiren.appcrawler.data.PathElementStore
+import com.ceshiren.appcrawler.Status
+import com.ceshiren.appcrawler.URIElementStore
 import com.ceshiren.appcrawler.plugin.ReportPlugin
 import org.scalatest.FunSuite
 import org.scalatest.tools.Runner

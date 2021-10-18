@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.driver
 
-import com.ceshiren.appcrawler.data.AbstractElement
+import com.ceshiren.appcrawler.URIElement
 import com.ceshiren.appcrawler.{AppCrawler, CrawlerConf, DynamicEval, TData}
 import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
@@ -187,7 +187,7 @@ class SeleniumDriver extends ReactWebDriver{
   }
 
 
-  override def findElementsByURI(element: AbstractElement, findBy: String): List[AnyRef] = {
+  override def findElementsByURI(element: URIElement, findBy: String): List[AnyRef] = {
     //todo: 优化速度，个别时候定位可能超过10s
     //todo: 多种策略，使用findElement 使用xml直接分析location 生成平台特定的定位符
 
@@ -209,7 +209,7 @@ class SeleniumDriver extends ReactWebDriver{
     }
   }
 
-  override def findElementByURI(element: AbstractElement, findBy:String): AnyRef = {
+  override def findElementByURI(element: URIElement, findBy:String): AnyRef = {
     currentElement=super.findElementByURI(element,findBy).asInstanceOf[WebElement]
     currentElement
   }

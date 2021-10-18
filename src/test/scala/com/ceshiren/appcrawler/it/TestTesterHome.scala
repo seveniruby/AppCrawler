@@ -1,17 +1,18 @@
 package com.ceshiren.appcrawler.it
 
+import java.net.URL
+
 import io.appium.java_client.android.AndroidDriver
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.scalatest._
 
-import java.net.URL
 import scala.jdk.CollectionConverters._
 
 /**
   * Created by seveniruby on 2017/6/6.
   */
-class TestTesterHome extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
+class Testceshiren extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
 
   val capabilities=new DesiredCapabilities()
   capabilities.setCapability("deviceName", "emulator-5554")

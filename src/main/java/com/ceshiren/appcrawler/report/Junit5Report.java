@@ -50,7 +50,7 @@ public class Junit5Report extends Report {
         super.runTestCase(namespace);
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
                 .selectors(
-                        selectDirectory("D:\\AppCrawler\\src\\test\\java\\com\\testerhome\\appcrawler\\report\\generateClass"),
+                        selectDirectory("D:\\AppCrawler\\src\\test\\java\\com\\ElementInfo\\appcrawler\\report\\generateClass"),
                         selectPackage("com.ceshiren.appcrawler.report.generateClass")
                 )
                 .filters(

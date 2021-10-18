@@ -1,6 +1,5 @@
 package com.ceshiren.appcrawler.driver
 
-import com.ceshiren.appcrawler.data.AbstractElement
 import com.ceshiren.appcrawler._
 import org.openqa.selenium.Rectangle
 import org.w3c.dom.Document
@@ -25,15 +24,15 @@ abstract class ReactWebDriver extends CommonLog {
 
   var loc = ""
   var index = 0
-  var currentURIElement: AbstractElement= AppCrawler.factory.generateElement
+  var currentURIElement: URIElement= AppCrawler.factory.generateElement
 
   var imagesDir="images"
   var platformName=""
 
 
 
-  def findElementsByURI(element: AbstractElement, findBy:String=platformName): List[AnyRef]
-  def findElementByURI(element: AbstractElement, findBy:String=platformName): AnyRef= {
+  def findElementsByURI(element: URIElement, findBy:String=platformName): List[AnyRef]
+  def findElementByURI(element: URIElement, findBy:String=platformName): AnyRef= {
     //todo: 用其他定位方式优化
     log.info(s"find by uri element= ${element.elementUri()}")
     currentURIElement=element

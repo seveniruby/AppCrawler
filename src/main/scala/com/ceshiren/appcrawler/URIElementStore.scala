@@ -1,29 +1,28 @@
 package com.ceshiren.appcrawler
 
-import com.ceshiren.appcrawler.data.AbstractElementStore.Status
-import com.ceshiren.appcrawler.data.{AbstractElement, AbstractElementInfo, AbstractElementStore}
+import com.ceshiren.appcrawler.ElementInfo
 
 import java.util
-import scala.collection.JavaConverters
 import scala.collection.mutable.ListBuffer
+import scala.jdk.CollectionConverters._
 
 /**
   * Created by seveniruby on 16/9/8.
   */
-class URIElementStore extends AbstractElementStore {
+class URIElementStore {
   //todo: 用枚举替代  0表示未遍历 1表示已遍历 -1表示跳过
 
   var elementStoreMap = scala.collection.mutable.Map[String, ElementInfo]()
 
-  def getElementStoreMap: java.util.Map[String, AbstractElementInfo] = {
-    JavaConverters.mapAsJavaMap(elementStoreMap)
+  def getElementStoreMap: java.util.Map[String, ElementInfo] = {
+    elementStoreMap.asJava
   }
 
   /** 点击顺序, 留作画图用 */
 
-  var clickedElementsList = ListBuffer[AbstractElement]()
+  var clickedElementsList = ListBuffer[URIElement]()
 
-  def setElementSkip(element: AbstractElement): Unit = {
+  def setElementSkip(element: URIElement): Unit = {
     //todo: 待改进
     //clickedElementsList.remove(clickedElementsList.size - 1)
     if (elementStoreMap.contains(element.toString) == false) {
@@ -33,7 +32,7 @@ class URIElementStore extends AbstractElementStore {
     elementStoreMap(element.toString).action = Status.SKIPPED
   }
 
-  def setElementClicked(element: AbstractElement): Unit = {
+  def setElementClicked(element: URIElement): Unit = {
     if (elementStoreMap.contains(element.toString) == false) {
       elementStoreMap(element.toString) = ElementInfo()
       elementStoreMap(element.toString).element = element
@@ -43,14 +42,14 @@ class URIElementStore extends AbstractElementStore {
     elementStoreMap(element.toString).clickedIndex = clickedElementsList.indexOf(element)
   }
 
-  def setElementClear(element: AbstractElement = clickedElementsList.last): Unit = {
+  def setElementClear(element: URIElement = clickedElementsList.last): Unit = {
     if (elementStoreMap.contains(element.toString)) {
       elementStoreMap.remove(element.toString)
     }
   }
 
 
-  def saveElement(element: AbstractElement): Unit = {
+  def saveElement(element: URIElement): Unit = {
     if (elementStoreMap.contains(element.toString) == false) {
       elementStoreMap(element.toString) = ElementInfo()
       elementStoreMap(element.toString).element = element
@@ -116,7 +115,7 @@ class URIElementStore extends AbstractElementStore {
   }
 
 
-  def isClicked(element: AbstractElement): Boolean = {
+  def isClicked(element: URIElement): Boolean = {
     if (elementStoreMap.contains(element.toString)) {
       elementStoreMap(element.toString).action == Status.CLICKED
     } else {
@@ -125,7 +124,7 @@ class URIElementStore extends AbstractElementStore {
     }
   }
 
-  def isSkipped(ele: AbstractElement): Boolean = {
+  def isSkipped(ele: URIElement): Boolean = {
     if (elementStoreMap.contains(ele.toString)) {
       elementStoreMap(ele.toString).action == Status.SKIPPED
     } else {
@@ -134,11 +133,11 @@ class URIElementStore extends AbstractElementStore {
     }
   }
 
-  override def getClickedElementsList: util.List[AbstractElement] = {
-    JavaConverters.bufferAsJavaList(clickedElementsList)
+  def getClickedElementsList: ListBuffer[URIElement] = {
+    clickedElementsList
   }
 
-  override def saveReqTime(reqTime: String): Unit = {}
+   def saveReqTime(reqTime: String): Unit = {}
 
-  override def saveResTime(resTime: String): Unit = {}
+   def saveResTime(resTime: String): Unit = {}
 }

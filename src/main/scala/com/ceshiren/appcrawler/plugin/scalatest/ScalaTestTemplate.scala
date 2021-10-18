@@ -1,7 +1,6 @@
 package com.ceshiren.appcrawler.plugin.scalatest
 
-import com.ceshiren.appcrawler.data.AbstractElementStore.Status
-import com.ceshiren.appcrawler.{AppCrawler, CommonLog, ReportFactory, XPathUtil}
+import com.ceshiren.appcrawler.{AppCrawler, CommonLog, ReportFactory, Status, XPathUtil}
 import org.scalatest
 import org.scalatest._
 

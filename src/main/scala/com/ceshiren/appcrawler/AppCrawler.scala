@@ -1,6 +1,5 @@
 package com.ceshiren.appcrawler
 
-import com.ceshiren.appcrawler.data.AbstractElementFactory
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.{FileAppender, Level}
 
@@ -13,7 +12,7 @@ import java.nio.charset.Charset
 object AppCrawler extends CommonLog {
   val banner =
     """
-      |----------------
+      |--------------------------------
       |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
       |--------------------------------
       |
@@ -21,7 +20,7 @@ object AppCrawler extends CommonLog {
 
   var fileAppender: FileAppender = _
   var crawler = new Crawler
-  var factory: AbstractElementFactory = _
+  var factory: URIElementFactory = _
   val startTime = new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
 
   case class Param(
@@ -245,7 +244,7 @@ object AppCrawler extends CommonLog {
         log.debug("yaml config")
         log.debug(TData.toYaml(crawlerConf))
 
-        factory = AbstractElementFactory.factorySwitch(crawlerConf.useNewData)
+        factory = new URIElementFactory()
         //todo: 用switch替代
         //重新生成功能
         if (config.report != "" && config.candidate.isEmpty && config.template == "") {

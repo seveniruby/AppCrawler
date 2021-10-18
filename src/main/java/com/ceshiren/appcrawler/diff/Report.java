@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.diff;
 
-import com.ceshiren.appcrawler.data.PathElementStore;
+import com.ceshiren.appcrawler.URIElementStore;
 
 public class Report {
 	private boolean showCancel=false;
@@ -8,9 +8,9 @@ public class Report {
 	private String master="";
 	private String candidate="";
 	private String reportDir="";
-	private PathElementStore store=new PathElementStore();
+	private URIElementStore store=new URIElementStore();
 
-	public PathElementStore loadResult() {
+	public URIElementStore loadResult() {
 		return store;
 	}
 	

@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler
 
-import com.ceshiren.appcrawler.data.AbstractElementStore.Status
-import com.ceshiren.appcrawler.data.{AbstractElement, AbstractElementInfo}
+import com.ceshiren.appcrawler.Status.Status
+import com.ceshiren.appcrawler.{URIElement, ElementInfo}
 
 case class ElementInfo(
                         var reqDom: String = "",
@@ -14,97 +14,97 @@ case class ElementInfo(
                         var resTime: String = "",
                         var clickedIndex: Int = -1,
                         var action: Status = Status.READY,
-                        var element: AbstractElement = AppCrawler.factory.generateElement
-                      ) extends AbstractElementInfo {
+                        var element: URIElement = AppCrawler.factory.generateElement
+                      ) {
   def this() {
     this("", "", "", "", "", "", "", "", -1, Status.READY, null)
   }
 
-  override def getElement: AbstractElement = {
-    element.asInstanceOf[AbstractElement]
+  def getElement = {
+    element
   }
 
-  override def setElement(element: AbstractElement): Unit = {
+  def setElement(element: URIElement): Unit = {
     this.element = element
   }
 
-  override def setAction(status: Status): Unit = {
+  def setAction(status: Status): Unit = {
     this.action = status
   }
 
-  override def setClickedIndex(index: Int): Unit = {
+  def setClickedIndex(index: Int): Unit = {
     this.clickedIndex = index
   }
 
-  override def getAction: Status = {
+  def getAction: Status = {
     action
   }
 
-  override def setReqDom(dom: String): Unit = {
+  def setReqDom(dom: String): Unit = {
     this.reqDom = dom
   }
 
-  override def setReqImg(img: String): Unit = {
+  def setReqImg(img: String): Unit = {
     this.reqImg = img
   }
 
-  override def getReqDom: String = {
+  def getReqDom: String = {
     reqDom
   }
 
-  override def getReqImg: String = {
+  def getReqImg: String = {
     reqImg
   }
 
-  override def setResDom(resDom: String): Unit = {
+  def setResDom(resDom: String): Unit = {
     this.resDom = resDom
   }
 
-  override def setResImg(resImg: String): Unit = {
+  def setResImg(resImg: String): Unit = {
     this.resImg = resImg
   }
 
-  override def getResDom: String = {
+  def getResDom: String = {
     resDom
   }
 
-  override def getResImg: String = {
+  def getResImg: String = {
     resImg
   }
 
-  override def setReqHash(reqHash: String): Unit = {
+  def setReqHash(reqHash: String): Unit = {
     this.reqHash = reqHash
   }
 
-  override def setResHash(resHash: String): Unit = {
+  def setResHash(resHash: String): Unit = {
     this.resHash = resHash
   }
 
-  override def getReqHash: String = {
+  def getReqHash: String = {
     reqHash
   }
 
-  override def getResHash: String = {
+  def getResHash: String = {
     resHash
   }
 
-  override def getClickedIndex: Int = {
+  def getClickedIndex: Int = {
     clickedIndex
   }
 
-  override def setReqTime(reqTime: String): Unit = {
+  def setReqTime(reqTime: String): Unit = {
     this.reqTime = reqTime
   }
 
-  override def setResTime(resTime: String): Unit = {
+  def setResTime(resTime: String): Unit = {
     this.resTime = resTime
   }
 
-  override def getReqTime: String = {
+  def getReqTime: String = {
     reqTime
   }
 
-  override def getResTime: String = {
+  def getResTime: String = {
     resTime
   }
 }

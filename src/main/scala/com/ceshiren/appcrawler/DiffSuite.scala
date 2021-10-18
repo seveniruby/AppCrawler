@@ -1,7 +1,6 @@
 package com.ceshiren.appcrawler
 
-import com.ceshiren.appcrawler.data.AbstractElementStore.Status
-import com.ceshiren.appcrawler.data.{AbstractElement, AbstractElementInfo}
+import com.ceshiren.appcrawler.{URIElement, ElementInfo}
 import com.ceshiren.appcrawler.plugin.scalatest.SuiteToClass
 import org.scalatest._
 
@@ -34,12 +33,12 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
           DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.getResDom))
             .flatten.map(m=>{
             log.info(AppCrawler.factory)
-            val ele=AppCrawler.factory.generateElement(m.asJava, key)
+            val ele=AppCrawler.factory.generateElement(m, key)
             ele.getXpath->ele
           }).toMap
         }
         case _ =>{
-          Map[String, AbstractElement]()
+          Map[String, URIElement]()
         }
       }
 
@@ -48,12 +47,12 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
         case Some(elementInfo) if elementInfo.getAction==Status.CLICKED && elementInfo.getResDom.nonEmpty => {
           DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.getResDom))
             .flatten.map(m=>{
-            val ele=AppCrawler.factory.generateElement(m.asJava, key)
+            val ele=AppCrawler.factory.generateElement(m, key)
             ele.getXpath->ele
           }).toMap
         }
         case _ =>{
-          Map[String, AbstractElement]()
+          Map[String, URIElement]()
         }
       }
 
@@ -86,15 +85,17 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
           if (masterElement != candidateElement && !markOnce) {
             markOnce=true
             //todo: 使用绝对路径展示图片
+            val imgSrcNew=new java.io.File(".").getCanonicalPath+"/"+ReportFactory.candidate+"/"+File(DiffSuite.candidateStore.getOrElse(key, AppCrawler.factory.generateElementInfo()).getResImg).name
+            val imgSrcOld=new java.io.File(".").getCanonicalPath+"/"+ReportFactory.master+"/"+File(DiffSuite.masterStore.getOrElse(key, AppCrawler.factory.generateElementInfo()).getResImg).name
             markup(
               s"""
                  |candidate image
                  |-------
-                 |<img src='${new java.io.File(".").getCanonicalPath+"/"+ReportFactory.candidate+"/"+File(DiffSuite.candidateStore.getOrElse(key, AppCrawler.factory.generateElementInfo()).getResImg).name}' width='80%' />
+                 |<img src='${imgSrcNew}' width='80%' />
                  |
                  |master image
                  |--------
-                 |<img src='${new java.io.File(".").getCanonicalPath+"/"+ReportFactory.master+"/"+File(DiffSuite.masterStore.getOrElse(key, AppCrawler.factory.generateElementInfo()).getResImg).name}' width='80%' />
+                 |<img src='${imgSrcOld}' width='80%' />
                  |
                 """.stripMargin)
           }
@@ -117,8 +118,8 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
 }
 
 object DiffSuite {
-  val masterStore : scala.collection.mutable.Map[String, AbstractElementInfo] = ReportFactory.getInstance().loadResult(s"${ReportFactory.master}/elements.yml").getElementStoreMap.asScala
-  val candidateStore : scala.collection.mutable.Map[String, AbstractElementInfo] = ReportFactory.getInstance().loadResult(s"${ReportFactory.candidate}/elements.yml").getElementStoreMap.asScala
+  val masterStore : scala.collection.mutable.Map[String, ElementInfo] = ReportFactory.getInstance().loadResult(s"${ReportFactory.master}/elements.yml").getElementStoreMap.asScala
+  val candidateStore : scala.collection.mutable.Map[String, ElementInfo] = ReportFactory.getInstance().loadResult(s"${ReportFactory.candidate}/elements.yml").getElementStoreMap.asScala
   val blackList = List(".*\\.instance.*", ".*bounds.*")
   val range=List("//*[contains(name(), 'Text')]", "//*[contains(name(), 'Image')]", "//*[contains(name(), 'Button')]")
   def saveTestCase(): Unit ={

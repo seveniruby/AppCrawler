@@ -1,8 +1,8 @@
 package com.ceshiren.appcrawler.ut
 
-import com.ceshiren.appcrawler.data.PathElementStore
+import com.ceshiren.appcrawler.URIElementStore
 import com.ceshiren.appcrawler.{CommonLog, ElementInfo, TData, URIElement, URIElementStore}
-import com.ceshiren.appcrawler.data.AbstractElementStore.Status
+import com.ceshiren.appcrawler.Status
 import com.ceshiren.appcrawler.CommonLog
 import org.scalatest.{FunSuite, Matchers}
 

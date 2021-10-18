@@ -2088,7 +2088,7 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
   }
 
   test("json to tree"){
-    val json=Source.fromFile("src/test/scala/com/testerhome/appcrawler/ut/source.json").mkString
+    val json=Source.fromFile("src/test/scala/com/ceshiren/appcrawler/ut/source.json").mkString
     log.info(json)
     val m=TData.from(json)
     log.info(m)
@@ -2112,7 +2112,7 @@ class TestXPathUtil extends FunSuite with Matchers with CommonLog{
   test("getAttributesFromNode"){
     val nodes=XPathUtil.getNodeListFromXML(
       XPathUtil.toDocument(
-        Source.fromFile("src/test/scala/com/testerhome/appcrawler/ut/html.xml").mkString
+        Source.fromFile("src/test/scala/com/ceshiren/appcrawler/ut/html.xml").mkString
       ), "//a"
     ).asInstanceOf[NodeList]
     0 until nodes.getLength foreach(i=>{

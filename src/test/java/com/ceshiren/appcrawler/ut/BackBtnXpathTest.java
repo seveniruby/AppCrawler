@@ -20,7 +20,7 @@ public class BackBtnXpathTest {
                 "-o",
                 "/temp/xueqiu/ut/backBtnXpath/" + new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new Date().getTime()),
                 "-c",
-                "src/test/java/com/testerhome/appcrawler/it/xueqiu_conf.yml"
+                "src/test/java/com/ElementInfo/appcrawler/it/xueqiu_conf.yml"
         });
     }
 }

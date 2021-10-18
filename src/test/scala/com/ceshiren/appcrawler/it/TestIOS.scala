@@ -106,7 +106,7 @@ class TestIOS extends FunSuite{
 
   test("appcrawler ios"){
     AppCrawler.main(Array(
-      "-c", "src/test/scala/com/testerhome/appcrawler/it/xueqiu_private.yml",
+      "-c", "src/test/scala/com/ceshiren/appcrawler/it/xueqiu_private.yml",
       "-a", app,
       "-p", "ios",
       "-o", s"/tmp/xueqiu/${System.currentTimeMillis()}", "--verbose"

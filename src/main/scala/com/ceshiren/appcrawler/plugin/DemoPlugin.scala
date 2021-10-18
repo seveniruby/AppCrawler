@@ -1,12 +1,12 @@
 package com.ceshiren.appcrawler.plugin
 
-import com.ceshiren.appcrawler.data.AbstractElement
+import com.ceshiren.appcrawler.URIElement
 
 /**
   * Created by seveniruby on 16/1/21.
   */
 class DemoPlugin extends Plugin{
-  override def beforeElementAction(element: AbstractElement): Unit ={
+  override def beforeElementAction(element: URIElement): Unit ={
     log.info("demo com.ceshiren.appcrawler.plugin before element action")
     log.info(element)
     log.info("demo com.ceshiren.appcrawler.plugin end")

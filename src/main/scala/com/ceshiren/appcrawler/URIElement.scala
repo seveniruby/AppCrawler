@@ -1,11 +1,11 @@
 package com.ceshiren.appcrawler
 
-import com.ceshiren.appcrawler.data.AbstractElement
 import com.fasterxml.jackson.annotation.JsonCreator
 import org.apache.commons.text.StringEscapeUtils
 
 import java.awt.{Dimension, Point}
 import java.io.File
+import java.util.regex.{Matcher, Pattern}
 import javax.xml.bind.annotation.XmlAttribute
 
 /**
@@ -45,7 +45,7 @@ case class URIElement(
                        var height: Int = 0,
                        @XmlAttribute(name = "action")
                        var action: String = ""
-                     ) extends AbstractElement {
+                     ) {
   //用来代表唯一的控件, 每个特定的命名控件只被点击一次. 所以这个element的构造决定了控件是否可被点击多次.
   //比如某个输入框被命名为url=xueqiu id=input, 那么就只能被点击一次
   //如果url修改为url=xueqiu/xxxActivity id=input 就可以被点击多次
@@ -109,7 +109,7 @@ case class URIElement(
 
   }
 
-  override def toString: String = {
+   override def toString: String = {
     val fileName = new StringBuilder()
     fileName.append(url.replace(File.separatorChar, '_'))
     fileName.append(s".tag=${tag.replace("android.widget.", "").replace("Activity", "")}")
@@ -141,7 +141,7 @@ case class URIElement(
     new java.math.BigInteger(1, m.digest()).toString(16)
   }
 
-  override def elementUri(): String = {
+   def elementUri(): String = {
     this.toString
   }
 
@@ -161,67 +161,75 @@ case class URIElement(
     }
   }
 
-  override def setId(id: String): Unit = {
+   def setId(id: String): Unit = {
     this.id = id
   }
 
-  override def setName(name: String): Unit = {
+   def setName(name: String): Unit = {
     this.name = name
   }
 
-  override def setTag(tag: String): Unit = {
+   def setTag(tag: String): Unit = {
     this.tag = tag
   }
 
-  override def setAction(action: String): Unit = {
+   def setAction(action: String): Unit = {
     this.action = action
   }
 
-  override def getId: String = {
+   def getId: String = {
     id
   }
 
-  override def getName: String = {
+   def getName: String = {
     name
   }
 
-  override def getTag: String = {
+   def getTag: String = {
     tag
   }
 
-  override def getText: String = {
+   def getText: String = {
     text
   }
 
-  override def getInstance(): String = {
+   def getInstance(): String = {
     instance
   }
 
-  override def getValid: String = {
+   def getValid: String = {
     valid
   }
 
-  override def getX: Int = {
+   def getX: Int = {
     x
   }
 
-  override def getY: Int = {
+   def getY: Int = {
     y
   }
 
-  override def getWidth: Int = {
+   def getWidth: Int = {
     width
   }
 
-  override def getHeight: Int = {
+   def getHeight: Int = {
     height
   }
 
-  override def getDepth: String = {
+   def getDepth: String = {
     depth
   }
 
-  override def getSelected: String = {
+   def getSelected: String = {
     selected
+  }
+
+  // windows下命名规范
+  def standardWinFileName(s: String): String = { // a-z  A-Z 0-9 _ 汉字
+    val regex = "[^a-zA-Z0-9.=()_\\u4e00-\\u9fa5]"
+    val pattern = Pattern.compile(regex)
+    val `match` = pattern.matcher(s)
+    `match`.replaceAll("")
   }
 }

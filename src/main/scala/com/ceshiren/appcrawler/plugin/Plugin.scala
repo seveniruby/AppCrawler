@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.plugin
 
-import com.ceshiren.appcrawler.data.AbstractElement
+import com.ceshiren.appcrawler.URIElement
 import com.ceshiren.appcrawler.{AppCrawler, CommonLog, Crawler}
 
 /**
@@ -30,13 +30,13 @@ abstract class Plugin extends CommonLog{
   def beforeBack(): Unit ={
 
   }
-  def fixElementAction(element: AbstractElement): Unit ={
+  def fixElementAction(element: URIElement): Unit ={
 
   }
-  def beforeElementAction(element: AbstractElement): Unit ={
+  def beforeElementAction(element: URIElement): Unit ={
 
   }
-  def afterElementAction(element: AbstractElement): Unit ={
+  def afterElementAction(element: URIElement): Unit ={
 
   }
 

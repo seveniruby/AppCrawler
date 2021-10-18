@@ -66,7 +66,7 @@ public class JavaAppCrawlerTest {
              "/tmp/xueQiu400/" + new java.text.SimpleDateFormat("YYYYMMddHHmmss").
                 format(new java.util.Date().getTime()),
 //             "-c",
-//             "src/test/java/com/testerhome/appcrawler/it/xueqiu_conf.yml",
+//             "src/test/java/com/ElementInfo/appcrawler/it/xueqiu_conf.yml",
                 "-y",
                 "{ useNewData: false, tagLimitMax: 3, " +
                         "blackList: [ {xpath: '更新'},{xpath: '检测'} ] " +
@@ -92,7 +92,7 @@ public class JavaAppCrawlerTest {
                 "/tmp/xueqiu11/" + new java.text.SimpleDateFormat("YYYYMMddHHmmss").
                         format(new java.util.Date().getTime()),
                 "-c",
-                "src/test/java/com/testerhome/appcrawler/it/xueqiu_conf.yml",
+                "src/test/java/com/ceshiren/appcrawler/it/xueqiu_conf.yml",
                 "-vv"
         });
     }

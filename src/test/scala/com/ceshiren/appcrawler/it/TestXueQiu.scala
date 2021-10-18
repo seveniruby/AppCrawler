@@ -40,7 +40,7 @@ class TestXueQiu extends FunSuite{
 
   test("appcrawler base example"){
     AppCrawler.main(Array(
-      "-c", "src/test/scala/com/testerhome/appcrawler/it/xueqiu_automation.yml",
+      "-c", "src/test/scala/com/ceshiren/appcrawler/it/xueqiu_automation.yml",
       "-o", s"/tmp/xueqiu/${System.currentTimeMillis()}", "--verbose"
     )
     )
@@ -49,7 +49,7 @@ class TestXueQiu extends FunSuite{
   test("appcrawler base example ios"){
 
     val app = "/Users/seveniruby/projects/ios-uicatalog/build/Debug-iphonesimulator/UICatalog.app"
-    AppCrawler.main(Array("-c", "src/test/scala/com/testerhome/appcrawler/it/xueqiu_base.yml",
+    AppCrawler.main(Array("-c", "src/test/scala/com/ceshiren/appcrawler/it/xueqiu_base.yml",
       "-a", app,
       //"-a", "/Users/seveniruby/projects/snowball-ios/DerivedData/Snowball/Build/Products/Debug-iphonesimulator/Snowball.app",
       "-o", s"/tmp/xueqiu/${System.currentTimeMillis()}", "--verbose"
@@ -58,7 +58,7 @@ class TestXueQiu extends FunSuite{
   }
 
   test("test automation"){
-    AppCrawler.main(Array("-c", "src/test/scala/com/testerhome/appcrawler/it/xueqiu_automation.yml",
+    AppCrawler.main(Array("-c", "src/test/scala/com/ceshiren/appcrawler/it/xueqiu_automation.yml",
       "-o", s"/tmp/xueqiu/${System.currentTimeMillis()}", "--verbose"
     )
     )
@@ -82,7 +82,7 @@ class TestXueQiu extends FunSuite{
   }
 
   test("test sikuli"){
-    AppCrawler.main(Array("-c", "src/test/scala/com/testerhome/appcrawler/it/xueqiu_sikuli.yml",
+    AppCrawler.main(Array("-c", "src/test/scala/com/ceshiren/appcrawler/it/xueqiu_sikuli.yml",
       "-o", s"/tmp/xueqiu/${System.currentTimeMillis()}", "--verbose"
     )
     )
@@ -90,7 +90,7 @@ class TestXueQiu extends FunSuite{
   test("test xiaomi"){
     AppCrawler.main(Array("-c", "src/tes" +
       "" +
-      "t/scala/com/testerhome/appcrawler/it/xiaomi.yml",
+      "t/scala/com/ceshiren/appcrawler/it/xiaomi.yml",
       "-o", s"/tmp/xiaomi/${System.currentTimeMillis()}", "--verbose"
     )
     )

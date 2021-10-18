@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, Ser
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.github.tototoshi.csv.CSVReader
 import com.jayway.jsonpath.{Configuration, JsonPath}
 import net.minidev.json.JSONArray
@@ -50,15 +51,16 @@ object TData {
 
   def fromYaml[T: ClassTag](data: String): T = {
     val mapper = new ObjectMapper(new YAMLFactory())
-//    mapper.registerModule(DefaultScalaModule)
+    mapper.registerModule(DefaultScalaModule)
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    mapper.readValue(data, classTag[T].runtimeClass.asInstanceOf[Class[T]])
+    val res=mapper.readValue(data, classTag[T].runtimeClass.asInstanceOf[Class[T]])
+    res
   }
 
 
   def toJson(data: Any): String = {
     val mapper = new ObjectMapper()
-//    mapper.registerModule(DefaultScalaModule)
+    mapper.registerModule(DefaultScalaModule)
     mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data)
   }
@@ -66,13 +68,13 @@ object TData {
 
   def fromJson[T: ClassTag](str: String): T = {
     val mapper = new ObjectMapper()
-//    mapper.registerModule(DefaultScalaModule)
+    mapper.registerModule(DefaultScalaModule)
     mapper.readValue(str, classTag[T].runtimeClass.asInstanceOf[Class[T]])
   }
 
   def pretty(jsonString: String): String = {
     val mapper = new ObjectMapper()
-//    mapper.registerModule(DefaultScalaModule)
+    mapper.registerModule(DefaultScalaModule)
     mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
 
     val jsonObject = mapper.readValue(jsonString, classOf[java.lang.Object])
@@ -84,7 +86,7 @@ object TData {
     mapper.registerModule(new JaxbAnnotationModule)
     mapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
     //mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
-    //mapper.registerModule(DefaultScalaModule)
+    mapper.registerModule(DefaultScalaModule)
     mapper.writerWithDefaultPrettyPrinter().withRootName(root).writeValueAsString(data)
   }
 

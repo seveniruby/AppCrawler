@@ -109,7 +109,7 @@ tagLimit:               /** 特殊的按钮，可以一直被遍历 */
 - xpath: "确定"
   times: 1000
 testcase:               /** 可以自定义测试用例 */
-  name: TesterHome AppCrawler
+  name: ceshiren AppCrawler
   steps:
   - when:
       xpath: "/*/*"

@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler.driver
 
-import com.ceshiren.appcrawler.data.AbstractElement
 import com.ceshiren.appcrawler._
+import com.ceshiren.appcrawler.URIElement
 import org.openqa.selenium.Rectangle
 
 import java.awt.{BasicStroke, Color}
@@ -164,7 +164,7 @@ class AdbDriver extends ReactWebDriver{
     back()
   }
 
-  override def findElementsByURI(element: AbstractElement, findBy: String): List[AnyRef] = {
+  override def findElementsByURI(element: URIElement, findBy: String): List[AnyRef] = {
     List(element)
   }
 

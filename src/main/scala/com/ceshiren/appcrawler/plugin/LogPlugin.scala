@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.plugin
 
-import com.ceshiren.appcrawler.data.AbstractElement
+import com.ceshiren.appcrawler.URIElement
 import com.ceshiren.appcrawler.driver.AppiumClient
 
 import java.util.logging.Level
@@ -16,7 +16,7 @@ class LogPlugin extends Plugin {
   private var logs = ListBuffer[String]()
   val driver = getCrawler().driver.asInstanceOf[AppiumClient].driver
 
-  override def afterElementAction(element: AbstractElement): Unit = {
+  override def afterElementAction(element: URIElement): Unit = {
     //第一次先试验可用的log 后续就可以跳过从而加速
     if (logs.isEmpty) {
       driver.manage().logs().getAvailableLogTypes.toArray().foreach(logName => {

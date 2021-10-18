@@ -37,7 +37,7 @@ class CrawlerConf {
 
   //测试用例
   var testcase = ReactTestCase(
-    name = "TesterHome AppCrawler",
+    name = "ceshiren AppCrawler",
     steps = List[Step](
       Step(xpath = "/*/*", action = "Thread.sleep(1000)")
     )

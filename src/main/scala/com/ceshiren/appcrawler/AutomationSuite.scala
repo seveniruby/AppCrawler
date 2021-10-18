@@ -33,7 +33,7 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
 
       driver.getNodeListByKey(xpath).headOption match {
         case Some(v) => {
-          val ele = AppCrawler.factory.generateElement(JavaConverters.mapAsJavaMap(v), "Steps")
+          val ele = AppCrawler.factory.generateElement(v, "Steps")
           ele.setAction(action)
           // testcase里的操作也要记录下来
           crawler.beforeElementAction(ele)

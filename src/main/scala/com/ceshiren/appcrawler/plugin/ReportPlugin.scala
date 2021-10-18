@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler.plugin
 
 import com.ceshiren.appcrawler.ReportFactory
-import com.ceshiren.appcrawler.data.AbstractElement
+import com.ceshiren.appcrawler.URIElement
 import com.ceshiren.appcrawler.report.MvnReplace
 
 import java.nio.file.{Files, Paths}
@@ -24,7 +24,7 @@ class ReportPlugin extends Plugin {
     generateReport()
   }
 
-  override def afterElementAction(element: AbstractElement): Unit ={
+  override def afterElementAction(element: URIElement): Unit ={
     //todo: 子线程处理，异步处理
     getCrawler().driver.asyncTask(timeout = 120, name = "report", needThrow = true) {
       if (needReport()) {

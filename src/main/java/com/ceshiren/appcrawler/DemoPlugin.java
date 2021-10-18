@@ -1,6 +1,5 @@
 package com.ceshiren.appcrawler;
 
-import com.ceshiren.appcrawler.data.AbstractElement;
 import com.ceshiren.appcrawler.plugin.Plugin;
 
 public class DemoPlugin extends Plugin {
@@ -11,7 +10,7 @@ public class DemoPlugin extends Plugin {
     }
 
     @Override
-    public void beforeElementAction(AbstractElement element) {
+    public void beforeElementAction(URIElement element) {
         log().info(element);
 
     }
