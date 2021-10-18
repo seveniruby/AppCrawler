@@ -1,7 +1,9 @@
 package com.ceshiren.appcrawler.ut;
 
 import com.ceshiren.appcrawler.plugin.junit5.AllureTemplate;
-import javassist.*;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtConstructor;
 
 
 public class GenerateClassTest {

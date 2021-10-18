@@ -10,7 +10,7 @@ import java.util
 import io.qameta.allure.Description
 
 import scala.io.Source
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class TestJUnit5 {
   @Test

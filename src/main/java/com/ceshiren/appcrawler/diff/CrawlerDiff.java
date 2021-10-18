@@ -1,22 +1,17 @@
 package com.ceshiren.appcrawler.diff;
 
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.*;
-
-import javax.imageio.ImageIO;
-
 import com.ceshiren.appcrawler.ElementInfo;
 import com.ceshiren.appcrawler.URIElementStore;
 import org.yaml.snakeyaml.Yaml;
 import scala.collection.JavaConverters;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.List;
+import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class CrawlerDiff {

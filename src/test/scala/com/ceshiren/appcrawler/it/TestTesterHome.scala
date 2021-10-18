@@ -1,13 +1,12 @@
 package com.ceshiren.appcrawler.it
 
-import java.net.URL
-
 import io.appium.java_client.android.AndroidDriver
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.scalatest._
 
-import scala.collection.JavaConversions._
+import java.net.URL
+import scala.jdk.CollectionConverters._
 
 /**
   * Created by seveniruby on 2017/6/6.
@@ -40,7 +39,7 @@ class TestTesterHome extends FunSuite with BeforeAndAfterAll with BeforeAndAfter
   test("招聘"){
     driver.findElementByXPath("//*[@content-desc='Open navigation drawer']").click()
     driver.findElementByXPath("//*[@text='招聘']").click()
-    driver.getContextHandles.foreach(println)
+    driver.getContextHandles.asScala.foreach(println)
     verbose()
     driver.findElementsByXPath("//*[@text='欢迎报名第三届中国移动互联网测试开发大会']").size() should be >=1
   }

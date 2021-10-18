@@ -1,6 +1,5 @@
 package com.ceshiren.appcrawler.report;
 
-import com.ceshiren.appcrawler.report.Junit5Report;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedInputStream;

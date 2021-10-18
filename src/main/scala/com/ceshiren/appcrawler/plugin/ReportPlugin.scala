@@ -5,8 +5,6 @@ import com.ceshiren.appcrawler.data.AbstractElement
 import com.ceshiren.appcrawler.report.MvnReplace
 
 import java.nio.file.{Files, Paths}
-import com.ceshiren.appcrawler._
-
 import scala.io.Source
 import scala.reflect.io.File
 

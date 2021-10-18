@@ -1,12 +1,10 @@
 package com.ceshiren.appcrawler.plugin.scalatest
 
-import com.ceshiren.appcrawler.data.AbstractElementStore
 import com.ceshiren.appcrawler.{Report, ReportFactory}
-import com.ceshiren.appcrawler.ReportFactory
 import org.scalatest.tools.Runner
 
-import scala.collection.JavaConversions._
 import scala.io.Source
+import scala.jdk.CollectionConverters._
 
 /**
   * Created by seveniruby on 16/8/15.
@@ -18,7 +16,7 @@ class ScalaTestRuntime extends Report {
     ReportFactory.initReportPath(resultDir)
     //为了保持独立使用
 
-    val suites = ReportFactory.store.getElementStoreMap.map(x => x._2.getElement.getUrl.replaceAllLiterally("..", ".")).toList.distinct
+    val suites = ReportFactory.store.getElementStoreMap.asScala.map(x => x._2.getElement.getUrl.replaceAllLiterally("..", ".")).toList.distinct
     var index=0
     suites.foreach(suite => {
       log.info(s"gen testcase class ${suite}")

@@ -1,15 +1,13 @@
 package com.ceshiren.appcrawler.it
 
 import com.ceshiren.appcrawler.XPathUtil
-
-import java.net.URL
-import io.appium.java_client.TouchAction
 import io.appium.java_client.android.AndroidDriver
+import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.{By, WebElement}
-import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
 import org.scalatest.FunSuite
 
-import collection.JavaConversions._
+import java.net.URL
+import scala.jdk.CollectionConverters._
 
 /**
   * Created by seveniruby on 16/11/3.
@@ -40,7 +38,7 @@ class TestWebView extends FunSuite{
     println(XPathUtil.toPrettyXML(xml))
     driver.getContextHandles.toArray.foreach(x=>println(x))
 
-    driver.findElements(By.xpath("//*")).foreach(x=>{
+    driver.findElements(By.xpath("//*")).asScala.foreach(x=>{
       println(x.getText)
       println(x.getTagName)
       println(x.getLocation)
@@ -70,7 +68,7 @@ class TestWebView extends FunSuite{
     Thread.sleep(1000)
 
     println("ddd")
-    driver.findElements(By.xpath("//*[contains(text(), '录')]")).foreach(x=>{
+    driver.findElements(By.xpath("//*[contains(text(), '录')]")).asScala.foreach(x=>{
       println(x.getText)
       println(x.getTagName)
       println(x.getLocation)
@@ -85,7 +83,7 @@ class TestWebView extends FunSuite{
     })
 
     println("ddd")
-    driver.findElements(By.xpath("//button")).foreach(x=>{
+    driver.findElements(By.xpath("//button")).asScala.foreach(x=>{
       println(x.getText)
       println(x.getTagName)
       println(x.getLocation)
@@ -104,7 +102,7 @@ class TestWebView extends FunSuite{
     Thread.sleep(1000)
 
     println("ddd")
-    driver.findElements(By.xpath("//*[contains(., '健康')]")).foreach(x=>{
+    driver.findElements(By.xpath("//*[contains(., '健康')]")).asScala.foreach(x=>{
       println(x.getText)
       println(x.getTagName)
       println(x.getLocation)

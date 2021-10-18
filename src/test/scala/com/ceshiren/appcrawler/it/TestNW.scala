@@ -1,11 +1,11 @@
 package com.ceshiren.appcrawler.it
 
-import java.net.URL
-
-import org.openqa.selenium.chrome.{ChromeOptions, ChromeDriver}
-import org.openqa.selenium.remote.{RemoteWebDriver, DesiredCapabilities}
+import org.openqa.selenium.chrome.{ChromeDriver, ChromeOptions}
+import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
 import org.scalatest.FunSuite
-import collection.JavaConversions._
+
+import java.net.URL
+import scala.jdk.CollectionConverters._
 
 /**
   * Created by seveniruby on 16/11/14.
@@ -20,7 +20,7 @@ class TestNW extends FunSuite{
     val driver=new ChromeDriver(options)
     println(driver.getPageSource)
     Thread.sleep(2000)
-    driver.findElementsByXPath("//label").foreach(x=>{
+    driver.findElementsByXPath("//label").asScala.foreach(x=>{
       println(x.getTagName)
       println(x.getLocation)
       println(x.getText)
@@ -51,7 +51,7 @@ class TestNW extends FunSuite{
     val driver=new RemoteWebDriver(new URL(url), dc)
     println(driver.getPageSource)
     Thread.sleep(2000)
-    driver.findElementsByXPath("//label").foreach(x=>{
+    driver.findElementsByXPath("//label").asScala.foreach(x=>{
       println(x.getTagName)
       println(x.getLocation)
       println(x.getText)

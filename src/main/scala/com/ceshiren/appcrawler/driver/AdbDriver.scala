@@ -1,22 +1,13 @@
 package com.ceshiren.appcrawler.driver
 
 import com.ceshiren.appcrawler.data.AbstractElement
-import com.ceshiren.appcrawler.{AppCrawler, CrawlerConf}
+import com.ceshiren.appcrawler._
+import org.openqa.selenium.Rectangle
 
 import java.awt.{BasicStroke, Color}
-import java.io.{File, StringReader}
-import java.net.URL
-import java.util.concurrent.TimeUnit
-import com.ceshiren.appcrawler._
-
+import java.io.File
 import javax.imageio.ImageIO
-import org.openqa.selenium.interactions.Actions
-import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
-import org.openqa.selenium.{OutputType, Rectangle, TakesScreenshot, WebElement}
-
-import scala.collection.JavaConverters._
-import scala.io.Source
-import sys.process._
+import scala.sys.process._
 
 /**
   * Created by seveniruby on 18/10/31.
@@ -47,7 +38,7 @@ class AdbDriver extends ReactWebDriver{
   }
 
 
-  override def event(keycode: Int): Unit = {
+  override def event(keycode: String): Unit = {
     log.error("not implement")
   }
 

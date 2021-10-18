@@ -2,7 +2,7 @@ package com.ceshiren.appcrawler.data;
 
 import org.apache.commons.text.StringEscapeUtils;
 
-import java.awt.Point;
+import java.awt.*;
 import java.io.File;
 import java.util.Map;
 

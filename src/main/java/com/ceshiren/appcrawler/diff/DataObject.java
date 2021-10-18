@@ -1,17 +1,17 @@
 package com.ceshiren.appcrawler.diff;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.Iterator;
-import java.util.Map;
-
 import com.ceshiren.appcrawler.ElementInfo;
 import com.ceshiren.appcrawler.URIElement;
 import com.ceshiren.appcrawler.URIElementStore;
 import com.ceshiren.appcrawler.data.AbstractElementStore;
 import org.yaml.snakeyaml.Yaml;
 import scala.collection.JavaConverters;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.Iterator;
+import java.util.Map;
 
 public class DataObject 
 {

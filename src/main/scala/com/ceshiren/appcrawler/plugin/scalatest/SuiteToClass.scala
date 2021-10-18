@@ -1,10 +1,9 @@
 package com.ceshiren.appcrawler.plugin.scalatest
 
 import com.ceshiren.appcrawler.{AppCrawler, CommonLog}
-import com.ceshiren.appcrawler.AppCrawler
 import javassist.{ClassPool, CtConstructor}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
 /**

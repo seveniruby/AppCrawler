@@ -1,7 +1,10 @@
 package com.ceshiren.appcrawler;
 
 import com.ceshiren.appcrawler.plugin.scalatest.SuiteToClass$;
-import javassist.*;
+import javassist.CannotCompileException;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtConstructor;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

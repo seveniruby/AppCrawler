@@ -279,17 +279,6 @@ object AppCrawler extends CommonLog {
           return
         }
 
-        //todo: 自动生成基于PO的自动化测试用例
-        if (config.template != "") {
-          val template = new TemplateSource
-          if (config.appium.nonEmpty) {
-            template.getPageSource(config.appium)
-          } else {
-            template.read(s"${crawlerConf.resultDir}/elements.yml")
-          }
-          template.write(config.template, crawlerConf.resultDir + "/template/")
-          return
-        }
 
         //生成demo示例文件
         if (config.demo) {

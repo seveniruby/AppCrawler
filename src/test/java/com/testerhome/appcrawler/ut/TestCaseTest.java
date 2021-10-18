@@ -2,6 +2,7 @@ package com.ceshiren.appcrawler.ut;
 
 import com.ceshiren.appcrawler.AppCrawler;
 import org.junit.Test;
+
 import java.util.Date;
 
 public class TestCaseTest {

@@ -3,7 +3,9 @@ package com.ceshiren.appcrawler.ut;
 import com.ceshiren.appcrawler.report.ReadYaml;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class Junit5TemplateTest {
     Map map;

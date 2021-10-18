@@ -1,12 +1,12 @@
 package com.ceshiren.appcrawler.it
 
-import java.net.URL
-
 import io.appium.java_client.android.AndroidDriver
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.scalatest._
-import scala.collection.JavaConversions._
+
+import java.net.URL
+import scala.jdk.CollectionConverters._
 
 /**
   * Created by seveniruby on 2017/6/6.
@@ -62,7 +62,7 @@ class TestJianShu extends FunSuite with BeforeAndAfterAll with BeforeAndAfterEac
     driver.findElementByXPath("//*[@text='跳过']").click()
     driver.findElementByXPath("//*[@text='随便看看']").click()
     verbose()
-    driver.findElementsByXPath("//*[contains(@resource-id, 'tag_flow_layout')]//*[contains(name(),'TextView')]").foreach(tag => {
+    driver.findElementsByXPath("//*[contains(@resource-id, 'tag_flow_layout')]//*[contains(name(),'TextView')]").asScala.foreach(tag => {
       tag.click()
       Thread.sleep(1000)
       driver.findElementsByXPath("//*[@text='关注']").size() should be >=1

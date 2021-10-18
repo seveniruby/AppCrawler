@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler.data;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.ceshiren.appcrawler.URIElementStore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.io.Serializable;
 import java.util.List;

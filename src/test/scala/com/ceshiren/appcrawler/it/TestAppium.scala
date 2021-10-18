@@ -1,8 +1,5 @@
 package com.ceshiren.appcrawler.it
 
-import java.net.URL
-import java.util.concurrent.TimeUnit
-
 import com.ceshiren.appcrawler.driver.AppiumClient
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.remote.{AndroidMobileCapabilityType, MobileCapabilityType}
@@ -10,7 +7,8 @@ import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.scalatest.FunSuite
 
-import scala.io.Source
+import java.net.URL
+import java.util.concurrent.TimeUnit
 
 /**
   * Created by seveniruby on 16/9/24.

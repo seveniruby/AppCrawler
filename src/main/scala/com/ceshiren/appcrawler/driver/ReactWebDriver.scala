@@ -1,15 +1,12 @@
 package com.ceshiren.appcrawler.driver
 
 import com.ceshiren.appcrawler.data.AbstractElement
-import com.ceshiren.appcrawler.{AppCrawler, CommonLog, Crawler, TData, XPathUtil}
+import com.ceshiren.appcrawler._
+import org.openqa.selenium.Rectangle
+import org.w3c.dom.Document
 
 import java.io.File
 import java.util.concurrent.{Callable, Executors, TimeUnit, TimeoutException}
-import com.ceshiren.appcrawler._
-import org.openqa.selenium.Rectangle
-import org.openqa.selenium.remote.DesiredCapabilities
-import org.w3c.dom.Document
-
 import scala.collection.mutable.ListBuffer
 import scala.util.{Failure, Success, Try}
 
@@ -282,7 +279,7 @@ abstract class ReactWebDriver extends CommonLog {
     }
   }
 
-  def event(keycode: Int): Unit = {}
+  def event(keycode: String): Unit = {}
   def mark(fileName: String, newImageName:String,  x: Int, y: Int, w: Int, h: Int): Unit
   def getRect(): Rectangle
 

@@ -1,6 +1,5 @@
 package com.ceshiren.appcrawler;
 
-import com.ceshiren.appcrawler.Crawler;
 import com.ceshiren.appcrawler.data.AbstractElement;
 import com.ceshiren.appcrawler.plugin.Plugin;
 

@@ -8,7 +8,7 @@ import javax.imageio.ImageIO
 import net.sourceforge.tess4j.ITessAPI.TessPageIteratorLevel
 import org.scalatest.FunSuite
 import net.sourceforge.tess4j._
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 
 
 /**

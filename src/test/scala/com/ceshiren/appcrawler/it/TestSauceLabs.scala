@@ -1,10 +1,10 @@
 package com.ceshiren.appcrawler.it
 
-import java.net.URL
-
 import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
 import org.scalatest.FunSuite
-import scala.collection.JavaConversions._
+
+import java.net.URL
+import scala.jdk.CollectionConverters._
 
 class TestSauceLabs extends FunSuite{
 
@@ -35,10 +35,10 @@ class TestSauceLabs extends FunSuite{
     val driver=new RemoteWebDriver(new URL(url), capability)
     println(driver.getPageSource)
     driver.findElementsByXPath("//*[@label='OK']") match {
-      case array if array.size()>0 => array.head.click()
+      case array if array.size()>0 => array.asScala.head.click()
       case _ => println("no OK alert")
     }
-    driver.findElementsByXPath("//*").foreach(x=>{
+    driver.findElementsByXPath("//*").asScala.foreach(x=>{
       println(x)
       println(x.getText)
     })

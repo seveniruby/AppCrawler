@@ -1,15 +1,12 @@
 package com.ceshiren.appcrawler.driver
 
 import com.ceshiren.appcrawler.data.AbstractElement
-import com.ceshiren.appcrawler.{AppCrawler, CrawlerConf}
+import com.ceshiren.appcrawler._
+import org.openqa.selenium.Rectangle
 
 import java.awt.{BasicStroke, Color}
 import java.io.File
-import com.ceshiren.appcrawler._
-
 import javax.imageio.ImageIO
-import org.openqa.selenium.Rectangle
-
 import scala.sys.process._
 
 /**
@@ -42,7 +39,7 @@ class MockDriver extends ReactWebDriver{
   }
 
 
-  override def event(keycode: Int): Unit = {
+  override def event(keycode: String): Unit = {
     log.error("not implement")
   }
 

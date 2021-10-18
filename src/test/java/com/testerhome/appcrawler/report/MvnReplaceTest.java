@@ -1,6 +1,5 @@
 package com.ceshiren.appcrawler.report;
 
-import com.ceshiren.appcrawler.report.MvnReplace;
 import org.junit.jupiter.api.Test;
 
 class MvnReplaceTest {

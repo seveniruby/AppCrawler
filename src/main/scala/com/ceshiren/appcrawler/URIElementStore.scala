@@ -1,8 +1,7 @@
 package com.ceshiren.appcrawler
 
-import com.ceshiren.appcrawler.data.{AbstractElement, AbstractElementInfo, AbstractElementStore}
 import com.ceshiren.appcrawler.data.AbstractElementStore.Status
-import com.ceshiren.appcrawler.data.AbstractElementStore
+import com.ceshiren.appcrawler.data.{AbstractElement, AbstractElementInfo, AbstractElementStore}
 
 import java.util
 import scala.collection.JavaConverters

@@ -2,13 +2,14 @@ package com.ceshiren.appcrawler.it;
 
 import com.google.common.collect.ImmutableMap;
 import io.appium.java_client.AppiumDriver;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.remote.DesiredCapabilities;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.Arrays;
 
 public class TestBackDoor {
 

@@ -1,25 +1,17 @@
 package com.ceshiren.appcrawler.driver
 
 import com.ceshiren.appcrawler.data.AbstractElement
-import com.ceshiren.appcrawler.{AppCrawler, CrawlerConf, TData}
-
-import java.awt.{BasicStroke, Color}
-import java.io.File
-import java.net.URL
-import java.time.Duration
-import java.util.concurrent.TimeUnit
-import com.ceshiren.appcrawler.AppCrawler
-import io.appium.java_client.touch.offset.{ElementOption, PointOption}
-import io.appium.java_client.touch.{LongPressOptions, TapOptions}
-import io.appium.java_client.{AppiumDriver, TouchAction}
-
-import javax.imageio.ImageIO
+import com.ceshiren.appcrawler.{AppCrawler, CrawlerConf, DynamicEval, TData}
 import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
 import org.openqa.selenium.{OutputType, Rectangle, TakesScreenshot, WebElement}
 
-import scala.collection.JavaConverters._
-import scala.sys.process._
+import java.awt.{BasicStroke, Color}
+import java.io.File
+import java.net.URL
+import java.util.concurrent.TimeUnit
+import javax.imageio.ImageIO
+import scala.jdk.CollectionConverters._
 
 /**
   * Created by seveniruby on 16/8/9.
@@ -53,7 +45,7 @@ class SeleniumDriver extends ReactWebDriver{
   }
 
 
-  override def event(keycode: Int): Unit = {
+  override def event(keycode: String): Unit = {
     log.error("not implement")
   }
 

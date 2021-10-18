@@ -1,7 +1,5 @@
 package com.ceshiren.appcrawler;
 
-import com.ceshiren.appcrawler.AppCrawler$;
-
 public class Demo {
     public void hello(){
 

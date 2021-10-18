@@ -1,11 +1,9 @@
 package com.ceshiren.appcrawler.plugin
 
-import com.ceshiren.appcrawler.URIElement
 import com.ceshiren.appcrawler.data.AbstractElement
-
-import java.util.logging.Level
 import com.ceshiren.appcrawler.driver.AppiumClient
 
+import java.util.logging.Level
 import scala.collection.mutable.ListBuffer
 import scala.reflect.io.File
 

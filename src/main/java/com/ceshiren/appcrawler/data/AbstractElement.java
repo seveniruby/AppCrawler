@@ -1,9 +1,9 @@
 package com.ceshiren.appcrawler.data;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.ceshiren.appcrawler.URIElement;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-import java.awt.Point;
+import java.awt.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

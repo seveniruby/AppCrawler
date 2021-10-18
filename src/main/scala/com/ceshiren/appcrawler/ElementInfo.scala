@@ -1,8 +1,7 @@
 package com.ceshiren.appcrawler
 
-import com.ceshiren.appcrawler.data.{AbstractElement, AbstractElementInfo}
 import com.ceshiren.appcrawler.data.AbstractElementStore.Status
-import com.ceshiren.appcrawler.data.AbstractElementInfo
+import com.ceshiren.appcrawler.data.{AbstractElement, AbstractElementInfo}
 
 case class ElementInfo(
                         var reqDom: String = "",

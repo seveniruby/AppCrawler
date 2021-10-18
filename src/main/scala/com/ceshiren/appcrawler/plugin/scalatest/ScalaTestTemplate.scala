@@ -1,13 +1,11 @@
 package com.ceshiren.appcrawler.plugin.scalatest
 
-import com.ceshiren.appcrawler.data.AbstractElementStore
-import com.ceshiren.appcrawler.{AppCrawler, CommonLog, ReportFactory, XPathUtil}
 import com.ceshiren.appcrawler.data.AbstractElementStore.Status
-import com.ceshiren.appcrawler._
+import com.ceshiren.appcrawler.{AppCrawler, CommonLog, ReportFactory, XPathUtil}
 import org.scalatest
 import org.scalatest._
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.reflect.io.File
 
 /**
@@ -21,7 +19,7 @@ class ScalaTestTemplate extends FunSuite with BeforeAndAfterAllConfigMap with Ma
 
   def addTestCase() {
 
-    ReportFactory.getSelected(uri).foreach(ele => {
+    ReportFactory.getSelected(uri).asScala.foreach(ele => {
       val testcase = ele.getElement.getXpath.replace("\\", "\\\\")
         .replace("\"", "\\\"")
         .replace("\n", "")

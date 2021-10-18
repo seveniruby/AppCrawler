@@ -286,7 +286,7 @@ class TestCrawler extends FunSuite with Matchers{
   }
 
   test("whilespace"){
-    "abc\000df\001ef\nfef中国s\088\\x00x00f".foreach(x=>{
+    "abc\u00df\u01ef\nfef中国s\u0088\\x00x00f".foreach(x=>{
       println(x)
       println(x.isWhitespace)
     })

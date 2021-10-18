@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.plugin
 
-import sys.process._
+import scala.sys.process._
 /**
   * Created by seveniruby on 16/4/26.
   */

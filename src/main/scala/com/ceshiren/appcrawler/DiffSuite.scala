@@ -1,12 +1,11 @@
 package com.ceshiren.appcrawler
 
-import com.ceshiren.appcrawler.data.{AbstractElement, AbstractElementInfo}
 import com.ceshiren.appcrawler.data.AbstractElementStore.Status
-import com.ceshiren.appcrawler.data.AbstractElementInfo
+import com.ceshiren.appcrawler.data.{AbstractElement, AbstractElementInfo}
 import com.ceshiren.appcrawler.plugin.scalatest.SuiteToClass
 import org.scalatest._
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.reflect.io.File
 
 /**
@@ -35,7 +34,7 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
           DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.getResDom))
             .flatten.map(m=>{
             log.info(AppCrawler.factory)
-            val ele=AppCrawler.factory.generateElement(m, key)
+            val ele=AppCrawler.factory.generateElement(m.asJava, key)
             ele.getXpath->ele
           }).toMap
         }
@@ -49,7 +48,7 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
         case Some(elementInfo) if elementInfo.getAction==Status.CLICKED && elementInfo.getResDom.nonEmpty => {
           DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.getResDom))
             .flatten.map(m=>{
-            val ele=AppCrawler.factory.generateElement(m, key)
+            val ele=AppCrawler.factory.generateElement(m.asJava, key)
             ele.getXpath->ele
           }).toMap
         }
@@ -118,8 +117,8 @@ class DiffSuite extends FunSuite with Matchers with CommonLog{
 }
 
 object DiffSuite {
-  val masterStore : scala.collection.mutable.Map[String, AbstractElementInfo] = ReportFactory.getInstance().loadResult(s"${ReportFactory.master}/elements.yml").getElementStoreMap
-  val candidateStore : scala.collection.mutable.Map[String, AbstractElementInfo] = ReportFactory.getInstance().loadResult(s"${ReportFactory.candidate}/elements.yml").getElementStoreMap
+  val masterStore : scala.collection.mutable.Map[String, AbstractElementInfo] = ReportFactory.getInstance().loadResult(s"${ReportFactory.master}/elements.yml").getElementStoreMap.asScala
+  val candidateStore : scala.collection.mutable.Map[String, AbstractElementInfo] = ReportFactory.getInstance().loadResult(s"${ReportFactory.candidate}/elements.yml").getElementStoreMap.asScala
   val blackList = List(".*\\.instance.*", ".*bounds.*")
   val range=List("//*[contains(name(), 'Text')]", "//*[contains(name(), 'Image')]", "//*[contains(name(), 'Button')]")
   def saveTestCase(): Unit ={

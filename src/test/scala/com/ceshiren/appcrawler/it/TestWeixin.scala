@@ -1,21 +1,16 @@
 package com.ceshiren.appcrawler.it
 
-import com.ceshiren.appcrawler.XPathUtil
-
-import java.net.URL
-import java.util.concurrent.TimeUnit
-import java.util.logging.Level
 import com.ceshiren.appcrawler.driver.AppiumClient
 import io.appium.java_client.android.AndroidDriver
-import io.appium.java_client.remote.MobileCapabilityType
 import org.openqa.selenium.chrome.ChromeOptions
-import org.openqa.selenium.logging.{LogType, LoggingPreferences}
-import org.openqa.selenium.remote.{CapabilityType, DesiredCapabilities, RemoteWebDriver}
+import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
 import org.openqa.selenium.{By, WebElement}
 import org.scalatest.FunSuite
 
-import scala.collection.JavaConversions._
+import java.net.URL
+import java.util.concurrent.TimeUnit
 import scala.collection.mutable.ListBuffer
+import scala.jdk.CollectionConverters._
 
 /**
   * Created by seveniruby on 16/11/3.
@@ -59,7 +54,7 @@ class TestWeixin extends FunSuite {
     while (true) {
       try {
         val friends = driver.findElementsByXPath("//*[@resource-id='com.tencent.mm:id/a8s']")
-        friends.foreach(image => {
+        friends.asScala.foreach(image => {
           image.click()
           val e = driver.findElementByXPath("//*[@text='发消息' or @text='添加到通讯录']")
           if (e.getText == "添加到通讯录") {
@@ -168,7 +163,7 @@ class TestWeixin extends FunSuite {
     var index=0
     do {
       println(s"index=${index} by=${by}")
-      head=driver.findElements(by).toList.headOption
+      head=driver.findElements(by).asScala.toList.headOption
       index+=1
     }while(head==None && index<10)
     head match {
@@ -276,7 +271,7 @@ class TestWeixin extends FunSuite {
     driver.context("WEBVIEW_com.tencent.mm:tools")
 
     println(driver.getPageSource)
-    driver.findElementsByXPath("//*").foreach(x => println(x.getText))
+    driver.findElementsByXPath("//*").asScala.foreach(x => println(x.getText))
 
 
     //driver.context("WEBVIEW_com.tencent.mm:tools")
@@ -303,10 +298,10 @@ class TestWeixin extends FunSuite {
     //driver.get("http://www.baidu.com")
 
     println(driver.getPageSource)
-    driver.findElementsByXPath("//button").foreach(x => println(x.getText))
+    driver.findElementsByXPath("//button").asScala.foreach(x => println(x.getText))
     driver.findElementByXPath("//*[text()='美食']").click
     println(driver.getPageSource)
-    driver.findElementsByXPath("//title").foreach(x => println(x.getText))
+    driver.findElementsByXPath("//title").asScala.foreach(x => println(x.getText))
     driver.quit()
 
   }

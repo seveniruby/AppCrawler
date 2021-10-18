@@ -7,6 +7,7 @@ import java.io.File
 import java.nio.charset.Charset
 import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
 import scala.tools.nsc.interpreter.IMain
+import scala.tools.nsc.interpreter.shell.{ReplReporterImpl, ShellConfig}
 import scala.tools.nsc.{Global, Settings}
 import scala.util.{Failure, Success, Try}
 
@@ -37,7 +38,10 @@ class DynamicEval(val outputDir:String="") extends CommonLog{
   settingsEval.unchecked.value = true // enable detailed unchecked warnings
   settingsEval.usejavacp.value = true
 
-  val interpreter = new IMain(settingsEval)
+  val config = ShellConfig(settingsEval)
+
+  val flusher = new ReplReporterImpl(config, settingsEval)
+  val interpreter = new IMain(settingsEval, flusher)
 
   def compile(fileNames:List[String]): Unit ={
     run.compile(fileNames)

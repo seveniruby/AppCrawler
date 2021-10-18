@@ -1,8 +1,7 @@
 package com.ceshiren.appcrawler
 
-import com.ceshiren.appcrawler.data.{AbstractElementInfo, AbstractElementStore}
 import com.ceshiren.appcrawler.data.AbstractElementStore.Status
-import com.ceshiren.appcrawler.data.AbstractElementStore
+import com.ceshiren.appcrawler.data.{AbstractElementInfo, AbstractElementStore}
 import com.ceshiren.appcrawler.plugin.junit5.JUnit5Runtime
 import com.ceshiren.appcrawler.plugin.scalatest.ScalaTestRuntime
 

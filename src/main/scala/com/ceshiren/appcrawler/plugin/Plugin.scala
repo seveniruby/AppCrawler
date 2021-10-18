@@ -2,7 +2,6 @@ package com.ceshiren.appcrawler.plugin
 
 import com.ceshiren.appcrawler.data.AbstractElement
 import com.ceshiren.appcrawler.{AppCrawler, CommonLog, Crawler}
-import com.ceshiren.appcrawler.CommonLog
 
 /**
   * Created by seveniruby on 16/1/7.

@@ -61,8 +61,8 @@ case class TreeNode[T](
   }
 
   def traversal[T](tree: TreeNode[T],
-                   before: (TreeNode[T]) => Any = (x: TreeNode[T]) => Unit,
-                   after: (TreeNode[T]) => Any = (x: TreeNode[T]) => Unit): Unit = {
+                   before: (TreeNode[T]) => Any = (x: TreeNode[T]) => (),
+                   after: (TreeNode[T]) => Any = (x: TreeNode[T]) => ()): Unit = {
     before(tree)
     tree.children.foreach(t => {
       traversal(t, before, after)

@@ -1,20 +1,18 @@
 package com.ceshiren.appcrawler.driver
 
-import com.ceshiren.appcrawler.AppCrawler
 import com.ceshiren.appcrawler.data.AbstractElement
-
-import java.io.File
-import java.net.URL
-import java.time.Duration
-import java.util.concurrent.TimeUnit
-import com.ceshiren.appcrawler.AppCrawler
+import com.ceshiren.appcrawler.{AppCrawler, AppiumTouchAction, DynamicEval}
 import io.appium.java_client.android.AndroidDriver
+import io.appium.java_client.android.nativekey.{AndroidKey, KeyEvent}
 import io.appium.java_client.ios.IOSDriver
 import io.appium.java_client.touch.offset.{ElementOption, PointOption}
 import io.appium.java_client.touch.{LongPressOptions, TapOptions}
 import io.appium.java_client.{AppiumDriver, MobileElement, Setting, TouchAction}
 
-import scala.collection.JavaConverters._
+import java.io.File
+import java.net.URL
+import java.time.Duration
+import scala.jdk.CollectionConverters._
 
 /**
   * Created by seveniruby on 16/8/9.
@@ -74,11 +72,11 @@ class AppiumClient extends SeleniumDriver {
   }
 
 
-  override def event(keycode: Int): Unit = {
+  override def event(keycode: String): Unit = {
     driver match {
       case android: AndroidDriver[_] => {
         log.info(s"send event ${keycode}")
-        androidDriver.pressKeyCode(keycode)
+        androidDriver.pressKey(new KeyEvent(AndroidKey.valueOf(keycode)))
       }
       case ios: IOSDriver[_] => {
         log.error("no event for ios")
