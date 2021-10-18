@@ -51,6 +51,7 @@ case class Step(given: List[String] = List[String](),
   }
 
   def getAction(): String = {
+    //todo: 支持actions
     val result = if (when == null) {
       action
     } else {

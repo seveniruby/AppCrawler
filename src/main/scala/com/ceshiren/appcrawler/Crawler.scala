@@ -905,7 +905,7 @@ class Crawler extends CommonLog {
     */
   @tailrec
   final def crawl(): Unit = {
-    if (exitCrawl == true) {
+    if (exitCrawl) {
       log.fatal("exitCrawl=true, return")
       return
     }

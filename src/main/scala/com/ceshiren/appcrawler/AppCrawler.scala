@@ -12,9 +12,9 @@ import java.nio.charset.Charset
 object AppCrawler extends CommonLog {
   val banner =
     """
-      |--------------------------------
-      |app爬虫, 用于自动遍历测试. 支持Android和iOS, 支持真机和模拟器
-      |--------------------------------
+      |------------------------------
+      |appcrawler 全平台自动遍历测试工具
+      |------------------------------
       |
     """.stripMargin
 
