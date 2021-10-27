@@ -8,7 +8,7 @@ public class ElementUrlTest {
     @Test
     public void test1(){
         URIElement element = new URIElement("com.xueqiu.android.MainActivity",
-                "TextView",
+                "TextView", "TextView",
                 "agree",
                 "","好的","","7","","","","",
                 0,0,0,0,"");

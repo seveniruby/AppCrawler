@@ -17,6 +17,8 @@ case class URIElement(
                        var url: String = "",
                        @XmlAttribute(name = "tag")
                        var tag: String = "",
+                       @XmlAttribute(name = "class")
+                       var className: String = "",
                        @XmlAttribute(name = "id")
                        var id: String = "",
                        @XmlAttribute(name = "name")
@@ -52,7 +54,7 @@ case class URIElement(
   //定义url是遍历的关键. 这是一门艺术
 
   def this() {
-    this("", "", "", "", "", "", "", "", "", "", "", 0, 0, 0, 0, "")
+    this("", "", "", "", "", "", "", "", "", "", "", "", 0, 0, 0, 0, "")
   }
 
   def this(nodeMap: scala.collection.Map[String, Any], uri: String) = {
@@ -62,6 +64,7 @@ case class URIElement(
     this()
     this.url = uri
     this.tag = nodeMap.getOrElse("name()", "").toString
+    this.className = nodeMap.getOrElse("class", "").toString
     this.id = nodeMap.getOrElse("name", "").toString
     this.name = nodeMap.getOrElse("label", "").toString
     this.text = nodeMap.getOrElse("value", "").toString
@@ -109,7 +112,7 @@ case class URIElement(
 
   }
 
-   override def toString: String = {
+  override def toString: String = {
     val fileName = new StringBuilder()
     fileName.append(url.replace(File.separatorChar, '_'))
     fileName.append(s".tag=${tag.replace("android.widget.", "").replace("Activity", "")}")
@@ -127,10 +130,13 @@ case class URIElement(
       fileName.append(s".name=${name}")
     }
     if (text.nonEmpty) {
-      fileName.append(s".text=${StringEscapeUtils.unescapeHtml4(text).replace(File.separator, "+")}")
+      fileName.append(s".text=${text}")
     }
+    fileName.toString()
+  }
 
-    standardWinFileName(fileName.toString())
+  def toFileName(): String = {
+    standardWinFileName(StringEscapeUtils.unescapeHtml4(this.toString).replace(File.separator, "+"))
   }
 
 
@@ -141,7 +147,7 @@ case class URIElement(
     new java.math.BigInteger(1, m.digest()).toString(16)
   }
 
-   def elementUri(): String = {
+  def elementUri(): String = {
     this.toString
   }
 
@@ -161,67 +167,67 @@ case class URIElement(
     }
   }
 
-   def setId(id: String): Unit = {
+  def setId(id: String): Unit = {
     this.id = id
   }
 
-   def setName(name: String): Unit = {
+  def setName(name: String): Unit = {
     this.name = name
   }
 
-   def setTag(tag: String): Unit = {
+  def setTag(tag: String): Unit = {
     this.tag = tag
   }
 
-   def setAction(action: String): Unit = {
+  def setAction(action: String): Unit = {
     this.action = action
   }
 
-   def getId: String = {
+  def getId: String = {
     id
   }
 
-   def getName: String = {
+  def getName: String = {
     name
   }
 
-   def getTag: String = {
+  def getTag: String = {
     tag
   }
 
-   def getText: String = {
+  def getText: String = {
     text
   }
 
-   def getInstance(): String = {
+  def getInstance(): String = {
     instance
   }
 
-   def getValid: String = {
+  def getValid: String = {
     valid
   }
 
-   def getX: Int = {
+  def getX: Int = {
     x
   }
 
-   def getY: Int = {
+  def getY: Int = {
     y
   }
 
-   def getWidth: Int = {
+  def getWidth: Int = {
     width
   }
 
-   def getHeight: Int = {
+  def getHeight: Int = {
     height
   }
 
-   def getDepth: String = {
+  def getDepth: String = {
     depth
   }
 
-   def getSelected: String = {
+  def getSelected: String = {
     selected
   }
 

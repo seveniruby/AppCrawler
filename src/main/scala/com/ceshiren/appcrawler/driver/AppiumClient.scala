@@ -28,7 +28,9 @@ class AppiumClient extends SeleniumDriver {
     this
     log.addAppender(AppCrawler.fileAppender)
 
-    configMap.foreach(c => config(c._1, c._2))
+    val settings = configMap.getOrElse("settings", Map[String, String]())
+
+    configMap.filterNot(x => x._1.equals("settings")).foreach(c => config(c._1, c._2))
     config("newCommandTimeout", 120)
     //todo: 无法通过url来确定是否是android, 需要改进
     if (capabilities.getCapability("app") == null) {
@@ -47,8 +49,9 @@ class AppiumClient extends SeleniumDriver {
         config("platformName", platformName)
         androidDriver = new AndroidDriver[MobileElement](new URL(url), capabilities)
         //todo: 8.0上的idle的问题
-        androidDriver.setSetting(Setting.WAIT_FOR_IDLE_TIMEOUT, 0)
+        //        androidDriver.setSetting(Setting.WAIT_FOR_IDLE_TIMEOUT, 0)
         //androidDriver.setSetting(Setting.WAIT_FOR_SELECTOR_TIMEOUT, 0)
+
         appiumDriver = androidDriver
         driver = appiumDriver
       }
@@ -63,6 +66,10 @@ class AppiumClient extends SeleniumDriver {
         driver = appiumDriver
       }
     }
+
+    settings.asInstanceOf[Map[String, Any]].foreachEntry((k, v) => {
+      appiumDriver.setSetting(k, v)
+    })
 
     getDeviceInfo()
     log.info(s"capture dir = ${new File(".").getAbsolutePath}")

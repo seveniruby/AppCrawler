@@ -1,8 +1,8 @@
-## 配置参数说明
+# appcrawler
 
 Appcrawler是一个基于自动遍历的App爬虫工具，支持Android和IOS，支持真机和模拟器。最大的特点是灵活性高，可通过配置来设定遍历的规则
 
-### 启动Appcrawler
+## quick start
 
 ```bash
 Usage: java -jar appcrawler.jar [options]
@@ -58,7 +58,7 @@ Usage: java -jar appcrawler.jar [options]
 示例 : java -jar appcrawler.jar --help
 ```
 
-### 配置文件格式
+## 配置文件格式
 
 **以YAML格式为例，以下为默认配置 :**
 
@@ -130,5 +130,5 @@ assertGlobal:           /** 断言，只需要写given与then即可 */
 ## 编译
 
 ```bash
-mvn clean package assembly:single
+mvn clean package assembly:single -DskipTests
 ```

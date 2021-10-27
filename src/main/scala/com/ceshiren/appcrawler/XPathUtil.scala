@@ -262,19 +262,19 @@ object XPathUtil extends CommonLog {
             })
           }
 
-
           //todo: 支持selendroid
           //如果是android 转化为和iOS相同的结构
           //name=resource-id label=content-desc value=text
           if (nodeMap.contains("resource-id")) {
             nodeMap("name") = nodeMap("resource-id").toString
-            if (nodeMap.contains("text")) {
-              nodeMap("value") = nodeMap("text")
-            }
-            if (nodeMap.contains("content-desc")) {
-              nodeMap("label") = nodeMap("content-desc")
-            }
+          }
 
+          if (nodeMap.contains("content-desc")) {
+            nodeMap("label") = nodeMap("content-desc")
+          }
+
+          if (nodeMap.contains("text")) {
+            nodeMap("value") = nodeMap("text")
           }
 
           //selenium

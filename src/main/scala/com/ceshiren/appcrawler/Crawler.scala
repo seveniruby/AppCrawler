@@ -106,7 +106,7 @@ class Crawler extends CommonLog {
     */
   def loadConf(crawlerConf: CrawlerConf): Unit = {
     conf = crawlerConf
-    AppCrawler.factory =new URIElementFactory()
+    AppCrawler.factory = new URIElementFactory()
     store = AppCrawler.factory.generateElementStore
     log.setLevel(GA.logLevel)
   }
@@ -235,7 +235,7 @@ class Crawler extends CommonLog {
   }
 
   def getEventElement(actionName: String): URIElement = {
-    val defaultElement = AppCrawler.factory.generateElement(currentUrl, "", "", "", "", "", "", "", "", "/*/*", "", 0, 0, driver.screenWidth, driver.screenHeight, "")
+    val defaultElement = AppCrawler.factory.generateElement(currentUrl, "", "", "", "", "", "", "", "", "", "/*/*", "", 0, 0, driver.screenWidth, driver.screenHeight, "")
     val element = driver.asyncTask()(
       //刷新失败时会报错，所以增加一个判断
       if (driver.currentPageDom != null) {
@@ -290,6 +290,7 @@ class Crawler extends CommonLog {
         driver = new AdbDriver(url, conf.capability)
       }
 
+
       //todo: 把androidDriver与seleniumdriver独立
       //todo: 支持图片
       //todo: 支持web、windows、mac
@@ -303,6 +304,11 @@ class Crawler extends CommonLog {
           log.error("please set sikuliImages with your images directory")
         }
       }*/
+
+      case "csras" => {
+        log.info("user CSRAS CSRAccessibilityService")
+        driver = new CSRASDriver(url, conf.capability)
+      }
       case _ => {
         log.info("use AppiumClient")
         log.info(conf.capability)
@@ -477,8 +483,9 @@ class Crawler extends CommonLog {
     conf.selectedList.foreach(step => {
       log.trace(s"selectedList xpath =  ${step.getXPath()}")
       val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom)
-        .map(e=>AppCrawler.factory.generateElement(e, currentUrl))
-      temp.foreach(log.trace)
+        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
+      temp.foreach(x => log.trace(x.toString))
+
       selectedElements ++= temp
     })
     selectedElements = selectedElements.distinct
@@ -489,7 +496,7 @@ class Crawler extends CommonLog {
     conf.blackList.foreach(step => {
       log.trace(s"blackList xpath =  ${step.getXPath()}")
       val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom)
-        .map(e=>AppCrawler.factory.generateElement(e, currentUrl))
+        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
       temp.foreach(log.trace)
       blackElements ++= temp
     })
@@ -555,7 +562,7 @@ class Crawler extends CommonLog {
     conf.lastList.foreach(step => {
       log.trace(s"lastList xpath = ${step.getXPath()}")
       val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom)
-        .map(e=>AppCrawler.factory.generateElement(e, currentUrl))
+        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
         .intersect(selectedElements)
       temp.foreach(log.trace)
       lastElements ++= temp
@@ -701,7 +708,7 @@ class Crawler extends CommonLog {
 
 
   def beforeElementAction(element: URIElement): Unit = {
-    log.debug(s"push ${element.elementUri()}")
+    log.info(s"${element.elementUri()}")
     store.setElementClicked(element)
     //todo: 改进设计
     driver.currentURIElement = element
@@ -739,8 +746,10 @@ class Crawler extends CommonLog {
     }
 
     store.saveResTime(new SimpleDateFormat("YYYY/MM/dd HH:mm:ss.SSS").format(new Date()))
-    saveDom()
+
     saveScreen()
+    //放到截图后更稳妥
+    saveDom()
 
     store.saveResHash(contentHash.last().toString)
     store.saveResImg(getBasePathName() + ".clicked.png")
@@ -1038,8 +1047,8 @@ class Crawler extends CommonLog {
             afterAllRetry += 1
             log.info(s"afterAll=${afterAllRetry}")
           } else {
-            afterAllRetry = 0
-            log.info("afterAllRetry = 0 because of last action not equal to after")
+            //            afterAllRetry = 0
+            //            log.info("afterAllRetry = 0 because of last action not equal to after")
           }
           conf.afterAll.foreach(step => {
             step.getGiven().forall(g => driver.getNodeListByKey(g).size > 0) match {
@@ -1054,7 +1063,7 @@ class Crawler extends CommonLog {
             }
           })
         } else {
-          log.warn("no afterAll, do not use after")
+          log.trace("no afterAll, do not use after")
         }
       }
       /*      case "monkey" => {
@@ -1117,6 +1126,12 @@ class Crawler extends CommonLog {
         }
       }
     }
+
+    if (!element.getAction.equals(afterAllAction)) {
+      afterAllRetry = 0
+      log.info("afterAllRetry = 0 because of last action not equal to after")
+    }
+
     if (conf.afterElementWait > 0) {
       log.info(s"sleep ${conf.afterElementWait} ms")
       Thread.sleep(conf.afterElementWait)
@@ -1149,12 +1164,12 @@ class Crawler extends CommonLog {
   def getBasePathName(right: Int = 1): String = {
     //序号_文件名
     val element = store.getClickedElementsList.takeRight(right).head
-    s"${conf.resultDir}/${store.getClickedElementsList.size - right}_" + element.elementUri().take(100)
+    s"${conf.resultDir}/${store.getClickedElementsList.size - right}_" + element.toFileName().take(100)
   }
 
   def saveDom(): Unit = {
     //保存dom结构
-    val domPath = getBasePathName() + ".dom"
+    val domPath = getBasePathName() + ".clicked.xml"
     //感谢QQ:434715737的反馈
     log.info(s"save to ${domPath}")
     driver.asyncTask(name = "saveDom") {

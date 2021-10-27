@@ -42,7 +42,7 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
         }
         case None => {
           //用于生成steps的用例
-          val ele = AppCrawler.factory.generateElement("Steps", "", "", "NOT_FOUND", "", "", "", "", "", "xpath", "", 0, 0, 0, 0, "")
+          val ele = AppCrawler.factory.generateElement("Steps", "", "", "", "NOT_FOUND", "", "", "", "", "", "xpath", "", 0, 0, 0, 0, "")
 
           ele.setAction("_Log")
           // testcase里的操作也要记录下来

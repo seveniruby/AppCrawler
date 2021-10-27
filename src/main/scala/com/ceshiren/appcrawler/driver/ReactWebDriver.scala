@@ -89,7 +89,7 @@ abstract class ReactWebDriver extends CommonLog {
       asyncTask(40, name = "getPageSource")(getPageSource) match {
         case Left(v) => {
           log.trace("get raw page source success")
-          log.trace(v)
+//          log.trace(v)
           //todo: wda返回的不是标准的xml
           val xmlStr=v match {
               //todo: 更严格判断
@@ -118,7 +118,7 @@ abstract class ReactWebDriver extends CommonLog {
               currentPageSource = XPathUtil.toPrettyXML(xmlStr)
               //不用循环多次
               log.debug("get page source success")
-              log.debug(currentPageSource)
+//              log.debug(currentPageSource)
               return currentPageSource
             }
             case Failure(e) => {

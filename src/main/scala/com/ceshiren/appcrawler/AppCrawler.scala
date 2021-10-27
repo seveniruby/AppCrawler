@@ -12,9 +12,11 @@ import java.nio.charset.Charset
 object AppCrawler extends CommonLog {
   val banner =
     """
-      |------------------------------
+      |-------------------------------------------------
       |appcrawler 全平台自动遍历测试工具
-      |------------------------------
+      |Q&A: https://ceshiren.com/c/opensource/appcrawler
+      |author: seveniruby
+      |-------------------------------------------------
       |
     """.stripMargin
 
@@ -46,15 +48,15 @@ object AppCrawler extends CommonLog {
 
 
   def getGlobalEncoding(): Unit = {
-    log.info("default Charset=" + Charset.defaultCharset())
-    log.info("default file.encoding=" + System.getProperty("file.encoding"))
-    log.info("project directory=" + (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
+    log.debug("default Charset=" + Charset.defaultCharset())
+    log.debug("default file.encoding=" + System.getProperty("file.encoding"))
+    log.debug("project directory=" + (new java.io.File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)).getParentFile.getParentFile)
   }
 
 
   def setGlobalEncoding(encoding: String = "UTF-8"): Unit = {
     getGlobalEncoding()
-    log.info(s"set file.encoding to ${encoding}")
+    log.debug(s"set file.encoding to ${encoding}")
     System.setProperty("file.encoding", encoding)
     val charset = classOf[Charset].getDeclaredField("defaultCharset")
     charset.setAccessible(true)
