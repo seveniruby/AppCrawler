@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.plugin.scalatest
 
-import com.ceshiren.appcrawler.{Report, ReportFactory}
+import com.ceshiren.appcrawler.plugin.report.{Report, ReportFactory}
 import org.scalatest.tools.Runner
 
 import scala.io.Source

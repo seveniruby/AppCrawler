@@ -1,13 +1,14 @@
 package com.ceshiren.appcrawler.driver
 
-import com.ceshiren.appcrawler.URIElement
-import com.ceshiren.appcrawler.{AppCrawler, AppiumTouchAction, DynamicEval}
+import com.ceshiren.appcrawler.model.URIElement
+import com.ceshiren.appcrawler.utils.DynamicEval
+import com.ceshiren.appcrawler.{AppCrawler, AppiumTouchAction}
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.android.nativekey.{AndroidKey, KeyEvent}
 import io.appium.java_client.ios.IOSDriver
 import io.appium.java_client.touch.offset.{ElementOption, PointOption}
 import io.appium.java_client.touch.{LongPressOptions, TapOptions}
-import io.appium.java_client.{AppiumDriver, MobileElement, Setting, TouchAction}
+import io.appium.java_client.{AppiumDriver, MobileElement, TouchAction}
 
 import java.io.File
 import java.net.URL

@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.plugin.junit5;
 
-import com.ceshiren.appcrawler.ReportFactory;
+import com.ceshiren.appcrawler.plugin.report.ReportFactory;
 import io.qameta.allure.Allure;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;

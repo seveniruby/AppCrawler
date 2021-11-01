@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler.plugin.junit5
 
+import com.ceshiren.appcrawler.plugin.report.{Report, ReportFactory}
 import com.ceshiren.appcrawler.plugin.scalatest.SuiteToClass
-import com.ceshiren.appcrawler.{Report, ReportFactory}
 
 import scala.jdk.CollectionConverters._
 

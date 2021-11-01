@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.diff;
 
-import com.ceshiren.appcrawler.URIElement;
+import com.ceshiren.appcrawler.model.URIElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;

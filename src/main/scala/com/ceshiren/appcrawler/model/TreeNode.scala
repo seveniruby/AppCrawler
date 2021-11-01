@@ -1,4 +1,4 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.model
 
 import java.io.{BufferedWriter, FileWriter}
 import scala.collection.mutable.ListBuffer

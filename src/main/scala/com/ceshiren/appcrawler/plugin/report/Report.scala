@@ -1,4 +1,7 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.plugin.report
+
+import com.ceshiren.appcrawler.model.URIElementStore
+import com.ceshiren.appcrawler.utils.{CommonLog, TData}
 
 import scala.io.Source
 

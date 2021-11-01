@@ -1,4 +1,4 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.utils
 
 import com.brsanthu.googleanalytics.{GoogleAnalytics, PageViewHit}
 import org.apache.log4j.{BasicConfigurator, Level, Logger}

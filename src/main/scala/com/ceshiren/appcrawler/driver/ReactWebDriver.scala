@@ -1,6 +1,9 @@
 package com.ceshiren.appcrawler.driver
 
 import com.ceshiren.appcrawler._
+import com.ceshiren.appcrawler.core.Crawler
+import com.ceshiren.appcrawler.model.URIElement
+import com.ceshiren.appcrawler.utils.{CommonLog, TData, XPathUtil}
 import org.openqa.selenium.Rectangle
 import org.w3c.dom.Document
 

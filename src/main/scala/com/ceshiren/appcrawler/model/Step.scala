@@ -1,4 +1,4 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.model
 
 /**
   * 当given先决条件满足时，在when的find指定内容上执行action操作。并断言then里面的所有表达式

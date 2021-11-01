@@ -28,7 +28,7 @@ public class GenerateClassTest {
         //CtConstructor ctConstructor = new CtConstructor(new CtClass[]{pool.get("java.lang.String")}, ctClass);
         CtConstructor ctConstructorNull = new CtConstructor(new CtClass[]{}, ctClass);
         StringBuffer buffer = new StringBuffer();
-        buffer.append("com.ceshiren.appcrawler.Report report=com.ceshiren.appcrawler.ReportFactory.genReport(\"junit5\");\n" +
+        buffer.append("com.ceshiren.appcrawler.plugin.report.Report report=com.ceshiren.appcrawler.ReportFactory.genReport(\"junit5\");\n" +
                 "        com.ceshiren.appcrawler.data.AbstractElementStore store=report.loadResult(\"E://elements.yml\");\n" +
                 "        com.ceshiren.appcrawler.ReportFactory.initStore(store);\n" +
                 "        this.pageName=\""+ activity +"\";\n" +

@@ -1,5 +1,9 @@
 package com.ceshiren.appcrawler
 
+import com.ceshiren.appcrawler.core.{Crawler, CrawlerConf}
+import com.ceshiren.appcrawler.model.URIElementFactory
+import com.ceshiren.appcrawler.plugin.report.{DiffSuite, ReportFactory}
+import com.ceshiren.appcrawler.utils.{CommonLog, GA, TData, XPathUtil}
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.{FileAppender, Level}
 

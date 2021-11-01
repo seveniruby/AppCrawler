@@ -1,9 +1,9 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.core
 
+import com.ceshiren.appcrawler.AppCrawler
+import com.ceshiren.appcrawler.utils.{CommonLog, TData}
 import org.scalatest
 import org.scalatest.{BeforeAndAfterAllConfigMap, ConfigMap, FunSuite, Matchers}
-
-import scala.collection.JavaConverters
 
 /**
   * Created by seveniruby on 2017/4/17.

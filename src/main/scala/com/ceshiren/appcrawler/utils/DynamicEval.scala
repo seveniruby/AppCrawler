@@ -1,4 +1,4 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.utils
 
 import com.ceshiren.appcrawler.plugin.Plugin
 import org.apache.commons.io.FileUtils

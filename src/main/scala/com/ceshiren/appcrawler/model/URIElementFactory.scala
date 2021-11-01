@@ -1,4 +1,6 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.model
+
+import com.ceshiren.appcrawler.core.ElementInfo
 
 class URIElementFactory {
 

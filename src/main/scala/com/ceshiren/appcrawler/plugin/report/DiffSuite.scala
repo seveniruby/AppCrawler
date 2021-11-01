@@ -1,7 +1,10 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.plugin.report
 
-import com.ceshiren.appcrawler.{URIElement, ElementInfo}
+import com.ceshiren.appcrawler.AppCrawler
+import com.ceshiren.appcrawler.core.{ElementInfo, Status}
+import com.ceshiren.appcrawler.model.URIElement
 import com.ceshiren.appcrawler.plugin.scalatest.SuiteToClass
+import com.ceshiren.appcrawler.utils.{CommonLog, XPathUtil}
 import org.scalatest._
 
 import scala.jdk.CollectionConverters._
@@ -125,7 +128,7 @@ object DiffSuite {
   def saveTestCase(): Unit ={
     val suites=masterStore.map(_._2.getElement.getUrl)++candidateStore.map(_._2.getElement.getUrl)
     suites.foreach(suite=> {
-      SuiteToClass.genTestCaseClass(suite, "com.ceshiren.appcrawler.DiffSuite", Map("suite"->suite, "name"->suite), ReportFactory.testcaseDir)
+      SuiteToClass.genTestCaseClass(suite, "com.ceshiren.appcrawler.plugin.report.DiffSuite", Map("suite"->suite, "name"->suite), ReportFactory.testcaseDir)
     })
   }
 }

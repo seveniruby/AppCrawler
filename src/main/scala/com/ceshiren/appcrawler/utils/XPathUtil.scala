@@ -1,4 +1,4 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.utils
 
 import org.w3c.dom.{Attr, Document, Node, NodeList}
 import org.xml.sax.InputSource

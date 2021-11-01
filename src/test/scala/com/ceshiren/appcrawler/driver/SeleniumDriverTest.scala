@@ -1,9 +1,9 @@
 package com.ceshiren.appcrawler.driver
 
-import com.ceshiren.appcrawler.{AppCrawler, CrawlerConf}
+import com.ceshiren.appcrawler.core.CrawlerConf
+import com.ceshiren.appcrawler.AppCrawler
 
 import java.net.URL
-import com.ceshiren.appcrawler.CrawlerConf
 import org.jsoup.nodes.Entities.EscapeMode
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
 

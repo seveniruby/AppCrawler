@@ -1,4 +1,4 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.utils
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.apache.log4j._

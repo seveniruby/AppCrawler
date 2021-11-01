@@ -1,5 +1,6 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.core
 
+import com.ceshiren.appcrawler.utils.CommonLog
 import org.scalatest._
 import org.scalatest.selenium.WebBrowser
 /**

@@ -1,7 +1,9 @@
 package com.ceshiren.appcrawler.ut
 
-import com.ceshiren.appcrawler.{Crawler, URIElement, XPathUtil}
 import com.ceshiren.appcrawler._
+import com.ceshiren.appcrawler.core.Crawler
+import com.ceshiren.appcrawler.model.URIElement
+import com.ceshiren.appcrawler.utils.XPathUtil
 import org.scalatest.{FunSuite, Matchers}
 
 

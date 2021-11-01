@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.plugin.junit5;
 
-import com.ceshiren.appcrawler.Report;
+import com.ceshiren.appcrawler.plugin.report.Report;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;

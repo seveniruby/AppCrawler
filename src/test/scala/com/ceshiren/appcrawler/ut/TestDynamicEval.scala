@@ -1,13 +1,12 @@
 package com.ceshiren.appcrawler.ut
 
-import com.ceshiren.appcrawler.CommonLog
-
 import java.io.File
 import java.io.File
 import java.util.jar.JarFile
 import com.ceshiren.appcrawler.plugin.{DemoPlugin, Plugin}
 import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.driver.AppiumClient
+import com.ceshiren.appcrawler.utils.{CommonLog, DynamicEval}
 import org.scalatest.FunSuite
 import org.xml.sax.ErrorHandler
 

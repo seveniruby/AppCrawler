@@ -1,7 +1,8 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.core
 
-import com.ceshiren.appcrawler.Status.Status
-import com.ceshiren.appcrawler.{URIElement, ElementInfo}
+import com.ceshiren.appcrawler.AppCrawler
+import com.ceshiren.appcrawler.core.Status.Status
+import com.ceshiren.appcrawler.model.URIElement
 
 case class ElementInfo(
                         var reqDom: String = "",

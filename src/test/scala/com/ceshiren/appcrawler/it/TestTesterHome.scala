@@ -1,12 +1,11 @@
 package com.ceshiren.appcrawler.it
 
-import java.net.URL
-
 import io.appium.java_client.android.AndroidDriver
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.scalatest._
 
+import java.net.URL
 import scala.jdk.CollectionConverters._
 
 /**

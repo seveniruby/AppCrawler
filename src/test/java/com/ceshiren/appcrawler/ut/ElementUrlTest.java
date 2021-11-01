@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.ut;
 
-import com.ceshiren.appcrawler.URIElement;
+import com.ceshiren.appcrawler.model.URIElement;
 import org.junit.jupiter.api.Test;
 
 public class ElementUrlTest {

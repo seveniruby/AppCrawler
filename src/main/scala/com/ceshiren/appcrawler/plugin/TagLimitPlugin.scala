@@ -1,9 +1,7 @@
 package com.ceshiren.appcrawler.plugin
 
 import com.ceshiren.appcrawler.AppCrawler
-import com.ceshiren.appcrawler.URIElement
-
-import scala.collection.JavaConverters
+import com.ceshiren.appcrawler.model.URIElement
 
 /**
   * Created by seveniruby on 16/1/21.

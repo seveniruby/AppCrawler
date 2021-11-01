@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.it
 
-import com.ceshiren.appcrawler.XPathUtil
+import com.ceshiren.appcrawler.utils.XPathUtil
 import io.appium.java_client.android.AndroidDriver
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.{By, WebElement}

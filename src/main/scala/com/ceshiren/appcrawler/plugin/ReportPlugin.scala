@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler.plugin
 
-import com.ceshiren.appcrawler.ReportFactory
-import com.ceshiren.appcrawler.URIElement
+import com.ceshiren.appcrawler.model.URIElement
+import com.ceshiren.appcrawler.plugin.report.ReportFactory
 import com.ceshiren.appcrawler.report.MvnReplace
 
 import java.nio.file.{Files, Paths}

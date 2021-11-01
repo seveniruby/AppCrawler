@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.ut
 
-import com.ceshiren.appcrawler.TreeNode
+import com.ceshiren.appcrawler.model.TreeNode
 import org.scalatest.FunSuite
 
 import scala.collection.mutable.ListBuffer

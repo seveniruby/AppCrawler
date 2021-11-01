@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.plugin
 
-import com.ceshiren.appcrawler.URIElement
+import com.ceshiren.appcrawler.model.URIElement
 
 /**
   * Created by seveniruby on 16/9/25.

@@ -1,5 +1,8 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.core
 
+import com.ceshiren.appcrawler.model
+import com.ceshiren.appcrawler.model.Step
+import com.ceshiren.appcrawler.utils.TData
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -39,48 +42,48 @@ class CrawlerConf {
   var testcase = ReactTestCase(
     name = "ceshiren AppCrawler",
     steps = List[Step](
-      Step(xpath = "/*/*", action = "Thread.sleep(1000)")
+      model.Step(xpath = "/*/*", action = "Thread.sleep(1000)")
     )
   )
 
   //todo: 去掉triggerAction
   /** 引导规则. name, value, times三个元素组成 */
   var triggerActions = ListBuffer[Step](
-    Step(xpath="permission_allow_button", times = 3),
-    Step(xpath="允许", times = 3)
+    model.Step(xpath="permission_allow_button", times = 3),
+    model.Step(xpath="允许", times = 3)
   )
 
   /** 默认遍历列表，xpath有用，action暂时没启用*/
   var selectedList = ListBuffer[Step](
-    Step(xpath="//*[contains(name(), 'Button')]"),
+    model.Step(xpath="//*[contains(name(), 'Button')]"),
     //android专属
-    Step(xpath="//*[contains(name(), 'Text') and @clickable='true' and string-length(@text)<10]"),
-    Step(xpath="//*[@clickable='true']//*[contains(name(), 'Text') and string-length(@text)<10]"),
-    Step(xpath="//*[contains(name(), 'Image') and @clickable='true']"),
-    Step(xpath="//*[@clickable='true']/*[contains(name(), 'Image')]"),
+    model.Step(xpath="//*[contains(name(), 'Text') and @clickable='true' and string-length(@text)<10]"),
+    model.Step(xpath="//*[@clickable='true']//*[contains(name(), 'Text') and string-length(@text)<10]"),
+    model.Step(xpath="//*[contains(name(), 'Image') and @clickable='true']"),
+    model.Step(xpath="//*[@clickable='true']/*[contains(name(), 'Image')]"),
     //ios专属
-    Step(xpath="//*[contains(name(), 'Image') and @name!='']"),
-    Step(xpath="//*[contains(name(), 'Text') and @name!='' and string-length(@label)<10]"),
-    Step(xpath="//a"),
+    model.Step(xpath="//*[contains(name(), 'Image') and @name!='']"),
+    model.Step(xpath="//*[contains(name(), 'Text') and @name!='' and string-length(@label)<10]"),
+    model.Step(xpath="//a"),
     //adb,uiautomatorviewer dump生成的数据中节点名字与appium不一致
     //todo: 兼容appium
-    Step(xpath="//*[contains(@class, 'Text') and @clickable='true' and string-length(@text)<10]"),
-    Step(xpath="//*[@clickable='true']//*[contains(@class, 'Text') and string-length(@text)<10]"),
-    Step(xpath="//*[contains(@class, 'Image') and @clickable='true']"),
-    Step(xpath="//*[@clickable='true']/*[contains(@class, 'Image')]"),
-    Step(xpath="//*[@clickable='true' and contains(@class, 'Button')]"),
+    model.Step(xpath="//*[contains(@class, 'Text') and @clickable='true' and string-length(@text)<10]"),
+    model.Step(xpath="//*[@clickable='true']//*[contains(@class, 'Text') and string-length(@text)<10]"),
+    model.Step(xpath="//*[contains(@class, 'Image') and @clickable='true']"),
+    model.Step(xpath="//*[@clickable='true']/*[contains(@class, 'Image')]"),
+    model.Step(xpath="//*[@clickable='true' and contains(@class, 'Button')]"),
   )
   /** 优先遍历元素 */
   var firstList = ListBuffer[Step](
   )
   /** 最后遍历列表 */
   var lastList = ListBuffer[Step](
-    Step(xpath="//*[@selected='true']/..//*"),
-    Step(xpath="//*[@selected='true']/../..//*")
+    model.Step(xpath="//*[@selected='true']/..//*"),
+    model.Step(xpath="//*[@selected='true']/../..//*")
   )
   /** 后退按钮标记, 主要用于iOS, xpath，目前具备了自动判断返回按钮的能力 */
   var backButton = ListBuffer[Step](
-    Step(xpath="Navigate up")
+    model.Step(xpath="Navigate up")
   )
 
   //自动生成的xpath表达式里可以包含的匹配属
@@ -110,7 +113,7 @@ class CrawlerConf {
   var urlWhiteList = ListBuffer[String]()
   /** 黑名单列表 matches风格, 默认排除内容是2个数字以上的控件. */
   var blackList = ListBuffer[Step](
-    Step(xpath=".*[0-9]{2}.*")
+    model.Step(xpath=".*[0-9]{2}.*")
   )
 
   //todo: 准备废除
@@ -134,9 +137,9 @@ class CrawlerConf {
   //个别控件可例外，选择一类控件，这类控件可自定义最多点击次数
   var tagLimit = ListBuffer[Step](
     //特殊的按钮，可以一直被遍历
-    Step(xpath = "确定", times = 1000),
-    Step(xpath = "取消", times = 1000),
-    Step(xpath = "share_comment_guide_btn_name", times=1000)
+    model.Step(xpath = "确定", times = 1000),
+    model.Step(xpath = "取消", times = 1000),
+    model.Step(xpath = "share_comment_guide_btn_name", times=1000)
   )
   //只需要写given与then即可
   var assertGlobal = List[Step]()

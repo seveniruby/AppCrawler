@@ -1,5 +1,6 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.utils
 
+import com.ceshiren.appcrawler.AppCrawler
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -44,7 +45,7 @@ object TData {
 
   def toYaml(data: Any): String = {
     val mapper = new ObjectMapper(new YAMLFactory())
-//    mapper.registerModule(DefaultScalaModule)
+    //    mapper.registerModule(DefaultScalaModule)
     mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data)
   }
@@ -53,7 +54,7 @@ object TData {
     val mapper = new ObjectMapper(new YAMLFactory())
     mapper.registerModule(DefaultScalaModule)
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    val res=mapper.readValue(data, classTag[T].runtimeClass.asInstanceOf[Class[T]])
+    val res = mapper.readValue(data, classTag[T].runtimeClass.asInstanceOf[Class[T]])
     res
   }
 
@@ -163,9 +164,9 @@ object TData {
       case doc: Element => {
         val children: Elements = doc.children
         val attributes =
-          doc.attributes.asList.asScala.map { attribute =>
+          doc.attributes.asList.asScala.map(attribute =>
             attribute.getKey -> attribute.getValue
-          } toMap
+          ) toMap
 
         Map(
           "tag" -> doc.tagName,

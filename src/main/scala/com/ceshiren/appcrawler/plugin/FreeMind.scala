@@ -1,9 +1,8 @@
 package com.ceshiren.appcrawler.plugin
 
-import com.ceshiren.appcrawler.TreeNode
+import com.ceshiren.appcrawler.model.TreeNode
 
 import scala.collection.mutable.ListBuffer
-import scala.jdk.CollectionConverters._
 import scala.reflect.io.File
 
 /**

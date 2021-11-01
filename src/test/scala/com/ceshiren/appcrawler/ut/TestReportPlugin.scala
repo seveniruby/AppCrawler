@@ -1,12 +1,11 @@
 package com.ceshiren.appcrawler.ut
 
-import com.ceshiren.appcrawler.{CommonLog, Crawler, ElementInfo, URIElement, URIElementStore}
 import com.ceshiren.appcrawler.plugin.ReportPlugin
-import com.ceshiren.appcrawler.CommonLog
 import com.ceshiren.appcrawler._
-import com.ceshiren.appcrawler.Status
-import com.ceshiren.appcrawler.URIElementStore
+import com.ceshiren.appcrawler.core.{Crawler, ElementInfo, Status}
+import com.ceshiren.appcrawler.model.{URIElement, URIElementStore}
 import com.ceshiren.appcrawler.plugin.ReportPlugin
+import com.ceshiren.appcrawler.utils.CommonLog
 import org.scalatest.FunSuite
 import org.scalatest.tools.Runner
 

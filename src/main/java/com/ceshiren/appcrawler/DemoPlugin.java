@@ -1,5 +1,7 @@
 package com.ceshiren.appcrawler;
 
+import com.ceshiren.appcrawler.core.Crawler;
+import com.ceshiren.appcrawler.model.URIElement;
 import com.ceshiren.appcrawler.plugin.Plugin;
 
 public class DemoPlugin extends Plugin {

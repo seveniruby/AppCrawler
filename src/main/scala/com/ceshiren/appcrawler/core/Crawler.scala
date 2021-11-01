@@ -1,7 +1,10 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.core
 
 import com.ceshiren.appcrawler.driver._
+import com.ceshiren.appcrawler.model._
 import com.ceshiren.appcrawler.plugin.Plugin
+import com.ceshiren.appcrawler.utils._
+import com.ceshiren.appcrawler._
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.scalatest.ConfigMap
@@ -13,8 +16,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import scala.annotation.tailrec
 import scala.collection.mutable.{ListBuffer, Map}
-import scala.collection.{JavaConverters, immutable, mutable}
-import scala.jdk.CollectionConverters._
+import scala.collection.{immutable, mutable}
 import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}
 
@@ -812,7 +814,7 @@ class Crawler extends CommonLog {
       .map(e => {
         if (conf.backButton.filter(_.getXPath() == e.getXpath).size == 0 && e.getAction != backAction) {
           log.info(s"find new back button from history ${e}")
-          conf.backButton.append(Step(xpath = e.getXpath, action = e.getAction))
+          conf.backButton.append(model.Step(xpath = e.getXpath, action = e.getAction))
         }
         e
       })
@@ -872,7 +874,7 @@ class Crawler extends CommonLog {
         // 通过配置文件设置的Xpath找到返回键，将其真实Xpath添加进List
         if (conf.backButton.filter(_.getXPath() == backElement.getXpath).size == 0 && backElement.getAction != backAction) {
           log.info(s"find new back button from configuration file ${backElement}")
-          conf.backButton.append(Step(xpath = backElement.getXpath, action = backElement.getAction))
+          conf.backButton.append(model.Step(xpath = backElement.getXpath, action = backElement.getAction))
         }
 
         return Some(backElement)

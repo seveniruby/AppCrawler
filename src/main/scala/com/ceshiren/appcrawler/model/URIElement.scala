@@ -1,11 +1,11 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.model
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import org.apache.commons.text.StringEscapeUtils
 
 import java.awt.{Dimension, Point}
 import java.io.File
-import java.util.regex.{Matcher, Pattern}
+import java.util.regex.Pattern
 import javax.xml.bind.annotation.XmlAttribute
 
 /**

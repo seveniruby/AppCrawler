@@ -1,8 +1,8 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.model
 
-import com.ceshiren.appcrawler.ElementInfo
+import com.ceshiren.appcrawler.AppCrawler
+import com.ceshiren.appcrawler.core.{ElementInfo, Status}
 
-import java.util
 import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters._
 

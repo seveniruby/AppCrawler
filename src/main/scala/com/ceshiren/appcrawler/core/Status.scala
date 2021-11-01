@@ -1,4 +1,4 @@
-package com.ceshiren.appcrawler
+package com.ceshiren.appcrawler.core
 
 object Status extends Enumeration {
   type Status = Value

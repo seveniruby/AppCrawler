@@ -1,13 +1,12 @@
 package com.ceshiren.appcrawler.ut;
-
-import com.ceshiren.appcrawler.Report;
-import com.ceshiren.appcrawler.ReportFactory;
-import com.ceshiren.appcrawler.URIElementStore;
+import com.ceshiren.appcrawler.model.URIElementStore;
 import com.ceshiren.appcrawler.plugin.junit5.AllureTemplate;
+import com.ceshiren.appcrawler.plugin.report.Report;
+import com.ceshiren.appcrawler.plugin.report.ReportFactory;
 
 public class AllureTemplateTestcase extends AllureTemplate {
     public AllureTemplateTestcase(){
-        Report report=ReportFactory.getReportEngine("junit5");
+        Report report= ReportFactory.getReportEngine("junit5");
         URIElementStore store=report.loadResult("E://elements.yml");
         ReportFactory.initStore(store);
 

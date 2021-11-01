@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.diff;
 
-import com.ceshiren.appcrawler.URIElementStore;
+import com.ceshiren.appcrawler.model.URIElementStore;
 
 public class Report {
 	private boolean showCancel=false;
