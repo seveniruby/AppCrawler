@@ -2,7 +2,7 @@ package com.ceshiren.appcrawler.driver
 
 import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.core.Crawler
-import com.ceshiren.appcrawler.model.URIElement
+import com.ceshiren.appcrawler.model.{PageSource, URIElement}
 import com.ceshiren.appcrawler.utils.CrawlerLog.log
 import com.ceshiren.appcrawler.utils.{TData, XPathUtil}
 import org.openqa.selenium.Rectangle
@@ -22,24 +22,24 @@ abstract class ReactWebDriver {
 
   var screenWidth = 0
   var screenHeight = 0
-  var currentPageDom: Document = null
-  var currentPageSource: String=""
-  val appiumExecResults=ListBuffer[String]()
+  var page: PageSource = null;
+  var currentPageSource: String = ""
+  val appiumExecResults = ListBuffer[String]()
 
   var loc = ""
   var index = 0
-  var currentURIElement: URIElement= AppCrawler.factory.generateElement
+  var currentURIElement: URIElement = AppCrawler.factory.generateElement
 
-  var imagesDir="images"
-  var platformName=""
+  var imagesDir = "images"
+  var platformName = ""
 
 
+  def findElementsByURI(element: URIElement, findBy: String = platformName): List[AnyRef]
 
-  def findElementsByURI(element: URIElement, findBy:String=platformName): List[AnyRef]
-  def findElementByURI(element: URIElement, findBy:String=platformName): AnyRef= {
+  def findElementByURI(element: URIElement, findBy: String = platformName): AnyRef = {
     //todo: 用其他定位方式优化
     log.info(s"find by uri element= ${element.elementUri()}")
-    currentURIElement=element
+    currentURIElement = element
     asyncTask(name = "findElementsByURI")(findElementsByURI(element, findBy)) match {
       case Left(v) => {
         val arr = v.distinct
@@ -68,49 +68,55 @@ abstract class ReactWebDriver {
   }
 
   def getDeviceInfo(): Unit
+
   def screenshot(): File
+
   def back(): Unit = {}
+
   def backApp(): Unit = {}
+
   def launchApp()
+
   def getPageSource(): String
 
 
   //todo: 有的时候会出现极少内容的page source
+
   /**
     * <hierarchy class="hierarchy" height="1794" index="0" rotation="0" width="1080">
-    *   <android.widget.FrameLayout bounds="[0,0][1080,1794]" checkable="false" checked="false" class="android.widget.FrameLayout" clickable="false" displayed="true" enabled="true" focusable="false" focused="false" index="0" long-clickable="false" package="com.example.android.apis" password="false" scrollable="false" selected="false" text=""/>
+    * <android.widget.FrameLayout bounds="[0,0][1080,1794]" checkable="false" checked="false" class="android.widget.FrameLayout" clickable="false" displayed="true" enabled="true" focusable="false" focused="false" index="0" long-clickable="false" package="com.example.android.apis" password="false" scrollable="false" selected="false" text=""/>
     * </hierarchy>
     *
     */
   def getPageSourceWithRetry(): String = {
-    currentPageSource=null
-    currentPageDom=null
+    currentPageSource = null
+    page = null
     log.info("start to get page source from appium")
     //获取页面结构, 最多重试3次
-    var errorCount=0
-    var error: Throwable=null
+    var errorCount = 0
+    var error: Throwable = null
     1 to 2 foreach (i => {
       asyncTask(40, name = "getPageSource")(getPageSource) match {
         case Left(v) => {
           log.trace("get raw page source success")
-//          log.trace(v)
+          //          log.trace(v)
           //todo: wda返回的不是标准的xml
-          val xmlStr=v match {
-              //todo: 更严格判断
-            case blank if blank.getBytes.size<500 => {
+          val xmlStr = v match {
+            //todo: 更严格判断
+            case blank if blank.getBytes.size < 500 => {
               log.error("may be page source is not enought")
               log.error(blank)
               null
             }
-            case json if json.trim.charAt(0)=='{' => {
+            case json if json.trim.charAt(0) == '{' => {
               log.info("json format maybe from wda")
               TData.fromJson[Map[String, String]](v).getOrElse("value", "")
             }
-            case xml if xml.trim.charAt(0)=='<' =>{
+            case xml if xml.trim.charAt(0) == '<' => {
               log.info("xml format ")
               xml
             }
-            case text:String => {
+            case text: String => {
               log.error("page source format not support")
               log.error(text)
               text
@@ -118,26 +124,27 @@ abstract class ReactWebDriver {
           }
           Try(XPathUtil.toDocument(xmlStr)) match {
             case Success(v) => {
-              currentPageDom = v
+              page=new PageSource()
+              page.fromDocument(v)
               currentPageSource = XPathUtil.toPrettyXML(xmlStr)
               //不用循环多次
               log.debug("get page source success")
-//              log.debug(currentPageSource)
+              //              log.debug(currentPageSource)
               return currentPageSource
             }
             case Failure(e) => {
               log.warn("convert to xml fail")
               log.warn(xmlStr)
-              currentPageDom = null
+              page = null
               currentPageSource = null
             }
           }
 
         }
         case Right(e) => {
-          errorCount+=1
+          errorCount += 1
           log.error("get page source error")
-          error=e
+          error = e
         }
       }
       log.warn(s"retry ${i} times after 5s")
@@ -147,12 +154,23 @@ abstract class ReactWebDriver {
   }
 
   def clickLocation(): Unit = {
-    val point=currentURIElement.center()
+    val point = currentURIElement.center()
   }
-  def press(sec: Int): this.type = { this }
+
+  def press(sec: Int): this.type = {
+    this
+  }
+
   def tap(): this.type
-  def click(): this.type = { this }
-  def longTap(): this.type = { this }
+
+  def click(): this.type = {
+    this
+  }
+
+  def longTap(): this.type = {
+    this
+  }
+
   def swipe(direction: String): Unit = {
     log.info(s"start swipe ${direction}")
     var startX = 0.0
@@ -199,47 +217,46 @@ abstract class ReactWebDriver {
   }
 
 
-
   def getUrl(): String = {
     ""
   }
 
-  def getAppName(): String ={
+  def getAppName(): String = {
     ""
   }
 
-  def asyncTask[T](timeout: Int = 30, name:String ="", needThrow:Boolean=false)(callback: => T): Either[T, Throwable] = {
+  def asyncTask[T](timeout: Int = 30, name: String = "", needThrow: Boolean = false)(callback: => T): Either[T, Throwable] = {
     //todo: 异步线程消耗资源厉害，需要改进
-    val start=System.currentTimeMillis()
+    val start = System.currentTimeMillis()
     Try({
       val task = Executors.newSingleThreadExecutor().submit(new Callable[T]() {
         def call(): T = {
           callback
         }
       })
-      if(timeout<0){
+      if (timeout < 0) {
         task.get()
-      }else {
+      } else {
         task.get(timeout, TimeUnit.SECONDS)
       }
 
     }) match {
       case Success(v) => {
-        val end=System.currentTimeMillis()
+        val end = System.currentTimeMillis()
         appiumExecResults.append("success")
-        val use=(end-start)/1000d
-        if(use>=0.5){
+        val use = (end - start) / 1000d
+        if (use >= 0.5) {
           log.info(s"use time $use seconds name=${name} result=success")
         }
         Left(v)
       }
       case Failure(e) => {
-        val end=System.currentTimeMillis()
-        val use=(end-start)/1000d
-        if(use>=1){
+        val end = System.currentTimeMillis()
+        val use = (end - start) / 1000d
+        if (use >= 1) {
           log.info(s"use time $use seconds name=${name} result=error")
         }
-        if(needThrow){
+        if (needThrow) {
           throw e
         }
         e match {
@@ -255,18 +272,18 @@ abstract class ReactWebDriver {
     }
   }
 
-  def handleException(e: Throwable): Unit ={
+  def handleException(e: Throwable): Unit = {
     var exception = e
     do {
       log.error(exception.getLocalizedMessage)
       exception.getStackTrace.foreach(log.error)
-      if(exception.getCause!=null){
+      if (exception.getCause != null) {
         log.error("find more cause")
-      }else{
+      } else {
         log.error("exception finish")
       }
-      exception=exception.getCause
-    }while(exception!=null)
+      exception = exception.getCause
+    } while (exception != null)
   }
 
   def tryAndCatch[T](r: => T): Option[T] = {
@@ -283,41 +300,42 @@ abstract class ReactWebDriver {
   }
 
   def event(keycode: String): Unit = {}
-  def mark(fileName: String, newImageName:String,  x: Int, y: Int, w: Int, h: Int): Unit
+
+  def mark(fileName: String, newImageName: String, x: Int, y: Int, w: Int, h: Int): Unit
+
   def getRect(): Rectangle
 
-  def sendKeys(content:String)
+  def sendKeys(content: String)
 
   def sleep(seconds: Double = 1.0F): Unit = {
     Thread.sleep((seconds * 1000).toInt)
   }
 
 
-
   //todo: xpath 2.0 support
-  def getNodeListByKey(key:String): List[Map[String, Any]] ={
-    XPathUtil.getNodeListByKey(key, currentPageDom)
+  def getNodeListByKey(key: String): List[Map[String, Any]] = {
+    page.getNodeListByKey(key)
   }
 
   //支持宽松查找，自动刷新查找，自动滚动查找
-  def getNodeListByKeyWithRetry(key:String): List[Map[String, Any]] ={
-    var array=getNodeListByKey(key)
-    if(array.size==0){
+  def getNodeListByKeyWithRetry(key: String): List[Map[String, Any]] = {
+    var array = getNodeListByKey(key)
+    if (array.size == 0) {
       getPageSourceWithRetry()
       log.debug("retry 1")
-      array=getNodeListByKey(key)
+      array = getNodeListByKey(key)
     }
 
-    if(array.size==0){
+    if (array.size == 0) {
       getPageSourceWithRetry()
       log.debug("retry 2")
-      array=getNodeListByKey(key)
+      array = getNodeListByKey(key)
     }
 
-    if(array.size==0){
+    if (array.size == 0) {
       getPageSourceWithRetry()
       log.debug("retry 3")
-      array=getNodeListByKey(key)
+      array = getNodeListByKey(key)
     }
     return array
 

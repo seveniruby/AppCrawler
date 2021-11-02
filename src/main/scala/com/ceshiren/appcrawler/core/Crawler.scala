@@ -241,8 +241,8 @@ class Crawler {
     val defaultElement = AppCrawler.factory.generateElement(currentUrl, "", "", "", "", "", "", "", "", "", "/*/*", "", 0, 0, driver.screenWidth, driver.screenHeight, "")
     val element = driver.asyncTask()(
       //刷新失败时会报错，所以增加一个判断
-      if (driver.currentPageDom != null) {
-        AppCrawler.factory.generateElement(XPathUtil.getNodeListByKey("/*/*", driver.currentPageDom).head, currentUrl)
+      if (driver.page != null) {
+        AppCrawler.factory.generateElement(driver.page.getNodeListByKey("/*/*").head, currentUrl)
       } else {
         defaultElement
       }
@@ -475,7 +475,7 @@ class Crawler {
   }
 
   //todo: 支持xpath表达式
-  def getAvailableElement(currentPageDom: Document, skipSmall: Boolean = false): Option[URIElement] = {
+  def getAvailableElement(page: PageSource, skipSmall: Boolean = false): Option[URIElement] = {
     var all = List[URIElement]()
     var firstElements = List[URIElement]()
     var lastElements = List[URIElement]()
@@ -483,12 +483,12 @@ class Crawler {
     var blackElements = List[URIElement]()
     var lastSize = 0
 
-    val page=new PageSource()
     page.demo()
 
     conf.selectedList.foreach(step => {
       log.trace(s"selectedList xpath =  ${step.getXPath()}")
-      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom)
+
+      val temp = page.getNodeListByKey(step.getXPath())
         .map(e => AppCrawler.factory.generateElement(e, currentUrl))
       temp.foreach(x => log.trace(x.toString))
 
@@ -501,7 +501,7 @@ class Crawler {
     //remove blackList
     conf.blackList.foreach(step => {
       log.trace(s"blackList xpath =  ${step.getXPath()}")
-      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom)
+      val temp = page.getNodeListByKey(step.getXPath())
         .map(e => AppCrawler.factory.generateElement(e, currentUrl))
       temp.foreach(log.trace)
       blackElements ++= temp
@@ -516,7 +516,7 @@ class Crawler {
 
     //done: 放到前面加速
     //remove small
-    if (skipSmall == false) {
+    if (!skipSmall) {
       selectedElements = selectedElements.filter(isSmall(_) == false)
       log.info(s"selectedElements - small elements size = ${selectedElements.size}")
       if (selectedElements.size < lastSize) {
@@ -558,7 +558,7 @@ class Crawler {
     //sort
     conf.firstList.foreach(step => {
       log.trace(s"firstList xpath = ${step.getXPath()}")
-      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom)
+      val temp =page.getNodeListByKey(step.getXPath())
         .map(e => AppCrawler.factory.generateElement(e, currentUrl))
         .intersect(selectedElements)
       temp.foreach(log.trace)
@@ -567,7 +567,7 @@ class Crawler {
 
     conf.lastList.foreach(step => {
       log.trace(s"lastList xpath = ${step.getXPath()}")
-      val temp = XPathUtil.getNodeListByKey(step.getXPath(), currentPageDom)
+      val temp = page.getNodeListByKey(step.getXPath())
         .map(e => AppCrawler.factory.generateElement(e, currentUrl))
         .intersect(selectedElements)
       temp.foreach(log.trace)
@@ -634,7 +634,8 @@ class Crawler {
   }
 
   def ifWebViewPage(): Unit = {
-    if (XPathUtil.getNodeListByKey("//*[contains(@class, 'WebView')]", driver.currentPageDom).size > 0) {
+
+    if (driver.page.getNodeListByKey("//*[contains(@class, 'WebView')]").nonEmpty) {
       webViewRecord.append(true)
     } else {
       webViewRecord.append(false)
@@ -962,7 +963,7 @@ class Crawler {
 
     //查找正常的元素
     if (nextElement == None) {
-      nextElement = getAvailableElement(driver.currentPageDom, true)
+      nextElement = getAvailableElement(driver.page, true)
     }
 
     if (nextElement == None) {
