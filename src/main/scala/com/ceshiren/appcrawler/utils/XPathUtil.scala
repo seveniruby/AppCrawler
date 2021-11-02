@@ -1,5 +1,6 @@
 package com.ceshiren.appcrawler.utils
 
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 import org.w3c.dom.{Attr, Document, Node, NodeList}
 import org.xml.sax.InputSource
 
@@ -11,11 +12,10 @@ import javax.xml.transform.{OutputKeys, TransformerFactory}
 import javax.xml.xpath.{XPath, XPathConstants, XPathFactory}
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-
 /**
   * Created by seveniruby on 16/3/26.
   */
-object XPathUtil extends CommonLog {
+object XPathUtil {
   var xpathExpr = List("name", "label", "value", "resource-id", "content-desc", "class", "text", "index")
   val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
   val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
@@ -208,15 +208,19 @@ object XPathUtil extends CommonLog {
   }
 
   def getNodeListFromXML(pageDom: Document, xpath: String): AnyRef = {
-    val nodesMap = ListBuffer[Map[String, Any]]()
+    log.trace(xpath)
     val xPath: XPath = XPathFactory.newInstance().newXPath()
     val compexp = xPath.compile(xpath)
+    log.trace("compile")
+    var r: AnyRef = None
     //val node=compexp.evaluate(pageDom)
     if (xpath.matches("string(.*)") || xpath.matches(".*/@[^/]*")) {
-      compexp.evaluate(pageDom, XPathConstants.STRING)
+      r = compexp.evaluate(pageDom, XPathConstants.STRING)
     } else {
-      compexp.evaluate(pageDom, XPathConstants.NODESET)
+      r = compexp.evaluate(pageDom, XPathConstants.NODESET)
     }
+    log.trace("evaluate")
+    r
   }
 
 
@@ -226,9 +230,7 @@ object XPathUtil extends CommonLog {
   }
 
   def getNodeListByXPath(xpath: String, pageDom: Document): List[Map[String, Any]] = {
-
     val node = getNodeListFromXML(pageDom, xpath)
-
     val nodeMapList = ListBuffer[Map[String, Any]]()
     node match {
       case nodeList: NodeList => {
@@ -343,6 +345,7 @@ object XPathUtil extends CommonLog {
         nodeMapList += Map("attribute" -> attr)
       }
     }
+    log.trace("node list get")
     nodeMapList.toList
   }
 
@@ -354,7 +357,7 @@ object XPathUtil extends CommonLog {
   def getNodeListByKey(key: String, currentPageDom: Document): List[Map[String, Any]] = {
     key match {
       //xpath
-      case xpath if Array("/.*", "\\(.*", "string\\(/.*\\)").exists(xpath.matches(_)) => {
+      case xpath if Array("/.*", "\\(.*", "string\\(/.*\\)").exists(xpath.matches) => {
         getNodeListByXPath(xpath, currentPageDom)
       }
       case regex if regex.contains(".*") || regex.startsWith("^") => {

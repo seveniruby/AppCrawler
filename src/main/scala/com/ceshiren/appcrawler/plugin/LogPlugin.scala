@@ -2,6 +2,7 @@ package com.ceshiren.appcrawler.plugin
 
 import com.ceshiren.appcrawler.driver.AppiumClient
 import com.ceshiren.appcrawler.model.URIElement
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 
 import java.util.logging.Level
 import scala.collection.mutable.ListBuffer

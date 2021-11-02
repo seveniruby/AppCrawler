@@ -1,13 +1,13 @@
 package com.ceshiren.appcrawler.model
 
-import com.ceshiren.appcrawler.utils.CommonLog
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 
 import scala.collection.mutable.ListBuffer
 
 /**
   * Created by seveniruby on 16/8/25.
   */
-class DataRecord extends CommonLog {
+class DataRecord {
   val record=ListBuffer[(Long, Any)]()
   def append(any: Any): Unit ={
     record.append(System.currentTimeMillis()->any)

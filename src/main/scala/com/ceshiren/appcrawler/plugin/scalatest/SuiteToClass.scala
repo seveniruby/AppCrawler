@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler.plugin.scalatest
 
 import com.ceshiren.appcrawler.AppCrawler
-import com.ceshiren.appcrawler.utils.CommonLog
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 import javassist.{ClassPool, CtConstructor}
 
 import scala.jdk.CollectionConverters._
@@ -10,7 +10,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by seveniruby on 2017/4/15.
   */
-object SuiteToClass extends CommonLog {
+object SuiteToClass  {
 
   var index=0
 

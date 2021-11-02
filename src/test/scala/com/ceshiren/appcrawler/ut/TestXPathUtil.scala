@@ -11,11 +11,12 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 import collection.JavaConverters._
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 
 /**
   * Created by seveniruby on 16/3/26.
   */
-class TestXPathUtil extends FunSuite with Matchers with CommonLog{
+class TestXPathUtil extends FunSuite with Matchers {
 
 
   val xmlAndroid=

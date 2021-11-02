@@ -4,11 +4,11 @@ import com.ceshiren.appcrawler.core.{ElementInfo, Status}
 import com.ceshiren.appcrawler.model.{URIElement, URIElementStore}
 import com.ceshiren.appcrawler.utils.{CommonLog, TData}
 import org.scalatest.{FunSuite, Matchers}
-
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 /**
   * Created by seveniruby on 16/9/17.
   */
-class TestElementStore extends FunSuite with Matchers with CommonLog{
+class TestElementStore extends FunSuite with Matchers {
   test("save to yaml"){
     val store=new URIElementStore
 

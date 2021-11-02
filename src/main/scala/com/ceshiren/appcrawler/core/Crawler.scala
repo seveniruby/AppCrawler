@@ -1,10 +1,11 @@
 package com.ceshiren.appcrawler.core
 
+import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.driver._
 import com.ceshiren.appcrawler.model._
 import com.ceshiren.appcrawler.plugin.Plugin
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 import com.ceshiren.appcrawler.utils._
-import com.ceshiren.appcrawler._
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.scalatest.ConfigMap
@@ -23,7 +24,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by seveniruby on 15/11/28.
   */
-class Crawler extends CommonLog {
+class Crawler {
   //todo: 需要重构为抽象和实现类
   var driver: ReactWebDriver = _
   var conf = new CrawlerConf()
@@ -481,6 +482,9 @@ class Crawler extends CommonLog {
     var selectedElements = List[URIElement]()
     var blackElements = List[URIElement]()
     var lastSize = 0
+
+    val page=new PageSource()
+    page.demo()
 
     conf.selectedList.foreach(step => {
       log.trace(s"selectedList xpath =  ${step.getXPath()}")
@@ -1053,15 +1057,12 @@ class Crawler extends CommonLog {
             //            log.info("afterAllRetry = 0 because of last action not equal to after")
           }
           conf.afterAll.foreach(step => {
-            step.getGiven().forall(g => driver.getNodeListByKey(g).size > 0) match {
-              case true => {
-                log.info(s"match ${step}")
-                //todo: 支持元素动作
-                DynamicEval.dsl(step.getAction())
-              }
-              case false => {
-                log.info(s"not match ${step.getGiven()}")
-              }
+            if (step.getGiven().forall(g => driver.getNodeListByKey(g).nonEmpty)) {
+              log.info(s"match ${step}")
+              //todo: 支持元素动作
+              DynamicEval.dsl(step.getAction())
+            } else {
+              log.info(s"not match ${step.getGiven()}")
             }
           })
         } else {

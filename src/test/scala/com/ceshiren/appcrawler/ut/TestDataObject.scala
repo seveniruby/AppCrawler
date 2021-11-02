@@ -8,11 +8,11 @@ import org.scalatest.{FunSuite, Matchers}
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 import scala.reflect.io.File
-
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 /**
   * Created by seveniruby on 16/8/13.
   */
-class TestDataObject extends FunSuite with CommonLog with Matchers{
+class TestDataObject extends FunSuite  with Matchers{
   test("save to yaml file"){
     val a="中国"
     val yaml=TData.toYaml(a)

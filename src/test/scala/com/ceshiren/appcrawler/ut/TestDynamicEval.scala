@@ -17,11 +17,12 @@ import scala.reflect.io.AbstractFile
 import scala.tools.nsc.util.BatchSourceFile
 import scala.tools.nsc.{GenericRunnerSettings, Global, Settings}
 import scala.tools.nsc.interpreter.IMain
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 
 /**
   * Created by seveniruby on 16/8/10.
   */
-class TestDynamicEval extends FunSuite with CommonLog{
+class TestDynamicEval extends FunSuite {
 
   val fileName="/Users/seveniruby/projects/LBSRefresh/iOS_20160813203343/AppCrawler_8.scala"
   test("MiniAppium dsl"){
@@ -34,6 +35,11 @@ class TestDynamicEval extends FunSuite with CommonLog{
     DynamicEval.dsl("hello(\"xxxxx\"); hello(\"double\")")
     DynamicEval.dsl("println(com.ceshiren.appcrawler.AppCrawler.crawler.driver)")
 
+  }
+
+  test("benchmark"){
+    DynamicEval.dsl("println('hello')")
+    DynamicEval.dsl("Thread.sleep(1000)")
   }
 
   test("MiniAppium dsl re eval"){

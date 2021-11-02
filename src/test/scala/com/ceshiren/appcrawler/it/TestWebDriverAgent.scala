@@ -1,12 +1,9 @@
 package com.ceshiren.appcrawler.it
 
 import com.ceshiren.appcrawler.core.AppiumSuite
+import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
 
 import java.net.URL
-import org.openqa.selenium.Capabilities
-import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
-import org.scalatest.FunSuite
-
 import scala.jdk.CollectionConverters._
 
 /**

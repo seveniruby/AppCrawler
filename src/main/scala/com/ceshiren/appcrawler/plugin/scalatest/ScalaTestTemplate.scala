@@ -3,7 +3,8 @@ package com.ceshiren.appcrawler.plugin.scalatest
 import com.ceshiren.appcrawler.AppCrawler
 import com.ceshiren.appcrawler.core.Status
 import com.ceshiren.appcrawler.plugin.report.ReportFactory
-import com.ceshiren.appcrawler.utils.{CommonLog, XPathUtil}
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.XPathUtil
 import org.scalatest
 import org.scalatest._
 
@@ -13,7 +14,7 @@ import scala.reflect.io.File
 /**
   * Created by seveniruby on 2017/3/25.
   */
-class ScalaTestTemplate extends FunSuite with BeforeAndAfterAllConfigMap with Matchers with CommonLog {
+class ScalaTestTemplate extends FunSuite with BeforeAndAfterAllConfigMap with Matchers  {
   var name = "template"
   var uri = ""
 

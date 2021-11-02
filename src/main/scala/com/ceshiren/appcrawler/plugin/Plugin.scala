@@ -3,12 +3,12 @@ package com.ceshiren.appcrawler.plugin
 import com.ceshiren.appcrawler.AppCrawler
 import com.ceshiren.appcrawler.core.Crawler
 import com.ceshiren.appcrawler.model.URIElement
-import com.ceshiren.appcrawler.utils.CommonLog
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 
 /**
   * Created by seveniruby on 16/1/7.
   */
-abstract class Plugin extends CommonLog{
+abstract class Plugin{
   private var crawler: Crawler=_
 
   def getCrawler(): Crawler ={

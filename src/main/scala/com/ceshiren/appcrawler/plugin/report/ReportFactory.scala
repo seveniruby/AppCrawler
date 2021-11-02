@@ -4,12 +4,12 @@ import com.ceshiren.appcrawler.core.{ElementInfo, Status}
 import com.ceshiren.appcrawler.model.URIElementStore
 import com.ceshiren.appcrawler.plugin.junit5.JUnit5Runtime
 import com.ceshiren.appcrawler.plugin.scalatest.ScalaTestRuntime
-import com.ceshiren.appcrawler.utils.CommonLog
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 
 import java.{io, util}
 import scala.jdk.CollectionConverters.{IterableHasAsJava, MapHasAsScala}
 
-object ReportFactory extends CommonLog {
+object ReportFactory  {
 
   var showCancel = false
   var title = "AppCrawler"

@@ -1,6 +1,5 @@
 package com.ceshiren.appcrawler.core
 
-import com.ceshiren.appcrawler.utils.CommonLog
 import org.scalatest._
 import org.scalatest.selenium.WebBrowser
 /**
@@ -10,7 +9,6 @@ class AppiumSuite extends FunSuite
   with Matchers
   with WebBrowser
   with BeforeAndAfterAll
-  with BeforeAndAfterEach
-  with CommonLog {
+  with BeforeAndAfterEach {
 
 }

@@ -1,13 +1,13 @@
 package com.ceshiren.appcrawler.ut
 
 import com.ceshiren.appcrawler.core.CrawlerConf
-import com.ceshiren.appcrawler.utils.CommonLog
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 import org.scalatest.{FunSuite, Matchers}
 
 /**
   * Created by seveniruby on 16/8/11.
   */
-class TestConf extends FunSuite with CommonLog with Matchers{
+class TestConf extends FunSuite  with Matchers{
 
 
 

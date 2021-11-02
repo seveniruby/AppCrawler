@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler.model
 
-import com.ceshiren.appcrawler.AppCrawler
 import com.ceshiren.appcrawler.core.{ElementInfo, Status}
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 
 import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters._
@@ -56,7 +56,7 @@ class URIElementStore {
     }
     if (elementStoreMap.contains(element.toString) == false) {
       elementStoreMap(element.toString).action = Status.CLICKED
-      AppCrawler.log.info(s"first found ${element}")
+      log.info(s"first found ${element}")
     }
   }
 
@@ -64,7 +64,7 @@ class URIElementStore {
   def saveReqHash(hash: String = ""): Unit = {
     val head = clickedElementsList.last.toString
     if (elementStoreMap(head).reqHash.isEmpty) {
-      AppCrawler.log.info(s"save reqHash to ${clickedElementsList.size - 1}")
+      log.info(s"save reqHash to ${clickedElementsList.size - 1}")
       elementStoreMap(head).reqHash = hash
     }
   }
@@ -72,7 +72,7 @@ class URIElementStore {
   def saveResHash(hash: String = ""): Unit = {
     val head = clickedElementsList.last.toString
     if (elementStoreMap(head).resHash.isEmpty) {
-      AppCrawler.log.info(s"save resHash to ${clickedElementsList.size - 1}")
+      log.info(s"save resHash to ${clickedElementsList.size - 1}")
       elementStoreMap(head).resHash = hash
     }
   }
@@ -80,21 +80,21 @@ class URIElementStore {
 
   def saveReqDom(dom: String = ""): Unit = {
     val head = clickedElementsList.last.toString
-    AppCrawler.log.info(s"save reqDom to ${clickedElementsList.size - 1}")
+    log.info(s"save reqDom to ${clickedElementsList.size - 1}")
     elementStoreMap(head).reqDom = dom
   }
 
   //todo: 去掉req和res的单独存储，改用链表查询
   def saveResDom(dom: String = ""): Unit = {
     val head = clickedElementsList.last.toString
-    AppCrawler.log.info(s"save resDom to ${clickedElementsList.size - 1}")
+    log.info(s"save resDom to ${clickedElementsList.size - 1}")
     elementStoreMap(head).resDom = dom
   }
 
   def saveReqImg(imgName: String): Unit = {
     val head = clickedElementsList.last.toString
     if (elementStoreMap(head).reqImg.isEmpty) {
-      AppCrawler.log.info(s"save reqImg ${imgName} to ${clickedElementsList.size - 1}")
+      log.info(s"save reqImg ${imgName} to ${clickedElementsList.size - 1}")
       elementStoreMap(head.toString).reqImg = imgName
     }
   }
@@ -103,7 +103,7 @@ class URIElementStore {
   def saveResImg(imgName: String): Unit = {
     val head = clickedElementsList.last.toString
     if (elementStoreMap(head).resImg.isEmpty) {
-      AppCrawler.log.info(s"save resImg ${imgName} to ${clickedElementsList.size - 1}")
+      log.info(s"save resImg ${imgName} to ${clickedElementsList.size - 1}")
       elementStoreMap(head).resImg = imgName.split('.').dropRight(2).mkString(".") + ".clicked.png"
     }
   }
@@ -119,7 +119,7 @@ class URIElementStore {
     if (elementStoreMap.contains(element.toString)) {
       elementStoreMap(element.toString).action == Status.CLICKED
     } else {
-      AppCrawler.log.debug(s"element=${element} first show, need click")
+      log.debug(s"element=${element} first show, need click")
       false
     }
   }
@@ -128,7 +128,7 @@ class URIElementStore {
     if (elementStoreMap.contains(ele.toString)) {
       elementStoreMap(ele.toString).action == Status.SKIPPED
     } else {
-      AppCrawler.log.debug(s"element=${ele} first show, need click")
+      log.debug(s"element=${ele} first show, need click")
       false
     }
   }

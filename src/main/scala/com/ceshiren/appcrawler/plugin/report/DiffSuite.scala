@@ -4,7 +4,8 @@ import com.ceshiren.appcrawler.AppCrawler
 import com.ceshiren.appcrawler.core.{ElementInfo, Status}
 import com.ceshiren.appcrawler.model.URIElement
 import com.ceshiren.appcrawler.plugin.scalatest.SuiteToClass
-import com.ceshiren.appcrawler.utils.{CommonLog, XPathUtil}
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.XPathUtil
 import org.scalatest._
 
 import scala.jdk.CollectionConverters._
@@ -14,7 +15,7 @@ import scala.reflect.io.File
   * Created by seveniruby on 16/9/26.
   */
 
-class DiffSuite extends FunSuite with Matchers with CommonLog{
+class DiffSuite extends FunSuite with Matchers{
   //只取列表的第一项
   var name="新老版本对比"
   var suite="Diff"

@@ -1,14 +1,15 @@
 package com.ceshiren.appcrawler.core
 
 import com.ceshiren.appcrawler.AppCrawler
-import com.ceshiren.appcrawler.utils.{CommonLog, TData}
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.TData
 import org.scalatest
 import org.scalatest.{BeforeAndAfterAllConfigMap, ConfigMap, FunSuite, Matchers}
 
 /**
   * Created by seveniruby on 2017/4/17.
   */
-class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfigMap with CommonLog {
+class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfigMap {
   var crawler: Crawler = _
 
   override def beforeAll(configMap: ConfigMap): Unit = {

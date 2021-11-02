@@ -5,14 +5,14 @@ import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.core.{Crawler, ElementInfo, Status}
 import com.ceshiren.appcrawler.model.{URIElement, URIElementStore}
 import com.ceshiren.appcrawler.plugin.ReportPlugin
-import com.ceshiren.appcrawler.utils.CommonLog
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 import org.scalatest.FunSuite
 import org.scalatest.tools.Runner
 
 /**
   * Created by seveniruby on 16/8/12.
   */
-class TestReportPlugin extends FunSuite with CommonLog{
+class TestReportPlugin extends FunSuite {
   test("gen suite"){
     val report=new ReportPlugin()
     val crawler=new Crawler()

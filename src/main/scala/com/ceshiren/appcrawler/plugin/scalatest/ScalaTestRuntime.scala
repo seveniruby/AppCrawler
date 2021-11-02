@@ -1,11 +1,11 @@
 package com.ceshiren.appcrawler.plugin.scalatest
 
 import com.ceshiren.appcrawler.plugin.report.{Report, ReportFactory}
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 import org.scalatest.tools.Runner
 
 import scala.io.Source
 import scala.jdk.CollectionConverters._
-
 /**
   * Created by seveniruby on 16/8/15.
   */

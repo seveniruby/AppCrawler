@@ -1,20 +1,21 @@
 package com.ceshiren.appcrawler.utils
 
 import com.ceshiren.appcrawler.plugin.Plugin
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 import org.apache.commons.io.FileUtils
 
 import java.io.File
 import java.nio.charset.Charset
 import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
-import scala.tools.nsc.interpreter.IMain
 import scala.tools.nsc.interpreter.shell.{ReplReporterImpl, ShellConfig}
+import scala.tools.nsc.interpreter.{IMain, Results}
 import scala.tools.nsc.{Global, Settings}
 import scala.util.{Failure, Success, Try}
 
 /**
   * Created by seveniruby on 16/8/13.
   */
-class DynamicEval(val outputDir:String="") extends CommonLog{
+class DynamicEval(val outputDir:String="") {
   //todo: scala的执行引擎，替换为bean shell
   private val settingsCompile=new Settings()
 
@@ -47,7 +48,7 @@ class DynamicEval(val outputDir:String="") extends CommonLog{
     run.compile(fileNames)
   }
 
-  def eval(code:String)={
+  def eval(code:String): Results.Result ={
     interpreter.interpret(code)
   }
   def reset(): Unit ={
@@ -58,7 +59,7 @@ class DynamicEval(val outputDir:String="") extends CommonLog{
 
 }
 
-object DynamicEval extends CommonLog{
+object DynamicEval {
   var instance=new DynamicEval()
   var isLoaded=false
   def apply(): Unit ={
@@ -78,12 +79,12 @@ object DynamicEval extends CommonLog{
     val file=File.createTempFile(System.currentTimeMillis().toString, ".sh")
     FileUtils.writeStringToFile(file, command, Charset.defaultCharset())
     log.debug(file.getCanonicalPath)
-    dsl("\"bash "+file.getCanonicalPath+"\"!!")
+    dsl("\"bash -x "+file.getCanonicalPath+"\"!!")
   }
 
 
   private def eval(code:String): Unit ={
-    if(isLoaded==false){
+    if(!isLoaded){
       log.debug("first import")
       instance.eval("import sys.process._")
       instance.eval("val driver=com.ceshiren.appcrawler.AppCrawler.crawler.driver")
@@ -92,6 +93,7 @@ object DynamicEval extends CommonLog{
     }
     log.info(code)
     log.info(instance.eval(code))
+    log.info("eval finish")
   }
 
   def compile(fileNames:List[String]): Unit ={

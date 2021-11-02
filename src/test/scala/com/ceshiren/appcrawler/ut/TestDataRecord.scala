@@ -1,13 +1,13 @@
 package com.ceshiren.appcrawler.ut
 
 import com.ceshiren.appcrawler.model.DataRecord
-import com.ceshiren.appcrawler.utils.CommonLog
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 import org.scalatest.FunSuite
 
 /**
   * Created by seveniruby on 16/8/25.
   */
-class TestDataRecord extends FunSuite with CommonLog{
+class TestDataRecord extends FunSuite {
   test("diff int"){
     val stringDiff=new DataRecord()
     stringDiff.append(22)

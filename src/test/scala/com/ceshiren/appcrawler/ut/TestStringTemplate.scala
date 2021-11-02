@@ -1,12 +1,12 @@
 package com.ceshiren.appcrawler.ut
 
-import com.ceshiren.appcrawler.utils.CommonLog
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
 import org.scalatest.FunSuite
 
 /**
   * Created by seveniruby on 16/8/12.
   */
-class TestStringTemplate extends FunSuite with CommonLog{
+class TestStringTemplate extends FunSuite {
 
   def genNumber(): String ={
     1 to 5 map (_.toString) mkString ("\n"+" "*4)

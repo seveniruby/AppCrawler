@@ -1,14 +1,14 @@
 package com.ceshiren.appcrawler.plugin.report
 
 import com.ceshiren.appcrawler.model.URIElementStore
-import com.ceshiren.appcrawler.utils.{CommonLog, TData}
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.TData
 
 import scala.io.Source
-
 /**
   * Created by seveniruby on 16/8/15.
   */
-abstract class Report extends CommonLog {
+abstract class Report  {
 
 
   def genTestCase(resultDir: String): Unit = {

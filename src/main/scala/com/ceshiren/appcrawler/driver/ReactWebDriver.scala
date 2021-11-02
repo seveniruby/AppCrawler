@@ -3,7 +3,8 @@ package com.ceshiren.appcrawler.driver
 import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.core.Crawler
 import com.ceshiren.appcrawler.model.URIElement
-import com.ceshiren.appcrawler.utils.{CommonLog, TData, XPathUtil}
+import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.{TData, XPathUtil}
 import org.openqa.selenium.Rectangle
 import org.w3c.dom.Document
 
@@ -17,7 +18,7 @@ import scala.util.{Failure, Success, Try}
   */
 
 //todo: 用标准的class代替，用trait会让很多java工程师无法理解。
-abstract class ReactWebDriver extends CommonLog {
+abstract class ReactWebDriver {
 
   var screenWidth = 0
   var screenHeight = 0
