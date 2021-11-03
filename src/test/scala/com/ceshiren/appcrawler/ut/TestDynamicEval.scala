@@ -1,23 +1,13 @@
 package com.ceshiren.appcrawler.ut
 
-import java.io.File
-import java.io.File
-import java.util.jar.JarFile
 import com.ceshiren.appcrawler.plugin.{DemoPlugin, Plugin}
-import com.ceshiren.appcrawler._
-import com.ceshiren.appcrawler.driver.AppiumClient
-import com.ceshiren.appcrawler.utils.{CommonLog, DynamicEval}
+import com.ceshiren.appcrawler.utils.Log.log
+import com.ceshiren.appcrawler.utils.DynamicEval
 import org.scalatest.FunSuite
-import org.xml.sax.ErrorHandler
 
-import scala.reflect.internal.settings.MutableSettings
-import scala.reflect.internal.util.ScalaClassLoader
+import java.io.File
 import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
-import scala.reflect.io.AbstractFile
-import scala.tools.nsc.util.BatchSourceFile
-import scala.tools.nsc.{GenericRunnerSettings, Global, Settings}
-import scala.tools.nsc.interpreter.IMain
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import scala.tools.nsc.{Global, Settings}
 
 /**
   * Created by seveniruby on 16/8/10.

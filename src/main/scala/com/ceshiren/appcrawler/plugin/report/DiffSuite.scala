@@ -4,7 +4,7 @@ import com.ceshiren.appcrawler.AppCrawler
 import com.ceshiren.appcrawler.core.{ElementInfo, Status}
 import com.ceshiren.appcrawler.model.URIElement
 import com.ceshiren.appcrawler.plugin.scalatest.SuiteToClass
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.XPathUtil
 import org.scalatest._
 

@@ -3,10 +3,9 @@ package com.ceshiren.appcrawler.driver
 import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.core.Crawler
 import com.ceshiren.appcrawler.model.{PageSource, URIElement}
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.{TData, XPathUtil}
 import org.openqa.selenium.Rectangle
-import org.w3c.dom.Document
 
 import java.io.File
 import java.util.concurrent.{Callable, Executors, TimeUnit, TimeoutException}

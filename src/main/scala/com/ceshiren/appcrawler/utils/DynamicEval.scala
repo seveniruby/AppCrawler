@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler.utils
 
 import com.ceshiren.appcrawler.plugin.Plugin
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import Log.log
 import org.apache.commons.io.FileUtils
 
 import java.io.File

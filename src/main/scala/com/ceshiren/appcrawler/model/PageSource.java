@@ -7,7 +7,7 @@ import scala.collection.immutable.Map;
 
 import java.util.Arrays;
 
-import static com.ceshiren.appcrawler.utils.CrawlerLog.log;
+import static com.ceshiren.appcrawler.utils.Log.log;
 
 public class PageSource {
     String raw;

@@ -2,7 +2,7 @@ package com.ceshiren.appcrawler.plugin.junit5
 
 import com.ceshiren.appcrawler.plugin.report.{Report, ReportFactory}
 import com.ceshiren.appcrawler.plugin.scalatest.SuiteToClass
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.Log.log
 
 import scala.jdk.CollectionConverters._
 /**

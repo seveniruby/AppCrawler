@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler.plugin.scalatest
 
 import com.ceshiren.appcrawler.AppCrawler
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.Log.log
 import javassist.{ClassPool, CtConstructor}
 
 import scala.jdk.CollectionConverters._

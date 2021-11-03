@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler.core
 
 import com.ceshiren.appcrawler.AppCrawler
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.TData
 import org.scalatest
 import org.scalatest.{BeforeAndAfterAllConfigMap, ConfigMap, FunSuite, Matchers}

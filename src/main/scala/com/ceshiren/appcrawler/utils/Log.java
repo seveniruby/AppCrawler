@@ -5,8 +5,8 @@ import org.apache.log4j.*;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-public class CrawlerLog {
-    public static Logger log=Logger.getLogger(CrawlerLog.class);
+public class Log {
+    public static Logger log=Logger.getLogger(Log.class);
     static PatternLayout layout = new PatternLayout("%d{yyyy-MM-dd HH:mm:ss} %p [%c{1}.%L.%M] %m%n");
 
 

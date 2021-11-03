@@ -4,12 +4,11 @@ import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.driver._
 import com.ceshiren.appcrawler.model._
 import com.ceshiren.appcrawler.plugin.Plugin
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils._
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.scalatest.ConfigMap
-import org.w3c.dom.Document
 import sun.misc.Signal
 
 import java.io

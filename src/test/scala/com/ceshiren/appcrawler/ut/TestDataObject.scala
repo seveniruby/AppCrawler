@@ -2,13 +2,13 @@ package com.ceshiren.appcrawler.ut
 
 import com.ceshiren.appcrawler.core.CrawlerConf
 import com.ceshiren.appcrawler.model.{Step, URIElement}
-import com.ceshiren.appcrawler.utils.{CommonLog, TData}
+import com.ceshiren.appcrawler.utils.{TData}
 import org.scalatest.{FunSuite, Matchers}
 
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 import scala.reflect.io.File
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.Log.log
 /**
   * Created by seveniruby on 16/8/13.
   */

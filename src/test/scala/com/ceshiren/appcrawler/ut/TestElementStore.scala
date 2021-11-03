@@ -2,9 +2,9 @@ package com.ceshiren.appcrawler.ut
 
 import com.ceshiren.appcrawler.core.{ElementInfo, Status}
 import com.ceshiren.appcrawler.model.{URIElement, URIElementStore}
-import com.ceshiren.appcrawler.utils.{CommonLog, TData}
+import com.ceshiren.appcrawler.utils.Log.log
+import com.ceshiren.appcrawler.utils.TData
 import org.scalatest.{FunSuite, Matchers}
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
 /**
   * Created by seveniruby on 16/9/17.
   */

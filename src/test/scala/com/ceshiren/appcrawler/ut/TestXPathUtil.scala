@@ -1,17 +1,12 @@
 package com.ceshiren.appcrawler.ut
 
-import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.model.URIElement
-import com.ceshiren.appcrawler.utils.{CommonLog, TData, XPathUtil}
-import org.apache.commons.text.StringEscapeUtils
+import com.ceshiren.appcrawler.utils.Log.log
+import com.ceshiren.appcrawler.utils.{TData, XPathUtil}
 import org.scalatest.{FunSuite, Matchers}
 import org.w3c.dom.NodeList
 
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 import scala.io.Source
-import collection.JavaConverters._
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
 
 /**
   * Created by seveniruby on 16/3/26.

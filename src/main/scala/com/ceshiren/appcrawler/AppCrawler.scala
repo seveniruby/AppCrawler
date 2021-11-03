@@ -3,8 +3,8 @@ package com.ceshiren.appcrawler
 import com.ceshiren.appcrawler.core.{Crawler, CrawlerConf}
 import com.ceshiren.appcrawler.model.URIElementFactory
 import com.ceshiren.appcrawler.plugin.report.{DiffSuite, ReportFactory}
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
-import com.ceshiren.appcrawler.utils.{CrawlerLog, GA, TData}
+import com.ceshiren.appcrawler.utils.Log.log
+import com.ceshiren.appcrawler.utils.{Log, GA, TData}
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.{FileAppender, Level}
 
@@ -183,7 +183,7 @@ object AppCrawler {
           GA.logLevel = Level.DEBUG
         }
         log.info(s"set global log level to ${GA.logLevel}")
-        CrawlerLog.initLog()
+        Log.initLog()
 
         if (config.encoding.nonEmpty) {
           setGlobalEncoding(config.encoding)
@@ -336,7 +336,7 @@ object AppCrawler {
 
   //todo: 让其他的文件也支持log输出到文件
   def addLogFile(conf: CrawlerConf): Unit = {
-    CrawlerLog.initLog(conf.resultDir + "/appcrawler.log")
+    Log.initLog(conf.resultDir + "/appcrawler.log")
     log.info(banner)
 
     val resultDir = new java.io.File(conf.resultDir)

@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler.plugin.report
 
 import com.ceshiren.appcrawler.model.URIElementStore
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.TData
 
 import scala.io.Source

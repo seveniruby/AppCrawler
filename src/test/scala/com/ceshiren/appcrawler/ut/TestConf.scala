@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler.ut
 
 import com.ceshiren.appcrawler.core.CrawlerConf
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.Log.log
 import org.scalatest.{FunSuite, Matchers}
 
 /**

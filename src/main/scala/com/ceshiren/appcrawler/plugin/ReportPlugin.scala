@@ -3,7 +3,7 @@ package com.ceshiren.appcrawler.plugin
 import com.ceshiren.appcrawler.model.URIElement
 import com.ceshiren.appcrawler.plugin.report.ReportFactory
 import com.ceshiren.appcrawler.report.MvnReplace
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.Log.log
 
 import java.nio.file.{Files, Paths}
 import scala.io.Source

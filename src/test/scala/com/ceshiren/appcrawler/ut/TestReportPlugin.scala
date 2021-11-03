@@ -5,7 +5,7 @@ import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.core.{Crawler, ElementInfo, Status}
 import com.ceshiren.appcrawler.model.{URIElement, URIElementStore}
 import com.ceshiren.appcrawler.plugin.ReportPlugin
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.Log.log
 import org.scalatest.FunSuite
 import org.scalatest.tools.Runner
 

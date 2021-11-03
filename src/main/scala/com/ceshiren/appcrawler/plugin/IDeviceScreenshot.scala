@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.plugin
 
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.Log.log
 
 import scala.sys.process._
 

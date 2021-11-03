@@ -2,8 +2,8 @@ package com.ceshiren.appcrawler.driver
 
 import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.core.CrawlerConf
-import com.ceshiren.appcrawler.model.{PageSource, URIElement}
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.model.URIElement
+import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.DynamicEval
 import org.openqa.selenium.Rectangle
 

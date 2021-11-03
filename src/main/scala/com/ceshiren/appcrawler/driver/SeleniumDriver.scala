@@ -3,7 +3,7 @@ package com.ceshiren.appcrawler.driver
 import com.ceshiren.appcrawler.AppCrawler
 import com.ceshiren.appcrawler.core.CrawlerConf
 import com.ceshiren.appcrawler.model.URIElement
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.{DynamicEval, TData}
 import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}

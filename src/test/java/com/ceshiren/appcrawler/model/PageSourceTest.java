@@ -1,11 +1,11 @@
 package com.ceshiren.appcrawler.model;
 
-import com.ceshiren.appcrawler.utils.CrawlerLog;
+import com.ceshiren.appcrawler.utils.Log;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static com.ceshiren.appcrawler.utils.CrawlerLog.log;
+import static com.ceshiren.appcrawler.utils.Log.log;
 
 class PageSourceTest {
 
@@ -32,7 +32,7 @@ class PageSourceTest {
     @Test
     void demo() {
         PageSource page = new PageSource();
-        CrawlerLog.initLog("/tmp/1.log");
+        Log.initLog("/tmp/1.log");
         log.trace("trace");
         log.debug("debug");
         log.info("info");

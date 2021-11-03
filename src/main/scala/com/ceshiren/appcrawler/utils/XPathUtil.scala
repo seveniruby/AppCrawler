@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.utils
 
-import com.ceshiren.appcrawler.utils.CrawlerLog.log
+import Log.log
 import org.w3c.dom.{Attr, Document, Node, NodeList}
 import org.xml.sax.InputSource
 
@@ -12,6 +12,7 @@ import javax.xml.transform.{OutputKeys, TransformerFactory}
 import javax.xml.xpath.{XPath, XPathConstants, XPathFactory}
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+
 /**
   * Created by seveniruby on 16/3/26.
   */
@@ -208,10 +209,8 @@ object XPathUtil {
   }
 
   def getNodeListFromXML(pageDom: Document, xpath: String): AnyRef = {
-    log.trace(xpath)
     val xPath: XPath = XPathFactory.newInstance().newXPath()
     val compexp = xPath.compile(xpath)
-    log.trace("compile")
     var r: AnyRef = None
     //val node=compexp.evaluate(pageDom)
     if (xpath.matches("string(.*)") || xpath.matches(".*/@[^/]*")) {
@@ -219,7 +218,6 @@ object XPathUtil {
     } else {
       r = compexp.evaluate(pageDom, XPathConstants.NODESET)
     }
-    log.trace("evaluate")
     r
   }
 

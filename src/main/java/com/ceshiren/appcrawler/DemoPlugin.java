@@ -4,7 +4,7 @@ import com.ceshiren.appcrawler.core.Crawler;
 import com.ceshiren.appcrawler.model.URIElement;
 import com.ceshiren.appcrawler.plugin.Plugin;
 
-import static com.ceshiren.appcrawler.utils.CrawlerLog.log;
+import static com.ceshiren.appcrawler.utils.Log.log;
 
 public class DemoPlugin extends Plugin {
     @Override
