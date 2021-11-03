@@ -1,134 +1,364 @@
 # appcrawler
 
-Appcrawler是一个基于自动遍历的App爬虫工具，支持Android和IOS，支持真机和模拟器。最大的特点是灵活性高，可通过配置来设定遍历的规则
+Appcrawler是一个基于自动遍历的App爬虫工具，支持Android和IOS，支持真机和模拟器。最大的特点是灵活性高，可通过配置来设定遍历的规则。
 
 ## quick start
 
 ```bash
-Usage: java -jar appcrawler.jar [options]
+-------------------------------------------------
+appcrawler 全平台自动遍历测试工具
+Q&A: https://ceshiren.com/c/opensource/appcrawler
+author: seveniruby
+-------------------------------------------------
 
--a <value> : --app，Android或者iOS的文件地址，可以是网络地址，赋值给appium的app选项
-示例 : java -jar appcrawler.jar -a APIDemos.apk
 
--c <value> : --conf，配置文件的地址，支持YAML和JSON格式，不指定即使用默认配置
-示例 : java -jar appcrawler.jar -c APIDemosConfig.yml
+Usage: appcrawler [options]
 
--e <value> : --encoding，设置编码格式
-示例 : java -jar appcrawler.jar -a APIDemos.apk -e UTF-8/GBK
+  -a, --app <value>        Android或者iOS的文件地址, 可以是网络地址, 赋值给appium的app选项
+  -e, --encoding <value>   set encoding, such as UTF-8 GBK
+  -c, --conf <value>       配置文件地址
+  -p, --platform <value>   平台类型android或者ios, 默认会根据app后缀名自动判断
+  -t, --maxTime <value>    最大运行时间. 单位为秒. 超过此值会退出. 默认最长运行3个小时
+  -u, --appium <value>     appium的url地址
+  -o, --output <value>     遍历结果的保存目录. 里面会存放遍历生成的截图, 思维导图和日志
+  --capability k1=v1,k2=v2...
+                           appium capability选项, 这个参数会覆盖-c指定的配置模板参数, 用于在模板配置之上的参数微调
+  -y, --yaml <value>       代表配置的yaml语法，比如blackList: [ {xpath: action_night } ]，用于避免使用配置文件的情况
+  -r, --report <value>     输出html和xml报告
+  --template <value>       输出代码模板
+  --master <value>         master的diff.yml文件地址
+  --candidate <value>      candidate环境的diff.yml文件
+  -v, --verbose-debug      是否展示更多debug信息
+  -vv, --verbose-trace     是否展示更多trace信息
+  --demo                   生成demo配置文件学习使用方法
+  --help
+                           示例
+                           appcrawler -a xueqiu.apk
+                           appcrawler -a xueqiu.apk --capability noReset=true
+                           appcrawler -c conf/xueqiu.json -p android -o result/
+                           appcrawler -c xueqiu.yaml --capability udid=[你的udid] -a Snowball.app
+                           appcrawler -c xueqiu.yaml -a Snowball.app -u 4730
+                           appcrawler -c xueqiu.yaml -a Snowball.app -u http://127.0.0.1:4730/wd/hub
 
--p <value> : --platform，平台类型即Android或者IOS，若不指定会根据App后缀名自动判断
-示例 : java -jar appcrawler.jar -a APIDemos.apk -p Android/IOS
+                           #生成demo配置文件到当前目录下的demo.yaml
+                           appcrawler --demo
 
--t <value> : --maxTime，最大运行时间，单位为秒，超过此值会退出，默认最长运行3个小时
-示例 : java -jar appcrawler.jar -a APIDemos.apk -t 10800
+                           #启动已经安装过的app
+                           appcrawler --capability "appPackage=com.xueqiu.android,appActivity=.view.WelcomeActivityAlias"
 
--u <value> : --appium，appium的url地址
-示例 : java -jar appcrawler.jar -a APIDemos.apk -u http://127.0.0.1:4730/wd/hub
+                           #使用yaml参数
+                           appcrawler -a xueqiu.apk -y "blackList: [ {xpath: action_night}, {xpath: '.*[0-9\\.]{2}.*'} ]"
 
--o <value> : --output，遍历结果的保存目录，里面会存放遍历生成的截图，思维导图和日志
-示例 : java -jar appcrawler.jar -a APIDemos.apk -o result/
+                           #从已经结束的结果中重新生成报告
+                           appcrawler --report result/
 
---capability k1=v1,k2=v2... : 使用这个参数会覆盖-c指定的配置模板里的参数，用于模板配置里的capability参数微调
-示例 : java -jar appcrawler.jar --capability "appPackage=com.android.xx,appActivity=.view.xxActivity"
-
--r <value> : --report，输出html和xml报告的目录
-示例 : java -jar appcrawler.jar -a APIDemos.apk -r result/report/
-
--y <value> : --yaml，代表配置的yaml语法，用于不使用配置文件的情况下添加约束
-示例 : java -jar appcrawler.jar -a APIDemos.apk -y "blackList: [ {xpath: action_night } ]"
-
---template <value> : 输出代码模板
-示例 : java -jar appcrawler.jar -a APIDemos.apk --template "xx"
-
---master <value> : master的elements.yml文件地址，与--candidate参数一起使用，生成两者的Diff报告
-
---candidate <value> : candidate环境的elements.yml文件，同上
-示例 : java -jar appcrawler.jar --master master.yml --candidate candidate.yml -r result/diff/
-
--v : --verbose-debug，是否展示更多debug信息
-示例 : java -jar appcrawler.jar -a APIDemos.apk -v
-
--vv : --verbose-trace，是否展示更多trace信息
-示例 : java -jar appcrawler.jar -a APIDemos.apk -vv
-
---demo : 生成demo配置文件的示例
-示例 : java -jar appcrawler.jar --demo
-
---help : 输出帮助文档
-示例 : java -jar appcrawler.jar --help
 ```
 
 ## 配置文件格式
 
-**以YAML格式为例，以下为默认配置 :**
+### 执行参数与配置文件
 
-```
+- capability设置：与appium完全一致
+- testcase：用于启动app后的基础测试用例
+- selectedList：遍历范围设定
+- triggerActions：特定条件触发执行动作的设置
+- selectedList：需要被遍历的元素范围
+- firstList：优先被点击
+- lastList：最后被点击
+- tagLimitMax：同祖先（同类型）的元素最多点击多少次
+- backButton：当所有元素都被点击后默认后退控件定位
+- blackList：黑名单
+- maxDepth: 遍历的最大深度
+
+### 配置的最小单元 测试用例模型
+
+testcase的完整形态
+
+- given：所有的先决条件
+- when：先决条件成立后的行为
+- then：断言集合
+
+testcase的简写形态
+
+- xpath：对应when里的xpath
+- action：对应when的action
+
+执行参数比配置文件优先级别高
+
+- given 前提条件
+- when 执行动作
+- then 写断言
+
+简写形态
+
+- xpath xpath支持xpath表达式、正则、包含
+- action 支持
+
+### xpath定义
+
+- xpath
+    - //*[@resource-id=‘xxxx’]
+    - //*[contains(@text, ‘密码’)]
+- 正则
+    - ^确定$
+    - ^.*输入密码
+- 包含
+    - 密码
+    - 输入
+    - 请
+
+### action定义
+
+- "" 只是截图记录
+- back 后退
+- backApp 回退到当前的app 默认等价于back行为 可定制
+- monkey 随机事件
+- click
+- longTap
+- xxx() 执行scala或者java代码
+    - Thread.sleep(3000)
+    - driver.swipe(0.9, 0.5, 0.1, 0.5)
+- 非以上所有行为是输入 xx ddd
+
+### 完整配置文件
+
+```yaml
 ---
-pluginList:             /** 插件列表，暂时禁用 */
-useNewData: false       /** 是否使用新数据格式 */
-logLevel: "TRACE"       /** 设置log的层级 */
-saveScreen: true        /** 是否截图 */
-showCancel: true        /** 是否展示取消的操作 */
-reportTitle: ""         /** 结果目录 */
-beforeStartWait: 6000   /** 等待启动，待废除 */
-maxTime: 10800          /** 最大运行时间 */
-maxDepth: 10            /** 默认的最大深度10, 结合baseUrl可很好的控制遍历的范围 */
-resultDir: ""           /** 结果目录 */
-findBy: "xpath"         /** 可选 default|android|id|xpath，默认状态会自动判断是否使用android定位或者ios定位 */
-capability:             /** appium的capability通用配置，需要指定appPackage和appActivity */
+screenshot: true
+reportTitle: ""
+resultDir: ""
+showCancel: true
+maxTime: 10800
+maxDepth: 10
+capability:
   noReset: "true"
   fullReset: "false"
-baseUrl:                /** 设置一个起始url，指定遍历的初始状态 */
-urlBlackList:           /** url黑名单，用于排除某些页面 */
-blackList:              /** 黑名单列表 matches风格, 默认排除内容是2个数字以上的控件. */
-- xpath: ".*[0-9]{2}.*"
-urlWhiteList:           /** url白名单 */
-appWhiteList:           /** app白名单 */
-backButton:             /** 后退按钮标记，目前具备了自动判断返回按钮的能力 */
-- xpath: "Navigate up"
-firstList:              /** 基于selectedList定位到的元素，优先遍历的元素列表 */
-selectedList:           /** 使用xpath定位期望的遍历列表 */
-- xpath: "//*[contains(name(), 'Button')]"
-- xpath: "//*[@clickable="true"]//android.widget.TextView[string-length(@text)>0 and string-length(@text)<20]"
-lastList:               /** 基于selectedList定位到的元素，最后遍历的元素列表 */
-- xpath: "//*[contains(@resource-id, 'header')]//*"
-- xpath: "//*[contains(@resource-id, 'indicator')]//*"
-beforeRestart：         /** 在重启session之前做的事情 */
-beforeElement:          /** 在执行action之前默认执行的动作，比如等待 */
-afterElement:           /** 在执行action之后默认执行的动作，比如等待 */
-afterElementWait： 500  /** 执行action之后的等待时间 */
-afterAll:               /** 所有动作执行完后，是否需要刷新或者滑动 */
-afterAllMax：           /** afterAll执行多少次后才不执行，比如连续滑动2次都没新元素即取消 */
-triggerActions:         /** 引导规则，action动作，xpath定位，times执行次数 */
-- xpath: "permission_allow_button"
-  times: 3
-- xpath: "允许"
-  times: 3
-tagLimitMax: 2          /** 相似控件最多点击几次 */
-tagLimit:               /** 特殊的按钮，可以一直被遍历 */
-- xpath: "确定"
-  times: 1000
-testcase:               /** 可以自定义测试用例 */
-  name: ceshiren AppCrawler
+  appium: "http://127.0.0.1:4723/wd/hub"
+testcase:
+  name: "ceshiren AppCrawler"
   steps:
-  - when:
+    - given: [ ]
+      when: null
+      then: [ ]
       xpath: "/*/*"
       action: "Thread.sleep(1000)"
-    then: ""
-xpathAttributes：       /** 自动生成的xpath表达式里可以包含的匹配属性 */
-- "name()"
-- "resource-id"
-sortByAttribute:        /** 先按照深度depth排序，再按照list排序，最后按照selected排序。后排序是优先级别最高的 */
-- "depth"
-- "list"
-- "selected"
-suiteName:              /** 用来确定url的元素定位xpath 他的text会被取出当作url因素 */
-- "//*[@selected='true']//android.widget.TextView/@text"
-assertGlobal:           /** 断言，只需要写given与then即可 */
+      actions: [ ]
+      times: -1
+triggerActions:
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "permission_allow_button"
+    action: ""
+    actions: [ ]
+    times: 3
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "允许"
+    action: ""
+    actions: [ ]
+    times: 3
+selectedList:
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//*[contains(name(), 'Button')]"
+    action: ""
+    actions: [ ]
+    times: -1
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//*[contains(name(), 'Text') and @clickable='true' and string-length(@text)<10]"
+    action: ""
+    actions: [ ]
+    times: -1
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//*[@clickable='true']//*[contains(name(), 'Text') and string-length(@text)<10]"
+    action: ""
+    actions: [ ]
+    times: -1
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//*[contains(name(), 'Image') and @clickable='true']"
+    action: ""
+    actions: [ ]
+    times: -1
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//*[@clickable='true']/*[contains(name(), 'Image')]"
+    action: ""
+    actions: [ ]
+    times: -1
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//*[contains(name(), 'Image') and @name!='']"
+    action: ""
+    actions: [ ]
+    times: -1
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//*[contains(name(), 'Text') and @name!='' and string-length(@label)<10]"
+    action: ""
+    actions: [ ]
+    times: -1
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//a"
+    action: ""
+    actions: [ ]
+    times: -1
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//*[contains(@class, 'Text') and @clickable='true' and string-length(@text)<10]"
+    action: ""
+    actions: [ ]
+    times: -1
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//*[@clickable='true']//*[contains(@class, 'Text') and string-length(@text)<10]"
+    action: ""
+    actions: [ ]
+    times: -1
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//*[contains(@class, 'Image') and @clickable='true']"
+    action: ""
+    actions: [ ]
+    times: -1
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//*[@clickable='true']/*[contains(@class, 'Image')]"
+    action: ""
+    actions: [ ]
+    times: -1
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//*[@clickable='true' and contains(@class, 'Button')]"
+    action: ""
+    actions: [ ]
+    times: -1
+firstList: [ ]
+lastList:
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//*[@selected='true']/..//*"
+    action: ""
+    actions: [ ]
+    times: -1
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "//*[@selected='true']/../..//*"
+    action: ""
+    actions: [ ]
+    times: -1
+backButton:
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "Navigate up"
+    action: ""
+    actions: [ ]
+    times: -1
+xpathAttributes:
+  - "name()"
+  - "name"
+  - "label"
+  - "value"
+  - "resource-id"
+  - "content-desc"
+  - "text"
+  - "id"
+  - "name"
+  - "innerText"
+  - "tag"
+  - "class"
+sortByAttribute:
+  - "depth"
+  - "list"
+  - "selected"
+findBy: "xpath"
+suiteName:
+  - "//*[@selected='true']//android.widget.TextView/@text"
+baseUrl: [ ]
+appWhiteList: [ ]
+urlBlackList: [ ]
+urlWhiteList: [ ]
+blackList:
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: ".*[0-9]{2}.*"
+    action: ""
+    actions: [ ]
+    times: -1
+beforeStartWait: 6000
+beforeRestart: [ ]
+beforeElement: [ ]
+afterElement: [ ]
+afterElementWait: 500
+afterAll: [ ]
+afterAllMax: 2
+tagLimitMax: 2
+tagLimit:
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "确定"
+    action: ""
+    actions: [ ]
+    times: 1000
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "取消"
+    action: ""
+    actions: [ ]
+    times: 1000
+  - given: [ ]
+    when: null
+    then: [ ]
+    xpath: "share_comment_guide_btn_name"
+    action: ""
+    actions: [ ]
+    times: 1000
+assertGlobal: [ ]
+pluginList: [ ]
 ```
+
+## 金牌赞助商（Gold Sponsor）
+
+![Logo-霍格沃兹测试学院](https://ceshiren.com/uploads/default/original/2X/2/2529377efc39dffe8ffd96b5aed4b417cdef1a52.png)
+
+[霍格沃兹测试开发学社](https://ceshiren.com/)
+是 [测吧（北京）科技有限公司](http://qrcode.testing-studio.com/f?from=appcrawler&url=https://ceshiren.com/t/topic/14814)
+旗下业界领先的测试开发技术高端教育品牌。 学院课程均由名企一线测试大牛设计，提供实战驱动的系列课程。涵盖移动app自动化测试、接口自动化测试、性能测试、持续集成/持续交付/DevOps 、测试左移、测试右移、测试管理等课程。
+[点击学习!](http://qrcode.testing-studio.com/f?from=appcrawler&url=https://testerh.ke.qq.com?flowToken=1040391)
+
+[测吧（北京）科技有限公司](http://qrcode.testing-studio.com/f?from=appcrawler&url=https://ceshiren.com/t/topic/14814)
+是一家服务于测试领域的高科技公司，为企业提供全方位的自动化测试技术支持、测试平台开发定制、测试效能提升等咨询与科研合作服务。 先后服务于华为、工信部、信通院等知名企业与机构。
 
 ## 编译
 
 ```bash
 mvn clean package assembly:single -DskipTests
 ```
+
+## 技术交流
+
+由霍格沃兹测试开发学社维护，技术交流与issue提交请移步 https://ceshiren.com/c/opensource/appcrawler/ 交流
