@@ -3,9 +3,10 @@ package com.ceshiren.appcrawler
 import com.ceshiren.appcrawler.core.{Crawler, CrawlerConf}
 import com.ceshiren.appcrawler.model.URIElementFactory
 import com.ceshiren.appcrawler.plugin.report.{DiffSuite, ReportFactory}
+import com.ceshiren.appcrawler.utils.Log
 import com.ceshiren.appcrawler.utils.Log.log
-import com.ceshiren.appcrawler.utils.{Log, GA, TData}
 import org.apache.commons.io.FileUtils
+import org.apache.logging.log4j.Level
 
 import java.io.File
 import java.nio.charset.Charset
@@ -73,6 +74,7 @@ object AppCrawler {
     val args_new = if (args.length == 0) {
       Array("--help")
     } else {
+      Log.setLevel(Level.INFO)
       log.info(banner)
       args
     }
@@ -174,6 +176,12 @@ object AppCrawler {
   def parseParams(parser: scopt.OptionParser[Param], args_new: Array[String]): Unit = {
     parser.parse(args_new, Param()) match {
       case Some(config) => {
+        if(config.trace){
+          Log.setLevel(Level.TRACE)
+        }
+        if(config.debug){
+          Log.setLevel(Level.DEBUG)
+        }
         if (config.encoding.nonEmpty) {
           setGlobalEncoding(config.encoding)
         }
@@ -320,7 +328,7 @@ object AppCrawler {
 
   //todo: 让其他的文件也支持log输出到文件
   def addLogFile(conf: CrawlerConf): Unit = {
-    Log.initLog(conf.resultDir + "/appcrawler.log")
+    Log.setLogFilePath(conf.resultDir + "/appcrawler.log")
     log.info(banner)
 
     val resultDir = new java.io.File(conf.resultDir)

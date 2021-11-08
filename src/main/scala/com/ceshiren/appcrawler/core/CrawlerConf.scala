@@ -14,16 +14,6 @@ import scala.io.Source
   * Created by seveniruby on 16/1/6.
   */
 class CrawlerConf {
-  val screenshotDescription = "是否截图"
-  var screenshot = true
-  val reportTitleDescription = "报告的title"
-  var reportTitle = "AppCrawler"
-  val resultDirDescription = "结果目录，如果为空会自动创建对应时间戳_报名的结果目录"
-  var resultDir = ""
-  //todo: 支持重进未完全覆盖的界面
-  //var tagLimit=scala.collection.mutable.Map[String, Int]()
-  val showCancelDescription = "是否展示跳过的控件记录"
-  var showCancel = true
   val maxTimeDescription = "最大运行时间"
   var maxTime = 3600 * 3
   val maxDepthDescription = "默认的最大深度10, 结合baseUrl可很好的控制遍历的范围"
@@ -36,6 +26,8 @@ class CrawlerConf {
     "除了支持appium的所有引擎外，额外增加了adb和selenium的支持"
   var capability = Map[String, Any](
     //默认不清空数据，防止有人用于微信和qq
+    "appPackage" -> "io.appium.android.apis",
+    "appActivity" -> ".ApiDemos",
     "noReset" -> "true",
     "fullReset" -> "false",
   )
@@ -109,10 +101,6 @@ class CrawlerConf {
   //todo: 通过不同的driver实现自动判别
   val findByDescription = "默认生成控件唯一定位符的表达式风格，可选项 default|android|id|xpath，默认会自动判断是否使用android定位或者ios定位"
   var findBy = "xpath"
-  val suiteNameDescription = "报告中的测试套件名字可以由列表内的控件内容替换，增强报告中关键界面的辨识度"
-  var suiteName = List[String](
-    "//*[@selected='true']//android.widget.TextView/@text"
-  )
   val baseUrlDescription = "设置一个起始点，从这个起始点开始计算深度，比如默认从登录后的界面开始计算"
   var baseUrl = List[String]()
   val appWhiteListDescription = "app白名单，允许在这些app里进行遍历"
@@ -154,6 +142,21 @@ class CrawlerConf {
   )
   val assertGlobalDescription = "全局断言"
   var assertGlobal = List[Step]()
+
+  val suiteNameDescription = "报告中的测试套件名字可以由列表内的控件内容替换，增强报告中关键界面的辨识度"
+  var suiteName = List[String](
+    "//*[@selected='true']//android.widget.TextView/@text"
+  )
+  val screenshotDescription = "是否截图"
+  var screenshot = true
+  val reportTitleDescription = "报告的title"
+  var reportTitle = "AppCrawler"
+  val resultDirDescription = "结果目录，如果为空会自动创建对应时间戳_报名的结果目录"
+  var resultDir = ""
+  //todo: 支持重进未完全覆盖的界面
+  //var tagLimit=scala.collection.mutable.Map[String, Int]()
+  val showCancelDescription = "是否展示跳过的控件记录"
+  var showCancel = true
 
   val pluginListDescription = "插件列表，暂时禁用，太高级了，很多人不会用"
 

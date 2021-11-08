@@ -6,10 +6,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import scala.xml.Source;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -50,7 +47,7 @@ class PageSourceTest {
     @Test
     void demo() {
         PageSource page = new PageSource();
-        Log.initLog("/tmp/1.log");
+        Log.setLogFilePath("/tmp/1.log");
         log.trace("trace");
         log.debug("debug");
         log.info("info");
