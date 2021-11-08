@@ -21,8 +21,7 @@ object AppCrawler {
       |Q&A: https://ceshiren.com/c/opensource/appcrawler
       |author: 思寒 seveniruby@霍格沃兹测试开发学社
       |-------------------------------------------------
-      |
-    """.stripMargin
+      |""".stripMargin
 
   var crawler = new Crawler
   var factory: URIElementFactory = _

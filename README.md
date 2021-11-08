@@ -343,7 +343,7 @@ pluginList: [ ]
 
 ## 金牌赞助商（Gold Sponsor）
 
-![Logo-霍格沃兹测试学院](https://ceshiren.com/uploads/default/original/2X/2/2529377efc39dffe8ffd96b5aed4b417cdef1a52.png)
+![logo霍格沃兹测试学院](https://ceshiren.com/uploads/default/original/3X/a/2/a270cdc0bf8cb41110ce5999d5278515a0e7cf0f.png)
 
 [霍格沃兹测试开发学社](https://ceshiren.com/)
 是 [测吧（北京）科技有限公司](http://qrcode.testing-studio.com/f?from=appcrawler&url=https://ceshiren.com/t/topic/14814)
