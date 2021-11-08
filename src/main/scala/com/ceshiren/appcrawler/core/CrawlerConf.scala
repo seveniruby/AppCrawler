@@ -162,7 +162,7 @@ class CrawlerConf {
       |在selectedList firstList lastList等很多配置中，需要填充的是测试步骤Step类型
       |Step类型由given（满足条件）when（条件满足的行为）then（断言）三部分组成
       |Step可以简化为xpath（定位表达式，支持xpath 正则 包含关系）与action（点击 输入等行为）
-      |""".stripMargin
+      |""".stripMargin.replace("\n", "。")
   var pluginList = List[String]()
 
   def save(path: String): Unit = {

@@ -19,7 +19,7 @@ abstract class Plugin{
   }
   def init(crawler: Crawler): Unit ={
     this.crawler=crawler
-    log.addAppender(AppCrawler.fileAppender)
+
     log.info(this.getClass.getName+" init")
   }
   def start(): Unit ={

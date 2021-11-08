@@ -1,41 +1,22 @@
 package com.ceshiren.appcrawler.utils;
 
-import org.apache.log4j.*;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
 public class Log {
-    public static Logger log=Logger.getLogger(Log.class);
-    static PatternLayout layout = new PatternLayout("%d{yyyy-MM-dd HH:mm:ss} %p [%C{1}.%L.%M] %m%n");
+    public static Logger log = LogManager.getLogger(Log.class);
 
-
-
-    public static Logger initLog(){
-        BasicConfigurator.configure();
-        log.setLevel(Level.TRACE);
-
-        if (log.getAppender("console") == null) {
-            ConsoleAppender console = new ConsoleAppender();
-            console.setName("console");
-            console.setWriter(new OutputStreamWriter(System.out));
-            console.setLayout(layout);
-            log.addAppender(console);
-        } else {
-            log.info("console already exist");
-        }
-        log.setAdditivity(false);
-        return log;
-    }
-    public static Logger initLog(String path){
-        initLog();
-
-        try {
-            FileAppender fileAppender = new FileAppender(layout, path, false);
-            log.addAppender(fileAppender);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public static Logger initLog(String path) {
+        System.setProperty("logFilename", path);
+        LoggerContext logContext = (LoggerContext) LogManager.getContext(false);
+        logContext.reconfigure();
 
         return log;
     }

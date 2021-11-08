@@ -6,7 +6,6 @@ import com.ceshiren.appcrawler.plugin.report.{DiffSuite, ReportFactory}
 import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.{Log, GA, TData}
 import org.apache.commons.io.FileUtils
-import org.apache.log4j.{FileAppender, Level}
 
 import java.io.File
 import java.nio.charset.Charset
@@ -18,14 +17,13 @@ object AppCrawler {
   val banner =
     """
       |-------------------------------------------------
-      |appcrawler 全平台自动遍历测试工具
+      |appcrawler v2.7.0 全平台自动遍历测试工具
       |Q&A: https://ceshiren.com/c/opensource/appcrawler
-      |author: seveniruby
+      |author: 思寒 seveniruby@霍格沃兹测试开发学社
       |-------------------------------------------------
       |
     """.stripMargin
 
-  var fileAppender: FileAppender = _
   var crawler = new Crawler
   var factory: URIElementFactory = _
   val startTime = new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
@@ -177,19 +175,9 @@ object AppCrawler {
   def parseParams(parser: scopt.OptionParser[Param], args_new: Array[String]): Unit = {
     parser.parse(args_new, Param()) match {
       case Some(config) => {
-        if (config.trace) {
-          GA.logLevel = Level.TRACE
-        } else if (config.debug) {
-          GA.logLevel = Level.DEBUG
-        }
-        log.info(s"set global log level to ${GA.logLevel}")
-        Log.initLog()
-
         if (config.encoding.nonEmpty) {
           setGlobalEncoding(config.encoding)
         }
-        log.debug("config=")
-        log.debug(config)
         var crawlerConf = new CrawlerConf
         //获取配置模板文件
         if (config.conf.isFile) {
@@ -246,10 +234,6 @@ object AppCrawler {
               ).filter(_.nonEmpty).headOption.getOrElse("")
             }"
         }
-        log.info(s"result directory = ${crawlerConf.resultDir}")
-
-        log.debug("yaml config")
-        log.debug(TData.toYaml(crawlerConf))
 
         factory = new URIElementFactory()
         //todo: 用switch替代
@@ -288,9 +272,10 @@ object AppCrawler {
 
         //生成demo示例文件
         if (config.demo) {
-          val file = scala.reflect.io.File("demo.yml")
+          val file = scala.reflect.io.File("demo.yaml")
           crawlerConf.resultDir = ""
           file.writeAll(crawlerConf.toYaml())
+          log.info(crawlerConf.toYaml())
           log.info(s"you can read ${file.jfile.getCanonicalPath} for demo")
           return
         }
@@ -340,6 +325,7 @@ object AppCrawler {
     log.info(banner)
 
     val resultDir = new java.io.File(conf.resultDir)
+    log.info(s"result directory = ${conf.resultDir}")
     if (!resultDir.exists()) {
       FileUtils.forceMkdir(resultDir)
       log.info("result dir path = " + resultDir.getAbsolutePath)

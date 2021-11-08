@@ -1,0 +1,36 @@
+Configuration:
+  status: warn
+  name: YAMLConfig
+  thresholdFilter:
+    level: debug
+  appenders:
+    Console:
+      name: STDOUT
+      target: SYSTEM_OUT
+      PatternLayout:
+        Pattern: "%d{yyyy-MM-dd HH:mm:ss} %p [%C{1}.%L.%M] %m%n"
+    File:
+      name: File
+      fileName: ${sys:logFilename}
+      PatternLayout:
+        Pattern: "%d{yyyy-MM-dd HH:mm:ss} %p [%C{1}.%L.%M] %m%n"
+
+  Loggers:
+    logger:
+      - name: com.ceshiren.appcrawler.utils.Log
+        level: trace
+        additivity: false
+        AppenderRef:
+          - ref: STDOUT
+          - ref: File
+      - name: com.brsanthu.googleanalytics.GoogleAnalytics
+        level: fatal
+        additivity: false
+        AppenderRef:
+          - ref: STDOUT
+          - ref: File
+
+    Root:
+      level: error
+      AppenderRef:
+        ref: STDOUT
