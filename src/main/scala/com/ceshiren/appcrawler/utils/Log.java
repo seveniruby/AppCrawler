@@ -7,7 +7,7 @@ import java.io.OutputStreamWriter;
 
 public class Log {
     public static Logger log=Logger.getLogger(Log.class);
-    static PatternLayout layout = new PatternLayout("%d{yyyy-MM-dd HH:mm:ss} %p [%c{1}.%L.%M] %m%n");
+    static PatternLayout layout = new PatternLayout("%d{yyyy-MM-dd HH:mm:ss} %p [%C{1}.%L.%M] %m%n");
 
 
 

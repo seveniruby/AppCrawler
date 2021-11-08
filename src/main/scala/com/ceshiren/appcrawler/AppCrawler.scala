@@ -71,7 +71,7 @@ object AppCrawler {
   }
 
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     // parser.parse returns Opti on[C]
     val args_new = if (args.length == 0) {
       Array("--help")

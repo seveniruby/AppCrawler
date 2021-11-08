@@ -196,7 +196,7 @@ class AppiumClient extends SeleniumDriver {
     driver match {
       case android: AndroidDriver[_] => {
         val xpath = "(//*[@package!=''])[1]"
-        getNodeListByKey(xpath).headOption.getOrElse(Map("package" -> "")).get("package").getOrElse("").toString
+        getNodeListByKey(xpath).headOption.getOrElse(Map("package" -> "")).getOrElse("package", "").toString
       }
       case ios: IOSDriver[_] => {
         val xpath = "//*[contains(name(), 'Application')]"

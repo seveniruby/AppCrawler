@@ -356,7 +356,7 @@ pluginList: [ ]
 ## 编译
 
 ```bash
-mvn clean package assembly:single -DskipTests
+mvn clean package -DskipTests
 ```
 
 ## 技术交流
