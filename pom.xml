@@ -482,7 +482,7 @@
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                     <appendAssemblyId>false</appendAssemblyId>
-                    <finalName>${project.artifactId}-${project.version}-ceshiren.com</finalName>
+                    <finalName>${project.artifactId}-${project.version}-hogwarts</finalName>
                 </configuration>
                 <executions>
                     <execution>
