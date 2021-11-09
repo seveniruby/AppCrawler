@@ -28,7 +28,6 @@ class AppiumClient extends SeleniumDriver {
 
   def this(url: String = "http://127.0.0.1:4723/wd/hub", configMap: Map[String, Any] = Map[String, Any]()) {
     this
-    log.addAppender(AppCrawler.fileAppender)
 
     val settings = configMap.getOrElse("settings", Map[String, String]())
 
@@ -196,7 +195,7 @@ class AppiumClient extends SeleniumDriver {
     driver match {
       case android: AndroidDriver[_] => {
         val xpath = "(//*[@package!=''])[1]"
-        getNodeListByKey(xpath).headOption.getOrElse(Map("package" -> "")).get("package").getOrElse("").toString
+        getNodeListByKey(xpath).headOption.getOrElse(Map("package" -> "")).getOrElse("package", "").toString
       }
       case ios: IOSDriver[_] => {
         val xpath = "//*[contains(name(), 'Application')]"

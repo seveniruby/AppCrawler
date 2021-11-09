@@ -1,6 +1,7 @@
 package com.ceshiren.appcrawler.ut
 
 import com.ceshiren.appcrawler.AppCrawler
+import com.ceshiren.appcrawler.utils.Log
 import org.junit.jupiter.api.{Test, TestFactory}
 import org.junit.jupiter.api.Assertions._
 import org.junit.jupiter.api.DynamicTest.dynamicTest
@@ -16,20 +17,17 @@ class TestJUnit5 {
   @Test
   @Description("Some detailed test description")
   def x(): Unit = {
-    println("xxxxxxxx")
-    assertTrue(1 == 2)
+    assertTrue(1 == 1)
   }
 
   @TestFactory
   def dynamicTestsFromCollection: util.Collection[DynamicTest] = {
-    Source.fromFile("/tmp/1.data").mkString.split("\n").map(line => {
+    """|1
+      |2
+      |3
+      |4""".stripMargin.split("\n").map(line => {
+      Log.log.info(line)
       dynamicTest(line, () => {
-        println(line)
-        println(AppCrawler.crawler.conf.resultDir)
-        println("xpath")
-        println("screenshot")
-        println("after clicked")
-        println("screenshot2")
         assertTrue(true)
       })
     }).toList.asJava

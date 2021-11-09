@@ -41,37 +41,6 @@ class TestThread extends FunSuite{
     hello.stop()
   }
 
-  test("logger testing"){
-
-    import org.apache.log4j.{BasicConfigurator, Logger}
-
-    BasicConfigurator.configure()
-    var log=Logger.getRootLogger()
-    log.trace("trace")
-    log.debug("debug")
-    log.info("info")
-    log.warn("warnning")
-    log.error("error")
-    log.fatal("fatal")
-
-    log=Logger.getLogger(this.getClass)
-    log.trace("trace")
-    log.debug("debug")
-    log.info("info")
-    log.warn("warnning")
-    log.error("error")
-    log.fatal("fatal")
-
-    log=Logger.getLogger("demo")
-    log.trace("trace")
-    log.debug("debug")
-    log.info("info")
-    log.warn("warnning")
-    log.error("error")
-    log.fatal("fatal")
-
-
-  }
 
   test("test slf4j"){
 

@@ -110,12 +110,10 @@ class Crawler {
     conf = crawlerConf
     AppCrawler.factory = new URIElementFactory()
     store = AppCrawler.factory.generateElementStore
-    log.setLevel(GA.logLevel)
   }
 
   def loadConf(file: String): Unit = {
     conf = new CrawlerConf().load(file)
-    log.setLevel(GA.logLevel)
   }
 
 
@@ -124,7 +122,6 @@ class Crawler {
     * 重要运行方法，启动路径main->parseParams->startCrawl->start
     */
   def start(existDriver: ReactWebDriver = null): Unit = {
-    log.addAppender(AppCrawler.fileAppender)
     log.debug("crawl config")
     log.debug(conf.toYaml())
     if (conf.xpathAttributes != null) {

@@ -1,7 +1,6 @@
 package com.ceshiren.appcrawler.utils
 
-import com.brsanthu.googleanalytics.{GoogleAnalytics, PageViewHit}
-import org.apache.log4j.{BasicConfigurator, Level, Logger}
+import com.brsanthu.googleanalytics.{GoogleAnalytics}
 
 /**
   * Created by seveniruby on 16/2/26.
@@ -9,12 +8,7 @@ import org.apache.log4j.{BasicConfigurator, Level, Logger}
 
 
 object GA {
-  var logLevel = Level.INFO
-
-  BasicConfigurator.configure()
-  Logger.getRootLogger.setLevel(Level.OFF)
-  Logger.getLogger(classOf[GoogleAnalytics]).setLevel(Level.OFF)
-  val ga = new GoogleAnalytics("UA-74406102-1")
+  val ga=GoogleAnalytics.builder().withTrackingId("UA-74406102-1").build()
   var appName = "default"
 
   def setAppName(app: String): Unit = {
@@ -22,7 +16,7 @@ object GA {
   }
 
   def log(action: String): Unit = {
-    ga.postAsync(new PageViewHit(s"http://appcrawler.io/${appName}/${action}", "test"))
+    ga.pageView(s"http://appcrawler.io/${appName}/${action}", "test").sendAsync()
   }
 
 }

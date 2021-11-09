@@ -11,14 +11,15 @@ package com.ceshiren.appcrawler.model
   * @param actions
   * @param times
   */
-case class Step(given: List[String] = List[String](),
-                var when: When = null,
-                //todo: testcase和trigger 遍历都支持断言和报告输出
-                `then`: List[String] = List[String](),
-                xpath: String = "//*",
-                action: String = null,
-                actions: List[String] = List[String](),
-                var times: Int = -1
+case class Step(
+                 given: List[String] = List[String](),
+                 var when: When = null,
+                 //todo: testcase和trigger 遍历都支持断言和报告输出
+                 `then`: List[String] = List[String](),
+                 xpath: String = "//*",
+                 action: String = null,
+                 actions: List[String] = List[String](),
+                 var times: Int = -1
                ) {
   def use(): Int = {
     times -= 1
