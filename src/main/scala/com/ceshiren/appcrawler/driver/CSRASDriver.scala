@@ -20,6 +20,8 @@ class CSRASDriver extends ReactWebDriver {
   var conf: CrawlerConf = _
   val adb = getAdb()
 
+  //csras本地映射的地址
+  val csrasUrl="http://127.0.0.1:7778"
   var packageName = ""
   var activityName = ""
 
@@ -32,8 +34,11 @@ class CSRASDriver extends ReactWebDriver {
     packageName = configMap.getOrElse("appPackage", "").toString
     activityName = configMap.getOrElse("appActivity", "").toString
 
+    //设置端口转发，将csras的端口映射到本地，方便访问
     shell(s"${adb} forward tcp:7778 tcp:7777")
-    val setPackage = "curl http://127.0.0.1:7778/package?package=" + packageName
+
+    //通过发送请求，设置关注的包名，过滤掉多余的数据
+    val setPackage = s"curl ${csrasUrl}/package?package=" + packageName
     log.info(setPackage)
     shell(setPackage)
     if (configMap.getOrElse("noReset", "").toString.equals("false")) {
@@ -134,7 +139,7 @@ class CSRASDriver extends ReactWebDriver {
 
   override def getPageSource(): String = {
     //todo: null root问题, idle wait timeout问题, Uiautomator dump太鸡肋了，没啥用, https://github.com/appium/appium-uiautomator2-server/pull/80
-    shell("curl http://127.0.0.1:7778/source")
+    shell(s"curl ${csrasUrl}/source")
   }
 
   override def getAppName(): String = {
