@@ -649,6 +649,7 @@ class Crawler {
       ifWebViewPage
       // 如果是第一次加载，等3s 【暴力，暂不使用】
       if (webViewRecord.last() == true && webViewRecord.pre() == false) {
+        return refreshPage()
         //        log.info("The first time to enter a web page , wait 3 seconds")
         //        Thread.sleep(3000)
       }

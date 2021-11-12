@@ -45,7 +45,8 @@ class CSRASDriver extends ReactWebDriver {
 
 
   override def event(keycode: String): Unit = {
-    log.error("not implement")
+    shell(s"${adb} shell input keyevent ${keycode}")
+    log.info(s"event=${keycode}")
   }
 
   //todo: outside of Raster 问题
