@@ -51,7 +51,7 @@ class CSRASDriver extends ReactWebDriver {
     shell(s"${adb} forward tcp:7778 tcp:7777")
     Thread.sleep(1000)
     //通过发送请求，设置关注的包名，过滤掉多余的数据
-    val setPackage = s"curl ${csrasUrl}/package?package=" + packageName
+    val setPackage = s"curl ${csrasUrl}/setPackage?package=" + packageName
     log.info(setPackage)
     shell(setPackage)
     if (configMap.getOrElse("noReset", "").toString.equals("false")) {
@@ -164,19 +164,21 @@ class CSRASDriver extends ReactWebDriver {
   }
 
   override def getAppName(): String = {
+    shell(s"curl ${csrasUrl}/fullName").split('/').head
     //    val appName=shell(s"${adb} shell dumpsys window windows | grep mFocusedApp=").split('/').head.split(' ').last
-    val appName = shell(s"${adb} shell dumpsys window displays | grep mCurrentFocus=").split('/').head.split(' ').last
-    if (appName.contains("=null")) {
-      shell(s"${adb} shell dumpsys window windows")
-      System.exit(1)
-      appName
-    } else {
-      appName
-    }
+//    val appName = shell(s"${adb} shell dumpsys window displays | grep mCurrentFocus=").split('/').head.split(' ').last
+//    if (appName.contains("=null")) {
+//      shell(s"${adb} shell dumpsys window windows")
+//      System.exit(1)
+//      appName
+//    } else {
+//      appName
+//    }
   }
 
   override def getUrl(): String = {
-    shell(s"${adb} shell dumpsys window displays | grep mCurrentFocus=").split('/').last.split('}').head
+//    shell(s"${adb} shell dumpsys window displays | grep mCurrentFocus=").split('/').last.split('}').head
+    shell(s"curl ${csrasUrl}/fullName").split('/').last
   }
 
   override def getRect(): Rectangle = {
