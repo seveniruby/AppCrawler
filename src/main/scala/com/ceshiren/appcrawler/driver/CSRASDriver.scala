@@ -30,13 +30,21 @@ class CSRASDriver extends ReactWebDriver {
 
     log.info(s"url=${url}")
 
+    val path = System.getProperty("user.dir")
+    log.info(s"DIR=${path}")
+    //安装apk
+    shell(s"${adb} install ${path}/app-debug.apk")
+    // 给CSRAS驱动设置权限，使驱动可以自行开启辅助功能
+    shell(s"${adb} shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
+    // 启动CSRAS，加载辅助服务
+    shell(s"${adb} shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
 
     packageName = configMap.getOrElse("appPackage", "").toString
     activityName = configMap.getOrElse("appActivity", "").toString
 
     //设置端口转发，将csras的端口映射到本地，方便访问
     shell(s"${adb} forward tcp:7778 tcp:7777")
-
+    Thread.sleep(1000)
     //通过发送请求，设置关注的包名，过滤掉多余的数据
     val setPackage = s"curl ${csrasUrl}/package?package=" + packageName
     log.info(setPackage)
@@ -47,7 +55,7 @@ class CSRASDriver extends ReactWebDriver {
       log.info("need need to reset app")
     }
 
-    if (!packageName.isEmpty) {
+    if (packageName.nonEmpty) {
       shell(s"${adb} shell am start -W -n ${packageName}/${activityName}")
     }
   }
