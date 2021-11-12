@@ -32,13 +32,17 @@ class CSRASDriver extends ReactWebDriver {
     packageName = configMap.getOrElse("appPackage", "").toString
     activityName = configMap.getOrElse("appActivity", "").toString
 
+    shell(s"${adb} forward tcp:7778 tcp:7777")
+    val setPackage = "curl http://127.0.0.1:7778/package?package=" + packageName
+    log.info(setPackage)
+    shell(setPackage)
     if (configMap.getOrElse("noReset", "").toString.equals("false")) {
       shell(s"${adb} shell pm clear ${packageName}")
     } else {
       log.info("need need to reset app")
     }
 
-    if(!packageName.isEmpty) {
+    if (!packageName.isEmpty) {
       shell(s"${adb} shell am start -W -n ${packageName}/${activityName}")
     }
   }

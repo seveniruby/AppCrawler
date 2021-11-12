@@ -119,6 +119,7 @@ class Crawler {
 
   /**
     * 启动爬虫
+    * 重要运行方法，启动路径main->parseParams->startCrawl->start
     */
   def start(existDriver: ReactWebDriver = null): Unit = {
     log.debug("crawl config")
@@ -127,7 +128,7 @@ class Crawler {
       log.info(s"set xpath attribute with ${conf.xpathAttributes}")
       XPathUtil.setXPathExpr(conf.xpathAttributes)
     }
-
+    // 加载插件
     loadPlugins()
 
     if (existDriver == null) {
