@@ -13,13 +13,15 @@ import javax.imageio.ImageIO
 import scala.sys.process._
 
 /**
-  * Created by seveniruby on 18/10/31.
-  */
+ * Created by seveniruby on 18/10/31.
+ */
 class CSRASDriver extends ReactWebDriver {
   DynamicEval.init()
   var conf: CrawlerConf = _
   val adb = getAdb()
 
+  //csras本地映射的地址
+  val csrasUrl = "http://127.0.0.1:7778"
   var packageName = ""
   var activityName = ""
 
@@ -29,11 +31,27 @@ class CSRASDriver extends ReactWebDriver {
     log.info(s"url=${url}")
 
 
+    val apkPath = shell(s"${adb} shell pm list packages")
+    if (apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1) {
+      log.info("No Driver Apk In Device,Need Install！")
+      val path = System.getProperty("user.dir")
+      log.info(s"DIR=${path}")
+      //安装apk
+      shell(s"${adb} install ${path}/app-debug.apk")
+    }
+    // 给CSRAS驱动设置权限，使驱动可以自行开启辅助功能
+    shell(s"${adb} shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
+    // 启动CSRAS，加载辅助服务
+    shell(s"${adb} shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
+
     packageName = configMap.getOrElse("appPackage", "").toString
     activityName = configMap.getOrElse("appActivity", "").toString
 
+    //设置端口转发，将csras的端口映射到本地，方便访问
     shell(s"${adb} forward tcp:7778 tcp:7777")
-    val setPackage = "curl http://127.0.0.1:7778/package?package=" + packageName
+    Thread.sleep(1000)
+    //通过发送请求，设置关注的包名，过滤掉多余的数据
+    val setPackage = s"curl ${csrasUrl}/package?package=" + packageName
     log.info(setPackage)
     shell(setPackage)
     if (configMap.getOrElse("noReset", "").toString.equals("false")) {
@@ -42,7 +60,7 @@ class CSRASDriver extends ReactWebDriver {
       log.info("need need to reset app")
     }
 
-    if (!packageName.isEmpty) {
+    if (packageName.nonEmpty) {
       shell(s"${adb} shell am start -W -n ${packageName}/${activityName}")
     }
   }
@@ -61,9 +79,14 @@ class CSRASDriver extends ReactWebDriver {
     log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
   }
 
-
   override def swipe(startX: Double = 0.9, startY: Double = 0.1, endX: Double = 0.9, endY: Double = 0.1): Unit = {
-    log.error("not implement")
+    this.getDeviceInfo()
+    val xStart = startX * this.screenWidth
+    val xEnd = endX * this.screenWidth
+    val yStart = startY * this.screenHeight
+    val yEnd = endY * this.screenHeight
+    log.info(s"swipe screen from (${xStart},${yStart}) to (${xEnd},${yEnd})")
+    shell(s"${adb} shell input swipe ${xStart} ${yStart} ${xEnd} ${yEnd}")
   }
 
 
@@ -121,7 +144,9 @@ class CSRASDriver extends ReactWebDriver {
   }
 
   override def longTap(): this.type = {
-    log.error("not implement")
+    val center = currentURIElement.center()
+    log.info(s"longTap element in (${center.x},${center.y})")
+    shell(s"${adb} shell input swipe ${center.x} ${center.y} ${center.x + 0.1} ${center.y + 0.1} 2000")
     this
   }
 
@@ -135,7 +160,7 @@ class CSRASDriver extends ReactWebDriver {
 
   override def getPageSource(): String = {
     //todo: null root问题, idle wait timeout问题, Uiautomator dump太鸡肋了，没啥用, https://github.com/appium/appium-uiautomator2-server/pull/80
-    shell("curl http://127.0.0.1:7778/source")
+    shell(s"curl ${csrasUrl}/source")
   }
 
   override def getAppName(): String = {

@@ -647,7 +647,7 @@ class Crawler {
     if (driver.currentPageSource != null) {
 
       // 获取页面信息以后判断是否包含webView
-      ifWebViewPage
+      ifWebViewPage()
       // 如果是第一次加载，等3s 【暴力，暂不使用】
       if (webViewRecord.last() == true && webViewRecord.pre() == false) {
         return refreshPage()
