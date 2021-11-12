@@ -30,10 +30,15 @@ class CSRASDriver extends ReactWebDriver {
 
     log.info(s"url=${url}")
 
-    val path = System.getProperty("user.dir")
-    log.info(s"DIR=${path}")
-    //安装apk
-    shell(s"${adb} install ${path}/app-debug.apk")
+
+    val apkPath = shell(s"${adb} shell pm list packages")
+    if(apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1){
+      log.info("No Driver Apk In Device,Need Install！")
+      val path = System.getProperty("user.dir")
+      log.info(s"DIR=${path}")
+      //安装apk
+      shell(s"${adb} install ${path}/app-debug.apk")
+    }
     // 给CSRAS驱动设置权限，使驱动可以自行开启辅助功能
     shell(s"${adb} shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
     // 启动CSRAS，加载辅助服务
