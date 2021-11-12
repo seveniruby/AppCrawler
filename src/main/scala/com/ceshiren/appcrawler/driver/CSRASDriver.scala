@@ -13,15 +13,15 @@ import javax.imageio.ImageIO
 import scala.sys.process._
 
 /**
-  * Created by seveniruby on 18/10/31.
-  */
+ * Created by seveniruby on 18/10/31.
+ */
 class CSRASDriver extends ReactWebDriver {
   DynamicEval.init()
   var conf: CrawlerConf = _
   val adb = getAdb()
 
   //csras本地映射的地址
-  val csrasUrl="http://127.0.0.1:7778"
+  val csrasUrl = "http://127.0.0.1:7778"
   var packageName = ""
   var activityName = ""
 
@@ -32,7 +32,7 @@ class CSRASDriver extends ReactWebDriver {
 
 
     val apkPath = shell(s"${adb} shell pm list packages")
-    if(apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1){
+    if (apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1) {
       log.info("No Driver Apk In Device,Need Install！")
       val path = System.getProperty("user.dir")
       log.info(s"DIR=${path}")
@@ -67,7 +67,8 @@ class CSRASDriver extends ReactWebDriver {
 
 
   override def event(keycode: String): Unit = {
-    log.error("not implement")
+    shell(s"${adb} shell input keyevent ${keycode}")
+    log.info(s"event=${keycode}")
   }
 
   //todo: outside of Raster 问题
@@ -78,9 +79,14 @@ class CSRASDriver extends ReactWebDriver {
     log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
   }
 
-
   override def swipe(startX: Double = 0.9, startY: Double = 0.1, endX: Double = 0.9, endY: Double = 0.1): Unit = {
-    log.error("not implement")
+    this.getDeviceInfo()
+    val xStart = startX * this.screenWidth
+    val xEnd = endX * this.screenWidth
+    val yStart = startY * this.screenHeight
+    val yEnd = endY * this.screenHeight
+    log.info(s"swipe screen from (${xStart},${yStart}) to (${xEnd},${yEnd})")
+    shell(s"${adb} shell input swipe ${xStart} ${yStart} ${xEnd} ${yEnd}")
   }
 
 
@@ -138,7 +144,9 @@ class CSRASDriver extends ReactWebDriver {
   }
 
   override def longTap(): this.type = {
-    log.error("not implement")
+    val center = currentURIElement.center()
+    log.info(s"longTap element in (${center.x},${center.y})")
+    shell(s"${adb} shell input swipe ${center.x} ${center.y} ${center.x + 0.1} ${center.y + 0.1} 2000")
     this
   }
 
