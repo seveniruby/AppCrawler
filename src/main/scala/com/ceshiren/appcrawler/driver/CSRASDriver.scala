@@ -49,7 +49,8 @@ class CSRASDriver extends ReactWebDriver {
 
     //设置端口转发，将csras的端口映射到本地，方便访问
     shell(s"${adb} forward tcp:7778 tcp:7777")
-    Thread.sleep(1000)
+    // todo:将等待改为通过轮询接口判断设备上的服务是否启动
+    Thread.sleep(3000)
     //通过发送请求，设置关注的包名，过滤掉多余的数据
     val setPackage = s"curl ${csrasUrl}/setPackage?package=" + packageName
     log.info(setPackage)
@@ -178,7 +179,7 @@ class CSRASDriver extends ReactWebDriver {
 
   override def getUrl(): String = {
 //    shell(s"${adb} shell dumpsys window displays | grep mCurrentFocus=").split('/').last.split('}').head
-    shell(s"curl ${csrasUrl}/fullName").split('/').last
+    shell(s"curl ${csrasUrl}/fullName").split('/').last.split('$').head.stripLineEnd
   }
 
   override def getRect(): Rectangle = {
