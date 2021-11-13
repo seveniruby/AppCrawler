@@ -23,10 +23,10 @@
     </properties>
 
     <repositories>
-        <!--        <repository>
-                    <id>central</id>
-                    <url>http://central.maven.org/maven2/</url>
-                </repository>-->
+        <repository>
+            <id>central</id>
+            <url>http://central.maven.org/maven2/</url>
+        </repository>
         <repository>
             <id>huawei</id>
             <url>https://mirrors.huaweicloud.com/repository/maven/</url>
@@ -365,6 +365,14 @@
             <artifactId>maven-assembly-plugin</artifactId>
             <version>3.3.0</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.lihaoyi/requests -->
+        <dependency>
+            <groupId>com.lihaoyi</groupId>
+            <artifactId>requests_2.13</artifactId>
+            <version>0.6.5</version>
+        </dependency>
+
 
 
     </dependencies>

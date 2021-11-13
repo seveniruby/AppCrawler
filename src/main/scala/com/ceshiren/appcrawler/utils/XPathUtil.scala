@@ -232,6 +232,7 @@ object XPathUtil {
     val nodeMapList = ListBuffer[Map[String, Any]]()
     node match {
       case nodeList: NodeList => {
+        log.trace("nodeList length {}", nodeList.getLength)
         0 until nodeList.getLength foreach (i => {
           val nodeMap = mutable.Map[String, Any]()
           //初始化必须的字段
