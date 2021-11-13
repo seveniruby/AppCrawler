@@ -179,7 +179,7 @@ class CSRASDriver extends ReactWebDriver {
 
   override def getUrl(): String = {
 //    shell(s"${adb} shell dumpsys window displays | grep mCurrentFocus=").split('/').last.split('}').head
-    shell(s"curl ${csrasUrl}/fullName").split('/').last.split('$').head.stripLineEnd
+    shell(s"curl ${csrasUrl}/fullName").split('/').last.stripLineEnd
   }
 
   override def getRect(): Rectangle = {
