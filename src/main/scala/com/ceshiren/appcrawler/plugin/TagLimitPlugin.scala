@@ -31,9 +31,9 @@ class TagLimitPlugin extends Plugin {
     }
 
     //todo: //*[@resource='xxxx'][1]  genXPath=//sssss[@dddd=xxxx and ]
-//    if (getCrawler().conf.backButton.map(_.xpath).contains(element.getXpath)) {
-//      return
-//    }
+    //    if (getCrawler().conf.backButton.map(_.xpath).contains(element.getXpath)) {
+    //      return
+    //    }
     currentKey = getAncestor(element)
     if (!tagLimit.contains(currentKey)) {
       //应用定制化的规则
@@ -44,19 +44,11 @@ class TagLimitPlugin extends Plugin {
         }
         case None => tagLimit(currentKey) = tagLimitMax
       }
-
-      //跳过具备selected=true的菜单栏
-      getCrawler().driver.getNodeListByKey("//*[@selected='true']").foreach(m => {
-        val selectedElement = getCrawler().getUrlElementByMap(m)
-        val selectedKey = getAncestor(selectedElement)
-        tagLimit(selectedKey) = 20
-        log.info(s"tagLimit[${selectedKey}]=20")
-      })
     }
 
     log.info(s"tagLimit[${currentKey}]=${tagLimit(currentKey)}")
-    //如果达到限制次数就退出
-    if (currentKey.nonEmpty && tagLimit(currentKey) <= 0) {
+    //如果达到限制次数就退出，小于0表示无限制
+    if (currentKey.nonEmpty && tagLimit(currentKey) == 0) {
       //todo: 重构action名字的定义
       element.setAction("_skip")
       log.info(s"$element need skip")
@@ -83,8 +75,12 @@ class TagLimitPlugin extends Plugin {
 
   def getTimesFromTagLimit(element: URIElement): Option[Int] = {
     this.getCrawler().conf.tagLimit.foreach(tag => {
-      if (getCrawler().driver.getNodeListByKey(tag.getXPath()).map(x => AppCrawler.factory.generateElement(x,getCrawler().currentUrl))
-        .contains(element)) {
+      log.trace(s"find tag with ${tag}")
+      val elementMatchList = getCrawler().driver.getNodeListByKey(tag.getXPath()).map(x => AppCrawler.factory.generateElement(x, getCrawler().currentUrl))
+      log.trace(elementMatchList.length)
+      log.trace(element)
+      if (elementMatchList.contains(element)) {
+        log.debug(s"${tag.getXPath()} hit")
         return Some(tag.times)
       } else {
         None

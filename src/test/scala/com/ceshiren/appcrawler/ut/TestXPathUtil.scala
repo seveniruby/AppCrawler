@@ -14,7 +14,7 @@ import scala.io.Source
 class TestXPathUtil extends FunSuite with Matchers {
 
 
-  val xmlAndroid=
+  val xmlAndroid =
     """
       |
       |<?xml version="1.0" encoding="UTF-8"?>
@@ -311,10 +311,10 @@ class TestXPathUtil extends FunSuite with Matchers {
       |
     """.stripMargin
 
-  val domAndroid=XPathUtil.toDocument(xmlAndroid)
+  val domAndroid = XPathUtil.toDocument(xmlAndroid)
 
 
-  val xmlIOS=
+  val xmlIOS =
     """
       |<?xml version="1.0" encoding="UTF-8"?>
       |<AppiumAUT>
@@ -650,98 +650,97 @@ class TestXPathUtil extends FunSuite with Matchers {
     """.stripMargin
 
 
-  val domIOS=XPathUtil.toDocument(xmlIOS)
+  val domIOS = XPathUtil.toDocument(xmlIOS)
 
 
-  test("parse xpath"){
+  test("parse xpath") {
     log.info(XPathUtil.getNodeListByXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", domAndroid))
-    val node=XPathUtil.getNodeListByXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", domAndroid)(0)
+    val node = XPathUtil.getNodeListByXPath("//*[@resource-id='com.xueqiu.android:id/action_search']", domAndroid)(0)
     println(node)
-    node("resource-id") should be equals("com.xueqiu.android:id/action_search")
-    node("content-desc") should be equals("输入股票名称/代码")
+    node("resource-id") should be equals ("com.xueqiu.android:id/action_search")
+    node("content-desc") should be equals ("输入股票名称/代码")
   }
 
-  test("getPackage"){
-    val node=XPathUtil.getNodeListByXPath("(//*[@package!=''])[1]", domAndroid)(0)
+  test("getPackage") {
+    val node = XPathUtil.getNodeListByXPath("(//*[@package!=''])[1]", domAndroid)(0)
     println(node)
   }
-  test("extra attribute from xpath"){
-    val node=XPathUtil.getNodeListByXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id", domAndroid)(0)
+  test("extra attribute from xpath") {
+    val node = XPathUtil.getNodeListByXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id", domAndroid)(0)
     println(node)
-    node.values.toList(0) should be equals("com.xueqiu.android:id/action_search")
+    node.values.toList(0) should be equals ("com.xueqiu.android:id/action_search")
 
     //todo:暂不支持
-    val value=XPathUtil.getNodeListByXPath("string(//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id)", domAndroid)
+    val value = XPathUtil.getNodeListByXPath("string(//*[@resource-id='com.xueqiu.android:id/action_search']/@resource-id)", domAndroid)
     println(value)
 
   }
 
-  test("get parent path"){
-    val value=XPathUtil.getNodeListByXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/parent::*", domAndroid)
+  test("get parent path") {
+    val value = XPathUtil.getNodeListByXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/parent::*", domAndroid)
     value.foreach(println)
     println(value)
 
-    val ancestor=XPathUtil.getNodeListByXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor-or-self::*", domAndroid)
-    ancestor.foreach(x=>if(x.contains("tag")) println(x("tag")))
+    val ancestor = XPathUtil.getNodeListByXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor-or-self::*", domAndroid)
+    ancestor.foreach(x => if (x.contains("tag")) println(x("tag")))
     println(ancestor)
     ancestor.foreach(println)
 
-    val ancestorName=XPathUtil.getNodeListByXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor::name", domAndroid)
+    val ancestorName = XPathUtil.getNodeListByXPath("//*[@resource-id='com.xueqiu.android:id/action_search']/ancestor::name", domAndroid)
     ancestorName.foreach(println)
   }
 
-  test("xpath parse"){
+  test("xpath parse") {
 
-    val value=XPathUtil.getNodeListByXPath("//UIAApplication[@name=\"雪球\" and @path=\"/0\"]/UIAWindow[@path=\"/0/0\"]/UIAStaticText[@name=\"这里可以批量实盘买卖组合持仓股票\" and @path=\"/0/0/8\"]", domIOS)
+    val value = XPathUtil.getNodeListByXPath("//UIAApplication[@name=\"雪球\" and @path=\"/0\"]/UIAWindow[@path=\"/0/0\"]/UIAStaticText[@name=\"这里可以批量实盘买卖组合持仓股票\" and @path=\"/0/0/8\"]", domIOS)
     value.foreach(println)
     println(value)
 
-    val appName=XPathUtil.getNodeListByXPath("//UIAApplication", domIOS)
+    val appName = XPathUtil.getNodeListByXPath("//UIAApplication", domIOS)
     appName.foreach(println)
     println(appName.head.getOrElse("name", ""))
-    appName.head.getOrElse("name", "") should be equals("雪球")
-
+    appName.head.getOrElse("name", "") should be equals ("雪球")
 
 
   }
 
-  test("android to tag path"){
-    val str=
+  test("android to tag path") {
+    val str =
       """
         |//android.widget.FrameLayout[@index="0"]/android.view.View[@index="0" and @resource-id="android:id/decor_content_parent"]/android.widget.FrameLayout[@index="0" and @resource-id="android:id/content"]/android.widget.LinearLayout[@index="0"]/android.widget.TabHost[@index="2" and @resource-id="android:id/tabhost"]/android.widget.LinearLayout[@index="0"]/android.widget.TabWidget[@index="0" and @resource-id="android:id/tabs"]/android.widget.RelativeLayout[@index="0"]/android.widget.TextView[@index="1" and @resource-id="com.xueqiu.android:id/tab_name"]
         |
       """.stripMargin
 
-    val ele=URIElement("", "", "", "", str)
+    val ele = URIElement("", "", "", "", str)
     println(ele.getAncestor())
     println(ele.toString())
 
   }
-  test("ios to tag path"){
-    val str=
+  test("ios to tag path") {
+    val str =
       """
         |//UIAApplication[@name="雪球" and @path="/0"]/UIAWindow[@path="/0/0"]/UIATableView[@path="/0/0/1"]/UIATableCell[@name="恒瑞医药业绩会，高管说了啥？" and @path="/0/0/1/10"]/UIAStaticText[@name="恒瑞医药业绩会，高管说了啥？" and @path="/0/0/1/10/0"]
       """.stripMargin
-    val ele=URIElement("", "", "", "", str)
+    val ele = URIElement("", "", "", "", str)
     log.info(ele.getAncestor())
     log.info(ele.toString())
 
   }
 
-  test("get all leaf node"){
-    val value=XPathUtil.getNodeListByXPath("//node()[not(node())]", domAndroid)
+  test("get all leaf node") {
+    val value = XPathUtil.getNodeListByXPath("//node()[not(node())]", domAndroid)
     value.foreach(log.info)
   }
 
 
   //todo: 支持xpath2.0
-  test("text xpath matches"){
-    val value=XPathUtil.getNodeListByXPath("//*[matches(@text, '买什么')]", domAndroid)
+  test("text xpath matches") {
+    val value = XPathUtil.getNodeListByXPath("//*[matches(@text, '买什么')]", domAndroid)
     value.foreach(log.info)
   }
 
-  test("xpath and"){
-    val content=
+  test("xpath and") {
+    val content =
       """
         |<?xml version="1.0" encoding="UTF-8"?>
         |<hierarchy rotation="0">
@@ -1239,77 +1238,77 @@ class TestXPathUtil extends FunSuite with Matchers {
         |</hierarchy>
         |
       """.stripMargin
-    val dom=XPathUtil.toDocument(content)
-    val xpath="string(//*[contains(@content-desc, '帐号信息') and @clickable='true']/@content-desc)"
-    val res=XPathUtil.getNodeListByXPath(xpath, dom)
+    val dom = XPathUtil.toDocument(content)
+    val xpath = "string(//*[contains(@content-desc, '帐号信息') and @clickable='true']/@content-desc)"
+    val res = XPathUtil.getNodeListByXPath(xpath, dom)
 
     log.info(res)
   }
 
 
-  test("text xpath"){
-    val value=XPathUtil.getNodeListByXPath("//*[@text='买什么']", domAndroid)
+  test("text xpath") {
+    val value = XPathUtil.getNodeListByXPath("//*[@text='买什么']", domAndroid)
     value.foreach(log.info)
   }
 
 
-  test("get back button"){
+  test("get back button") {
 
 
-    val value1=XPathUtil.getNodeListByXPath("//*[@label='nav_icon_back']", domIOS)
+    val value1 = XPathUtil.getNodeListByXPath("//*[@label='nav_icon_back']", domIOS)
     value1.foreach(log.info)
 
-    val value2=XPathUtil.getNodeListByXPath("//UIANavigationBar/UIAButton[@label=\"nav_icon_back\"]", domIOS)
+    val value2 = XPathUtil.getNodeListByXPath("//UIANavigationBar/UIAButton[@label=\"nav_icon_back\"]", domIOS)
     value2.foreach(log.info)
   }
 
-  test("同类型的控件是否具备selected=true属性"){
-    val nodes=XPathUtil.getNodeListByXPath("//*[../*[@selected='true']]", domAndroid)
-    nodes.foreach(x=>log.info(x.getOrElse("xpath", "")))
+  test("同类型的控件是否具备selected=true属性") {
+    val nodes = XPathUtil.getNodeListByXPath("//*[../*[@selected='true']]", domAndroid)
+    nodes.foreach(x => log.info(x.getOrElse("xpath", "")))
 
     log.info("两层以上")
-    val nodes2=XPathUtil.getNodeListByXPath("//*[../../*[@selected='true']]", domAndroid)
-    nodes2.foreach(x=>log.info(x.getOrElse("xpath", "")))
+    val nodes2 = XPathUtil.getNodeListByXPath("//*[../../*[@selected='true']]", domAndroid)
+    nodes2.foreach(x => log.info(x.getOrElse("xpath", "")))
   }
 
 
-  test("xpath"){
-    XPathUtil.xpathExpr=List("resource-id", "content-desc", "depth", "selected")
-    XPathUtil.getNodeListByXPath("//*", xmlAndroid).foreach(node=>{
+  test("xpath") {
+    XPathUtil.xpathExpr = List("resource-id", "content-desc", "depth", "selected")
+    XPathUtil.getNodeListByXPath("//*", xmlAndroid).foreach(node => {
       println(node.get("xpath"))
       println(node.get("depth"))
     })
 
   }
 
-/*  test("sort selected nodes"){
-    val xmlAndroid=Source.fromFile("/tmp/xueqiu/1520350511580/16_com.xueqiu.android-MainActivity_decor_content_parent-content-mainContent-public_timeline_content-lis.dom").mkString
-    val crawler=new Crawler
-    crawler.conf.sortByAttribute=List("depth", "selected")
-    XPathUtil.xpathExpr=List("class", "text", "content-desc", "depth", "instance", "index", "selected")
-    val map=mutable.HashMap[String, Boolean]()
-    crawler.getSelectedNodes(XPathUtil.toDocument(xmlAndroid), true).foreach(node=>{
-      if(node.get("selected").get=="true"){
-        map(node.get("ancestor").get.toString)=true
-        println(node.get("ancestor").get.toString)
-      }
+  /*  test("sort selected nodes"){
+      val xmlAndroid=Source.fromFile("/tmp/xueqiu/1520350511580/16_com.xueqiu.android-MainActivity_decor_content_parent-content-mainContent-public_timeline_content-lis.dom").mkString
+      val crawler=new Crawler
+      crawler.conf.sortByAttribute=List("depth", "selected")
+      XPathUtil.xpathExpr=List("class", "text", "content-desc", "depth", "instance", "index", "selected")
+      val map=mutable.HashMap[String, Boolean]()
+      crawler.getSelectedNodes(XPathUtil.toDocument(xmlAndroid), true).foreach(node=>{
+        if(node.get("selected").get=="true"){
+          map(node.get("ancestor").get.toString)=true
+          println(node.get("ancestor").get.toString)
+        }
 
-    })
+      })
 
-    crawler.getSelectedNodes(XPathUtil.toDocument(xmlAndroid), true).foreach(node=>{
-      println(node.get("depth").get)
-      println(node.get("selected").get)
-      println(map.getOrElse(node.get("ancestor").get.toString, false))
-      println(node.get("ancestor").get)
-      println(node.get("xpath").get)
-      println(node.get("name").get)
-    })
+      crawler.getSelectedNodes(XPathUtil.toDocument(xmlAndroid), true).foreach(node=>{
+        println(node.get("depth").get)
+        println(node.get("selected").get)
+        println(map.getOrElse(node.get("ancestor").get.toString, false))
+        println(node.get("ancestor").get)
+        println(node.get("xpath").get)
+        println(node.get("name").get)
+      })
 
-  }*/
+    }*/
 
 
-  test("key"){
-    val content=
+  test("key") {
+    val content =
       """
         |<hierarchy rotation="0">
         |  <android.widget.FrameLayout bounds="[0,1016][1080,1313]"
@@ -1375,13 +1374,13 @@ class TestXPathUtil extends FunSuite with Matchers {
     println(XPathUtil.getNodeListByKey("加载中...", XPathUtil.toDocument(content)))
   }
 
-  test("pretty print"){
+  test("pretty print") {
     println(XPathUtil.toPrettyXML("<xml><node><children>1</children><children>2</children></node></xml>"))
     log.info(XPathUtil.toPrettyXML("<hierarchy class=\"hierarchy\" height=\"2392\" index=\"0\" rotation=\"0\" width=\"1440\"><android.widget.FrameLayout bounds=\"[0,0][1440,2392]\" checkable=\"false\" checked=\"false\" class=\"android.widget.FrameLayout\" clickable=\"false\" displayed=\"true\" enabled=\"true\" focusable=\"false\" focused=\"false\" index=\"0\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" scrollable=\"false\" selected=\"false\" text=\"\">    <android.widget.LinearLayout bounds=\"[0,0][1440,2392]\" checkable=\"false\" checked=\"false\" class=\"android.widget.LinearLayout\" clickable=\"false\" displayed=\"true\" enabled=\"true\" focusable=\"false\" focused=\"false\" index=\"0\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" scrollable=\"false\" selected=\"false\" text=\"\">      <android.widget.FrameLayout bounds=\"[0,0][1440,2392]\" checkable=\"false\" checked=\"false\" class=\"android.widget.FrameLayout\" clickable=\"false\" displayed=\"true\" enabled=\"true\" focusable=\"false\" focused=\"false\" index=\"0\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" resource-id=\"android:id/content\" scrollable=\"false\" selected=\"false\" text=\"\">        <android.widget.RelativeLayout bounds=\"[0,0][1440,2392]\" checkable=\"false\" checked=\"false\" class=\"android.widget.RelativeLayout\" clickable=\"true\" displayed=\"true\" enabled=\"true\" focusable=\"false\" focused=\"false\" index=\"0\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" resource-id=\"com.xueqiu.android:id/feedback_view\" scrollable=\"false\" selected=\"false\" text=\"\">          <android.widget.LinearLayout bounds=\"[42,776][1398,1414]\" checkable=\"false\" checked=\"false\" class=\"android.widget.LinearLayout\" clickable=\"true\" displayed=\"true\" enabled=\"true\" focusable=\"false\" focused=\"false\" index=\"0\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" resource-id=\"com.xueqiu.android:id/feedback_dialog\" scrollable=\"false\" selected=\"false\" text=\"\">            <android.widget.LinearLayout bounds=\"[57,790][1384,1028]\" checkable=\"false\" checked=\"false\" class=\"android.widget.LinearLayout\" clickable=\"false\" displayed=\"true\" enabled=\"true\" focusable=\"false\" focused=\"false\" index=\"0\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" scrollable=\"false\" selected=\"false\" text=\"\">              <android.widget.TextView bounds=\"[99,852][1006,923]\" checkable=\"false\" checked=\"false\" class=\"android.widget.TextView\" clickable=\"false\" displayed=\"true\" enabled=\"true\" focusable=\"false\" focused=\"false\" index=\"0\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" resource-id=\"com.xueqiu.android:id/feedback_text\" scrollable=\"false\" selected=\"false\" text=\"选择理由，优化推荐（多选）\"/>              <android.widget.TextView bounds=\"[1006,832][1342,944]\" checkable=\"false\" checked=\"false\" class=\"android.widget.TextView\" clickable=\"true\" displayed=\"true\" enabled=\"true\" focusable=\"false\" focused=\"false\" index=\"1\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" resource-id=\"com.xueqiu.android:id/feedback_bt\" scrollable=\"false\" selected=\"false\" text=\"不感兴趣\"/>            </android.widget.LinearLayout>            <android.support.v7.widget.RecyclerView bounds=\"[57,1028][1384,1324]\" checkable=\"false\" checked=\"false\" class=\"android.support.v7.widget.RecyclerView\" clickable=\"false\" displayed=\"true\" enabled=\"true\" focusable=\"true\" focused=\"true\" index=\"1\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" resource-id=\"com.xueqiu.android:id/feedback_container\" scrollable=\"false\" selected=\"false\" text=\"\">              <android.widget.FrameLayout bounds=\"[57,1028][639,1176]\" checkable=\"false\" checked=\"false\" class=\"android.widget.FrameLayout\" clickable=\"false\" displayed=\"true\" enabled=\"true\" focusable=\"false\" focused=\"false\" index=\"0\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" scrollable=\"false\" selected=\"false\" text=\"\">                <android.widget.TextView bounds=\"[75,1046][621,1158]\" checkable=\"false\" checked=\"false\" class=\"android.widget.TextView\" clickable=\"true\" displayed=\"true\" enabled=\"true\" focusable=\"false\" focused=\"false\" index=\"0\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" resource-id=\"com.xueqiu.android:id/filter_name\" scrollable=\"false\" selected=\"false\" text=\"重复、旧闻\"/>              </android.widget.FrameLayout>              <android.widget.FrameLayout bounds=\"[720,1028][1302,1176]\" checkable=\"false\" checked=\"false\" class=\"android.widget.FrameLayout\" clickable=\"false\" displayed=\"true\" enabled=\"true\" focusable=\"false\" focused=\"false\" index=\"1\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" scrollable=\"false\" selected=\"false\" text=\"\">                <android.widget.TextView bounds=\"[738,1046][1284,1158]\" checkable=\"false\" checked=\"false\" class=\"android.widget.TextView\" clickable=\"true\" displayed=\"true\" enabled=\"true\" focusable=\"false\" focused=\"false\" index=\"0\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" resource-id=\"com.xueqiu.android:id/filter_name\" scrollable=\"false\" selected=\"false\" text=\"内容质量差\"/>              </android.widget.FrameLayout>              <android.widget.FrameLayout bounds=\"[57,1176][639,1324]\" checkable=\"false\" checked=\"false\" class=\"android.widget.FrameLayout\" clickable=\"false\" displayed=\"true\" enabled=\"true\" focusable=\"false\" focused=\"false\" index=\"2\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" scrollable=\"false\" selected=\"false\" text=\"\">                <android.widget.TextView bounds=\"[75,1194][621,1306]\" checkable=\"false\" checked=\"false\" class=\"android.widget.TextView\" clickable=\"true\" displayed=\"true\" enabled=\"true\" focusable=\"false\" focused=\"false\" index=\"0\" long-clickable=\"false\" package=\"com.xueqiu.android\" password=\"false\" resource-id=\"com.xueqiu.android:id/filter_name\" scrollable=\"false\" selected=\"false\" text=\"不看孤独的希望\"/>              </android.widget.FrameLayout>            </android.support.v7.widget.RecyclerView>          </android.widget.LinearLayout>        </android.widget.RelativeLayout>      </android.widget.FrameLayout>    </android.widget.LinearLayout>  </android.widget.FrameLayout>\n</hierarchy>"))
   }
 
-  test("html"){
-    val xmlHtml=
+  test("html") {
+    val xmlHtml =
       """
         |<html class="expanded" xmlns="http://www.w3.org/1999/xhtml">
         |  <head>
@@ -2079,61 +2078,77 @@ class TestXPathUtil extends FunSuite with Matchers {
         |</html>
       """.stripMargin
 
-    val domHtml=XPathUtil.toDocument(xmlHtml)
+    val domHtml = XPathUtil.toDocument(xmlHtml)
 
     println(XPathUtil.getNodeListFromXML(domHtml, "//a"))
   }
 
-  test("json to tree"){
-    val json=Source.fromFile("src/test/scala/com/ceshiren/appcrawler/ut/source.json").mkString
+  test("json to tree") {
+    val json = Source.fromFile("src/test/scala/com/ceshiren/appcrawler/ut/source.json").mkString
     log.info(json)
-    val m=TData.from(json)
+    val m = TData.from(json)
     log.info(m)
 
-    val content=TData.toHtml(m)
+    val content = TData.toHtml(m)
     log.info("content")
     log.info(content)
 
-    val dom=XPathUtil.toDocument(content)
+    val dom = XPathUtil.toDocument(content)
 
     println(XPathUtil.getNodeListByXPath("//a", dom))
 
   }
 
 
-  test("xml"){
-    val xml=Source.fromFile("/tmp/4").mkString
+  test("xml") {
+    val xml = Source.fromFile("/tmp/4").mkString
     XPathUtil.toDocument(xml)
   }
 
-  test("getAttributesFromNode"){
-    val nodes=XPathUtil.getNodeListFromXML(
+  test("getAttributesFromNode html") {
+    val nodes = XPathUtil.getNodeListFromXML(
       XPathUtil.toDocument(
         Source.fromFile("src/test/scala/com/ceshiren/appcrawler/ut/html.xml").mkString
       ), "//a"
     ).asInstanceOf[NodeList]
-    0 until nodes.getLength foreach(i=>{
-      val attributes=XPathUtil.getAttributesFromNode(nodes.item(i))
+    0 until nodes.getLength foreach (i => {
+      val attributes = XPathUtil.getAttributesFromNode(nodes.item(i))
       log.info(attributes)
-      XPathUtil.xpathExpr=List("class", "name", "id", "tag", "innerText")
-      log.info(XPathUtil.xpathExpr)
-      val xpath=XPathUtil.getXPathFromAttributes(attributes)
+      val xpathExpr = List("class", "name", "id", "tag", "innerText")
+      val xpath = XPathUtil.getXPathFromAttributes(attributes, xpathExpr)
       log.info(xpath)
 
     })
 
   }
 
-  test("getNodeListByKey"){
-    println(XPathUtil.getNodeListByXPath("/*/*", xmlAndroid))
+  test("getAttributesFromNode miniprogram") {
+    val document = XPathUtil.toDocument(
+      Source.fromFile("src/test/scala/com/ceshiren/appcrawler/ut/miniprogram.xml").mkString
+    )
+    val nodes = XPathUtil.getNodeListFromXML(
+      document, "//*[contains(@class, 'View')]"
+    ).asInstanceOf[NodeList]
+    0 until nodes.getLength foreach (i => {
+      val attributes = XPathUtil.getAttributesFromNode(nodes.item(i))
+//      log.info(attributes)
+      val idList = List("resource-id", "content-desc", "text")
+      val xpath = XPathUtil.getXPathFromAttributes(attributes, idList)
+      log.info(xpath)
+      val tagList = List("class", "resource-id", "content-desc")
+      val ancesor = XPathUtil.getXPathFromAttributes(attributes, tagList)
+      log.info(ancesor)
+      log.info("")
+
+
+    })
+
   }
 
 
-
-
-
-
-
+  test("getNodeListByKey") {
+    println(XPathUtil.getNodeListByXPath("/*/*", xmlAndroid))
+  }
 
 
 }
