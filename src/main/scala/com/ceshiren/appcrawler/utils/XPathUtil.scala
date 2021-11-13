@@ -18,6 +18,8 @@ import scala.collection.mutable.ListBuffer
   */
 object XPathUtil {
   var xpathExpr = List("name", "label", "value", "resource-id", "content-desc", "class", "text", "index")
+  var tagList = List("class", "resource-id", "name", "content-desc", "label")
+
   val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
   val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
 
@@ -63,6 +65,9 @@ object XPathUtil {
   def setXPathExpr(expr: List[String]): Unit = {
     xpathExpr = expr
   }
+  def setTagList(expr: List[String]): Unit = {
+    tagList = expr
+  }
 
   /**
     * 从属性中获取xpath的唯一表达式
@@ -70,13 +75,13 @@ object XPathUtil {
     * @param attributes
     * @return
     */
-  def getXPathFromAttributes(attributes: ListBuffer[Map[String, String]]): String = {
+  def getXPathFromAttributes(attributes: ListBuffer[Map[String, String]], includeList: List[String]): String = {
     var index = attributes.size
-    var xpath = attributes.map(attribute => {
+    val xpath = attributes.map(attribute => {
       index -= 1
       var newAttribute = attribute
       //如果有值就不需要path了, 基本上两层xpath定位即可唯一
-      xpathExpr.foreach(key => {
+      includeList.foreach(key => {
         if (newAttribute.getOrElse(key, "").isEmpty) {
           newAttribute = newAttribute - key
         } else {
@@ -84,16 +89,7 @@ object XPathUtil {
         }
       })
 
-      //如果label和name相同且非空 取一个即可
-      if (newAttribute.getOrElse("name", "") == newAttribute.getOrElse("label", "")) {
-        newAttribute = newAttribute - "name"
-      }
-      //优先取content-desc
-      if (newAttribute.getOrElse("content-desc", "") == newAttribute.getOrElse("resource-id", "")) {
-        newAttribute = newAttribute - "resource-id"
-      }
-
-      val tag = if (xpathExpr.contains("name()")) {
+      val tag = if (includeList.contains("name()")) {
         newAttribute.getOrElse("name()", "*")
       } else {
         "*"
@@ -103,12 +99,11 @@ object XPathUtil {
         //todo: 需要帮appium打补丁
 
         kv._1 match {
-          case "name()" => {
-            //屏蔽特殊的name()节点名字属性
-            ""
-          }
+          //不同的实现name()可能会有差异，所以不考虑这个，尽量使用class属性
+          case "name()" => ""
+          case "class" if kv._2.contains("hierarchy")=> ""
           case "innerText" => {
-            if (xpathExpr.contains("innerText") && index == 0) {
+            if (includeList.contains("innerText") && index == 0) {
               s"contains(text()," + "'" + kv._2.trim.take(20).replace("\"", "\\\"") + "')"
             } else {
               ""
@@ -118,10 +113,10 @@ object XPathUtil {
           //case "index" => ""
           case "name" if kv._2.size > 50 => ""
           //todo: 优化长文本的展示
-          case "text" if newAttribute("name()").contains("Button") == false && kv._2.length > 10 => {
+          case "text" if !newAttribute("name()").contains("Button") && kv._2.length > 10 => {
             ""
           }
-          case key if xpathExpr.contains(key) && kv._2.nonEmpty =>
+          case key if includeList.contains(key) && kv._2.nonEmpty =>
             s"@${kv._1}=" + "'" + kv._2.replace("\"", "\\\"") + "'"
           case _ => ""
         }
@@ -137,21 +132,18 @@ object XPathUtil {
     }
     )
 
-    if (xpath.size > 1) {
-      xpath.remove(0)
-    }
-    var shortXPath = false
-    (0 until xpath.size).reverse.foreach(i => {
-      if (shortXPath == false) {
-        if (xpath(i).contains(" and ")) {
-          shortXPath = true
-        }
-      } else {
-        xpath.remove(i)
-      }
-    })
+    //    var shortXPath = false
+    //    xpath.indices.reverse.foreach(i => {
+    //      if (!shortXPath) {
+    //        if (xpath(i).contains(" and ")) {
+    //          shortXPath = true
+    //        }
+    //      } else {
+    //        xpath.remove(i)
+    //      }
+    //    })
 
-    return xpath.mkString("")
+    xpath.mkString("")
   }
 
   def getAttributesFromNode(node: Node): ListBuffer[Map[String, String]] = {
@@ -298,22 +290,9 @@ object XPathUtil {
           //nodeMap("menu") = isMenuFromBrotherNode(node)
 
           //不同id的祖先可以允许分别遍历，不计算到相同的tagLimit里
+          nodeMap("ancestor") = getXPathFromAttributes(attributesList, tagList)
 
-          val idList = attributesList.map(
-            attr => {
-              attr.getOrElse("name", "") + attr.getOrElse("resource-id", "").split("/").last
-            }
-          ).filter(_.nonEmpty).mkString(".")
-          val tagList = attributesList.map(
-            attr => {
-              attr.getOrElse("name()", "")
-            }
-          ).mkString("/")
-
-          nodeMap("ancestor") = List(idList, tagList).mkString("_")
-
-
-          nodeMap("xpath") = getXPathFromAttributes(attributesList)
+          nodeMap("xpath") = getXPathFromAttributes(attributesList, xpathExpr)
 
 
           //为了加速android定位
@@ -344,7 +323,7 @@ object XPathUtil {
         nodeMapList += Map("attribute" -> attr)
       }
     }
-    log.trace("node list get")
+    log.trace("node list length {}", nodeMapList.length)
     nodeMapList.toList
   }
 
