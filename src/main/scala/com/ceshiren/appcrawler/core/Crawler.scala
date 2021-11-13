@@ -119,6 +119,7 @@ class Crawler {
 
   /**
     * 启动爬虫
+    * 重要运行方法，启动路径main->parseParams->startCrawl->start
     */
   def start(existDriver: ReactWebDriver = null): Unit = {
     log.debug("crawl config")
@@ -127,7 +128,7 @@ class Crawler {
       log.info(s"set xpath attribute with ${conf.xpathAttributes}")
       XPathUtil.setXPathExpr(conf.xpathAttributes)
     }
-
+    // 加载插件
     loadPlugins()
 
     if (existDriver == null) {
@@ -646,9 +647,12 @@ class Crawler {
     if (driver.currentPageSource != null) {
 
       // 获取页面信息以后判断是否包含webView
-      ifWebViewPage
+      ifWebViewPage()
       // 如果是第一次加载，等3s 【暴力，暂不使用】
       if (webViewRecord.last() == true && webViewRecord.pre() == false) {
+//        log.info("Find WebView!")
+//        Thread.sleep(2000)
+//        return refreshPage()
         //        log.info("The first time to enter a web page , wait 3 seconds")
         //        Thread.sleep(3000)
       }
