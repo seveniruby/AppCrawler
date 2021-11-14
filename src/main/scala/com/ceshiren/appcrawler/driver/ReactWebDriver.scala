@@ -95,14 +95,14 @@ abstract class ReactWebDriver {
     var errorCount = 0
     var error: Throwable = null
     1 to 2 foreach (i => {
-      asyncTask(40, name = "getPageSource")(getPageSource) match {
+      asyncTask(40, name = "getPageSource")(getPageSource()) match {
         case Left(v) => {
           log.trace("get raw page source success")
           //          log.trace(v)
           //todo: wda返回的不是标准的xml
           val xmlStr = v match {
             //todo: 更严格判断
-            case blank if blank.getBytes.size < 500 => {
+            case blank if blank.getBytes.length < 500 => {
               log.error("may be page source is not enought")
               log.error(blank)
               null
@@ -143,6 +143,7 @@ abstract class ReactWebDriver {
         case Right(e) => {
           errorCount += 1
           log.error("get page source error")
+          log.error(e.getMessage)
           error = e
         }
       }

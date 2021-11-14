@@ -128,6 +128,10 @@ class Crawler {
       log.info(s"set xpath attribute with ${conf.xpathAttributes}")
       XPathUtil.setXPathExpr(conf.xpathAttributes)
     }
+    if (conf.tagAttributes != null) {
+      log.info(s"set tag attribute with ${conf.tagAttributes}")
+      XPathUtil.setTagList(conf.tagAttributes)
+    }
     // 加载插件
     loadPlugins()
 
@@ -947,39 +951,35 @@ class Crawler {
 
     //todo: 将来与selectedList合并，通过优先级别标记
     //先应用优先规则，trigger中的元素可以不用包含在selectedList中
-    if (nextElement == None) {
+    if (nextElement.isEmpty) {
       nextElement = getElementByTriggerActions()
     }
 
     //是否需要回退到app
-    if (nextElement == None) {
+    if (nextElement.isEmpty) {
       nextElement = needBackToApp()
     }
 
     //判断是否需要返回上层
-    if (nextElement == None) {
+    if (nextElement.isEmpty) {
       nextElement = needBackToPage()
     }
 
     //查找正常的元素
-    if (nextElement == None) {
+    if (nextElement.isEmpty) {
       nextElement = getAvailableElement(driver.page, true)
     }
 
-    if (nextElement == None) {
+    if (nextElement.isEmpty) {
       log.info(s"${currentUrl} all elements had be clicked")
       //滚动多次没有新元素
 
-      if (store.getClickedElementsList.size < 10) {
-        log.info("just start, maybe loading is slow ,so just wait")
-        nextElement = Some(getEventElement("Log"))
-      }
-      else if (conf.afterAll != null && conf.afterAll.nonEmpty) {
-        val isMatch = conf.afterAll.exists(step => step.getGiven().forall(g => driver.getNodeListByKey(g).size > 0))
-        if (isMatch == false) {
+      if (conf.afterAll != null && conf.afterAll.nonEmpty) {
+        val isMatch = conf.afterAll.exists(step => step.getGiven().forall(g => driver.getNodeListByKey(g).nonEmpty))
+        if (!isMatch) {
           log.info("not match afterAll")
           nextElement = getBackButton()
-        } else if (isMatch == true && afterAllRetry < conf.afterAllMax) {
+        } else if (isMatch && afterAllRetry < conf.afterAllMax) {
           log.info("match afterAll")
           nextElement = Some(getEventElement("AfterAll"))
         } else {

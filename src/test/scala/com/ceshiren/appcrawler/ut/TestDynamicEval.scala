@@ -43,7 +43,11 @@ class TestDynamicEval extends FunSuite {
   test("shell"){
     DynamicEval.dsl("\"12345\"")
     DynamicEval.dsl(" \"sh /tmp/1.sh\"!")
-    DynamicEval.shell("adb devices; echo xxx;")
+    DynamicEval.shell("echo xxx")
+    DynamicEval.shell("which adb")
+    DynamicEval.shell("adb")
+    DynamicEval.shell("adb devices")
+    DynamicEval.shell("bash -c 'adb devices; echo xxx;'")
 
   }
 
