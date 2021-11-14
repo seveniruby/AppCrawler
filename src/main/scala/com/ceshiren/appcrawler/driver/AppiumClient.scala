@@ -226,8 +226,7 @@ class AppiumClient extends SeleniumDriver {
   override def launchApp(): Unit = {
     appiumDriver.launchApp()
   }
-  override def reStartDriver(): this.type ={
-    this
+  override def reStartDriver(): Unit={
   }
   override def getPageSource(): String = {
     appiumDriver.getPageSource

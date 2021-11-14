@@ -169,8 +169,7 @@ abstract class ReactWebDriver {
     this
   }
 
-  def reStartDriver(): this.type = {
-    this
+  def reStartDriver(): Unit = {
   }
 
   def longTap(): this.type = {

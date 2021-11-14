@@ -52,9 +52,8 @@ class CSRASDriver extends ReactWebDriver {
     shell(s"${adb} forward tcp:7778 tcp:7777")
     // todo:将等待改为通过轮询接口判断设备上的服务是否启动
     Thread.sleep(3000)
-    //通过发送请求，设置关注的包名，过滤掉多余的数据
-    log.info(s"set package ${packageName}")
-    session.get(s"${csrasUrl}/setPackage?package=${packageName}")
+    //设置包过滤参数，使用yaml文件中配置的packageName进行包过滤，避免系统事件污染pageSource
+    setPackageFilter()
     if (configMap.getOrElse("noReset", "").toString.equals("false")) {
       shell(s"${adb} shell pm clear ${packageName}")
     } else {
@@ -66,6 +65,11 @@ class CSRASDriver extends ReactWebDriver {
     }
   }
 
+  def setPackageFilter(): Unit ={
+    //通过发送请求，设置关注的包名，过滤掉多余的数据
+    log.info(s"set package ${packageName}")
+    session.get(s"${csrasUrl}/setPackage?package=${packageName}")
+  }
 
   override def event(keycode: String): Unit = {
     shell(s"${adb} shell input keyevent ${keycode}")
@@ -202,10 +206,10 @@ class CSRASDriver extends ReactWebDriver {
     List(element)
   }
 
-  override def reStartDriver(): this.type = {
+  override def reStartDriver(): Unit = {
     shell(s"${adb} shell am force-stop com.hogwarts.csruiautomatorserver")
     shell(s"${adb} shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
-    this
+    setPackageFilter()
   }
 
   def getAdb(): String = {

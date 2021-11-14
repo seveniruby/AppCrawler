@@ -177,8 +177,7 @@ class MockDriver extends ReactWebDriver{
   def getAdb(): String ={
     List(System.getenv("ANDROID_HOME"), "platform-tools/adb").mkString(File.separator)
   }
-  override def reStartDriver(): this.type ={
-    this
+  override def reStartDriver(): Unit ={
   }
   def shell(cmd:String): String ={
     log.info(cmd)

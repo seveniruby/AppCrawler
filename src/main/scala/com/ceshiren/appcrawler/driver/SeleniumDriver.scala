@@ -248,8 +248,7 @@ class SeleniumDriver extends ReactWebDriver{
     //driver.get(capabilities.getCapability("app").toString)
     back()
   }
-  override def reStartDriver(): this.type ={
-    this
+  override def reStartDriver(): Unit ={
   }
 
   def config(key: String, value: Any): Unit = {
