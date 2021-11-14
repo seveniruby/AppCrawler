@@ -96,6 +96,7 @@ class CrawlerConf {
     //html
     "id", "name", "innerText", "tag", "class"
   )
+
   val sortByAttributeDescription = "陆续根据属性进行遍历排序微调，depth表示从dom中最深层的控件开始遍历，list表示dom中列表优先，selected表示菜单最后遍历，这是默认规则，一般不需要改变"
   var sortByAttribute = List("depth", "list", "selected")
   //todo: 通过不同的driver实现自动判别
@@ -122,7 +123,7 @@ class CrawlerConf {
     //Step(xpath="/*/*", action="Thread.sleep(500)")
   )
   val afterElementWaitDescription = "在遍历每个控件之后默认等待的时间，用于等待新页面加载"
-  var afterElementWait = 500
+  var afterElementWait = 1000
 
   val afterAllDescription = "在遍历完当前页面内的所有控件后，是否需要刷新或者滑动"
   var afterAll = ListBuffer[Step]()
@@ -131,14 +132,25 @@ class CrawlerConf {
   var afterAllMax = 2
 
   val tagLimitMaxDescription = "相似控件最多点击几次"
-  var tagLimitMax = 2
+  var tagLimitMax = 20
 
+  val tagAttributesDescription="用于判断是否是相似控件的关键属性，祖先节点具备相同的属性认为是相似"
+  var tagAttributes = List(
+    "name()",
+    //iOS
+    "name", "label",
+    //android
+    "resource-id", "content-desc",
+    //html
+    "id", "name", "tag", "class"
+  )
   val tagLimitDescription = "设置部分相似控件的最大遍历次数"
   var tagLimit = ListBuffer[Step](
     //特殊的按钮，可以一直被遍历
     Step(xpath = "确定", times = 1000),
     Step(xpath = "取消", times = 1000),
-    Step(xpath = "share_comment_guide_btn_name", times = 1000)
+    Step(xpath = "share_comment_guide_btn_name", times = 1000),
+    Step(xpath="//*[contains(@class, 'List')]//*", times=2)
   )
   val assertGlobalDescription = "全局断言"
   var assertGlobal = List[Step]()

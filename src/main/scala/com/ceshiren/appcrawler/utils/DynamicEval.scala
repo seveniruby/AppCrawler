@@ -7,6 +7,7 @@ import org.apache.commons.io.FileUtils
 import java.io.File
 import java.nio.charset.Charset
 import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
+import scala.sys.process.{BasicIO, Process, ProcessIO}
 import scala.tools.nsc.interpreter.shell.{ReplReporterImpl, ShellConfig}
 import scala.tools.nsc.interpreter.{IMain, Results}
 import scala.tools.nsc.{Global, Settings}
@@ -15,13 +16,13 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by seveniruby on 16/8/13.
   */
-class DynamicEval(val outputDir:String="") {
+class DynamicEval(val outputDir: String = "") {
   //todo: scala的执行引擎，替换为bean shell
-  private val settingsCompile=new Settings()
+  private val settingsCompile = new Settings()
 
-  if(outputDir.nonEmpty){
-    val tempDir=new File(outputDir)
-    if(tempDir.exists()==false){
+  if (outputDir.nonEmpty) {
+    val tempDir = new File(outputDir)
+    if (!tempDir.exists()) {
       tempDir.mkdir()
     }
     settingsCompile.outputDirs.setSingleOutput(this.outputDir)
@@ -34,7 +35,7 @@ class DynamicEval(val outputDir:String="") {
   val global = new Global(settingsCompile)
   val run = new global.Run
 
-  private val settingsEval=new Settings()
+  private val settingsEval = new Settings()
   settingsEval.deprecation.value = true // enable detailed deprecation warnings
   settingsEval.unchecked.value = true // enable detailed unchecked warnings
   settingsEval.usejavacp.value = true
@@ -44,25 +45,26 @@ class DynamicEval(val outputDir:String="") {
   val flusher = new ReplReporterImpl(config, settingsEval)
   val interpreter = new IMain(settingsEval, flusher)
 
-  def compile(fileNames:List[String]): Unit ={
+  def compile(fileNames: List[String]): Unit = {
     run.compile(fileNames)
   }
 
-  def eval(code:String): Results.Result ={
+  def eval(code: String): Results.Result = {
     interpreter.interpret(code)
   }
-  def reset(): Unit ={
+
+  def reset(): Unit = {
 
   }
-
 
 
 }
 
 object DynamicEval {
-  var instance=new DynamicEval()
-  var isLoaded=false
-  def apply(): Unit ={
+  var instance = new DynamicEval()
+  var isLoaded = false
+
+  def apply(): Unit = {
 
   }
 
@@ -74,53 +76,63 @@ object DynamicEval {
     }
   }
 
-  def shell(command:String): Unit ={
-    log.info(s"shell ${command}")
-    val file=File.createTempFile(System.currentTimeMillis().toString, ".sh")
-    FileUtils.writeStringToFile(file, command, Charset.defaultCharset())
-    log.debug(file.getCanonicalPath)
-    dsl("\"bash -x "+file.getCanonicalPath+"\"!!")
+  def shell(command: String): Unit = {
+    log.info(s"shell: ${command}")
+    var buffer="";
+    Try{buffer = Process(command).!!} match {
+      case Success(v) => {
+        log.debug(v)
+        log.debug(buffer)
+      }
+      case Failure(exception) => {
+        log.error(exception.getMessage)
+        log.error(buffer)
+      }
+    }
   }
 
 
-  private def eval(code:String): Unit ={
-    if(!isLoaded){
+  private def eval(code: String): Unit = {
+    if (!isLoaded) {
       log.debug("first import")
       instance.eval("import sys.process._")
       instance.eval("val driver=com.ceshiren.appcrawler.AppCrawler.crawler.driver")
       instance.eval("def crawl(depth:Int)=com.ceshiren.appcrawler.AppCrawler.crawler.crawlWithRetry(depth)")
-      isLoaded=true
+      isLoaded = true
     }
     log.info(code)
     log.info(instance.eval(code))
     log.info("eval finish")
   }
 
-  def compile(fileNames:List[String]): Unit ={
+  def compile(fileNames: List[String]): Unit = {
     instance.compile(fileNames)
-    isLoaded=false
+    isLoaded = false
   }
-  def init(classDir:String=""): Unit ={
-    instance=new DynamicEval(classDir)
+
+  def init(classDir: String = ""): Unit = {
+    instance = new DynamicEval(classDir)
   }
-  def reset(): Unit ={
+
+  def reset(): Unit = {
 
   }
-  def loadPlugins(pluginDir:String=""): List[Plugin] ={
-    val pluginDirFile=new java.io.File(pluginDir)
-    if(pluginDirFile.exists()==false){
+
+  def loadPlugins(pluginDir: String = ""): List[Plugin] = {
+    val pluginDirFile = new java.io.File(pluginDir)
+    if (pluginDirFile.exists() == false) {
       log.warn(s"no ${pluginDir} directory, skip")
       return Nil
     }
-    val pluginFiles=pluginDirFile.list().filter(_.endsWith(".scala")).toList
-    val pluginClassNames=pluginFiles.map(_.split(".scala").head)
+    val pluginFiles = pluginDirFile.list().filter(_.endsWith(".scala")).toList
+    val pluginClassNames = pluginFiles.map(_.split(".scala").head)
     log.info(s"find plugins in ${pluginDir}")
     log.info(pluginFiles)
     log.info(pluginClassNames)
-    val runtimes=new DynamicEval(pluginDir)
-    runtimes.compile(pluginFiles.map(pluginDirFile.getCanonicalPath+File.separator+_))
-    val urls=Seq(pluginDirFile.toURI.toURL, getClass.getProtectionDomain.getCodeSource.getLocation)
-    val loader=new URLClassLoader(urls, Thread.currentThread().getContextClassLoader)
+    val runtimes = new DynamicEval(pluginDir)
+    runtimes.compile(pluginFiles.map(pluginDirFile.getCanonicalPath + File.separator + _))
+    val urls = Seq(pluginDirFile.toURI.toURL, getClass.getProtectionDomain.getCodeSource.getLocation)
+    val loader = new URLClassLoader(urls, Thread.currentThread().getContextClassLoader)
     pluginClassNames.map(loader.loadClass(_).newInstance().asInstanceOf[Plugin])
   }
 }

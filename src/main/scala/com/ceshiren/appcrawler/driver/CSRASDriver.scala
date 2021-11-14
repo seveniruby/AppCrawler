@@ -13,12 +13,13 @@ import javax.imageio.ImageIO
 import scala.sys.process._
 
 /**
- * Created by seveniruby on 18/10/31.
- */
+  * Created by seveniruby on 18/10/31.
+  */
 class CSRASDriver extends ReactWebDriver {
   DynamicEval.init()
   var conf: CrawlerConf = _
   val adb = getAdb()
+  val session=requests.Session()
 
   //csras本地映射的地址
   val csrasUrl = "http://127.0.0.1:7778"
@@ -49,11 +50,11 @@ class CSRASDriver extends ReactWebDriver {
 
     //设置端口转发，将csras的端口映射到本地，方便访问
     shell(s"${adb} forward tcp:7778 tcp:7777")
-    Thread.sleep(1000)
+    // todo:将等待改为通过轮询接口判断设备上的服务是否启动
+    Thread.sleep(3000)
     //通过发送请求，设置关注的包名，过滤掉多余的数据
-    val setPackage = s"curl ${csrasUrl}/package?package=" + packageName
-    log.info(setPackage)
-    shell(setPackage)
+    log.info(s"set package ${packageName}")
+    session.get(s"${csrasUrl}/setPackage?package=${packageName}")
     if (configMap.getOrElse("noReset", "").toString.equals("false")) {
       shell(s"${adb} shell pm clear ${packageName}")
     } else {
@@ -159,24 +160,15 @@ class CSRASDriver extends ReactWebDriver {
   }
 
   override def getPageSource(): String = {
-    //todo: null root问题, idle wait timeout问题, Uiautomator dump太鸡肋了，没啥用, https://github.com/appium/appium-uiautomator2-server/pull/80
-    shell(s"curl ${csrasUrl}/source")
+    session.get(s"${csrasUrl}/source").text()
   }
 
   override def getAppName(): String = {
-    //    val appName=shell(s"${adb} shell dumpsys window windows | grep mFocusedApp=").split('/').head.split(' ').last
-    val appName = shell(s"${adb} shell dumpsys window displays | grep mCurrentFocus=").split('/').head.split(' ').last
-    if (appName.contains("=null")) {
-      shell(s"${adb} shell dumpsys window windows")
-      System.exit(1)
-      appName
-    } else {
-      appName
-    }
+    session.get(s"${csrasUrl}/fullName").text().split('/').head
   }
 
   override def getUrl(): String = {
-    shell(s"${adb} shell dumpsys window displays | grep mCurrentFocus=").split('/').last.split('}').head
+    session.get(s"${csrasUrl}/fullName").text().split('/').last.stripLineEnd
   }
 
   override def getRect(): Rectangle = {
