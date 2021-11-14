@@ -345,8 +345,8 @@ class Crawler {
           x.getOrElse("value", ""),
           x.getOrElse("content-desc", ""),
           x.getOrElse("label", "")
-        ).filter(_.toString.nonEmpty).headOption.getOrElse("")
-      }).filter(_.toString.nonEmpty).mkString("-")
+        ).find(_.toString.nonEmpty).getOrElse("")
+      }).filter(_.toString.nonEmpty).mkString(".")
       log.info(s"defineUrl=$urlString")
       urlString
     } else {

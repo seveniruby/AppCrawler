@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.model
 
-import com.ceshiren.appcrawler.core.{ElementInfo, Status}
+import com.ceshiren.appcrawler.core.Status
 import com.ceshiren.appcrawler.utils.Log.log
 
 import scala.collection.mutable.ListBuffer

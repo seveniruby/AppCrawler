@@ -19,7 +19,7 @@ class CSRASDriver extends ReactWebDriver {
   DynamicEval.init()
   var conf: CrawlerConf = _
   val adb = getAdb()
-  val session=requests.Session()
+  val session = requests.Session()
 
   //csras本地映射的地址
   val csrasUrl = "http://127.0.0.1:7778"
@@ -28,10 +28,26 @@ class CSRASDriver extends ReactWebDriver {
 
   def this(url: String = "http://127.0.0.1:4723/wd/hub", configMap: Map[String, Any] = Map[String, Any]()) {
     this
-
     log.info(s"url=${url}")
+    packageName = configMap.getOrElse("appPackage", "").toString
+    activityName = configMap.getOrElse("appActivity", "").toString
 
+    if (configMap.getOrElse("noReset", "").toString.toLowerCase.equals("false") && !packageName.contains("tencent")) {
+      shell(s"${adb} shell pm clear ${packageName}")
+    } else {
+      log.info("need need to reset app")
+    }
 
+    startCSRAS(packageName)
+    if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "false").toString.toLowerCase.equals("true")) {
+      shell(s"${adb} shell am start -W -n ${packageName}/${activityName}")
+    }
+    if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "false").toString.toLowerCase.equals("false")) {
+      shell(s"${adb} shell am start -S -W -n ${packageName}/${activityName}")
+    }
+  }
+
+  def startCSRAS(packageName: String): Unit = {
     val apkPath = shell(s"${adb} shell pm list packages")
     if (apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1) {
       log.info("No Driver Apk In Device,Need Install！")
@@ -45,36 +61,15 @@ class CSRASDriver extends ReactWebDriver {
     // 启动CSRAS，加载辅助服务
     shell(s"${adb} shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
 
-    packageName = configMap.getOrElse("appPackage", "").toString
-    activityName = configMap.getOrElse("appActivity", "").toString
-
     //设置端口转发，将csras的端口映射到本地，方便访问
     shell(s"${adb} forward tcp:7778 tcp:7777")
     // todo:将等待改为通过轮询接口判断设备上的服务是否启动
     Thread.sleep(3000)
     //通过发送请求，设置关注的包名，过滤掉多余的数据
-    log.info(s"set package ${packageName}")
+    log.info(s"set package $packageName")
     session.get(s"${csrasUrl}/setPackage?package=${packageName}")
-    if (configMap.getOrElse("noReset", "").toString.toLowerCase.equals("false")) {
-      shell(s"${adb} shell pm clear ${packageName}")
-    } else {
-      log.info("need need to reset app")
-    }
 
-    if (configMap.getOrElse("dontStopAppOnReset", "").toString.toLowerCase.equals("true")) {
-      shell(s"${adb} shell pm clear ${packageName}")
-    } else {
-      log.info("need need to reset app")
-    }
-
-    if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "false").toString.toLowerCase.equals("true")) {
-      shell(s"${adb} shell am start -W -n ${packageName}/${activityName}")
-    }
-    if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "false").toString.toLowerCase.equals("false")) {
-      shell(s"${adb} shell am start -S -W -n ${packageName}/${activityName}")
-    }
   }
-
 
   override def event(keycode: String): Unit = {
     shell(s"${adb} shell input keyevent ${keycode}")

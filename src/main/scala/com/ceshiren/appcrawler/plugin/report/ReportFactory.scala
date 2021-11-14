@@ -1,7 +1,7 @@
 package com.ceshiren.appcrawler.plugin.report
 
-import com.ceshiren.appcrawler.core.{ElementInfo, Status}
-import com.ceshiren.appcrawler.model.URIElementStore
+import com.ceshiren.appcrawler.core.Status
+import com.ceshiren.appcrawler.model.{ElementInfo, URIElementStore}
 import com.ceshiren.appcrawler.plugin.junit5.JUnit5Runtime
 import com.ceshiren.appcrawler.plugin.scalatest.ScalaTestRuntime
 import com.ceshiren.appcrawler.utils.Log.log
@@ -9,7 +9,7 @@ import com.ceshiren.appcrawler.utils.Log.log
 import java.{io, util}
 import scala.jdk.CollectionConverters.{IterableHasAsJava, MapHasAsScala}
 
-object ReportFactory  {
+object ReportFactory {
 
   var showCancel = false
   var title = "AppCrawler"
@@ -61,8 +61,10 @@ object ReportFactory  {
     log.trace(s"Report.store.elementStore size = ${ReportFactory.store.getElementStoreMap.size}")
     log.trace(s"uri=${uri}")
     val sortedElements = store.getElementStoreMap.asScala
-      .filter(x => x._2.getElement.getUrl.replaceAllLiterally("..", ".") == uri)
-      .map(_._2).toList
+      .filter(x => {
+        val url = x._2.getElement.getUrl.replace("..", ".")
+        url == uri
+      }).values.toList
       .sortBy(_.getClickedIndex)
 
     log.trace(s"sortedElements=${sortedElements.size}")

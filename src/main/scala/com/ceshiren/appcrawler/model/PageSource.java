@@ -45,7 +45,7 @@ public class PageSource {
     }
 
     public String toXML() {
-        return XPathUtil.toPrettyXML(xmlSource);
+        return xmlSource;
     }
 
     public void fromJSON(String jsonSource) {
