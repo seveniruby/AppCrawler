@@ -559,7 +559,7 @@ class Crawler {
     //sort
     conf.firstList.foreach(step => {
       log.trace(s"firstList xpath = ${step.getXPath()}")
-      val temp =page.getNodeListByKey(step.getXPath())
+      val temp = page.getNodeListByKey(step.getXPath())
         .map(e => AppCrawler.factory.generateElement(e, currentUrl))
         .intersect(selectedElements)
       temp.foreach(log.trace)
@@ -649,25 +649,14 @@ class Crawler {
     driver.getPageSourceWithRetry()
 
     if (driver.currentPageSource != null) {
-
-      // 获取页面信息以后判断是否包含webView
-      ifWebViewPage()
-      // 如果是第一次加载，等3s 【暴力，暂不使用】
-      if (webViewRecord.last() == true && webViewRecord.pre() == false) {
-//        log.info("Find WebView!")
-//        Thread.sleep(2000)
-//        return refreshPage()
-        //        log.info("The first time to enter a web page , wait 3 seconds")
-        //        Thread.sleep(3000)
-      }
-
       parsePageContext()
+      afterUrlRefresh()
       refreshResult.append(true)
-      return true
+      true
     } else {
       log.warn("page source get fail, go back")
       refreshResult.append(false)
-      return false
+      false
     }
     //appium解析pageSource有bug. 有些页面会始终无法dump. 改成解析不了就后退
   }
@@ -689,7 +678,7 @@ class Crawler {
       urlStack.push(currentUrl)
     }
     //判断新的url堆栈中是否包含baseUrl, 如果有就清空栈记录并从新计数
-    if (conf.baseUrl.map(urlStack.head.matches(_)).contains(true)) {
+    if (conf.baseUrl.exists(urlStack.head.matches(_))) {
       log.info("clear urlStack")
       urlStack.clear()
       urlStack.push(currentUrl)
@@ -710,7 +699,6 @@ class Crawler {
     } else {
       log.info("ui not change")
     }
-    afterUrlRefresh()
   }
 
   def afterUrlRefresh(): Unit = {
@@ -740,7 +728,7 @@ class Crawler {
   def afterElementAction(element: URIElement): Unit = {
     val newImageFile = new io.File(getBasePathName() + ".click.png")
     val originImageFile = new io.File(getBasePathName(2) + ".clicked.png")
-    if (newImageFile.exists() == false && originImageFile.exists() == true) {
+    if (!newImageFile.exists() && originImageFile.exists()) {
       log.info("use last clicked image replace mark for skip screenshot again")
       FileUtils.copyFile(originImageFile, newImageFile)
     } else {
@@ -752,14 +740,13 @@ class Crawler {
       conf.afterElement.foreach(step => {
         DynamicEval.dsl(step.getAction())
       })
-      //重新刷新，afterElement后内容可能发生变化
-      refreshPage()
     }
 
     store.saveResTime(new SimpleDateFormat("YYYY/MM/dd HH:mm:ss.SSS").format(new Date()))
 
     saveScreen()
     //放到截图后更稳妥
+    refreshPage()
     saveDom()
 
     store.saveResHash(contentHash.last().toString)
@@ -1140,7 +1127,9 @@ class Crawler {
       log.info(s"sleep ${conf.afterElementWait} ms")
       Thread.sleep(conf.afterElementWait)
     }
-    refreshPage()
+
+    //考虑到页面可能有加载延迟，延后到afterElement中更新
+    //    refreshPage()
   }
 
   def saveElementScreenshot(): Unit = {
@@ -1181,6 +1170,7 @@ class Crawler {
     }
   }
 
+  //todo: 用cache代替文件copy
   def saveScreen(force: Boolean = false): Unit = {
     //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
     val originPath = getBasePathName() + ".clicked.png"

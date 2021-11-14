@@ -55,14 +55,23 @@ class CSRASDriver extends ReactWebDriver {
     //通过发送请求，设置关注的包名，过滤掉多余的数据
     log.info(s"set package ${packageName}")
     session.get(s"${csrasUrl}/setPackage?package=${packageName}")
-    if (configMap.getOrElse("noReset", "").toString.equals("false")) {
+    if (configMap.getOrElse("noReset", "").toString.toLowerCase.equals("false")) {
       shell(s"${adb} shell pm clear ${packageName}")
     } else {
       log.info("need need to reset app")
     }
 
-    if (packageName.nonEmpty) {
+    if (configMap.getOrElse("dontStopAppOnReset", "").toString.toLowerCase.equals("true")) {
+      shell(s"${adb} shell pm clear ${packageName}")
+    } else {
+      log.info("need need to reset app")
+    }
+
+    if (packageName.nonEmpty && !configMap.getOrElse("dontStopAppOnReset", "false").toString.toLowerCase.equals("true")) {
       shell(s"${adb} shell am start -W -n ${packageName}/${activityName}")
+    }
+    if (packageName.nonEmpty && !configMap.getOrElse("dontStopAppOnReset", "false").toString.toLowerCase.equals("false")) {
+      shell(s"${adb} shell am start -S -W -n ${packageName}/${activityName}")
     }
   }
 
