@@ -13,13 +13,13 @@ import javax.imageio.ImageIO
 import scala.sys.process._
 
 /**
-  * Created by seveniruby on 18/10/31.
-  */
+ * Created by seveniruby on 18/10/31.
+ */
 class CSRASDriver extends ReactWebDriver {
   DynamicEval.init()
   var conf: CrawlerConf = _
   val adb = getAdb()
-  val session=requests.Session()
+  val session = requests.Session()
 
   //csras本地映射的地址
   val csrasUrl = "http://127.0.0.1:7778"
@@ -81,11 +81,10 @@ class CSRASDriver extends ReactWebDriver {
   }
 
   override def swipe(startX: Double = 0.9, startY: Double = 0.1, endX: Double = 0.9, endY: Double = 0.1): Unit = {
-    this.getDeviceInfo()
-    val xStart = startX * this.screenWidth
-    val xEnd = endX * this.screenWidth
-    val yStart = startY * this.screenHeight
-    val yEnd = endY * this.screenHeight
+    val xStart = startX * screenWidth
+    val xEnd = endX * screenWidth
+    val yStart = startY * screenHeight
+    val yEnd = endY * screenHeight
     log.info(s"swipe screen from (${xStart},${yStart}) to (${xEnd},${yEnd})")
     shell(s"${adb} shell input swipe ${xStart} ${yStart} ${xEnd} ${yEnd}")
   }
@@ -144,6 +143,13 @@ class CSRASDriver extends ReactWebDriver {
     click()
   }
 
+  override def tapLocation(x: Int, y: Int): this.type = {
+    val pointX = x * screenWidth
+    val pointY = y * screenHeight
+    shell(s"${adb} shell input tap ${pointX} ${pointY}")
+    this
+  }
+
   override def longTap(): this.type = {
     val center = currentURIElement.center()
     log.info(s"longTap element in (${center.x},${center.y})")
@@ -194,6 +200,12 @@ class CSRASDriver extends ReactWebDriver {
 
   override def findElementsByURI(element: URIElement, findBy: String): List[AnyRef] = {
     List(element)
+  }
+
+  override def reStartDriver(): this.type = {
+    shell(s"${adb} shell am force-stop com.hogwarts.csruiautomatorserver")
+    shell(s"${adb} shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
+    this
   }
 
   def getAdb(): String = {

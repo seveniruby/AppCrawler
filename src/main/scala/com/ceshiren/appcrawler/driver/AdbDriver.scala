@@ -52,6 +52,9 @@ class AdbDriver extends ReactWebDriver {
     log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
   }
 
+  override def reStartDriver(): this.type ={
+    this
+  }
 
   override def swipe(startX: Double = 0.9, startY: Double = 0.1, endX: Double = 0.9, endY: Double = 0.1): Unit = {
     log.error("not implement")
@@ -110,7 +113,9 @@ class AdbDriver extends ReactWebDriver {
   override def tap(): this.type = {
     click()
   }
-
+  override def tapLocation(x: Int, y: Int): this.type = {
+    this
+  }
   override def longTap(): this.type = {
     log.error("not implement")
     this
