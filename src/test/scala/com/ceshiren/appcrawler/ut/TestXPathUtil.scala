@@ -2150,5 +2150,10 @@ class TestXPathUtil extends FunSuite with Matchers {
     println(XPathUtil.getNodeListByXPath("/*/*", xmlAndroid))
   }
 
+  test("toxml"){
+    log.info(XPathUtil.toPrettyXML(Source.fromFile("src/test/scala/com/ceshiren/appcrawler/ut/miniprogram.xml").mkString))
+
+  }
+
 
 }

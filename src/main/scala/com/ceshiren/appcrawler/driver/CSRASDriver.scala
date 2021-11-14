@@ -67,10 +67,10 @@ class CSRASDriver extends ReactWebDriver {
       log.info("need need to reset app")
     }
 
-    if (packageName.nonEmpty && !configMap.getOrElse("dontStopAppOnReset", "false").toString.toLowerCase.equals("true")) {
+    if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "false").toString.toLowerCase.equals("true")) {
       shell(s"${adb} shell am start -W -n ${packageName}/${activityName}")
     }
-    if (packageName.nonEmpty && !configMap.getOrElse("dontStopAppOnReset", "false").toString.toLowerCase.equals("false")) {
+    if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "false").toString.toLowerCase.equals("false")) {
       shell(s"${adb} shell am start -S -W -n ${packageName}/${activityName}")
     }
   }

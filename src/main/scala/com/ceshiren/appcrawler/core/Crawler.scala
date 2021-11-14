@@ -648,7 +648,7 @@ class Crawler {
     log.info("refresh page")
     driver.getPageSourceWithRetry()
 
-    if (driver.currentPageSource != null) {
+    if (driver.page != null) {
       parsePageContext()
       afterUrlRefresh()
       refreshResult.append(true)
@@ -752,7 +752,7 @@ class Crawler {
     store.saveResHash(contentHash.last().toString)
     store.saveResImg(getBasePathName() + ".clicked.png")
     //todo: 内存消耗太大，改用文件存储
-    store.saveResDom(driver.currentPageSource)
+    store.saveResDom(driver.page.toXML)
 
     element.getAction match {
       case this.backAction => {
@@ -1015,7 +1015,7 @@ class Crawler {
     log.info(s"current file name = ${element.elementUri.take(100)}")
 
     store.saveReqHash(contentHash.last().toString)
-    store.saveReqDom(driver.currentPageSource)
+    store.saveReqDom(driver.page.toXML)
     saveElementScreenshot()
     store.saveReqTime(new SimpleDateFormat("YYYY/MM/dd HH:mm:ss.SSS").format(new Date()))
 
@@ -1100,8 +1100,8 @@ class Crawler {
                 case "longTap" => {
                   driver.longTap()
                 }
-                case batchCommand if batchCommand.matches("shell:.*") => {
-                  DynamicEval.shell(batchCommand.slice(batchCommand.indexOf(":") + 1, batchCommand.size))
+                case batchCommand if batchCommand.trim.indexOf("shell:") == 0 => {
+                  DynamicEval.shell(batchCommand.slice(batchCommand.indexOf(":") + 1, batchCommand.length))
                 }
                 case code if code != null && code.matches(".*\\(.*\\).*") => {
                   DynamicEval.dsl(code)
@@ -1166,7 +1166,7 @@ class Crawler {
     //感谢QQ:434715737的反馈
     log.info(s"save to ${domPath}")
     driver.asyncTask(name = "saveDom") {
-      File(domPath).writeAll(driver.currentPageSource)
+      File(domPath).writeAll(driver.page.toXML)
     }
   }
 

@@ -22,8 +22,7 @@ abstract class ReactWebDriver {
   var screenWidth = 0
   var screenHeight = 0
   var page: PageSource = null;
-  var currentPageSource: String = ""
-  val appiumExecResults = ListBuffer[String]()
+  val appiumExecResults: ListBuffer[String] = ListBuffer[String]()
 
   var loc = ""
   var index = 0
@@ -87,8 +86,7 @@ abstract class ReactWebDriver {
     * </hierarchy>
     *
     */
-  def getPageSourceWithRetry(): String = {
-    currentPageSource = null
+  def getPageSourceWithRetry(): PageSource = {
     page = null
     log.info("start to get page source from appium")
     //获取页面结构, 最多重试3次
@@ -121,24 +119,11 @@ abstract class ReactWebDriver {
               text
             }
           }
-          Try(XPathUtil.toDocument(xmlStr)) match {
-            case Success(v) => {
-              page=new PageSource()
-              page.fromDocument(v)
-              currentPageSource = XPathUtil.toPrettyXML(xmlStr)
-              //不用循环多次
-              log.debug("get page source success")
-              //              log.debug(currentPageSource)
-              return currentPageSource
-            }
-            case Failure(e) => {
-              log.warn("convert to xml fail")
-              log.warn(xmlStr)
-              page = null
-              currentPageSource = null
-            }
-          }
 
+          page=PageSource.getPagefromXML(xmlStr)
+          if(page!=null){
+            return page
+          }
         }
         case Right(e) => {
           errorCount += 1
@@ -150,7 +135,8 @@ abstract class ReactWebDriver {
       log.warn(s"retry ${i} times after 5s")
       Thread.sleep(5000)
     })
-    currentPageSource
+
+    page
   }
 
   def clickLocation(): Unit = {

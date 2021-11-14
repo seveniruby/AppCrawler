@@ -1,6 +1,7 @@
 package com.ceshiren.appcrawler.utils
 
 import Log.log
+import com.fasterxml.jackson.databind.SerializationFeature
 import org.w3c.dom.{Attr, Document, Node, NodeList}
 import org.xml.sax.InputSource
 
@@ -12,6 +13,8 @@ import javax.xml.transform.{OutputKeys, TransformerFactory}
 import javax.xml.xpath.{XPath, XPathConstants, XPathFactory}
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
+
 
 /**
   * Created by seveniruby on 16/3/26.
@@ -22,6 +25,7 @@ object XPathUtil {
 
   val builderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
   val builder: DocumentBuilder = builderFactory.newDocumentBuilder()
+  val mapper = new XmlMapper
 
   def toDocument(raw: String): Document = {
     //todo: appium有bug, 会返回&#非法字符. 需要给appium打补丁
@@ -44,7 +48,12 @@ object XPathUtil {
 
   //todo: xml中有$b
   def toPrettyXML(raw: String): String = {
-    //done: android page source不能格式化，但是普通的xml可以, android page source在1.9后多了一些多余的空格
+    val xmlNode=mapper.readTree(raw)
+    mapper.enable(SerializationFeature.INDENT_OUTPUT)
+    mapper.writeValueAsString(xmlNode)
+
+
+/*    //done: android page source不能格式化，但是普通的xml可以, android page source在1.9后多了一些多余的空格
     val document = toDocument(raw.trim.replaceAll("> *<", "><"))
     //done: 不支持java10, use Xalan replace
     val transformerFactory = TransformerFactory.newInstance
@@ -58,7 +67,7 @@ object XPathUtil {
 
     transformer.transform(source, result)
 
-    return strWriter.getBuffer.toString
+    return strWriter.getBuffer.toString*/
 
   }
 
