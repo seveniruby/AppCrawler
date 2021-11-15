@@ -1,6 +1,7 @@
 package com.ceshiren.appcrawler.ut
 
 import com.ceshiren.appcrawler.driver.AppiumClient
+import com.ceshiren.appcrawler.utils.LogicUtils.asyncTask
 import org.scalatest.FunSuite
 
 import scala.sys.process.Process
@@ -99,7 +100,7 @@ class TestThread extends FunSuite{
   test("executor service default"){
 
     val pre=System.currentTimeMillis()
-    val r=AppiumClient.asyncTask(5){
+    val r=asyncTask(5){
       Thread.sleep(100000)
       "xxxx"
     }
@@ -113,7 +114,7 @@ class TestThread extends FunSuite{
   test("executor service expect"){
 
     val pre=System.currentTimeMillis()
-    val r=AppiumClient.asyncTask(5){
+    val r=asyncTask(5){
       Thread.sleep(1000)
       "xxxx"
     }
@@ -126,7 +127,7 @@ class TestThread extends FunSuite{
   test("executor service Int expect"){
 
     val pre=System.currentTimeMillis()
-    val r=AppiumClient.asyncTask(5) {
+    val r=asyncTask(5) {
       Thread.sleep(100000)
       1
     }
@@ -139,7 +140,7 @@ class TestThread extends FunSuite{
   test("executor service Int"){
 
     val pre=System.currentTimeMillis()
-    val r=AppiumClient.asyncTask(5){
+    val r=asyncTask(5){
       Thread.sleep(1000)
       1
     }
@@ -150,7 +151,7 @@ class TestThread extends FunSuite{
   }
 
   test("-1 async"){
-    val x=AppiumClient.asyncTask(-1){
+    val x=asyncTask(-1){
       println("start")
       Thread.sleep(6000)
       3
@@ -164,7 +165,7 @@ class TestThread extends FunSuite{
   test("appium start"){
     val process=Process("appium -p 4445")
     val pb=process.run()
-    val x=AppiumClient.asyncTask(10){
+    val x=asyncTask(10){
       pb.exitValue()
     }
     println(x)

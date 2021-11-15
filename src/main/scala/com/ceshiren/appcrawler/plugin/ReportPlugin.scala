@@ -4,6 +4,7 @@ import com.ceshiren.appcrawler.model.URIElement
 import com.ceshiren.appcrawler.plugin.report.ReportFactory
 import com.ceshiren.appcrawler.report.MvnReplace
 import com.ceshiren.appcrawler.utils.Log.log
+import com.ceshiren.appcrawler.utils.LogicUtils.asyncTask
 
 import java.nio.file.{Files, Paths}
 import scala.io.Source
@@ -28,10 +29,10 @@ class ReportPlugin extends Plugin {
 
   override def afterElementAction(element: URIElement): Unit = {
     //todo: 子线程处理，异步处理
-    getCrawler().driver.asyncTask(timeout = 120, name = "report", needThrow = true) {
+    asyncTask(timeout = 120, name = "report", needThrow = true) {
       if (needReport()) {
         log.info("generate test report ")
-        getCrawler().saveLog()
+        //getCrawler().saveLog()
         generateReport()
       }
     }

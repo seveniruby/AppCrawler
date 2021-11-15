@@ -5,6 +5,7 @@ import com.ceshiren.appcrawler.core.CrawlerConf
 import com.ceshiren.appcrawler.model.URIElement
 import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.DynamicEval
+import com.ceshiren.appcrawler.utils.LogicUtils.tryAndCatch
 import org.openqa.selenium.Rectangle
 
 import java.awt.{BasicStroke, Color}
@@ -67,40 +68,6 @@ class AdbDriver extends ReactWebDriver {
     log.info(cmd)
     (cmd #> file).!!
     file
-  }
-
-  //todo: 重构到独立的trait中
-  override def mark(fileName: String, newImageName: String, x: Int, y: Int, w: Int, h: Int): Unit = {
-    val file = new java.io.File(fileName)
-    log.info(s"read from ${fileName}")
-    val img = ImageIO.read(file)
-    val graph = img.createGraphics()
-
-    if (img.getWidth > screenWidth) {
-      log.info("scale the origin image")
-      graph.drawImage(img, 0, 0, screenWidth, screenHeight, null)
-    }
-    graph.setStroke(new BasicStroke(5))
-    graph.setColor(Color.RED)
-    graph.drawRect(x, y, w, h)
-    graph.dispose()
-
-    log.info(s"write png ${fileName}")
-    if (img.getWidth > screenWidth) {
-      log.info("scale the origin image and save")
-      //fixed: RasterFormatException: (y + height) is outside of Raster 横屏需要处理异常
-      val subImg = tryAndCatch(img.getSubimage(0, 0, screenWidth, screenHeight)) match {
-        case Some(value) => value
-        case None => {
-          getDeviceInfo()
-          img.getSubimage(0, 0, screenWidth, screenHeight)
-        }
-      }
-      ImageIO.write(subImg, "png", new java.io.File(newImageName))
-    } else {
-      log.info(s"ImageIO.write newImageName ${newImageName}")
-      ImageIO.write(img, "png", new java.io.File(newImageName))
-    }
   }
 
   override def click(): this.type = {

@@ -4,6 +4,7 @@ import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.core.Crawler
 import com.ceshiren.appcrawler.model.{PageSource, URIElement}
 import com.ceshiren.appcrawler.utils.Log.log
+import com.ceshiren.appcrawler.utils.LogicUtils.{asyncTask, handleException}
 import com.ceshiren.appcrawler.utils.{TData, XPathUtil}
 import org.openqa.selenium.Rectangle
 
@@ -215,79 +216,7 @@ abstract class ReactWebDriver {
     ""
   }
 
-  def asyncTask[T](timeout: Int = 30, name: String = "", needThrow: Boolean = false)(callback: => T): Either[T, Throwable] = {
-    //todo: 异步线程消耗资源厉害，需要改进
-    val start = System.currentTimeMillis()
-    Try({
-      val task = Executors.newSingleThreadExecutor().submit(new Callable[T]() {
-        def call(): T = {
-          callback
-        }
-      })
-      if (timeout < 0) {
-        task.get()
-      } else {
-        task.get(timeout, TimeUnit.SECONDS)
-      }
 
-    }) match {
-      case Success(v) => {
-        val end = System.currentTimeMillis()
-        appiumExecResults.append("success")
-        val use = (end - start) / 1000d
-        if (use >= 0.5) {
-          log.info(s"use time $use seconds name=${name} result=success")
-        }
-        Left(v)
-      }
-      case Failure(e) => {
-        val end = System.currentTimeMillis()
-        val use = (end - start) / 1000d
-        if (use >= 1) {
-          log.info(s"use time $use seconds name=${name} result=error")
-        }
-        if (needThrow) {
-          throw e
-        }
-        e match {
-          case e: TimeoutException => {
-            log.error(s"${timeout} seconds timeout")
-          }
-          case _ => {
-            handleException(e)
-          }
-        }
-        Right(e)
-      }
-    }
-  }
-
-  def handleException(e: Throwable): Unit = {
-    var exception = e
-    do {
-      log.error(exception.getLocalizedMessage)
-      exception.getStackTrace.foreach(log.error)
-      if (exception.getCause != null) {
-        log.error("find more cause")
-      } else {
-        log.error("exception finish")
-      }
-      exception = exception.getCause
-    } while (exception != null)
-  }
-
-  def tryAndCatch[T](r: => T): Option[T] = {
-    Try(r) match {
-      case Success(v) => {
-        log.info("retry execute success")
-        Some(v)
-      }
-      case Failure(e) => {
-        handleException(e)
-        None
-      }
-    }
-  }
 
   def existElement(): Boolean = {
     currentURIElement != null
@@ -308,8 +237,6 @@ abstract class ReactWebDriver {
   }
 
   def event(keycode: String): Unit = {}
-
-  def mark(fileName: String, newImageName: String, x: Int, y: Int, w: Int, h: Int): Unit
 
   def getRect(): Rectangle
 
