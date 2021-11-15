@@ -326,7 +326,7 @@ object XPathUtil {
             nodeMap("height") = rect(3).toInt - rect(1).toInt
           }
 
-          if (nodeMap("xpath").toString.nonEmpty && nodeMap("value").toString().size < 50) {
+          if (nodeMap("xpath").toString.nonEmpty) {
             nodeMapList += (nodeMap.toMap)
           }
         })

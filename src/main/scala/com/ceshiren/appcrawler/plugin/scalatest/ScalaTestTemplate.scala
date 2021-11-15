@@ -14,7 +14,7 @@ import scala.reflect.io.File
 /**
   * Created by seveniruby on 2017/3/25.
   */
-class ScalaTestTemplate extends FunSuite with BeforeAndAfterAllConfigMap with Matchers  {
+class ScalaTestTemplate extends FunSuite with BeforeAndAfterAllConfigMap with Matchers {
   var name = "template"
   var uri = ""
 
@@ -33,54 +33,56 @@ class ScalaTestTemplate extends FunSuite with BeforeAndAfterAllConfigMap with Ma
       test(s"clickedIndex=${ele.getClickedIndex} action=${ele.getAction}\nxpath=${testcase}") {
         ele.getAction match {
           case Status.CLICKED => {
-              markup(
-                s"""
-                   |
-               |<img src='${File(ele.getReqImg).name}' width='80%' />
-                   |<br></br>
-                   |<p>after clicked</p>
-                   |<img src='${File(ele.getResImg).name}' width='80%' />
+            markup(
+              s"""
+                 |
+                 |<img src='${File(ele.getReqImg).name}' width='80%' />
+                 |<br></br>
+                 |<p>after clicked</p>
+                 |<img src='${File(ele.getResImg).name}' width='80%' />
           """.stripMargin
-              )
+            )
 
-              /*
-              markup(
-                s"""
-                |
-                |<pre>
-                |<xmp>
-                |${ele.reqDom.replaceFirst("xml", "x_m_l")}
-                |</xmp>
-                |</pre>
-              """.stripMargin
-              )
-              */
+            /*
+            markup(
+              s"""
+              |
+              |<pre>
+              |<xmp>
+              |${ele.reqDom.replaceFirst("xml", "x_m_l")}
+              |</xmp>
+              |</pre>
+            """.stripMargin
+            )
+            */
 
-              AppCrawler.crawler.conf.assertGlobal.foreach(step => {
-                if (
-                  step.getGiven().forall(g=>XPathUtil.getNodeListByKey(g, ele.getReqDom).size>0)
-                ) {
-                  log.info(s"match testcase ${ele.getElement.getXpath}")
+            AppCrawler.crawler.conf.assertGlobal.foreach(step => {
+              if (step.getGiven() == null ||
+                step.getGiven().forall(g => XPathUtil.getNodeListByKey(g, ele.getReqDom).nonEmpty)
+              ) {
+                log.info(s"match testcase ${ele.getElement.getXpath}")
 
-                  if(step.then!=null) {
-                    val cp = new scalatest.Checkpoints.Checkpoint
-                    step.then.foreach(existAssert => {
-                      log.debug(existAssert)
-                      cp {
-                        withClue(s"${existAssert} 不存在\n") {
-                          XPathUtil.getNodeListByXPath(existAssert, ele.getResDom).size should be > 0
-                        }
+                if (step.then != null) {
+                  log.info("assertion start")
+                  log.info(step.`then`)
+                  val cp = new scalatest.Checkpoints.Checkpoint
+                  step.then.foreach(existAssert => {
+                    log.debug(existAssert)
+                    cp {
+                      withClue(s"${existAssert} 不存在\n") {
+                        XPathUtil.getNodeListByXPath(existAssert, ele.getResDom).size should be > 0
                       }
-                    })
-                    cp.reportAll()
-                  }
-                } else {
-
-/*                  XPathUtil.getNodeListFromXPath(step.getXPath(), ele.reqDom)
-                    .map(_.getOrElse("xpath", "")).foreach(log.warn)
-                  log.warn(s"not match ${step.getXPath()} ${ele.element.xpath}")*/
+                    }
+                  })
+                  cp.reportAll()
                 }
-              })
+              } else {
+
+                /*                  XPathUtil.getNodeListFromXPath(step.getXPath(), ele.reqDom)
+                                    .map(_.getOrElse("xpath", "")).foreach(log.warn)
+                                  log.warn(s"not match ${step.getXPath()} ${ele.element.xpath}")*/
+              }
+            })
 
           }
           case Status.READY => {
