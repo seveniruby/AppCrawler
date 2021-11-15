@@ -68,6 +68,8 @@ class Crawler {
   private val backAppAction = "_BackApp"
   private val skipAction = "_skip"
 
+  private var timePreCrawlStart=System.currentTimeMillis();
+
   /**
     * 根据类名初始化插件. 插件可以使用java编写. 继承自Plugin即可
     */
@@ -328,7 +330,7 @@ class Crawler {
     */
   def getSchema(): String = {
     val nodeList = driver.getNodeListByKey("//*[not(ancestor-or-self::UIAStatusBar)]")
-    TData.md5(1, nodeList.map(getUrlElementByMap(_).getAncestor()).distinct.mkString("\n"))
+    TData.md5(nodeList.map(getUrlElementByMap(_).getAncestor()).distinct.mkString("\n"))
   }
 
   def getUri(): String = {
@@ -712,7 +714,8 @@ class Crawler {
     //log.trace(s"windows=${windows}")
 
     // 通过标识what取对应的md5值
-    contentHash.append(TData.md5(2, ""))
+
+    contentHash.append(TData.md5(driver.page.toXML))
     log.info(s"currentContentHash=${contentHash.last()} lastContentHash=${contentHash.pre()}")
     if (contentHash.isDiff()) {
       log.info("ui change")
@@ -932,6 +935,12 @@ class Crawler {
     */
   @tailrec
   final def crawl(): Unit = {
+    val timeCurCrawlStart=System.currentTimeMillis()
+    if (timePreCrawlStart!=0){
+      log.info(s"crawl use ${timeCurCrawlStart-timePreCrawlStart} ms")
+    }
+    timePreCrawlStart=timeCurCrawlStart
+
     if (exitCrawl) {
       log.fatal("exitCrawl=true, return")
       return
