@@ -22,7 +22,8 @@ class CSRASDriver extends ReactWebDriver {
   val session = requests.Session()
 
   //csras本地映射的地址
-  val csrasUrl = "http://127.0.0.1:7778"
+  var csrasPort = ""
+  var csrasAPKPath = ""
   var packageName = ""
   var activityName = ""
 
@@ -30,30 +31,34 @@ class CSRASDriver extends ReactWebDriver {
     this
 
     log.info(s"url=${url}")
-
-
-    val apkPath = shell(s"${adb} shell pm list packages")
-    if (apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1) {
-      log.info("No Driver Apk In Device,Need Install！")
-      val path = System.getProperty("user.dir")
-      log.info(s"DIR=${path}")
-      //安装apk
-      shell(s"${adb} install ${path}/app-debug.apk")
-    }
-    // 给CSRAS驱动设置权限，使驱动可以自行开启辅助功能
-    shell(s"${adb} shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
-    // 启动CSRAS，加载辅助服务
-    shell(s"${adb} shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
-
     packageName = configMap.getOrElse("appPackage", "").toString
     activityName = configMap.getOrElse("appActivity", "").toString
+    csrasPort = configMap.getOrElse("csras_port", "").toString
+    if (csrasPort.equals("")) {
+      log.info("No csras_port Set In Config,Use Default Port:7778")
+      csrasPort = "7778"
+    }
+    csrasAPKPath = configMap.getOrElse("csras_driver", "").toString
 
-    //设置端口转发，将csras的端口映射到本地，方便访问
-    shell(s"${adb} forward tcp:7778 tcp:7777")
-    // todo:将等待改为通过轮询接口判断设备上的服务是否启动
-    Thread.sleep(3000)
-    //设置包过滤参数，使用yaml文件中配置的packageName进行包过滤，避免系统事件污染pageSource
-    setPackageFilter()
+    // 确认设备中Driver状态，不存在则进行安装
+    val apkPath = shell(s"${adb} shell pm list packages")
+    if (apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1) {
+      installDriver()
+    }
+    // 给Driver设置权限，使驱动可以自行开启辅助功能
+    shell(s"${adb} shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
+
+    // 启动Driver
+    shell(s"${adb} shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
+
+    //设备driver连接设置
+    initDriver()
+
+    //获取包过滤参数
+    //    val packageFilter =
+    log.info(s"Driver Filter Package is ${getPackageFilter}")
+
+
     if (configMap.getOrElse("noReset", "").toString.equals("false")) {
       shell(s"${adb} shell pm clear ${packageName}")
     } else {
@@ -65,10 +70,36 @@ class CSRASDriver extends ReactWebDriver {
     }
   }
 
-  def setPackageFilter(): Unit ={
+  //在设备中安装driver
+  def installDriver(): Unit = {
+    log.info("Driver Not Exist In Device,Need Install")
+    if (csrasAPKPath.equals("")) {
+      csrasAPKPath = s"${System.getProperty("user.dir")}/driver.apk"
+      log.info(s"No csras_driver Set In Config,Use Default Path:./driver.apk")
+    }
+    log.info(s"Install Driver To Device From ${csrasAPKPath}")
+    //安装apk
+    shell(s"${adb} install '${csrasAPKPath}'")
+  }
+
+  //设备driver连接设置
+  def initDriver(): Unit = {
+    //设置端口转发，将driver的端口映射到本地，方便进行请求
+    shell(s"${adb} forward tcp:${csrasPort} tcp:7777")
+    // 等待远程服务连接完毕
+    // todo:将等待改为通过轮询接口判断设备上的服务是否启动
+    Thread.sleep(3000)
+  }
+
+  //拼接Driver访问地址
+  def getCSRASDriverUrl: String = {
+    val driverUrl = "http://127.0.0.1"
+    driverUrl + ":" + csrasPort
+  }
+
+  def getPackageFilter: String = {
     //通过发送请求，设置关注的包名，过滤掉多余的数据
-    log.info(s"set package ${packageName}")
-    session.get(s"${csrasUrl}/setPackage?package=${packageName}")
+    session.get(s"${getCSRASDriverUrl}/package").text()
   }
 
   override def event(keycode: String): Unit = {
@@ -170,15 +201,15 @@ class CSRASDriver extends ReactWebDriver {
   }
 
   override def getPageSource(): String = {
-    session.get(s"${csrasUrl}/source").text()
+    session.get(s"${getCSRASDriverUrl}/source").text()
   }
 
   override def getAppName(): String = {
-    session.get(s"${csrasUrl}/fullName").text().split('/').head
+    session.get(s"${getCSRASDriverUrl}/fullName").text().split('/').head
   }
 
   override def getUrl(): String = {
-    session.get(s"${csrasUrl}/fullName").text().split('/').last.stripLineEnd
+    session.get(s"${getCSRASDriverUrl}/fullName").text().split('/').last.stripLineEnd
   }
 
   override def getRect(): Rectangle = {
@@ -209,7 +240,11 @@ class CSRASDriver extends ReactWebDriver {
   override def reStartDriver(): Unit = {
     shell(s"${adb} shell am force-stop com.hogwarts.csruiautomatorserver")
     shell(s"${adb} shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
-    setPackageFilter()
+    Thread.sleep(2000)
+    // todo:需要优化
+    // 重启服务后需要通过页面动作触发page source刷新，保证能够获取到最新的界面数据
+    swipe(0.5, 0.5, 0.5, 0.4)
+    Thread.sleep(1000)
   }
 
   def getAdb(): String = {
