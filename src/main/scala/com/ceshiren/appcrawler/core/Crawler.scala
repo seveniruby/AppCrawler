@@ -59,8 +59,6 @@ class Crawler {
   val appNameRecord = new DataRecord()
   protected val contentHash = new DataRecord
 
-  protected val webViewRecord = new DataRecord
-
   private val refreshResult = new DataRecord
 
   private var lastBtnIndex = 3;
@@ -107,8 +105,7 @@ class Crawler {
     */
   def loadConf(crawlerConf: CrawlerConf): Unit = {
     conf = crawlerConf
-    AppCrawler.factory = new URIElementFactory()
-    store = AppCrawler.factory.generateElementStore
+    store = new URIElementStore()
   }
 
   def loadConf(file: String): Unit = {
@@ -238,11 +235,11 @@ class Crawler {
   }
 
   def getEventElement(actionName: String): URIElement = {
-    val defaultElement = AppCrawler.factory.generateElement(currentUrl, "", "", "", "", "", "", "", "", "", "/*/*", "", 0, 0, driver.screenWidth, driver.screenHeight, "")
+    val defaultElement = new URIElement(currentUrl, "", "", "", "", "", "", "", "", "", "", "/*/*", "", 0, 0, driver.screenWidth, driver.screenHeight, "")
     val element = driver.asyncTask()(
       //刷新失败时会报错，所以增加一个判断
       if (driver.page != null) {
-        AppCrawler.factory.generateElement(driver.page.getNodeListByKey("/*/*").head, currentUrl)
+        new URIElement(driver.page.getNodeListByKey("/*/*").head, currentUrl)
       } else {
         defaultElement
       }
@@ -365,7 +362,7 @@ class Crawler {
     * @return
     */
   def getUrlElementByMap(nodeMap: immutable.Map[String, Any]): URIElement = {
-    AppCrawler.factory.generateElement(nodeMap, currentUrl)
+    new URIElement(nodeMap, currentUrl)
   }
 
   def needBackToApp(): Option[URIElement] = {
@@ -481,37 +478,58 @@ class Crawler {
     var lastElements = List[URIElement]()
     var selectedElements = List[URIElement]()
     var blackElements = List[URIElement]()
-    var lastSize = 0
-
-    page.demo()
+    var topWebViewElements = List[URIElement]()
+    var preSize = 0
 
     conf.selectedList.foreach(step => {
       log.trace(s"selectedList xpath =  ${step.getXPath()}")
 
       val temp = page.getNodeListByKey(step.getXPath())
-        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
+        .map(e => new URIElement(e, currentUrl))
       temp.foreach(x => log.trace(x.toString))
 
       selectedElements ++= temp
     })
     selectedElements = selectedElements.distinct
     log.info(s"selected nodes size = ${selectedElements.size}")
-    lastSize = selectedElements.size
+    preSize = selectedElements.size
+
+    var webviewList = page.getNodeListByKey("//*[contains(@class, 'WebView')]")
+      .map(e => new URIElement(e, currentUrl))
+    webviewList = webviewList.sortWith(_.latest.toInt < _.latest.toInt)
+    webviewList.foreach(x => log.trace(x.toString))
+    webviewList.headOption match {
+      case Some(value) => {
+        if (value.latest != null || value.toString.nonEmpty) {
+          log.info(s"has webview with latest ${value.latest}")
+          topWebViewElements = page.getNodeListByKey(s"//*[contains(@class, 'WebView') and @latest='${value.latest}']//*[not(*)]")
+            .map(e => new URIElement(e, currentUrl))
+          selectedElements = selectedElements.intersect(topWebViewElements)
+
+          log.info(s"selectedElements in top webview elements size = ${selectedElements.size}")
+          if (selectedElements.size < preSize) {
+            selectedElements.foreach(log.trace)
+            preSize = selectedElements.size
+          }
+        }
+      }
+      case None => {}
+    }
 
     //remove blackList
     conf.blackList.foreach(step => {
       log.trace(s"blackList xpath =  ${step.getXPath()}")
       val temp = page.getNodeListByKey(step.getXPath())
-        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
+        .map(e => new URIElement(e, currentUrl))
       temp.foreach(log.trace)
       blackElements ++= temp
     })
     blackElements = blackElements.distinct
     selectedElements = selectedElements diff blackElements
     log.info(s"selectedElements - black elements size = ${selectedElements.size}")
-    if (selectedElements.size < lastSize) {
+    if (selectedElements.size < preSize) {
       selectedElements.foreach(log.trace)
-      lastSize = selectedElements.size
+      preSize = selectedElements.size
     }
 
     //done: 放到前面加速
@@ -519,47 +537,44 @@ class Crawler {
     if (!skipSmall) {
       selectedElements = selectedElements.filter(isSmall(_) == false)
       log.info(s"selectedElements - small elements size = ${selectedElements.size}")
-      if (selectedElements.size < lastSize) {
+      if (selectedElements.size < preSize) {
         selectedElements.foreach(log.trace)
-        lastSize = selectedElements.size
+        preSize = selectedElements.size
       }
     }
 
-    //去掉back菜单
+    //去掉back菜单  todo: 追加到尾部即可
     selectedElements = selectedElements diff conf.backButton.flatMap(step => getURIElementsByStep(step))
     log.info(s"selectedElements - backButton size=${selectedElements.length}")
-    if (selectedElements.size < lastSize) {
+    if (selectedElements.size < preSize) {
       selectedElements.foreach(log.trace)
-      lastSize = selectedElements.size
+      preSize = selectedElements.size
     }
 
     //过滤已经被点击过的元素
     selectedElements = selectedElements.filter(!store.isClicked(_))
     log.info(s"selectedElements - clicked size=${selectedElements.size}")
-    if (selectedElements.size < lastSize) {
+    if (selectedElements.size < preSize) {
       selectedElements.foreach(log.trace)
-      lastSize = selectedElements.size
+      preSize = selectedElements.size
     }
 
     selectedElements = selectedElements.filter(!store.isSkipped(_))
     log.info(s"selectedElements - skiped fresh elements size=${selectedElements.length}")
-    if (selectedElements.size < lastSize) {
+    if (selectedElements.size < preSize) {
       selectedElements.foreach(e => {
         log.trace(e)
         //记录未被点击的元素
         store.saveElement(e)
       })
-      lastSize = selectedElements.size
+      preSize = selectedElements.size
     }
-
-    //根据属性进行基本排序
-    selectedElements = sortByAttribute(selectedElements)
 
     //sort
     conf.firstList.foreach(step => {
       log.trace(s"firstList xpath = ${step.getXPath()}")
       val temp = page.getNodeListByKey(step.getXPath())
-        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
+        .map(e => new URIElement(e, currentUrl))
         .intersect(selectedElements)
       temp.foreach(log.trace)
       firstElements ++= temp
@@ -568,7 +583,7 @@ class Crawler {
     conf.lastList.foreach(step => {
       log.trace(s"lastList xpath = ${step.getXPath()}")
       val temp = page.getNodeListByKey(step.getXPath())
-        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
+        .map(e => new URIElement(e, currentUrl))
         .intersect(selectedElements)
       temp.foreach(log.trace)
       lastElements ++= temp
@@ -578,14 +593,25 @@ class Crawler {
     //去掉不在first和last中的元素
     selectedElements = selectedElements diff firstElements
     selectedElements = selectedElements diff lastElements
+
+    //根据属性进行基本排序
+    firstElements = sortByAttribute(firstElements)
+    lastElements = sortByAttribute(lastElements)
+    selectedElements = sortByAttribute(selectedElements)
+
     //确保不重, 并保证顺序
     all = (firstElements ++ selectedElements ++ lastElements).distinct.filter(isValid)
 
     log.trace(s"sorted nodes length=${all.length}")
-    all.foreach(log.trace)
-    lastSize = all.size
+    all.foreach(e => {
+      log.trace(
+        s"latest=${e.latest} depth=${e.getDepth} selected=${e.selected} list=${e.getAncestor().contains("List")} ${e.elementUri()}"
+      )
+    })
 
-    all.headOption
+    val r = all.headOption
+    log.info(s"next element ${r}")
+    r
   }
 
 
@@ -601,6 +627,12 @@ class Crawler {
               _.getDepth.toInt
           )
         }
+        case "latest" => {
+          selectedElements = selectedElements.sortWith(
+            _.latest.toInt <
+              _.latest.toInt
+          )
+        }
         case "selected" => {
           //todo:同级延后，在未实现之前，先通过lastList去显式声明那些菜单应该最后遍历
           //selected=false的优先遍历
@@ -612,12 +644,12 @@ class Crawler {
         case "list" => {
           //列表内元素优先遍历
           selectedElements = selectedElements.sortWith(
-            _.getAncestor.contains("List") >
-              _.getAncestor.contains("List")
+            _.getAncestor().contains("List") >
+              _.getAncestor().contains("List")
           )
           selectedElements = selectedElements.sortWith(
-            _.getAncestor.contains("RecyclerView") >
-              _.getAncestor.contains("RecyclerView")
+            _.getAncestor().contains("RecyclerView") >
+              _.getAncestor().contains("RecyclerView")
           )
         }
         //todo: 居中的优先遍历
@@ -625,21 +657,10 @@ class Crawler {
       }
       log.trace(s"sort by ${attribute}")
       selectedElements.foreach(e => log.trace(
-        s"depth=${e.getDepth}" +
-          s" selected=${e.elementUri()}" +
-          s" list=${e.getAncestor.contains("List")} e=${e}")
-      )
+        s"latest=${e.latest} depth=${e.getDepth} selected=${e.selected} list=${e.getAncestor.contains("List")} ${e.elementUri()}"
+      ))
     })
     selectedElements
-  }
-
-  def ifWebViewPage(): Unit = {
-
-    if (driver.page.getNodeListByKey("//*[contains(@class, 'WebView')]").nonEmpty) {
-      webViewRecord.append(true)
-    } else {
-      webViewRecord.append(false)
-    }
   }
 
   //todo: 刷新失败需要一个异常处理逻辑
@@ -819,7 +840,7 @@ class Crawler {
   def getURIElementsByStep(step: Step): List[URIElement] = {
     driver.getNodeListByKey(step.getXPath())
       .map(e => {
-        val urlElement = AppCrawler.factory.generateElement(e, currentUrl)
+        val urlElement = new URIElement(e, currentUrl)
         urlElement.setAction(step.getAction())
         urlElement
       }).filter(isValid)
@@ -1024,7 +1045,7 @@ class Crawler {
         log.info("just log")
         log.info(TData.toJson(element))
       }
-      case action if action==this.backAction || action=="back" => {
+      case action if action == this.backAction || action == "back" => {
         log.info("back")
         back()
       }

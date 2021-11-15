@@ -76,7 +76,7 @@ class TagLimitPlugin extends Plugin {
   def getTimesFromTagLimit(element: URIElement): Option[Int] = {
     this.getCrawler().conf.tagLimit.foreach(tag => {
       log.trace(s"find tag with ${tag}")
-      val elementMatchList = getCrawler().driver.getNodeListByKey(tag.getXPath()).map(x => AppCrawler.factory.generateElement(x, getCrawler().currentUrl))
+      val elementMatchList = getCrawler().driver.getNodeListByKey(tag.getXPath()).map(x => new URIElement(x, getCrawler().currentUrl))
       log.trace(elementMatchList.length)
       log.trace(element)
       if (elementMatchList.contains(element)) {

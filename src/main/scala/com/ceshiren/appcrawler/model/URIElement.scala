@@ -29,6 +29,10 @@ case class URIElement(
                        var instance: String = "",
                        @XmlAttribute(name = "depth")
                        var depth: String = "",
+
+                       @XmlAttribute(name = "latest")
+                       var latest: String = "",
+
                        @XmlAttribute(name = "valid")
                        var valid: String = "true",
                        @XmlAttribute(name = "selected")
@@ -54,7 +58,7 @@ case class URIElement(
   //定义url是遍历的关键. 这是一门艺术
 
   def this() {
-    this("", "", "", "", "", "", "", "", "", "", "", "", 0, 0, 0, 0, "")
+    this("", "", "", "", "", "", "", "", "", "", "", "", "", 0, 0, 0, 0, "")
   }
 
   def this(nodeMap: scala.collection.Map[String, Any], uri: String) = {
@@ -70,6 +74,7 @@ case class URIElement(
     this.text = nodeMap.getOrElse("value", "").toString
     this.instance = nodeMap.getOrElse("instance", "").toString
     this.depth = nodeMap.getOrElse("depth", "").toString
+    this.latest = nodeMap.getOrElse("latest", "").toString
     this.xpath = nodeMap.getOrElse("xpath", "").toString
     this.x = nodeMap.getOrElse("x", "0").toString.toDouble.toInt
     this.y = nodeMap.getOrElse("y", "0").toString.toDouble.toInt

@@ -1,6 +1,7 @@
 package com.ceshiren.appcrawler.core
 
 import com.ceshiren.appcrawler.AppCrawler
+import com.ceshiren.appcrawler.model.URIElement
 import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.TData
 import org.scalatest
@@ -34,7 +35,7 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
 
       driver.getNodeListByKey(xpath).headOption match {
         case Some(v) => {
-          val ele = AppCrawler.factory.generateElement(v, "Steps")
+          val ele = new URIElement(v, "Steps")
           ele.setAction(action)
           // testcase里的操作也要记录下来
           crawler.beforeElementAction(ele)
@@ -43,7 +44,7 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
         }
         case None => {
           //用于生成steps的用例
-          val ele = AppCrawler.factory.generateElement("Steps", "", "", "", "NOT_FOUND", "", "", "", "", "", "xpath", "", 0, 0, 0, 0, "")
+          val ele = new URIElement("Steps", "", "", "", "NOT_FOUND", "", "", "", "", "", "xpath", "", "", 0, 0, 0, 0, "")
 
           ele.setAction("_Log")
           // testcase里的操作也要记录下来

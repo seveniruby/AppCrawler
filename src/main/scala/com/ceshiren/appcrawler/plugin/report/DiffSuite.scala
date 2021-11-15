@@ -36,8 +36,7 @@ class DiffSuite extends FunSuite with Matchers{
           log.debug(elementInfo.getResDom)
           DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.getResDom))
             .flatten.map(m=>{
-            log.info(AppCrawler.factory)
-            val ele=AppCrawler.factory.generateElement(m, key)
+            val ele=new URIElement(m, key)
             ele.getXpath->ele
           }).toMap
         }
@@ -51,7 +50,7 @@ class DiffSuite extends FunSuite with Matchers{
         case Some(elementInfo) if elementInfo.getAction==Status.CLICKED && elementInfo.getResDom.nonEmpty => {
           DiffSuite.range.map(XPathUtil.getNodeListByXPath(_, elementInfo.getResDom))
             .flatten.map(m=>{
-            val ele=AppCrawler.factory.generateElement(m, key)
+            val ele=new URIElement(m, key)
             ele.getXpath->ele
           }).toMap
         }
@@ -72,8 +71,8 @@ class DiffSuite extends FunSuite with Matchers{
         val cp = new Checkpoints.Checkpoint()
         var markOnce=false
         allElementKeys.foreach(subKey => {
-          val masterElement = masterElements.getOrElse(subKey, AppCrawler.factory.generateElement)
-          val candidateElement = candidateElements.getOrElse(subKey, AppCrawler.factory.generateElement)
+          val masterElement = masterElements.getOrElse(subKey, new URIElement)
+          val candidateElement = candidateElements.getOrElse(subKey, new URIElement)
           val message =
             s"""
                |key=${subKey}
@@ -89,8 +88,8 @@ class DiffSuite extends FunSuite with Matchers{
           if (masterElement != candidateElement && !markOnce) {
             markOnce=true
             //todo: 使用绝对路径展示图片
-            val imgSrcNew=new java.io.File(".").getCanonicalPath+"/"+ReportFactory.candidate+"/"+File(DiffSuite.candidateStore.getOrElse(key, AppCrawler.factory.generateElementInfo()).getResImg).name
-            val imgSrcOld=new java.io.File(".").getCanonicalPath+"/"+ReportFactory.master+"/"+File(DiffSuite.masterStore.getOrElse(key, AppCrawler.factory.generateElementInfo()).getResImg).name
+            val imgSrcNew=new java.io.File(".").getCanonicalPath+"/"+ReportFactory.candidate+"/"+File(DiffSuite.candidateStore.getOrElse(key, new ElementInfo()).getResImg).name
+            val imgSrcOld=new java.io.File(".").getCanonicalPath+"/"+ReportFactory.master+"/"+File(DiffSuite.masterStore.getOrElse(key, new ElementInfo()).getResImg).name
             markup(
               s"""
                  |candidate image

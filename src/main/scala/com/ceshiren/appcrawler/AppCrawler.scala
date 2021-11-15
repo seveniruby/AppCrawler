@@ -1,7 +1,6 @@
 package com.ceshiren.appcrawler
 
 import com.ceshiren.appcrawler.core.{Crawler, CrawlerConf}
-import com.ceshiren.appcrawler.model.URIElementFactory
 import com.ceshiren.appcrawler.plugin.report.{DiffSuite, ReportFactory}
 import com.ceshiren.appcrawler.utils.Log
 import com.ceshiren.appcrawler.utils.Log.log
@@ -25,7 +24,6 @@ object AppCrawler {
       |""".stripMargin
 
   var crawler = new Crawler
-  var factory: URIElementFactory = _
   val startTime = new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
 
   case class Param(
@@ -242,7 +240,6 @@ object AppCrawler {
             }"
         }
 
-        factory = new URIElementFactory()
         //todo: 用switch替代
         //重新生成功能
         if (config.report != "" && config.candidate.isEmpty && config.template == "") {
