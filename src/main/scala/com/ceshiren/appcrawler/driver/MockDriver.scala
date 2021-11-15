@@ -52,11 +52,6 @@ class MockDriver extends ReactWebDriver {
     file
   }
 
-  //todo: 重构到独立的trait中
-  override def mark(fileName: String, newImageName: String, x: Int, y: Int, w: Int, h: Int): Unit = {
-
-  }
-
   override def click(): this.type = {
     this
   }

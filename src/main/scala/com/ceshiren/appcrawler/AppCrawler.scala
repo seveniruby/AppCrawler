@@ -243,7 +243,8 @@ object AppCrawler {
         //todo: 用switch替代
         //重新生成功能
         if (config.report != "" && config.candidate.isEmpty && config.template == "") {
-
+          log.debug("crawler conf")
+          log.debug(crawlerConf.toYaml())
           val report = ReportFactory.getReportEngine("scalatest")
 
           ReportFactory.showCancel = crawlerConf.showCancel

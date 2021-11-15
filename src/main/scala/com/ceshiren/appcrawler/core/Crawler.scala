@@ -5,6 +5,7 @@ import com.ceshiren.appcrawler.driver._
 import com.ceshiren.appcrawler.model._
 import com.ceshiren.appcrawler.plugin.Plugin
 import com.ceshiren.appcrawler.utils.Log.log
+import com.ceshiren.appcrawler.utils.LogicUtils.{asyncTask, handleException}
 import com.ceshiren.appcrawler.utils._
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -67,6 +68,8 @@ class Crawler {
   private val afterAllAction = "_AfterAll"
   private val backAppAction = "_BackApp"
   private val skipAction = "_skip"
+
+  private var timePreCrawlStart = System.currentTimeMillis();
 
   /**
     * 根据类名初始化插件. 插件可以使用java编写. 继承自Plugin即可
@@ -236,7 +239,7 @@ class Crawler {
 
   def getEventElement(actionName: String): URIElement = {
     val defaultElement = new URIElement(currentUrl, "", "", "", "", "", "", "", "", "", "", "/*/*", "", 0, 0, driver.screenWidth, driver.screenHeight, "")
-    val element = driver.asyncTask()(
+    val element = asyncTask()(
       //刷新失败时会报错，所以增加一个判断
       if (driver.page != null) {
         new URIElement(driver.page.getNodeListByKey("/*/*").head, currentUrl)
@@ -328,7 +331,7 @@ class Crawler {
     */
   def getSchema(): String = {
     val nodeList = driver.getNodeListByKey("//*[not(ancestor-or-self::UIAStatusBar)]")
-    TData.md5(1, nodeList.map(getUrlElementByMap(_).getAncestor()).distinct.mkString("\n"))
+    TData.md5(nodeList.map(getUrlElementByMap(_).getAncestor()).distinct.mkString("\n"))
   }
 
   def getUri(): String = {
@@ -712,7 +715,8 @@ class Crawler {
     //log.trace(s"windows=${windows}")
 
     // 通过标识what取对应的md5值
-    contentHash.append(TData.md5(2, ""))
+
+    contentHash.append(TData.md5(driver.page.toXML))
     log.info(s"currentContentHash=${contentHash.last()} lastContentHash=${contentHash.pre()}")
     if (contentHash.isDiff()) {
       log.info("ui change")
@@ -932,6 +936,12 @@ class Crawler {
     */
   @tailrec
   final def crawl(): Unit = {
+    val timeCurCrawlStart = System.currentTimeMillis()
+    if (timePreCrawlStart != 0) {
+      log.info(s"crawl use ${timeCurCrawlStart - timePreCrawlStart} ms")
+    }
+    timePreCrawlStart = timeCurCrawlStart
+
     if (exitCrawl) {
       log.fatal("exitCrawl=true, return")
       return
@@ -1099,7 +1109,7 @@ class Crawler {
             element.setAction("_notFound")
           }
           case _ => {
-            driver.asyncTask(name = "action") {
+            asyncTask(name = "action") {
               //支持各种动作
               str match {
                 case "" => {
@@ -1156,12 +1166,12 @@ class Crawler {
   def saveElementScreenshot(): Unit = {
     if (conf.screenshot && store.getClickedElementsList.size > 1) {
       store.saveReqImg(getBasePathName() + ".click.png")
-      val originImageName = getBasePathName(2) + ".clicked.png"
       val newImageName = getBasePathName() + ".click.png"
       val rect = driver.getRect()
-      log.info(s"mark ${originImageName} to ${newImageName}")
-      driver.asyncTask(name = "mark") {
-        driver.mark(originImageName, newImageName, rect.x, rect.y, rect.width, rect.height)
+      log.info(s"draw element in ${newImageName}")
+
+      if (ScreenShot.last() != null) {
+        ScreenShot.last().clip(newImageName, rect.x, rect.y, rect.width, rect.height, driver.screenWidth, driver.screenHeight)
       }
     }
   }
@@ -1186,7 +1196,7 @@ class Crawler {
     val domPath = getBasePathName() + ".clicked.xml"
     //感谢QQ:434715737的反馈
     log.info(s"save to ${domPath}")
-    driver.asyncTask(name = "saveDom") {
+    asyncTask(name = "saveDom") {
       File(domPath).writeAll(driver.page.toXML)
     }
   }
@@ -1199,36 +1209,23 @@ class Crawler {
       return
     }
     if (conf.screenshot || force) {
-      Thread.sleep(100)
       log.info("start screenshot")
-      driver.asyncTask(60, name = "screenshot") {
-        val imgFile = if (store.isDiff()) {
+      if (!store.isDiff() && ScreenShot.last() != null) {
+        ScreenShot.last().saveToFile(originPath)
+      } else {
+        asyncTask(60, name = "screenshot") {
           log.info("ui change screenshot again")
-          driver.screenshot()
-        } else {
-          log.info("ui no change")
-          val preImageFileName = getBasePathName(2) + ".clicked.png"
-          val preImageFile = new java.io.File(preImageFileName)
-          if (preImageFile.exists() && preImageFileName != originPath) {
-            log.info(s"copy from pre image file ${preImageFileName}")
-            //FileUtils.copyFile(preImageFile, markImageFile)
-            preImageFile
-          } else {
-            driver.screenshot()
+          val screenShot = driver.screenshot()
+          ScreenShot.save(screenShot)
+          ScreenShot.last().saveToFile(originPath)
+        } match {
+          case Left(x) => {
+            log.info("screenshot success")
           }
-        }
-        if (imgFile.getAbsolutePath == new java.io.File(originPath).getAbsolutePath) {
-          log.info(s"${imgFile.getAbsolutePath} same as before")
-        } else {
-          FileUtils.copyFile(imgFile, new java.io.File(originPath))
-        }
-      } match {
-        case Left(x) => {
-          log.info("screenshot success")
-        }
-        case Right(e) => {
-          log.error("screenshot error")
-          log.error(e.getMessage)
+          case Right(e) => {
+            log.error("screenshot error")
+            log.error(e.getMessage)
+          }
         }
       }
     } else {
@@ -1247,7 +1244,7 @@ class Crawler {
         log.warn("two back action too close")
         Thread.sleep(2000)
       }
-      driver.asyncTask(name = "back") {
+      asyncTask(name = "back") {
         log.info("navigate back")
         driver.back()
       }
@@ -1287,7 +1284,7 @@ class Crawler {
     Try(pluginClasses.foreach(_.stop())) match {
       case Success(v) => {}
       case Failure(e) => {
-        driver.handleException(e)
+        handleException(e)
       }
     }
     log.info("generate report finish")

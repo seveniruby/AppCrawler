@@ -74,7 +74,7 @@ public class PageSource {
 
     public List<Map<String, Object>> getNodeListAll() {
         if (nodeListAll == null) {
-            nodeListAll = XPathUtil.getNodeListByXPath("//*", currentPageDom);
+            nodeListAll = XPathUtil.getNodeListByXPath("//*[not(*)]", currentPageDom);
         }
         return nodeListAll;
     }
