@@ -27,7 +27,6 @@ abstract class Report  {
     val content=Source.fromFile(elementsFile).mkString
     log.info(s"${elementsFile} size = ${content.size}")
     //todo: cannot deserialize from Object value (no delegate- or property-based Creator)
-    log.warn("一定概率失败，底层依赖库的bug")
     TData.fromYaml[URIElementStore](content)
   }
 

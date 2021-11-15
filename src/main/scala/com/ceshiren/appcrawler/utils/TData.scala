@@ -45,7 +45,7 @@ object TData {
 
   def toYaml(data: Any): String = {
     val mapper = new ObjectMapper(new YAMLFactory())
-    //    mapper.registerModule(DefaultScalaModule)
+    mapper.registerModule(DefaultScalaModule)
     mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data)
   }
@@ -85,7 +85,6 @@ object TData {
   def toXML(data: Any, root: String = "xml"): String = {
     val mapper = new XmlMapper()
     mapper.registerModule(new JaxbAnnotationModule)
-    mapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
     //mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
     mapper.registerModule(DefaultScalaModule)
     mapper.writerWithDefaultPrettyPrinter().withRootName(root).writeValueAsString(data)

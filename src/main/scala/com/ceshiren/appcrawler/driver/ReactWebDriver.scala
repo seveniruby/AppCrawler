@@ -22,24 +22,22 @@ abstract class ReactWebDriver {
   var screenWidth = 0
   var screenHeight = 0
   var page: PageSource = null;
-  var currentPageSource: String = ""
-  val appiumExecResults = ListBuffer[String]()
+  val appiumExecResults: ListBuffer[String] = ListBuffer[String]()
 
   var loc = ""
   var index = 0
-  var currentURIElement: URIElement = AppCrawler.factory.generateElement
+  var currentURIElement: URIElement = null
 
   var imagesDir = "images"
   var platformName = ""
 
+  def findElements(element: URIElement, findBy: String = platformName): List[AnyRef]
 
-  def findElementsByURI(element: URIElement, findBy: String = platformName): List[AnyRef]
-
-  def findElementByURI(element: URIElement, findBy: String = platformName): AnyRef = {
+  def findElement(element: URIElement, findBy: String = platformName): AnyRef = {
     //todo: 用其他定位方式优化
     log.info(s"find by uri element= ${element.elementUri()}")
     currentURIElement = element
-    asyncTask(name = "findElementsByURI")(findElementsByURI(element, findBy)) match {
+    asyncTask(name = "findElementsByURI")(findElements(element, findBy)) match {
       case Left(v) => {
         val arr = v.distinct
         arr.length match {
@@ -82,13 +80,12 @@ abstract class ReactWebDriver {
   //todo: 有的时候会出现极少内容的page source
 
   /**
-   * <hierarchy class="hierarchy" height="1794" index="0" rotation="0" width="1080">
-   * <android.widget.FrameLayout bounds="[0,0][1080,1794]" checkable="false" checked="false" class="android.widget.FrameLayout" clickable="false" displayed="true" enabled="true" focusable="false" focused="false" index="0" long-clickable="false" package="com.example.android.apis" password="false" scrollable="false" selected="false" text=""/>
-   * </hierarchy>
-   *
-   */
-  def getPageSourceWithRetry(): String = {
-    currentPageSource = null
+    * <hierarchy class="hierarchy" height="1794" index="0" rotation="0" width="1080">
+    * <android.widget.FrameLayout bounds="[0,0][1080,1794]" checkable="false" checked="false" class="android.widget.FrameLayout" clickable="false" displayed="true" enabled="true" focusable="false" focused="false" index="0" long-clickable="false" package="com.example.android.apis" password="false" scrollable="false" selected="false" text=""/>
+    * </hierarchy>
+    *
+    */
+  def getPageSourceWithRetry(): PageSource = {
     page = null
     log.info("start to get page source from appium")
     //获取页面结构, 最多重试3次
@@ -121,24 +118,11 @@ abstract class ReactWebDriver {
               text
             }
           }
-          Try(XPathUtil.toDocument(xmlStr)) match {
-            case Success(v) => {
-              page = new PageSource()
-              page.fromDocument(v)
-              currentPageSource = XPathUtil.toPrettyXML(xmlStr)
-              //不用循环多次
-              log.debug("get page source success")
-              //              log.debug(currentPageSource)
-              return currentPageSource
-            }
-            case Failure(e) => {
-              log.warn("convert to xml fail")
-              log.warn(xmlStr)
-              page = null
-              currentPageSource = null
-            }
-          }
 
+          page = PageSource.getPagefromXML(xmlStr)
+          if (page != null) {
+            return page
+          }
         }
         case Right(e) => {
           errorCount += 1
@@ -150,7 +134,8 @@ abstract class ReactWebDriver {
       log.warn(s"retry ${i} times after 5s")
       Thread.sleep(5000)
     })
-    currentPageSource
+
+    page
   }
 
   def clickLocation(): Unit = {
@@ -302,6 +287,24 @@ abstract class ReactWebDriver {
         None
       }
     }
+  }
+
+  def existElement(): Boolean = {
+    currentURIElement != null
+  }
+
+  //todo: 未完成
+  def wait(key: String, timeout: Long = 5000): Unit = {
+    getPageSourceWithRetry()
+    val start = System.currentTimeMillis()
+    var end: Long = 0
+    var nodeList:List[Map[String ,Object]]=List()
+    do {
+      log.trace(s"find ${key}")
+      nodeList=page.getNodeListByKey(key)
+      end = System.currentTimeMillis()
+      Thread.sleep(500)
+    } while (end - start < timeout && nodeList.isEmpty )
   }
 
   def event(keycode: String): Unit = {}

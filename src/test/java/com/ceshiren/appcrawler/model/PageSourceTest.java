@@ -1,6 +1,7 @@
 package com.ceshiren.appcrawler.model;
 
 import com.ceshiren.appcrawler.utils.Log;
+import com.ceshiren.appcrawler.utils.TData$;
 import com.ceshiren.appcrawler.utils.XPathUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,12 +29,11 @@ class PageSourceTest {
     void fromXML() throws IOException {
         PageSource source = new PageSource();
 
-        String path = "/Users/seveniruby/Library/Containers/com.tencent.xinWeChat/Data/Library/Application Support/com.tencent.xinWeChat/2.0b4.0.9/c7118872a9eec663b3cc402e18d9d682/Message/MessageTemp/4a28969c5e85f3bf0a0b17f53353b049/File/20211027095159/342_DealReportActivity.tag=TextView.depth=13.id=text_area.text=请选择市.dom";
+        String path = "src/test/scala/com/ceshiren/appcrawler/ut/miniprogram.xml";
         String content = new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
-        System.out.println(content.toString());
-        Document doc = XPathUtil.toDocument(content.toString());
+        Document doc = XPathUtil.toDocument(content);
         source.fromDocument(doc);
-        System.out.println(source.getNodeListByKey("(//*[@package!=''])[1]").headOption().get().get("package"));
+        log.info(source.getNodeListByKey("(//*[@package!=''])[1]").headOption().get().get("package"));
     }
 
     @Test
