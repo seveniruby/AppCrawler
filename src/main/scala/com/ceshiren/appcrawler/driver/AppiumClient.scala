@@ -118,7 +118,9 @@ class AppiumClient extends SeleniumDriver {
     new AppiumTouchAction(appiumDriver).tap(currentElement)
     this
   }
-
+  override def tapLocation(x: Int, y: Int): this.type = {
+    this
+  }
   override def longTap(): this.type = {
     appiumDriver.performTouchAction(
       (new TouchAction(appiumDriver)
@@ -224,7 +226,8 @@ class AppiumClient extends SeleniumDriver {
   override def launchApp(): Unit = {
     appiumDriver.launchApp()
   }
-
+  override def reStartDriver(): Unit={
+  }
   override def getPageSource(): String = {
     appiumDriver.getPageSource
   }
