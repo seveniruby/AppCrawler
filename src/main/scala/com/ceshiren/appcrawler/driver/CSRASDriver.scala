@@ -43,7 +43,7 @@ class CSRASDriver extends ReactWebDriver {
     otherApps = configMap.getOrElse("otherApps", "").toString
 
     // 确认设备中Driver状态，不存在则进行安装
-    val apkPath = shell(s"${adb} shell 'pm list packages | grep com.hogwarts.csruiautomatorserver'")
+    val apkPath = shell(s"${adb} shell 'pm list packages | grep com.hogwarts.csruiautomatorserver ||:'")
     if (apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1) {
       installDriver()
     }
@@ -80,6 +80,10 @@ class CSRASDriver extends ReactWebDriver {
     shell(s"${adb} install '${otherApps}'")
     // 给Driver设置权限，使驱动可以自行开启辅助功能
     shell(s"${adb} shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
+
+  }
+
+  def setPackage():Unit={
     val r = session.post(s"${getServerUrl}/package?package=${packageName}")
     log.info(r)
   }
@@ -95,7 +99,7 @@ class CSRASDriver extends ReactWebDriver {
     // 等待远程服务连接完毕
     // todo:将等待改为通过轮询接口判断设备上的服务是否启动
     Thread.sleep(3000)
-
+    setPackage()
     //获取包过滤参数
     //    val packageFilter =
     log.info(s"Driver Filter Package is ${getPackageFilter}")
@@ -253,6 +257,7 @@ class CSRASDriver extends ReactWebDriver {
     shell(s"${adb} shell am force-stop com.hogwarts.csruiautomatorserver")
     shell(s"${adb} shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
     Thread.sleep(2000)
+    setPackage()
     // todo:需要优化
     // 重启服务后需要通过页面动作触发page source刷新，保证能够获取到最新的界面数据
     swipe(0.5, 0.5, 0.5, 0.4)
