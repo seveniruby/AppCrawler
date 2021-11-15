@@ -113,7 +113,9 @@ class SeleniumDriver extends ReactWebDriver{
   override def tap(): this.type = {
     click()
   }
-
+  override def tapLocation(x: Int, y: Int): this.type = {
+    this
+  }
   override def longTap(): this.type = {
     log.error("not implement")
     this
@@ -246,7 +248,8 @@ class SeleniumDriver extends ReactWebDriver{
     //driver.get(capabilities.getCapability("app").toString)
     back()
   }
-
+  override def reStartDriver(): Unit ={
+  }
 
   def config(key: String, value: Any): Unit = {
     capabilities.setCapability(key, value)

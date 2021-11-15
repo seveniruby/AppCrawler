@@ -110,7 +110,9 @@ class MockDriver extends ReactWebDriver{
   override def tap(): this.type = {
     click()
   }
-
+  override def tapLocation(x: Int, y: Int): this.type = {
+    this
+  }
   override def longTap(): this.type = {
     log.error("not implement")
     this
@@ -175,7 +177,8 @@ class MockDriver extends ReactWebDriver{
   def getAdb(): String ={
     List(System.getenv("ANDROID_HOME"), "platform-tools/adb").mkString(File.separator)
   }
-
+  override def reStartDriver(): Unit ={
+  }
   def shell(cmd:String): String ={
     log.info(cmd)
     val result=cmd.!!

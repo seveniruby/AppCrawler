@@ -13,8 +13,8 @@ import scala.collection.mutable.ListBuffer
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Created by seveniruby on 2017/4/17.
-  */
+ * Created by seveniruby on 2017/4/17.
+ */
 
 //todo: 用标准的class代替，用trait会让很多java工程师无法理解。
 abstract class ReactWebDriver {
@@ -149,8 +149,13 @@ abstract class ReactWebDriver {
 
   def tap(): this.type
 
+  def tapLocation(x: Int, y: Int): this.type
+
   def click(): this.type = {
     this
+  }
+
+  def reStartDriver(): Unit = {
   }
 
   def longTap(): this.type = {
