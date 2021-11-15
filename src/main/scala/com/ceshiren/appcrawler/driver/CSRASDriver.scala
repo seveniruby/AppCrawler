@@ -43,7 +43,7 @@ class CSRASDriver extends ReactWebDriver {
     otherApps = configMap.getOrElse("otherApps", "").toString
 
     // 确认设备中Driver状态，不存在则进行安装
-    val apkPath = shell(s"${adb} shell 'pm list packages | grep com.hogwarts.csruiautomatorserver'")
+    val apkPath = shell(s"${adb} shell 'pm list packages | grep com.hogwarts.csruiautomatorserver ||:'")
     if (apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1) {
       installDriver()
     }
