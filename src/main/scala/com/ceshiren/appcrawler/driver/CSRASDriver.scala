@@ -84,7 +84,7 @@ class CSRASDriver extends ReactWebDriver {
   }
 
   def setPackage():Unit={
-    val r = session.post(s"${getServerUrl}/package?package=${packageName}")
+    val r = session.post(s"${getServerUrl}/package?package=${packageName}").text()
     log.info(r)
   }
 
