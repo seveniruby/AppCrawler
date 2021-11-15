@@ -21,7 +21,7 @@ object AppCrawler {
       |appcrawler v2专业版 全平台自动遍历测试工具
       |专业版：appcrawler专业版目标是为企业打造业务测试智能机器人
       |Q&A: https://ceshiren.com/c/opensource/appcrawler
-      |author: 思寒 seveniruby@霍格沃兹测试开发学社
+      |author: 测吧（北京）科技有限公司
       |--------------------------------------------------
       |""".stripMargin
 
