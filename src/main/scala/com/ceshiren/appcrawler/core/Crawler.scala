@@ -107,8 +107,7 @@ class Crawler {
     */
   def loadConf(crawlerConf: CrawlerConf): Unit = {
     conf = crawlerConf
-    AppCrawler.factory = new URIElementFactory()
-    store = AppCrawler.factory.generateElementStore
+    store = new URIElementStore()
   }
 
   def loadConf(file: String): Unit = {
@@ -238,11 +237,11 @@ class Crawler {
   }
 
   def getEventElement(actionName: String): URIElement = {
-    val defaultElement = AppCrawler.factory.generateElement(currentUrl, "", "", "", "", "", "", "", "", "", "/*/*", "", 0, 0, driver.screenWidth, driver.screenHeight, "")
+    val defaultElement =new URIElement(currentUrl, "", "", "", "", "", "", "", "" , "", "", "/*/*", "", 0, 0, driver.screenWidth, driver.screenHeight, "")
     val element = driver.asyncTask()(
       //刷新失败时会报错，所以增加一个判断
       if (driver.page != null) {
-        AppCrawler.factory.generateElement(driver.page.getNodeListByKey("/*/*").head, currentUrl)
+        new URIElement(driver.page.getNodeListByKey("/*/*").head, currentUrl)
       } else {
         defaultElement
       }
@@ -365,7 +364,7 @@ class Crawler {
     * @return
     */
   def getUrlElementByMap(nodeMap: immutable.Map[String, Any]): URIElement = {
-    AppCrawler.factory.generateElement(nodeMap, currentUrl)
+    new URIElement(nodeMap, currentUrl)
   }
 
   def needBackToApp(): Option[URIElement] = {
@@ -489,7 +488,7 @@ class Crawler {
       log.trace(s"selectedList xpath =  ${step.getXPath()}")
 
       val temp = page.getNodeListByKey(step.getXPath())
-        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
+        .map(e => new URIElement(e, currentUrl))
       temp.foreach(x => log.trace(x.toString))
 
       selectedElements ++= temp
@@ -502,7 +501,7 @@ class Crawler {
     conf.blackList.foreach(step => {
       log.trace(s"blackList xpath =  ${step.getXPath()}")
       val temp = page.getNodeListByKey(step.getXPath())
-        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
+        .map(e => new URIElement(e, currentUrl))
       temp.foreach(log.trace)
       blackElements ++= temp
     })
@@ -559,7 +558,7 @@ class Crawler {
     conf.firstList.foreach(step => {
       log.trace(s"firstList xpath = ${step.getXPath()}")
       val temp = page.getNodeListByKey(step.getXPath())
-        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
+        .map(e => new URIElement(e, currentUrl))
         .intersect(selectedElements)
       temp.foreach(log.trace)
       firstElements ++= temp
@@ -568,7 +567,7 @@ class Crawler {
     conf.lastList.foreach(step => {
       log.trace(s"lastList xpath = ${step.getXPath()}")
       val temp = page.getNodeListByKey(step.getXPath())
-        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
+        .map(e => new URIElement(e, currentUrl))
         .intersect(selectedElements)
       temp.foreach(log.trace)
       lastElements ++= temp
@@ -601,6 +600,12 @@ class Crawler {
               _.getDepth.toInt
           )
         }
+        case "latest" => {
+          selectedElements = selectedElements.sortWith(
+            _.latest.toInt <
+              _.latest.toInt
+          )
+        }
         case "selected" => {
           //todo:同级延后，在未实现之前，先通过lastList去显式声明那些菜单应该最后遍历
           //selected=false的优先遍历
@@ -612,12 +617,12 @@ class Crawler {
         case "list" => {
           //列表内元素优先遍历
           selectedElements = selectedElements.sortWith(
-            _.getAncestor.contains("List") >
-              _.getAncestor.contains("List")
+            _.getAncestor().contains("List") >
+              _.getAncestor().contains("List")
           )
           selectedElements = selectedElements.sortWith(
-            _.getAncestor.contains("RecyclerView") >
-              _.getAncestor.contains("RecyclerView")
+            _.getAncestor().contains("RecyclerView") >
+              _.getAncestor().contains("RecyclerView")
           )
         }
         //todo: 居中的优先遍历
@@ -819,7 +824,7 @@ class Crawler {
   def getURIElementsByStep(step: Step): List[URIElement] = {
     driver.getNodeListByKey(step.getXPath())
       .map(e => {
-        val urlElement = AppCrawler.factory.generateElement(e, currentUrl)
+        val urlElement = new URIElement(e, currentUrl)
         urlElement.setAction(step.getAction())
         urlElement
       }).filter(isValid)

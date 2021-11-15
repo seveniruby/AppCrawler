@@ -279,6 +279,10 @@ object XPathUtil {
             nodeMap("value") = nodeMap("text")
           }
 
+          if (nodeMap.contains("latest")) {
+            nodeMap("latest") = nodeMap("latest")
+          }
+
           //selenium
           if (nodeMap.contains("href")) {
             if (nodeMap.contains("id")) {
