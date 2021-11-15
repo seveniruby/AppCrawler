@@ -133,7 +133,7 @@ class AppiumClient extends SeleniumDriver {
     this
   }
 
-  override def findElementsByURI(element: URIElement, findBy: String): List[AnyRef] = {
+  override def findElements(element: URIElement, findBy: String): List[AnyRef] = {
     //todo: 优化速度，个别时候定位可能超过10s
     //todo: 多种策略，使用findElement 使用xml直接分析location 生成平台特定的定位符
 

@@ -26,19 +26,18 @@ abstract class ReactWebDriver {
 
   var loc = ""
   var index = 0
-  var currentURIElement: URIElement = AppCrawler.factory.generateElement
+  var currentURIElement: URIElement = null
 
   var imagesDir = "images"
   var platformName = ""
 
+  def findElements(element: URIElement, findBy: String = platformName): List[AnyRef]
 
-  def findElementsByURI(element: URIElement, findBy: String = platformName): List[AnyRef]
-
-  def findElementByURI(element: URIElement, findBy: String = platformName): AnyRef = {
+  def findElement(element: URIElement, findBy: String = platformName): AnyRef = {
     //todo: 用其他定位方式优化
     log.info(s"find by uri element= ${element.elementUri()}")
     currentURIElement = element
-    asyncTask(name = "findElementsByURI")(findElementsByURI(element, findBy)) match {
+    asyncTask(name = "findElementsByURI")(findElements(element, findBy)) match {
       case Left(v) => {
         val arr = v.distinct
         arr.length match {
@@ -120,8 +119,8 @@ abstract class ReactWebDriver {
             }
           }
 
-          page=PageSource.getPagefromXML(xmlStr)
-          if(page!=null){
+          page = PageSource.getPagefromXML(xmlStr)
+          if (page != null) {
             return page
           }
         }
@@ -288,6 +287,24 @@ abstract class ReactWebDriver {
         None
       }
     }
+  }
+
+  def existElement(): Boolean = {
+    currentURIElement != null
+  }
+
+  //todo: 未完成
+  def wait(key: String, timeout: Long = 5000): Unit = {
+    getPageSourceWithRetry()
+    val start = System.currentTimeMillis()
+    var end: Long = 0
+    var nodeList:List[Map[String ,Object]]=List()
+    do {
+      log.trace(s"find ${key}")
+      nodeList=page.getNodeListByKey(key)
+      end = System.currentTimeMillis()
+      Thread.sleep(500)
+    } while (end - start < timeout && nodeList.isEmpty )
   }
 
   def event(keycode: String): Unit = {}

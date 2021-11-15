@@ -70,7 +70,6 @@ class Crawler {
   private val backAppAction = "_BackApp"
   private val skipAction = "_skip"
 
-
   /**
     * 根据类名初始化插件. 插件可以使用java编写. 继承自Plugin即可
     */
@@ -1019,12 +1018,13 @@ class Crawler {
     saveElementScreenshot()
     store.saveReqTime(new SimpleDateFormat("YYYY/MM/dd HH:mm:ss.SSS").format(new Date()))
 
+    //todo: 重构为when的action列表
     element.getAction match {
       case "_Log" | "_Start" => {
         log.info("just log")
         log.info(TData.toJson(element))
       }
-      case this.backAction => {
+      case action if action==this.backAction || action=="back" => {
         log.info("back")
         back()
       }
@@ -1072,7 +1072,7 @@ class Crawler {
         //todo: tap的缺点就是点击元素的时候容易点击到元素上层的控件
 
         log.info(s"need input ${str}")
-        driver.findElementByURI(element, conf.findBy) match {
+        driver.findElement(element, conf.findBy) match {
           case null => {
             log.error(s"not found ${element}")
             element.setAction("_notFound")

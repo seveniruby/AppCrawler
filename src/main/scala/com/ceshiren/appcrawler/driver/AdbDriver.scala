@@ -173,7 +173,7 @@ class AdbDriver extends ReactWebDriver {
     back()
   }
 
-  override def findElementsByURI(element: URIElement, findBy: String): List[AnyRef] = {
+  override def findElements(element: URIElement, findBy: String): List[AnyRef] = {
     List(element)
   }
 
