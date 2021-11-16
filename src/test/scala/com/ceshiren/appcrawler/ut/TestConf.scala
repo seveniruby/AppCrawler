@@ -37,20 +37,6 @@ class TestConf extends FunSuite  with Matchers{
   }
 
 
-
-  test("yaml save"){
-    val conf=new CrawlerConf
-    conf.beforeStartWait=100
-    val yaml=conf.toYaml()
-    log.info(yaml)
-
-    val conf2=new CrawlerConf
-    conf2.loadYaml(yaml)
-    conf2.beforeStartWait should be equals(conf.beforeStartWait)
-    conf2.beforeStartWait should be equals(100)
-
-  }
-
   test("one line yaml"){
     val conf=new CrawlerConf().loadYaml("blackList: [ {xpath: action_night}, {xpath: action_setting} ]")
     println(conf.selectedList)

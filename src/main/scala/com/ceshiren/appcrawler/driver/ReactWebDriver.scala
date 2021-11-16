@@ -98,6 +98,7 @@ abstract class ReactWebDriver {
           log.trace("get raw page source success")
           //          log.trace(v)
           //todo: wda返回的不是标准的xml
+          log.debug(v)
           val xmlStr = v match {
             //todo: 更严格判断
             case blank if blank.getBytes.length < 500 => {
@@ -220,6 +221,10 @@ abstract class ReactWebDriver {
 
   def existElement(): Boolean = {
     currentURIElement != null
+  }
+
+  def setWaitTimeOut(timeout: Long ): Unit ={
+
   }
 
   //todo: 未完成
