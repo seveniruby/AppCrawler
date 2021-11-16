@@ -146,8 +146,8 @@ class Crawler {
 
     log.info(s"platformName=${platformName} driver=${driver}")
     log.info(AppCrawler.banner)
-    log.info("waiting for app load")
-    Thread.sleep(conf.beforeStartWait)
+    waitAppLoaded()
+
     log.info(s"driver=${existDriver}")
     log.info("get screen info")
     driver.getDeviceInfo()
@@ -174,6 +174,24 @@ class Crawler {
 
   }
 
+  def waitAppLoaded(): Unit = {
+    log.info(s"start wait app loaded timeout = ${conf.implicitlyWaitApp}")
+    asyncTask(timeout = conf.implicitlyWaitApp / 1000, name = "waitAppLoaded") {
+      var loaded = false
+      do {
+        log.info("wait for app loaded")
+        Thread.sleep(1000)
+        refreshPage()
+        loaded = conf.waitAppLoaded.map(step => {
+          driver.page.getNodeListByKey(step.getXPath())
+        }).forall(_.nonEmpty)
+      }
+      while (!loaded)
+      log.info("app loaded")
+    }
+    log.info("wait finish")
+  }
+
   def crawlWithRetry(depth: Int): Unit = {
     //清空堆栈 开始重新计数
     conf.maxDepth = depth
@@ -181,6 +199,7 @@ class Crawler {
     urlStack.clear()
     refreshPage()
     handleCtrlC()
+    driver.setWaitTimeOut(conf.implicitlyWaitCrawl)
 
     //启动第一次
     var errorCount = 1
@@ -222,8 +241,7 @@ class Crawler {
     conf.capability ++= Map("dontStopAppOnReset" -> "true")
     conf.capability ++= Map("noReset" -> "true")
     setupAppium()
-    //todo: 采用轮询
-    Thread.sleep(conf.beforeStartWait)
+    waitAppLoaded()
     firstRefresh()
   }
 
@@ -259,6 +277,7 @@ class Crawler {
 
   def runSteps(): Unit = {
     log.info("run testcases")
+    driver.setWaitTimeOut(conf.implicitlyWaitTestCase)
     new AutomationSuite().execute("run steps", ConfigMap("crawler" -> this))
   }
 
@@ -1062,8 +1081,6 @@ class Crawler {
       case this.backAppAction => {
         log.info("backApp")
         driver.launchApp()
-        //todo: 改进等待
-        Thread.sleep(conf.beforeStartWait)
       }
       case this.afterAllAction => {
         if (conf.afterAll != null) {

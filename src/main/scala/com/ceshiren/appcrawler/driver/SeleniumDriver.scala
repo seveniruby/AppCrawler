@@ -223,5 +223,9 @@ class SeleniumDriver extends ReactWebDriver{
     capabilities.setCapability(key, value)
   }
 
+  override def setWaitTimeOut(timeout: Long): Unit = {
+    driver.manage().timeouts().implicitlyWait(timeout, TimeUnit.MILLISECONDS)
+  }
+
 }
 
