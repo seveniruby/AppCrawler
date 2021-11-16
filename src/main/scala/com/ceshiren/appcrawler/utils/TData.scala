@@ -45,7 +45,7 @@ object TData {
 
   def toYaml(data: Any): String = {
     val mapper = new ObjectMapper(new YAMLFactory())
-    //    mapper.registerModule(DefaultScalaModule)
+    mapper.registerModule(DefaultScalaModule)
     mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data)
   }
@@ -85,7 +85,6 @@ object TData {
   def toXML(data: Any, root: String = "xml"): String = {
     val mapper = new XmlMapper()
     mapper.registerModule(new JaxbAnnotationModule)
-    mapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
     //mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
     mapper.registerModule(DefaultScalaModule)
     mapper.writerWithDefaultPrettyPrinter().withRootName(root).writeValueAsString(data)
@@ -397,23 +396,9 @@ object TData {
     }
   }
 
-  def md5(what: Int, data: String): String = {
-    var dataFormat = ""
-    what match {
-      case 1 =>
-        dataFormat = data
-      case 2 =>
-        val nodeList = AppCrawler.crawler.driver.getNodeListByKey("//*[not(ancestor-or-self::UIAStatusBar)]")
-        val schemaBlackList = List()
-        dataFormat = nodeList.filter(node => !schemaBlackList.contains(node("name()"))).
-          map(node => node.getOrElse("xpath", "")
-            + node.getOrElse("value", "").toString
-            + node.getOrElse("selected", "").toString
-            + node.getOrElse("text", "").toString
-          ).mkString("\n")
-    }
-    if (dataFormat != "") {
-      java.security.MessageDigest.getInstance("MD5").digest(dataFormat.getBytes("UTF-8")).map(0xFF & _).map {
+  def md5(data: String): String = {
+    if (data != null && data.nonEmpty) {
+      java.security.MessageDigest.getInstance("MD5").digest(data.getBytes("UTF-8")).map(0xFF & _).map {
         "%02x".format(_)
       }.foldLeft("") {
         _ + _

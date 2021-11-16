@@ -72,7 +72,10 @@ object DynamicEval {
     log.info(s"eval ${command}")
     Try(DynamicEval.eval(command)) match {
       case Success(v) => log.info(v)
-      case Failure(e) => log.warn(e.getMessage)
+      case Failure(e) => {
+        log.error(e.getMessage)
+        e.printStackTrace()
+      }
     }
   }
 

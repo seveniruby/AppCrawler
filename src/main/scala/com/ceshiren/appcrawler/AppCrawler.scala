@@ -1,7 +1,6 @@
 package com.ceshiren.appcrawler
 
 import com.ceshiren.appcrawler.core.{Crawler, CrawlerConf}
-import com.ceshiren.appcrawler.model.URIElementFactory
 import com.ceshiren.appcrawler.plugin.report.{DiffSuite, ReportFactory}
 import com.ceshiren.appcrawler.utils.Log
 import com.ceshiren.appcrawler.utils.Log.log
@@ -17,15 +16,16 @@ import java.nio.charset.Charset
 object AppCrawler {
   val banner =
     """
-      |-------------------------------------------------
-      |appcrawler v2.7.0 全平台自动遍历测试工具
+      |
+      |--------------------------------------------------
+      |appcrawler v2专业版 全平台自动遍历测试工具
+      |专业版：appcrawler专业版目标是为企业打造业务测试智能机器人
       |Q&A: https://ceshiren.com/c/opensource/appcrawler
-      |author: 思寒 seveniruby@霍格沃兹测试开发学社
-      |-------------------------------------------------
+      |author: 测吧（北京）科技有限公司
+      |--------------------------------------------------
       |""".stripMargin
 
   var crawler = new Crawler
-  var factory: URIElementFactory = _
   val startTime = new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
 
   case class Param(
@@ -242,11 +242,11 @@ object AppCrawler {
             }"
         }
 
-        factory = new URIElementFactory()
         //todo: 用switch替代
         //重新生成功能
         if (config.report != "" && config.candidate.isEmpty && config.template == "") {
-
+          log.debug("crawler conf")
+          log.debug(crawlerConf.toYaml())
           val report = ReportFactory.getReportEngine("scalatest")
 
           ReportFactory.showCancel = crawlerConf.showCancel

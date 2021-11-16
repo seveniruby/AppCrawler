@@ -3,6 +3,7 @@ package com.ceshiren.appcrawler.driver
 import com.ceshiren.appcrawler.model.URIElement
 import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.DynamicEval
+import com.ceshiren.appcrawler.utils.LogicUtils.asyncTask
 import com.ceshiren.appcrawler.{AppCrawler, AppiumTouchAction}
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.android.nativekey.{AndroidKey, KeyEvent}
@@ -118,7 +119,9 @@ class AppiumClient extends SeleniumDriver {
     new AppiumTouchAction(appiumDriver).tap(currentElement)
     this
   }
-
+  override def tapLocation(x: Int, y: Int): this.type = {
+    this
+  }
   override def longTap(): this.type = {
     appiumDriver.performTouchAction(
       (new TouchAction(appiumDriver)
@@ -131,7 +134,7 @@ class AppiumClient extends SeleniumDriver {
     this
   }
 
-  override def findElementsByURI(element: URIElement, findBy: String): List[AnyRef] = {
+  override def findElements(element: URIElement, findBy: String): List[AnyRef] = {
     //todo: 优化速度，个别时候定位可能超过10s
     //todo: 多种策略，使用findElement 使用xml直接分析location 生成平台特定的定位符
 
@@ -224,7 +227,8 @@ class AppiumClient extends SeleniumDriver {
   override def launchApp(): Unit = {
     appiumDriver.launchApp()
   }
-
+  override def reStartDriver(): Unit={
+  }
   override def getPageSource(): String = {
     appiumDriver.getPageSource
   }

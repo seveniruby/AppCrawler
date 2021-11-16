@@ -4,6 +4,7 @@ import com.ceshiren.appcrawler.AppCrawler
 import com.ceshiren.appcrawler.core.CrawlerConf
 import com.ceshiren.appcrawler.model.URIElement
 import com.ceshiren.appcrawler.utils.Log.log
+import com.ceshiren.appcrawler.utils.LogicUtils.tryAndCatch
 import com.ceshiren.appcrawler.utils.{DynamicEval, TData}
 import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
@@ -69,39 +70,6 @@ class SeleniumDriver extends ReactWebDriver{
     (driver.asInstanceOf[TakesScreenshot]).getScreenshotAs(OutputType.FILE)
   }
 
-  //todo: 重构到独立的trait中
-  override def mark(fileName: String, newImageName:String,  x: Int, y: Int, w: Int, h: Int): Unit = {
-    val file = new java.io.File(fileName)
-    log.info(s"read from ${fileName}")
-    val img = ImageIO.read(file)
-    val graph = img.createGraphics()
-
-    if(img.getWidth>screenWidth){
-      log.info("scale the origin image")
-      graph.drawImage(img, 0, 0, screenWidth, screenHeight, null)
-    }
-    graph.setStroke(new BasicStroke(5))
-    graph.setColor(Color.RED)
-    graph.drawRect(x, y, w, h)
-    graph.dispose()
-
-    log.info(s"write png ${fileName}")
-    if(img.getWidth>screenWidth){
-      log.info("scale the origin image and save")
-      //fixed: RasterFormatException: (y + height) is outside of Raster 横屏需要处理异常
-      val subImg=tryAndCatch(img.getSubimage(0, 0, screenWidth, screenHeight)) match {
-        case Some(value)=>value
-        case None => {
-          getDeviceInfo()
-          img.getSubimage(0, 0, screenWidth, screenHeight)
-        }
-      }
-      ImageIO.write(subImg, "png", new java.io.File(newImageName))
-    }else{
-      log.info(s"ImageIO.write newImageName ${newImageName}")
-      ImageIO.write(img, "png", new java.io.File(newImageName))
-    }
-  }
   override def clickLocation(): Unit = {
     val point=currentURIElement.center()
     new Actions(driver).moveByOffset(point.x, point.y).click().perform();
@@ -113,7 +81,9 @@ class SeleniumDriver extends ReactWebDriver{
   override def tap(): this.type = {
     click()
   }
-
+  override def tapLocation(x: Int, y: Int): this.type = {
+    this
+  }
   override def longTap(): this.type = {
     log.error("not implement")
     this
@@ -190,7 +160,7 @@ class SeleniumDriver extends ReactWebDriver{
   }
 
 
-  override def findElementsByURI(element: URIElement, findBy: String): List[AnyRef] = {
+  override def findElements(element: URIElement, findBy: String): List[AnyRef] = {
     //todo: 优化速度，个别时候定位可能超过10s
     //todo: 多种策略，使用findElement 使用xml直接分析location 生成平台特定的定位符
 
@@ -212,8 +182,8 @@ class SeleniumDriver extends ReactWebDriver{
     }
   }
 
-  override def findElementByURI(element: URIElement, findBy:String): AnyRef = {
-    currentElement=super.findElementByURI(element,findBy).asInstanceOf[WebElement]
+  override def findElement(element: URIElement, findBy:String): AnyRef = {
+    currentElement=super.findElement(element,findBy).asInstanceOf[WebElement]
     currentElement
   }
 
@@ -246,7 +216,8 @@ class SeleniumDriver extends ReactWebDriver{
     //driver.get(capabilities.getCapability("app").toString)
     back()
   }
-
+  override def reStartDriver(): Unit ={
+  }
 
   def config(key: String, value: Any): Unit = {
     capabilities.setCapability(key, value)

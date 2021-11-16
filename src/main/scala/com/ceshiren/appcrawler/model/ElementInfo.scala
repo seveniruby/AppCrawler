@@ -1,8 +1,11 @@
-package com.ceshiren.appcrawler.core
+package com.ceshiren.appcrawler.model
 
 import com.ceshiren.appcrawler.AppCrawler
+import com.ceshiren.appcrawler.core.{Status, StatusType}
 import com.ceshiren.appcrawler.core.Status.Status
-import com.ceshiren.appcrawler.model.URIElement
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
+import net.minidev.json.annotate.JsonIgnore
 
 case class ElementInfo(
                         var reqDom: String = "",
@@ -14,8 +17,9 @@ case class ElementInfo(
                         var reqTime: String = "",
                         var resTime: String = "",
                         var clickedIndex: Int = -1,
-                        var action: Status = Status.READY,
-                        var element: URIElement = AppCrawler.factory.generateElement
+                        @JsonScalaEnumeration(classOf[StatusType])
+                        var action: Status.Status = Status.READY,
+                        var element: URIElement =new URIElement()
                       ) {
   def this() {
     this("", "", "", "", "", "", "", "", -1, Status.READY, null)

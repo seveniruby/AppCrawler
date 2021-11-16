@@ -2,7 +2,7 @@ package com.ceshiren.appcrawler.ut
 
 import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.core.Crawler
-import com.ceshiren.appcrawler.model.URIElement
+import com.ceshiren.appcrawler.model.{PageSource, URIElement}
 import com.ceshiren.appcrawler.utils.XPathUtil
 import org.scalatest.{FunSuite, Matchers}
 
@@ -281,8 +281,7 @@ class TestCrawler extends FunSuite with Matchers{
       """.stripMargin
 
     val appium=new Crawler
-    appium.driver.currentPageSource=xml
-    XPathUtil.toDocument(appium.driver.currentPageSource)
+    appium.driver.page=PageSource.getPagefromXML(xml)
     println(appium.driver.getNodeListByKey("//UIAWindow[1]//*[@visible='true' and @name!='']"))
     println(appium.driver.getNodeListByKey("//UIAWindow[1]//*[@visible='true' and @value!='']"))
   }

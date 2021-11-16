@@ -4,6 +4,7 @@ import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.core.Crawler
 import com.ceshiren.appcrawler.model.{PageSource, URIElement}
 import com.ceshiren.appcrawler.utils.Log.log
+import com.ceshiren.appcrawler.utils.LogicUtils.{asyncTask, handleException}
 import com.ceshiren.appcrawler.utils.{TData, XPathUtil}
 import org.openqa.selenium.Rectangle
 
@@ -13,8 +14,8 @@ import scala.collection.mutable.ListBuffer
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Created by seveniruby on 2017/4/17.
-  */
+ * Created by seveniruby on 2017/4/17.
+ */
 
 //todo: 用标准的class代替，用trait会让很多java工程师无法理解。
 abstract class ReactWebDriver {
@@ -22,24 +23,22 @@ abstract class ReactWebDriver {
   var screenWidth = 0
   var screenHeight = 0
   var page: PageSource = null;
-  var currentPageSource: String = ""
-  val appiumExecResults = ListBuffer[String]()
+  val appiumExecResults: ListBuffer[String] = ListBuffer[String]()
 
   var loc = ""
   var index = 0
-  var currentURIElement: URIElement = AppCrawler.factory.generateElement
+  var currentURIElement: URIElement = null
 
   var imagesDir = "images"
   var platformName = ""
 
+  def findElements(element: URIElement, findBy: String = platformName): List[AnyRef]
 
-  def findElementsByURI(element: URIElement, findBy: String = platformName): List[AnyRef]
-
-  def findElementByURI(element: URIElement, findBy: String = platformName): AnyRef = {
+  def findElement(element: URIElement, findBy: String = platformName): AnyRef = {
     //todo: 用其他定位方式优化
     log.info(s"find by uri element= ${element.elementUri()}")
     currentURIElement = element
-    asyncTask(name = "findElementsByURI")(findElementsByURI(element, findBy)) match {
+    asyncTask(name = "findElementsByURI")(findElements(element, findBy)) match {
       case Left(v) => {
         val arr = v.distinct
         arr.length match {
@@ -87,8 +86,7 @@ abstract class ReactWebDriver {
     * </hierarchy>
     *
     */
-  def getPageSourceWithRetry(): String = {
-    currentPageSource = null
+  def getPageSourceWithRetry(): PageSource = {
     page = null
     log.info("start to get page source from appium")
     //获取页面结构, 最多重试3次
@@ -121,24 +119,11 @@ abstract class ReactWebDriver {
               text
             }
           }
-          Try(XPathUtil.toDocument(xmlStr)) match {
-            case Success(v) => {
-              page=new PageSource()
-              page.fromDocument(v)
-              currentPageSource = XPathUtil.toPrettyXML(xmlStr)
-              //不用循环多次
-              log.debug("get page source success")
-              //              log.debug(currentPageSource)
-              return currentPageSource
-            }
-            case Failure(e) => {
-              log.warn("convert to xml fail")
-              log.warn(xmlStr)
-              page = null
-              currentPageSource = null
-            }
-          }
 
+          page = PageSource.getPagefromXML(xmlStr)
+          if (page != null) {
+            return page
+          }
         }
         case Right(e) => {
           errorCount += 1
@@ -150,7 +135,8 @@ abstract class ReactWebDriver {
       log.warn(s"retry ${i} times after 5s")
       Thread.sleep(5000)
     })
-    currentPageSource
+
+    page
   }
 
   def clickLocation(): Unit = {
@@ -163,8 +149,13 @@ abstract class ReactWebDriver {
 
   def tap(): this.type
 
+  def tapLocation(x: Int, y: Int): this.type
+
   def click(): this.type = {
     this
+  }
+
+  def reStartDriver(): Unit = {
   }
 
   def longTap(): this.type = {
@@ -225,83 +216,27 @@ abstract class ReactWebDriver {
     ""
   }
 
-  def asyncTask[T](timeout: Int = 30, name: String = "", needThrow: Boolean = false)(callback: => T): Either[T, Throwable] = {
-    //todo: 异步线程消耗资源厉害，需要改进
+
+
+  def existElement(): Boolean = {
+    currentURIElement != null
+  }
+
+  //todo: 未完成
+  def wait(key: String, timeout: Long = 5000): Unit = {
+    getPageSourceWithRetry()
     val start = System.currentTimeMillis()
-    Try({
-      val task = Executors.newSingleThreadExecutor().submit(new Callable[T]() {
-        def call(): T = {
-          callback
-        }
-      })
-      if (timeout < 0) {
-        task.get()
-      } else {
-        task.get(timeout, TimeUnit.SECONDS)
-      }
-
-    }) match {
-      case Success(v) => {
-        val end = System.currentTimeMillis()
-        appiumExecResults.append("success")
-        val use = (end - start) / 1000d
-        if (use >= 0.5) {
-          log.info(s"use time $use seconds name=${name} result=success")
-        }
-        Left(v)
-      }
-      case Failure(e) => {
-        val end = System.currentTimeMillis()
-        val use = (end - start) / 1000d
-        if (use >= 1) {
-          log.info(s"use time $use seconds name=${name} result=error")
-        }
-        if (needThrow) {
-          throw e
-        }
-        e match {
-          case e: TimeoutException => {
-            log.error(s"${timeout} seconds timeout")
-          }
-          case _ => {
-            handleException(e)
-          }
-        }
-        Right(e)
-      }
-    }
-  }
-
-  def handleException(e: Throwable): Unit = {
-    var exception = e
+    var end: Long = 0
+    var nodeList:List[Map[String ,Object]]=List()
     do {
-      log.error(exception.getLocalizedMessage)
-      exception.getStackTrace.foreach(log.error)
-      if (exception.getCause != null) {
-        log.error("find more cause")
-      } else {
-        log.error("exception finish")
-      }
-      exception = exception.getCause
-    } while (exception != null)
-  }
-
-  def tryAndCatch[T](r: => T): Option[T] = {
-    Try(r) match {
-      case Success(v) => {
-        log.info("retry execute success")
-        Some(v)
-      }
-      case Failure(e) => {
-        handleException(e)
-        None
-      }
-    }
+      log.trace(s"find ${key}")
+      nodeList=page.getNodeListByKey(key)
+      end = System.currentTimeMillis()
+      Thread.sleep(500)
+    } while (end - start < timeout && nodeList.isEmpty )
   }
 
   def event(keycode: String): Unit = {}
-
-  def mark(fileName: String, newImageName: String, x: Int, y: Int, w: Int, h: Int): Unit
 
   def getRect(): Rectangle
 
