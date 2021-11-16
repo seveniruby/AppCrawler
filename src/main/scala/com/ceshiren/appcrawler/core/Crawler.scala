@@ -5,6 +5,7 @@ import com.ceshiren.appcrawler.driver._
 import com.ceshiren.appcrawler.model._
 import com.ceshiren.appcrawler.plugin.Plugin
 import com.ceshiren.appcrawler.utils.Log.log
+import com.ceshiren.appcrawler.utils.LogicUtils.{asyncTask, handleException}
 import com.ceshiren.appcrawler.utils._
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -59,8 +60,6 @@ class Crawler {
   val appNameRecord = new DataRecord()
   protected val contentHash = new DataRecord
 
-  protected val webViewRecord = new DataRecord
-
   private val refreshResult = new DataRecord
 
   private var lastBtnIndex = 3;
@@ -69,6 +68,8 @@ class Crawler {
   private val afterAllAction = "_AfterAll"
   private val backAppAction = "_BackApp"
   private val skipAction = "_skip"
+
+  private var timePreCrawlStart = System.currentTimeMillis();
 
   /**
     * 根据类名初始化插件. 插件可以使用java编写. 继承自Plugin即可
@@ -107,8 +108,7 @@ class Crawler {
     */
   def loadConf(crawlerConf: CrawlerConf): Unit = {
     conf = crawlerConf
-    AppCrawler.factory = new URIElementFactory()
-    store = AppCrawler.factory.generateElementStore
+    store = new URIElementStore()
   }
 
   def loadConf(file: String): Unit = {
@@ -238,11 +238,11 @@ class Crawler {
   }
 
   def getEventElement(actionName: String): URIElement = {
-    val defaultElement = AppCrawler.factory.generateElement(currentUrl, "", "", "", "", "", "", "", "", "", "/*/*", "", 0, 0, driver.screenWidth, driver.screenHeight, "")
-    val element = driver.asyncTask()(
+    val defaultElement = new URIElement(currentUrl, "", "", "", "", "", "", "", "", "", "", "/*/*", "", 0, 0, driver.screenWidth, driver.screenHeight, "")
+    val element = asyncTask()(
       //刷新失败时会报错，所以增加一个判断
       if (driver.page != null) {
-        AppCrawler.factory.generateElement(driver.page.getNodeListByKey("/*/*").head, currentUrl)
+        new URIElement(driver.page.getNodeListByKey("/*/*").head, currentUrl)
       } else {
         defaultElement
       }
@@ -331,7 +331,7 @@ class Crawler {
     */
   def getSchema(): String = {
     val nodeList = driver.getNodeListByKey("//*[not(ancestor-or-self::UIAStatusBar)]")
-    TData.md5(1, nodeList.map(getUrlElementByMap(_).getAncestor()).distinct.mkString("\n"))
+    TData.md5(nodeList.map(getUrlElementByMap(_).getAncestor()).distinct.mkString("\n"))
   }
 
   def getUri(): String = {
@@ -365,7 +365,7 @@ class Crawler {
     * @return
     */
   def getUrlElementByMap(nodeMap: immutable.Map[String, Any]): URIElement = {
-    AppCrawler.factory.generateElement(nodeMap, currentUrl)
+    new URIElement(nodeMap, currentUrl)
   }
 
   def needBackToApp(): Option[URIElement] = {
@@ -481,37 +481,58 @@ class Crawler {
     var lastElements = List[URIElement]()
     var selectedElements = List[URIElement]()
     var blackElements = List[URIElement]()
-    var lastSize = 0
-
-    page.demo()
+    var topWebViewElements = List[URIElement]()
+    var preSize = 0
 
     conf.selectedList.foreach(step => {
       log.trace(s"selectedList xpath =  ${step.getXPath()}")
 
       val temp = page.getNodeListByKey(step.getXPath())
-        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
+        .map(e => new URIElement(e, currentUrl))
       temp.foreach(x => log.trace(x.toString))
 
       selectedElements ++= temp
     })
     selectedElements = selectedElements.distinct
     log.info(s"selected nodes size = ${selectedElements.size}")
-    lastSize = selectedElements.size
+    preSize = selectedElements.size
+
+    var webviewList = page.getNodeListByKey("//*[contains(@class, 'WebView')]")
+      .map(e => new URIElement(e, currentUrl))
+    webviewList = webviewList.sortWith(_.latest.toInt < _.latest.toInt)
+    webviewList.foreach(x => log.trace(x.toString))
+    webviewList.headOption match {
+      case Some(value) => {
+        if (value.latest != null || value.toString.nonEmpty) {
+          log.info(s"has webview with latest ${value.latest}")
+          topWebViewElements = page.getNodeListByKey(s"//*[contains(@class, 'WebView') and @latest='${value.latest}']//*[not(*)]")
+            .map(e => new URIElement(e, currentUrl))
+          selectedElements = selectedElements.intersect(topWebViewElements)
+
+          log.info(s"selectedElements in top webview elements size = ${selectedElements.size}")
+          if (selectedElements.size < preSize) {
+            selectedElements.foreach(log.trace)
+            preSize = selectedElements.size
+          }
+        }
+      }
+      case None => {}
+    }
 
     //remove blackList
     conf.blackList.foreach(step => {
       log.trace(s"blackList xpath =  ${step.getXPath()}")
       val temp = page.getNodeListByKey(step.getXPath())
-        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
+        .map(e => new URIElement(e, currentUrl))
       temp.foreach(log.trace)
       blackElements ++= temp
     })
     blackElements = blackElements.distinct
     selectedElements = selectedElements diff blackElements
     log.info(s"selectedElements - black elements size = ${selectedElements.size}")
-    if (selectedElements.size < lastSize) {
+    if (selectedElements.size < preSize) {
       selectedElements.foreach(log.trace)
-      lastSize = selectedElements.size
+      preSize = selectedElements.size
     }
 
     //done: 放到前面加速
@@ -519,47 +540,44 @@ class Crawler {
     if (!skipSmall) {
       selectedElements = selectedElements.filter(isSmall(_) == false)
       log.info(s"selectedElements - small elements size = ${selectedElements.size}")
-      if (selectedElements.size < lastSize) {
+      if (selectedElements.size < preSize) {
         selectedElements.foreach(log.trace)
-        lastSize = selectedElements.size
+        preSize = selectedElements.size
       }
     }
 
-    //去掉back菜单
+    //去掉back菜单  todo: 追加到尾部即可
     selectedElements = selectedElements diff conf.backButton.flatMap(step => getURIElementsByStep(step))
     log.info(s"selectedElements - backButton size=${selectedElements.length}")
-    if (selectedElements.size < lastSize) {
+    if (selectedElements.size < preSize) {
       selectedElements.foreach(log.trace)
-      lastSize = selectedElements.size
+      preSize = selectedElements.size
     }
 
     //过滤已经被点击过的元素
     selectedElements = selectedElements.filter(!store.isClicked(_))
     log.info(s"selectedElements - clicked size=${selectedElements.size}")
-    if (selectedElements.size < lastSize) {
+    if (selectedElements.size < preSize) {
       selectedElements.foreach(log.trace)
-      lastSize = selectedElements.size
+      preSize = selectedElements.size
     }
 
     selectedElements = selectedElements.filter(!store.isSkipped(_))
     log.info(s"selectedElements - skiped fresh elements size=${selectedElements.length}")
-    if (selectedElements.size < lastSize) {
+    if (selectedElements.size < preSize) {
       selectedElements.foreach(e => {
         log.trace(e)
         //记录未被点击的元素
         store.saveElement(e)
       })
-      lastSize = selectedElements.size
+      preSize = selectedElements.size
     }
-
-    //根据属性进行基本排序
-    selectedElements = sortByAttribute(selectedElements)
 
     //sort
     conf.firstList.foreach(step => {
       log.trace(s"firstList xpath = ${step.getXPath()}")
       val temp = page.getNodeListByKey(step.getXPath())
-        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
+        .map(e => new URIElement(e, currentUrl))
         .intersect(selectedElements)
       temp.foreach(log.trace)
       firstElements ++= temp
@@ -568,7 +586,7 @@ class Crawler {
     conf.lastList.foreach(step => {
       log.trace(s"lastList xpath = ${step.getXPath()}")
       val temp = page.getNodeListByKey(step.getXPath())
-        .map(e => AppCrawler.factory.generateElement(e, currentUrl))
+        .map(e => new URIElement(e, currentUrl))
         .intersect(selectedElements)
       temp.foreach(log.trace)
       lastElements ++= temp
@@ -578,14 +596,25 @@ class Crawler {
     //去掉不在first和last中的元素
     selectedElements = selectedElements diff firstElements
     selectedElements = selectedElements diff lastElements
+
+    //根据属性进行基本排序
+    firstElements = sortByAttribute(firstElements)
+    lastElements = sortByAttribute(lastElements)
+    selectedElements = sortByAttribute(selectedElements)
+
     //确保不重, 并保证顺序
     all = (firstElements ++ selectedElements ++ lastElements).distinct.filter(isValid)
 
     log.trace(s"sorted nodes length=${all.length}")
-    all.foreach(log.trace)
-    lastSize = all.size
+    all.foreach(e => {
+      log.trace(
+        s"latest=${e.latest} depth=${e.getDepth} selected=${e.selected} list=${e.getAncestor().contains("List")} ${e.elementUri()}"
+      )
+    })
 
-    all.headOption
+    val r = all.headOption
+    log.info(s"next element ${r}")
+    r
   }
 
 
@@ -601,6 +630,12 @@ class Crawler {
               _.getDepth.toInt
           )
         }
+        case "latest" => {
+          selectedElements = selectedElements.sortWith(
+            _.latest.toInt <
+              _.latest.toInt
+          )
+        }
         case "selected" => {
           //todo:同级延后，在未实现之前，先通过lastList去显式声明那些菜单应该最后遍历
           //selected=false的优先遍历
@@ -612,12 +647,12 @@ class Crawler {
         case "list" => {
           //列表内元素优先遍历
           selectedElements = selectedElements.sortWith(
-            _.getAncestor.contains("List") >
-              _.getAncestor.contains("List")
+            _.getAncestor().contains("List") >
+              _.getAncestor().contains("List")
           )
           selectedElements = selectedElements.sortWith(
-            _.getAncestor.contains("RecyclerView") >
-              _.getAncestor.contains("RecyclerView")
+            _.getAncestor().contains("RecyclerView") >
+              _.getAncestor().contains("RecyclerView")
           )
         }
         //todo: 居中的优先遍历
@@ -625,21 +660,10 @@ class Crawler {
       }
       log.trace(s"sort by ${attribute}")
       selectedElements.foreach(e => log.trace(
-        s"depth=${e.getDepth}" +
-          s" selected=${e.elementUri()}" +
-          s" list=${e.getAncestor.contains("List")} e=${e}")
-      )
+        s"latest=${e.latest} depth=${e.getDepth} selected=${e.selected} list=${e.getAncestor.contains("List")} ${e.elementUri()}"
+      ))
     })
     selectedElements
-  }
-
-  def ifWebViewPage(): Unit = {
-
-    if (driver.page.getNodeListByKey("//*[contains(@class, 'WebView')]").nonEmpty) {
-      webViewRecord.append(true)
-    } else {
-      webViewRecord.append(false)
-    }
   }
 
   //todo: 刷新失败需要一个异常处理逻辑
@@ -691,7 +715,8 @@ class Crawler {
     //log.trace(s"windows=${windows}")
 
     // 通过标识what取对应的md5值
-    contentHash.append(TData.md5(2, ""))
+
+    contentHash.append(TData.md5(driver.page.toXML))
     log.info(s"currentContentHash=${contentHash.last()} lastContentHash=${contentHash.pre()}")
     if (contentHash.isDiff()) {
       log.info("ui change")
@@ -819,7 +844,7 @@ class Crawler {
   def getURIElementsByStep(step: Step): List[URIElement] = {
     driver.getNodeListByKey(step.getXPath())
       .map(e => {
-        val urlElement = AppCrawler.factory.generateElement(e, currentUrl)
+        val urlElement = new URIElement(e, currentUrl)
         urlElement.setAction(step.getAction())
         urlElement
       }).filter(isValid)
@@ -911,6 +936,12 @@ class Crawler {
     */
   @tailrec
   final def crawl(): Unit = {
+    val timeCurCrawlStart = System.currentTimeMillis()
+    if (timePreCrawlStart != 0) {
+      log.info(s"crawl use ${timeCurCrawlStart - timePreCrawlStart} ms")
+    }
+    timePreCrawlStart = timeCurCrawlStart
+
     if (exitCrawl) {
       log.fatal("exitCrawl=true, return")
       return
@@ -1024,7 +1055,7 @@ class Crawler {
         log.info("just log")
         log.info(TData.toJson(element))
       }
-      case action if action==this.backAction || action=="back" => {
+      case action if action == this.backAction || action == "back" => {
         log.info("back")
         back()
       }
@@ -1078,7 +1109,7 @@ class Crawler {
             element.setAction("_notFound")
           }
           case _ => {
-            driver.asyncTask(name = "action") {
+            asyncTask(name = "action") {
               //支持各种动作
               str match {
                 case "" => {
@@ -1135,12 +1166,12 @@ class Crawler {
   def saveElementScreenshot(): Unit = {
     if (conf.screenshot && store.getClickedElementsList.size > 1) {
       store.saveReqImg(getBasePathName() + ".click.png")
-      val originImageName = getBasePathName(2) + ".clicked.png"
       val newImageName = getBasePathName() + ".click.png"
       val rect = driver.getRect()
-      log.info(s"mark ${originImageName} to ${newImageName}")
-      driver.asyncTask(name = "mark") {
-        driver.mark(originImageName, newImageName, rect.x, rect.y, rect.width, rect.height)
+      log.info(s"draw element in ${newImageName}")
+
+      if (ScreenShot.last() != null) {
+        ScreenShot.last().clip(newImageName, rect.x, rect.y, rect.width, rect.height, driver.screenWidth, driver.screenHeight)
       }
     }
   }
@@ -1165,7 +1196,7 @@ class Crawler {
     val domPath = getBasePathName() + ".clicked.xml"
     //感谢QQ:434715737的反馈
     log.info(s"save to ${domPath}")
-    driver.asyncTask(name = "saveDom") {
+    asyncTask(name = "saveDom") {
       File(domPath).writeAll(driver.page.toXML)
     }
   }
@@ -1178,36 +1209,23 @@ class Crawler {
       return
     }
     if (conf.screenshot || force) {
-      Thread.sleep(100)
       log.info("start screenshot")
-      driver.asyncTask(60, name = "screenshot") {
-        val imgFile = if (store.isDiff()) {
+      if (!store.isDiff() && ScreenShot.last() != null) {
+        ScreenShot.last().saveToFile(originPath)
+      } else {
+        asyncTask(60, name = "screenshot") {
           log.info("ui change screenshot again")
-          driver.screenshot()
-        } else {
-          log.info("ui no change")
-          val preImageFileName = getBasePathName(2) + ".clicked.png"
-          val preImageFile = new java.io.File(preImageFileName)
-          if (preImageFile.exists() && preImageFileName != originPath) {
-            log.info(s"copy from pre image file ${preImageFileName}")
-            //FileUtils.copyFile(preImageFile, markImageFile)
-            preImageFile
-          } else {
-            driver.screenshot()
+          val screenShot = driver.screenshot()
+          ScreenShot.save(screenShot)
+          ScreenShot.last().saveToFile(originPath)
+        } match {
+          case Left(x) => {
+            log.info("screenshot success")
           }
-        }
-        if (imgFile.getAbsolutePath == new java.io.File(originPath).getAbsolutePath) {
-          log.info(s"${imgFile.getAbsolutePath} same as before")
-        } else {
-          FileUtils.copyFile(imgFile, new java.io.File(originPath))
-        }
-      } match {
-        case Left(x) => {
-          log.info("screenshot success")
-        }
-        case Right(e) => {
-          log.error("screenshot error")
-          log.error(e.getMessage)
+          case Right(e) => {
+            log.error("screenshot error")
+            log.error(e.getMessage)
+          }
         }
       }
     } else {
@@ -1226,7 +1244,7 @@ class Crawler {
         log.warn("two back action too close")
         Thread.sleep(2000)
       }
-      driver.asyncTask(name = "back") {
+      asyncTask(name = "back") {
         log.info("navigate back")
         driver.back()
       }
@@ -1266,7 +1284,7 @@ class Crawler {
     Try(pluginClasses.foreach(_.stop())) match {
       case Success(v) => {}
       case Failure(e) => {
-        driver.handleException(e)
+        handleException(e)
       }
     }
     log.info("generate report finish")

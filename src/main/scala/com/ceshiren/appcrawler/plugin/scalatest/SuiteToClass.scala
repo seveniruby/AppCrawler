@@ -2,6 +2,7 @@ package com.ceshiren.appcrawler.plugin.scalatest
 
 import com.ceshiren.appcrawler.AppCrawler
 import com.ceshiren.appcrawler.utils.Log.log
+import com.ceshiren.appcrawler.utils.LogicUtils.handleException
 import javassist.{ClassPool, CtConstructor}
 
 import scala.jdk.CollectionConverters._
@@ -56,7 +57,7 @@ object SuiteToClass  {
 
       }
       case Failure(e) => {
-        AppCrawler.crawler.driver.handleException(e)
+        handleException(e)
       }
     }
   }

@@ -233,7 +233,7 @@ object XPathUtil {
     val nodeMapList = ListBuffer[Map[String, Any]]()
     node match {
       case nodeList: NodeList => {
-        log.trace("nodeList length {}", nodeList.getLength)
+        log.trace("nodeList length {} with {}", nodeList.getLength, xpath)
         0 until nodeList.getLength foreach (i => {
           val nodeMap = mutable.Map[String, Any]()
           //初始化必须的字段
@@ -279,6 +279,10 @@ object XPathUtil {
             nodeMap("value") = nodeMap("text")
           }
 
+          if (nodeMap.contains("latest")) {
+            nodeMap("latest") = nodeMap("latest")
+          }
+
           //selenium
           if (nodeMap.contains("href")) {
             if (nodeMap.contains("id")) {
@@ -322,7 +326,7 @@ object XPathUtil {
             nodeMap("height") = rect(3).toInt - rect(1).toInt
           }
 
-          if (nodeMap("xpath").toString.nonEmpty && nodeMap("value").toString().size < 50) {
+          if (nodeMap("xpath").toString.nonEmpty) {
             nodeMapList += (nodeMap.toMap)
           }
         })
@@ -332,7 +336,7 @@ object XPathUtil {
         nodeMapList += Map("attribute" -> attr)
       }
     }
-    log.trace("node list length {}", nodeMapList.length)
+    log.trace("filted node list length {}", nodeMapList.length)
     nodeMapList.toList
   }
 
