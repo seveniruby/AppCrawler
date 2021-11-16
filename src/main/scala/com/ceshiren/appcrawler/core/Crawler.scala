@@ -309,7 +309,7 @@ class Crawler {
       }*/
 
       case "csras" => {
-        log.info("user CSRAS CSRAccessibilityService")
+        log.info("user CSRAS csruiautomatorserver")
         driver = new CSRASDriver(url, conf.capability)
       }
       case _ => {
