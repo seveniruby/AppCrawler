@@ -35,8 +35,10 @@ class AutomationSuite extends FunSuite with Matchers with BeforeAndAfterAllConfi
 
       driver.getNodeListByKey(xpath).headOption match {
         case Some(v) => {
+          log.debug(v)
           val ele = new URIElement(v, "Steps")
           ele.setAction(action)
+          log.debug(ele)
           // testcase里的操作也要记录下来
           crawler.beforeElementAction(ele)
           crawler.doElementAction(ele)
