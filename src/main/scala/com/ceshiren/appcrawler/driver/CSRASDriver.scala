@@ -13,12 +13,12 @@ import javax.imageio.ImageIO
 import scala.sys.process._
 
 /**
-  * Created by seveniruby on 18/10/31.
-  */
+ * Created by seveniruby on 18/10/31.
+ */
 class CSRASDriver extends ReactWebDriver {
   DynamicEval.init()
   var conf: CrawlerConf = _
-  private val adb = getAdb()
+  private var adb = ""
   private val session = requests.Session()
 
   //csras本地映射的地址
@@ -36,6 +36,8 @@ class CSRASDriver extends ReactWebDriver {
     activityName = configMap.getOrElse("appActivity", "").toString
     systemPort = configMap.getOrElse("systemPort", "").toString
     uuid = configMap.getOrElse("uuid", "").toString
+    adb = getAdb()
+//    log.info(configMap.toString())
     if (systemPort.equals("")) {
       log.info("No systemPort Set In Config,Use Default Port:7778")
       systemPort = "7778"
@@ -78,18 +80,19 @@ class CSRASDriver extends ReactWebDriver {
     log.info(s"Install Driver To Device From ${otherApps}")
     //安装apk
     shell(s"${adb} install '${otherApps}'")
-    // 给Driver设置权限，使驱动可以自行开启辅助功能
-    shell(s"${adb} shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
+
 
   }
 
-  def setPackage():Unit={
-    val r = session.post(s"${getServerUrl}/package?package=${packageName}").text()
+  def setPackage(): Unit = {
+    val r = session.post(s"${getServerUrl}/package?package=${packageName}")
     log.info(r)
   }
 
   //设备driver连接设置
   def initDriver(): Unit = {
+    // 给Driver设置权限，使驱动可以自行开启辅助功能
+    shell(s"${adb} shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
     // 启动Driver
     shell(s"${adb} shell am force-stop com.hogwarts.csruiautomatorserver")
     shell(s"${adb} shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
@@ -240,7 +243,7 @@ class CSRASDriver extends ReactWebDriver {
     } else {
       adbCMD = "adb"
     }
-    if (uuid!=null && uuid.nonEmpty) {
+    if (uuid != null && uuid.nonEmpty) {
       s"${adbCMD} -s ${uuid}"
     } else {
       adbCMD
