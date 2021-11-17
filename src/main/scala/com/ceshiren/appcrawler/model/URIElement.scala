@@ -74,7 +74,7 @@ case class URIElement(
     this.text = nodeMap.getOrElse("value", "").toString
     this.instance = nodeMap.getOrElse("instance", "").toString
     this.depth = nodeMap.getOrElse("depth", "").toString
-    this.latest = nodeMap.getOrElse("latest", "").toString
+    this.latest = nodeMap.getOrElse("latest", "0").toString
     this.xpath = nodeMap.getOrElse("xpath", "").toString
     this.x = nodeMap.getOrElse("x", "0").toString.toDouble.toInt
     this.y = nodeMap.getOrElse("y", "0").toString.toDouble.toInt
