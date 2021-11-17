@@ -2131,7 +2131,7 @@ class TestXPathUtil extends FunSuite with Matchers {
     ).asInstanceOf[NodeList]
     0 until nodes.getLength foreach (i => {
       val attributes = XPathUtil.getAttributesFromNode(nodes.item(i))
-//      log.info(attributes)
+      //      log.info(attributes)
       val idList = List("resource-id", "content-desc", "text")
       val xpath = XPathUtil.getXPathFromAttributes(attributes, idList)
       log.info(xpath)
@@ -2150,10 +2150,32 @@ class TestXPathUtil extends FunSuite with Matchers {
     println(XPathUtil.getNodeListByXPath("/*/*", xmlAndroid))
   }
 
-  test("toxml"){
+  test("toxml") {
     log.info(XPathUtil.toPrettyXML(Source.fromFile("src/test/scala/com/ceshiren/appcrawler/ut/miniprogram.xml").mkString))
-
   }
 
 
+  test("yaml string int") {
+    val demo = Demo()
+    log.info(TData.toYaml(demo))
+
+    var str =
+      """
+        |---
+        |i: 1
+        |str: 2
+        |""".stripMargin
+    log.info(TData.fromYaml[Demo](str))
+
+    str =
+      """
+        |---
+        |i: "1"
+        |str: 2
+        |""".stripMargin
+    log.info(TData.fromYaml[Demo](str))
+  }
+
 }
+
+

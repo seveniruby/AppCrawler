@@ -516,26 +516,28 @@ class Crawler {
     log.info(s"selected nodes size = ${selectedElements.size}")
     preSize = selectedElements.size
 
-    var webviewList = page.getNodeListByKey("//*[contains(@class, 'WebView')]")
-      .map(e => new URIElement(e, currentUrl))
-    webviewList = webviewList.sortWith(_.latest.toInt < _.latest.toInt)
-    webviewList.foreach(x => log.trace(x.toString))
-    webviewList.headOption match {
-      case Some(value) => {
-        if (value.latest != null || value.toString.nonEmpty) {
-          log.info(s"has webview with latest ${value.latest}")
-          topWebViewElements = page.getNodeListByKey(s"//*[contains(@class, 'WebView') and @latest='${value.latest}']//*[not(*)]")
-            .map(e => new URIElement(e, currentUrl))
-          selectedElements = selectedElements.intersect(topWebViewElements)
+    if(conf.sortByAttribute.contains("latest")) {
+      var webviewList = page.getNodeListByKey("//*[contains(@class, 'WebView')]")
+        .map(e => new URIElement(e, currentUrl))
+      webviewList = webviewList.sortWith(_.latest.toInt < _.latest.toInt)
+      webviewList.foreach(x => log.trace(x.toString))
+      webviewList.headOption match {
+        case Some(value) => {
+          if (value.latest != null || value.toString.nonEmpty) {
+            log.info(s"has webview with latest ${value.latest}")
+            topWebViewElements = page.getNodeListByKey(s"//*[contains(@class, 'WebView') and @latest='${value.latest}']//*[not(*)]")
+              .map(e => new URIElement(e, currentUrl))
+            selectedElements = selectedElements.intersect(topWebViewElements)
 
-          log.info(s"selectedElements in top webview elements size = ${selectedElements.size}")
-          if (selectedElements.size < preSize) {
-            selectedElements.foreach(log.trace)
-            preSize = selectedElements.size
+            log.info(s"selectedElements in top webview elements size = ${selectedElements.size}")
+            if (selectedElements.size < preSize) {
+              selectedElements.foreach(log.trace)
+              preSize = selectedElements.size
+            }
           }
         }
+        case None => {}
       }
-      case None => {}
     }
 
     //remove blackList
