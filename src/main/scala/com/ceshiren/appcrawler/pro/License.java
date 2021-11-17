@@ -1,7 +1,5 @@
 package com.ceshiren.appcrawler.pro;
 
-import com.ceshiren.appcrawler.utils.Log;
-
 import javax.crypto.Cipher;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
@@ -17,9 +15,8 @@ import java.util.Map;
 public class License {
 
     private final static int KEY_SIZE = 1024;
-    private static Map<Integer, String> keyMap = new HashMap<Integer, String>();
 
-    public static Map<Integer, String> genKeyPair() throws NoSuchAlgorithmException {
+    public static Map<String, String> genKeyPair() throws NoSuchAlgorithmException {
         // KeyPairGenerator类用于生成公钥和私钥对，基于RSA算法生成对象
         KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
         // 初始化密钥对生成器
@@ -35,37 +32,44 @@ public class License {
         String privateKeyString = Base64.getEncoder().encodeToString(privateKey.getEncoded());
         // 将公钥和私钥保存到Map
         //0表示公钥
-        keyMap.put(0, publicKeyString);
+        Map<String, String> keyMap = new HashMap<>();
+        keyMap.put("public", publicKeyString);
         //1表示私钥
-        keyMap.put(1, privateKeyString);
-        Log.log.info(publicKeyString);
-        Log.log.info(privateKeyString);
+        keyMap.put("private", privateKeyString);
         return keyMap;
     }
 
-    public static String encrypt(String str, String publicKey) throws Exception {
-        //base64编码的公钥
+    public static Key getKey(String keyBase64, Boolean isPublicKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        Key key;
+        byte[] decoded = Base64.getDecoder().decode(keyBase64);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        if (isPublicKey) {
+            key = keyFactory.generatePublic(new X509EncodedKeySpec(decoded));
+        } else {
+            key = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(decoded));
+        }
+        return key;
+    }
 
-        byte[] decoded = Base64.getDecoder().decode(publicKey);
-        RSAPublicKey pubKey = (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(decoded));
-        //RSA加密
+    public static String encrypt(String message, String keyBase64, Boolean isPublicKey) throws Exception {
+
+        Key key = getKey(keyBase64, isPublicKey);
         Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.ENCRYPT_MODE, pubKey);
-        String outStr = Base64.getEncoder().encodeToString(cipher.doFinal(str.getBytes("UTF-8")));
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        String outStr = Base64.getEncoder().encodeToString(cipher.doFinal(message.getBytes("UTF-8")));
         return outStr;
     }
 
-    public static String decrypt(String str, String privateKey) throws Exception {
+    public static String decrypt(String messageEncrypt, String keyBase64, Boolean isPublicKey) throws Exception {
         //64位解码加密后的字符串
-        byte[] inputByte = Base64.getDecoder().decode(str);
-        //base64编码的私钥
-        byte[] decoded = Base64.getDecoder().decode(privateKey);
-        RSAPrivateKey priKey = (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decoded));
-        //RSA解密
+        byte[] inputByte = Base64.getDecoder().decode(messageEncrypt);
+        Key key = getKey(keyBase64, isPublicKey);
+
         Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.DECRYPT_MODE, priKey);
-        String outStr = new String(cipher.doFinal(inputByte));
-        return outStr;
+        cipher.init(Cipher.DECRYPT_MODE, key);
+
+        String message = new String(cipher.doFinal(inputByte));
+        return message;
     }
 
     public static String sign(String message, String privateKey) throws Exception {
@@ -75,6 +79,7 @@ public class License {
 
         Signature signature = Signature.getInstance("SHA256withRSA");
         signature.initSign(priKey);
+        signature.update(message.getBytes(StandardCharsets.UTF_8));
         byte[] digitalSignature = signature.sign();
         return Base64.getEncoder().encodeToString(digitalSignature);
     }
@@ -86,9 +91,9 @@ public class License {
 
         Signature signature = Signature.getInstance("SHA256withRSA");
         signature.initVerify(pubKey);
-        signature.update(message.getBytes(StandardCharsets.UTF_8));
 
         byte[] signedDecoded = Base64.getDecoder().decode(signed);
+        signature.update(message.getBytes(StandardCharsets.UTF_8));
         return signature.verify(signedDecoded);
     }
 

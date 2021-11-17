@@ -3,9 +3,7 @@ package com.ceshiren.appcrawler.pro;
 import com.ceshiren.appcrawler.utils.Log;
 import org.junit.jupiter.api.Test;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
+import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Map;
 
@@ -15,18 +13,22 @@ class LicenseTest {
 
     @Test
     void decrypt() throws Exception {
-        Map<Integer, String> keyMap = null;
+        Map<String, String> keyMap = License.genKeyPair();
+        String publicKey=keyMap.get("public");
+        String privateKey = keyMap.get("private");
 
-        try {
-            keyMap = License.genKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        String str=License.encrypt("2021-12-17", keyMap.get(0));
+        String message = "2021-12-17";
+        String str=License.encrypt(message, publicKey, true);
         Log.log.info(str);
-        String raw=License.decrypt(str, keyMap.get(1));
+        String raw=License.decrypt(str, privateKey, false);
         Log.log.info(raw);
-        assertEquals(raw, "2021-12-17");
+        assertEquals(raw, message);
+
+        str=License.encrypt(message, privateKey, false);
+        Log.log.info(str);
+        raw=License.decrypt(str, publicKey, true);
+        Log.log.info(raw);
+        assertEquals(raw, message);
     }
 
     @Test
@@ -35,13 +37,38 @@ class LicenseTest {
 //        String pubKey="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCpQKjyHjvutMOsGhHvTeahzb2dkIvsy2NdFZHpkUCwMicB49ie4W9/E+cQ/ExWhNjasyugCVsUKIm+FlWN+QnmPHBr6R4lHCqzWilTnbhFvS8Km97zCJTAMe7ah2/IPdz9ds54g6IIHxoWQlk3FSk+AD8W3YozkTKWqOGHFR58cwIDAQAB";
 //        String privateKey="MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAKlAqPIeO+60w6waEe9N5qHNvZ2Qi+zLY10VkemRQLAyJwHj2J7hb38T5xD8TFaE2NqzK6AJWxQoib4WVY35CeY8cGvpHiUcKrNaKVOduEW9Lwqb3vMIlMAx7tqHb8g93P12zniDoggfGhZCWTcVKT4APxbdijORMpao4YcVHnxzAgMBAAECgYBCeuFhaLrFwj7xhLPyuTiT6YpHL5WmhyUaVPShN6qfCrQDrAlULtxqn9is9UzO1xOOo73I+KPLwTiJb6BfSai3IRMRur1qDI32BQYhsE3IGsX5OkXM8UhE3HfC/z8b54tkJRHY4T5KklHgu5n8dxPKD4mCMrDRUMuYD+CY+w/ZcQJBANHEItKsHxttWaKIXlx21CD9Nbk1vX295z1aFhzF6HSqsAO3s+6jVM3zJDMUI8diUAiUpognr5Ah4Kabf+LQvU8CQQDOjpUMWZdRMXsF0ES6zoRmfePCqwv7ZxsZ41EgRm8qAazlQXi2QjpNWUadpyF+lXPfFh/HQ1QdGcWq1PyPFK2dAkEAil1Czw4D8tZ9Yo1rGLi1EhGTx1hgZrnF9x0eKtqMi7AvLDSXdli8TqEMBrlJJHJ/8jkDZBoxXvRJt/woLhecVwJBALE+3p1rX5JXoFZ7wg5+2lRMoJ3SQwTnE/Vh/6JvbkKgj2lmhhv3tqna+uKboP1LZ9O922UU3F/gVqNiApsQxm0CQDrFXgC+UTND5ULBXYhcqTFaUDPRN1E3IK0k++TsoQ+a44RlXYcSxbNmZyPjlAPCdP/W9BIeqiclJIFCFpxPUQ0=";
         String message="123";
-        Map<Integer, String> map = License.genKeyPair();
-        String pubKey=map.get(0);
-        String privateKey=map.get(1);
+        Map<String, String> map = License.genKeyPair();
+        String pubKey=map.get("public");
+        String privateKey=map.get("private");
 
         String strSigned=License.sign(message, privateKey);
         Log.log.info(strSigned);
-        Log.log.info(License.verify(message, strSigned, pubKey));
+        assertTrue(License.verify(message, strSigned, pubKey));
+    }
+
+    @Test
+    void sign2() throws Exception {
+        Signature signature = Signature.getInstance("SHA256WithDSA");
+        SecureRandom secureRandom = new SecureRandom();
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("DSA");
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+        signature.initSign(keyPair.getPrivate(), secureRandom);
+        byte[] data = "abcdefghijklmnopqrstuvxyz".getBytes("UTF-8");
+        signature.update(data);
+
+        byte[] digitalSignature = signature.sign();
+
+        Signature signature2 = Signature.getInstance("SHA256WithDSA");
+
+        signature2.initVerify(keyPair.getPublic());
+
+        byte[] data2 = "abcdefghijklmnopqrstuvxyz".getBytes("UTF-8");
+        signature2.update(data2);
+
+        boolean verified = signature2.verify(digitalSignature);
+        assertTrue(verified);
+
     }
 
 }
