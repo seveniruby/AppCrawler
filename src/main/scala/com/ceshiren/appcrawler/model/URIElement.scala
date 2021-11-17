@@ -31,7 +31,7 @@ case class URIElement(
                        var depth: String = "",
 
                        @XmlAttribute(name = "latest")
-                       var latest: String = "",
+                       var latest: String = "0",
 
                        @XmlAttribute(name = "valid")
                        var valid: String = "true",
