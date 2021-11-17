@@ -3,8 +3,16 @@ package com.ceshiren.appcrawler.pro;
 import com.ceshiren.appcrawler.utils.Log;
 import org.junit.jupiter.api.Test;
 
+import javax.xml.bind.DatatypeConverter;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,6 +24,8 @@ class LicenseTest {
         Map<String, String> keyMap = License.genKeyPair();
         String publicKey=keyMap.get("public");
         String privateKey = keyMap.get("private");
+        Log.log.info(publicKey);
+        Log.log.info(privateKey);
 
         String message = "2021-12-17";
         String str=License.encrypt(message, publicKey, true);
@@ -44,6 +54,26 @@ class LicenseTest {
         String strSigned=License.sign(message, privateKey);
         Log.log.info(strSigned);
         assertTrue(License.verify(message, strSigned, pubKey));
+    }
+
+    @Test
+    void encryptWithLocal() throws Exception {
+        java.lang.String path="/Users/seveniruby/WeDrive/测吧(北京)科技有限公司/项目管理/东软自动遍历测试合作/证书/appcrawler_private_v8.pem";
+        String content=new String(Files.readAllBytes(Paths.get(path)));
+        String[] lines = content.split("\n");
+        String key=String.join("", Arrays.copyOfRange(lines, 1, lines.length-1));
+        String message="2021-12-17";
+        String messageEncrypt=License.encrypt(message, key, false);
+        Log.log.info(messageEncrypt);
+    }
+
+    @Test
+    void decryptWithLocal() throws Exception {
+        String path="/Users/seveniruby/WeDrive/测吧(北京)科技有限公司/项目管理/东软自动遍历测试合作/证书/appcrawler_public.pem";
+        String privateKey= new String(Files.readAllBytes(Paths.get(path)));
+        String message="2021-12-17";
+        String messageEncrypt=License.encrypt(message, privateKey, false);
+        Log.log.info(messageEncrypt);
     }
 
     @Test

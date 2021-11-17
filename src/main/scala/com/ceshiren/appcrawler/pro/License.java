@@ -52,12 +52,12 @@ public class License {
     }
 
     public static String encrypt(String message, String keyBase64, Boolean isPublicKey) throws Exception {
-
         Key key = getKey(keyBase64, isPublicKey);
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, key);
-        String outStr = Base64.getEncoder().encodeToString(cipher.doFinal(message.getBytes("UTF-8")));
-        return outStr;
+        byte[] messageEncrypt = cipher.doFinal(message.getBytes("UTF-8"));
+        String encodeToString = Base64.getEncoder().encodeToString(messageEncrypt);
+        return encodeToString;
     }
 
     public static String decrypt(String messageEncrypt, String keyBase64, Boolean isPublicKey) throws Exception {
@@ -68,8 +68,7 @@ public class License {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, key);
 
-        String message = new String(cipher.doFinal(inputByte));
-        return message;
+        return new String(cipher.doFinal(inputByte));
     }
 
     public static String sign(String message, String privateKey) throws Exception {
