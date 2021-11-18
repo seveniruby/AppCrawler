@@ -74,8 +74,8 @@ class CSRASDriver extends ReactWebDriver {
   def installDriver(): Unit = {
     log.info("Driver Not Exist In Device,Need Install")
     if (otherApps.equals("")) {
-      otherApps = s"${System.getProperty("user.dir")}/driver.apk"
-      log.info(s"No otherApps Set In Config,Use Default Path:./driver.apk")
+      otherApps = s"${System.getProperty("user.dir")}/csruiautomator.apk"
+      log.info(s"No otherApps Set In Config,Use Default Path:./csruiautomator.apk")
     }
     log.info(s"Install Driver To Device From ${otherApps}")
     //安装apk
