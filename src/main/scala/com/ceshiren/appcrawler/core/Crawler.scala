@@ -175,16 +175,22 @@ class Crawler {
   }
 
   def waitAppLoaded(): Unit = {
-    log.info(s"start wait app loaded timeout = ${conf.implicitlyWaitApp}")
-    asyncTask(timeout = conf.implicitlyWaitApp / 1000, name = "waitAppLoaded") {
+    log.info(s"start wait app loaded timeout = ${conf.waitAppLoadedTimeout}")
+    asyncTask(timeout = conf.waitAppLoadedTimeout / 1000, name = "waitAppLoaded") {
       var loaded = false
       do {
-        log.info("wait for app loaded")
         Thread.sleep(1000)
-        refreshPage()
-        loaded = conf.waitAppLoaded.map(step => {
-          driver.page.getNodeListByKey(step.getXPath())
-        }).forall(_.nonEmpty)
+        if (conf.waitAppLoaded != null && conf.waitAppLoaded.nonEmpty) {
+          log.info("wait for app loaded")
+          refreshPage()
+          loaded = conf.waitAppLoaded.map(step => {
+            driver.page.getNodeListByKey(step.getXPath())
+          }).forall(_.nonEmpty)
+        } else {
+          log.info(s"wait ${conf.waitAppLoadedTimeout}ms for app loaded")
+          Thread.sleep(conf.waitAppLoadedTimeout)
+          loaded = true
+        }
       }
       while (!loaded)
       log.info("app loaded")
@@ -516,7 +522,7 @@ class Crawler {
     log.info(s"selected nodes size = ${selectedElements.size}")
     preSize = selectedElements.size
 
-    if(conf.sortByAttribute.contains("latest")) {
+    if (conf.sortByAttribute.contains("latest")) {
       var webviewList = page.getNodeListByKey("//*[contains(@class, 'WebView')]")
         .map(e => new URIElement(e, currentUrl))
       webviewList = webviewList.sortWith(_.latest.toInt < _.latest.toInt)

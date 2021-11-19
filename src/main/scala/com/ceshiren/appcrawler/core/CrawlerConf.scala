@@ -113,20 +113,21 @@ class CrawlerConf {
 
   //todo: 准备废除
   val beforeStartWaitDescription = "启动一个app默认等待的时间"
-  val waitAppLoadedDescription="显式等待app加载完成的判断条件"
-  var waitAppLoaded: ListBuffer[Step] =ListBuffer[Step]()
   //在重启session之前做的事情
   var beforeRestart: ListBuffer[String] = ListBuffer[String]()
 
-  val beforeElementDescription = "在遍历每个控件之前默认执行的动作"
-  var beforeElement: ListBuffer[Step] = ListBuffer[Step]()
-  val implicitlyWaitAppDescription="隐式等待app加载完成的最大时间 ms"
-  var implicitlyWaitApp = 30000
+  val waitAppLoadedTimeoutDescription="隐式等待app加载完成的最大时间 ms"
+  var waitAppLoadedTimeout = 10000
+  val waitAppLoadedDescription="显式等待app加载完成的判断条件"
+  var waitAppLoaded: ListBuffer[Step] =ListBuffer[Step]()
+
   val implicitlyWaitTestCaseDescription="在测试用例执行阶段隐式等待一个控件出现的最大时间 ms"
   var implicitlyWaitTestCase = 3000
   val implicitlyWaitCrawlDescription="在遍历阶段隐式等待一个控件出现的最大时间 ms"
   var implicitlyWaitCrawl = 0
 
+  val beforeElementDescription = "在遍历每个控件之前默认执行的动作"
+  var beforeElement: ListBuffer[Step] = ListBuffer[Step]()
   val afterElementDescription = "在遍历每个控件之后默认执行的动作"
   var afterElement = ListBuffer[Step](
     //Step(xpath="/*/*", action="Thread.sleep(500)")
