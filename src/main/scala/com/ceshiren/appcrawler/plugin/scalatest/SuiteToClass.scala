@@ -24,6 +24,12 @@ object SuiteToClass  {
       .replaceAllLiterally("&", "")
       .replaceAllLiterally("-", ".")
       .replaceAllLiterally(" ","")
+      .replaceAllLiterally("*","")
+      .replaceAllLiterally("?","")
+      .replaceAllLiterally("|","")
+      .replaceAllLiterally("<","")
+      .replaceAllLiterally(">","")
+      .replaceAllLiterally(":","")
       .replaceAll("[#;/\\:]", "")
   }
   /**

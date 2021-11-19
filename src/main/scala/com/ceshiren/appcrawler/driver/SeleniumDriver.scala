@@ -18,29 +18,29 @@ import javax.imageio.ImageIO
 import scala.jdk.CollectionConverters._
 
 /**
-  * Created by seveniruby on 16/8/9.
-  */
-class SeleniumDriver extends ReactWebDriver{
+ * Created by seveniruby on 16/8/9.
+ */
+class SeleniumDriver extends ReactWebDriver {
   DynamicEval.init()
   var conf: CrawlerConf = _
 
   val capabilities = new DesiredCapabilities()
   var driver: RemoteWebDriver = _
-  var currentElement:WebElement=_
+  var currentElement: WebElement = _
 
-  def this(url: String = "http://127.0.0.1:4723/wd/hub", configMap: Map[String, Any]=Map[String, Any]()) {
+  def this(url: String = "http://127.0.0.1:4723/wd/hub", configMap: Map[String, Any] = Map[String, Any]()) {
     this
 
     log.info(s"url=${url}")
 
-    configMap.foreach(c=>config(c._1, c._2))
+    configMap.foreach(c => config(c._1, c._2))
 
-    driver=new RemoteWebDriver(new URL(url), capabilities)
+    driver = new RemoteWebDriver(new URL(url), capabilities)
     driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS)
     getDeviceInfo()
     log.info(s"capture dir = ${new File(".").getAbsolutePath}")
 
-    if(configMap.contains("app")){
+    if (configMap.contains("app")) {
       log.error("please set app with url for your site")
       driver.get(configMap.getOrElse("app", "https://www.baidu.com/").toString)
 
@@ -71,19 +71,23 @@ class SeleniumDriver extends ReactWebDriver{
   }
 
   override def clickLocation(): Unit = {
-    val point=currentURIElement.center()
+    val point = currentURIElement.center()
     new Actions(driver).moveByOffset(point.x, point.y).click().perform();
   }
-  override def click(): this.type ={
+
+  override def click(): this.type = {
     currentElement.click()
     this
   }
+
   override def tap(): this.type = {
     click()
   }
+
   override def tapLocation(x: Int, y: Int): this.type = {
     this
   }
+
   override def longTap(): this.type = {
     log.error("not implement")
     this
@@ -99,7 +103,7 @@ class SeleniumDriver extends ReactWebDriver{
 
   //todo:convert to xml
   override def getPageSource(): String = {
-    val res=driver.executeScript(
+    val res = driver.executeScript(
       """
         |function getNodeTree(node) {
         |    var res = {}
@@ -152,9 +156,9 @@ class SeleniumDriver extends ReactWebDriver{
         |
         |return JSON.stringify(getNodeTree(document.body))
       """.stripMargin).toString
-    val dataMap=TData.fromJson[Map[String, Any]](res)
+    val dataMap = TData.fromJson[Map[String, Any]](res)
     log.trace(dataMap)
-    val xml=TData.toHtml(dataMap)
+    val xml = TData.toHtml(dataMap)
     log.debug(xml)
     xml
   }
@@ -165,11 +169,11 @@ class SeleniumDriver extends ReactWebDriver{
     //todo: 多种策略，使用findElement 使用xml直接分析location 生成平台特定的定位符
 
     element match {
-      case id if element.getId.nonEmpty && findBy=="id" =>{
+      case id if element.getId.nonEmpty && findBy == "id" => {
         log.info(s"findElementsById ${element.getId}")
         driver.findElementsById(element.getId).asScala.toList
       }
-      case name if element.getName.nonEmpty && findBy=="accessibilityId" => {
+      case name if element.getName.nonEmpty && findBy == "accessibilityId" => {
         log.info(s"findElementsByAccessibilityId ${element.getName}")
         driver.findElementsByName(element.getName).asScala.toList
       }
@@ -182,30 +186,38 @@ class SeleniumDriver extends ReactWebDriver{
     }
   }
 
-  override def findElement(element: URIElement, findBy:String): AnyRef = {
-    currentElement=super.findElement(element,findBy).asInstanceOf[WebElement]
+  override def findElement(element: URIElement, findBy: String): AnyRef = {
+    currentElement = super.findElement(element, findBy).asInstanceOf[WebElement]
     currentElement
   }
 
   override def getAppName(): String = {
     tryAndCatch(
-    new URL(driver.getCurrentUrl).getHost).getOrElse("default")
+      new URL(driver.getCurrentUrl).getHost).getOrElse("default")
   }
 
   override def getUrl(): String = {
     driver.getCurrentUrl.split("/").last
   }
 
-  override def getRect(): Rectangle ={
+  override def getRect(): Rectangle = {
     //selenium下还没有正确的赋值，只能通过api获取
-    if(currentURIElement.getHeight!=0){
+    if (currentURIElement.getHeight != 0) {
       //log.info(s"location=${location} size=${size} x=${currentURIElement.x} y=${currentURIElement.y} width=${currentURIElement.width} height=${currentURIElement.height}" )
       new Rectangle(currentURIElement.getX, currentURIElement.getY, currentURIElement.getHeight, currentURIElement.getWidth)
-    }else {
+    } else {
       val location = currentElement.getLocation
       val size = currentElement.getSize
       new Rectangle(location.x, location.y, size.height, size.width)
     }
+  }
+
+  override def adb(command: String): String = {
+    ""
+  }
+
+  override def sendText(text: String): Unit = {
+
   }
 
   override def sendKeys(content: String): Unit = {
@@ -216,7 +228,8 @@ class SeleniumDriver extends ReactWebDriver{
     //driver.get(capabilities.getCapability("app").toString)
     back()
   }
-  override def reStartDriver(): Unit ={
+
+  override def reStartDriver(): Unit = {
   }
 
   def config(key: String, value: Any): Unit = {
