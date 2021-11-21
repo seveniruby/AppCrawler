@@ -156,7 +156,7 @@ abstract class ReactWebDriver {
     this
   }
 
-  def reStartDriver(): Unit = {
+  def reStartDriver(waitTime:Int): Unit = {
   }
 
   def longTap(): this.type = {

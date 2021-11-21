@@ -225,15 +225,15 @@ class CSRASDriver extends ReactWebDriver {
     List(element)
   }
 
-  override def reStartDriver(): Unit = {
+  override def reStartDriver(waitTime:Int=2000): Unit = {
     log.info("reStartDriver")
     driverStart()
-    Thread.sleep(2000)
+    Thread.sleep(waitTime)
     setPackage()
     // todo:需要优化
     // 重启服务后需要通过页面动作触发page source刷新，保证能够获取到最新的界面数据
     swipe(0.5, 0.4, 0.5, 0.5)
-    Thread.sleep(1000)
+    Thread.sleep(waitTime)
   }
 
   def getAdb(): String = {
