@@ -70,6 +70,7 @@ class CSRASDriver extends ReactWebDriver {
       log.info("dont run am start")
     }
   }
+
   // 安装辅助APP
   def installOtherApps(): Unit = {
     log.info("Install otherApps")
@@ -81,8 +82,13 @@ class CSRASDriver extends ReactWebDriver {
 
 
   def setPackage(): Unit = {
-    val r = session.post(s"${getServerUrl}/package?package=${packageName}")
-    log.info(r)
+    try {
+      val r = session.post(s"${getServerUrl}/package?package=${packageName}")
+      log.info(r)
+    } catch {
+      case e: Exception => log.error(e.printStackTrace())
+    }
+
   }
 
   //设备driver连接设置
@@ -105,6 +111,8 @@ class CSRASDriver extends ReactWebDriver {
   }
 
   def driverStart(): Unit = {
+    // 有时候应用一次停不掉，两次确保停止
+    adb(s"shell am force-stop com.hogwarts.csruiautomatorserver")
     adb(s"shell am force-stop com.hogwarts.csruiautomatorserver")
     adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver/.MainActivity")
     adb(s"shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
@@ -193,11 +201,15 @@ class CSRASDriver extends ReactWebDriver {
   }
 
   override def getAppName(): String = {
-    session.get(s"${getServerUrl}/fullName").text().split('/').head
+    val appName = session.get(s"${getServerUrl}/fullName").text().split('/').head
+    log.info(s"PackageName is ${appName}")
+    appName
   }
 
   override def getUrl(): String = {
-    session.get(s"${getServerUrl}/fullName").text().split('/').last.stripLineEnd
+    val appUrl = session.get(s"${getServerUrl}/fullName").text().split('/').last.stripLineEnd
+    log.info(s"ActivityName is ${appUrl}")
+    appUrl
   }
 
   override def getRect(): Rectangle = {
@@ -225,7 +237,7 @@ class CSRASDriver extends ReactWebDriver {
     List(element)
   }
 
-  override def reStartDriver(waitTime:Int=2000): Unit = {
+  override def reStartDriver(waitTime: Int = 2000): Unit = {
     log.info("reStartDriver")
     driverStart()
     Thread.sleep(waitTime)
