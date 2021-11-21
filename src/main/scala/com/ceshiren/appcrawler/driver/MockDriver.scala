@@ -14,9 +14,9 @@ import scala.io.Source
 import scala.sys.process._
 
 /**
-  * Created by seveniruby on 18/10/31.
-  * 用于测试用途
-  */
+ * Created by seveniruby on 18/10/31.
+ * 用于测试用途
+ */
 class MockDriver extends ReactWebDriver {
   var conf: CrawlerConf = _
 
@@ -59,9 +59,11 @@ class MockDriver extends ReactWebDriver {
   override def tap(): this.type = {
     click()
   }
+
   override def tapLocation(x: Int, y: Int): this.type = {
     this
   }
+
   override def longTap(): this.type = {
     log.error("not implement")
     this
@@ -102,14 +104,24 @@ class MockDriver extends ReactWebDriver {
     List(element)
   }
 
-  def getAdb(): String ={
+  override def adb(command: String): String = {
+    ""
+  }
+
+  override def sendText(text: String): Unit = {
+
+  }
+
+  def getAdb(): String = {
     List(System.getenv("ANDROID_HOME"), "platform-tools/adb").mkString(File.separator)
   }
-  override def reStartDriver(): Unit ={
+
+  override def reStartDriver(): Unit = {
   }
-  def shell(cmd:String): String ={
+
+  def shell(cmd: String): String = {
     log.info(cmd)
-    val result=cmd.!!
+    val result = cmd.!!
     log.info(result)
     result
   }

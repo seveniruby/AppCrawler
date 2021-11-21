@@ -18,8 +18,8 @@ import java.time.Duration
 import scala.jdk.CollectionConverters._
 
 /**
-  * Created by seveniruby on 16/8/9.
-  */
+ * Created by seveniruby on 16/8/9.
+ */
 class AppiumClient extends SeleniumDriver {
   DynamicEval.init()
 
@@ -119,9 +119,11 @@ class AppiumClient extends SeleniumDriver {
     new AppiumTouchAction(appiumDriver).tap(currentElement)
     this
   }
+
   override def tapLocation(x: Int, y: Int): this.type = {
     this
   }
+
   override def longTap(): this.type = {
     appiumDriver.performTouchAction(
       (new TouchAction(appiumDriver)
@@ -223,12 +225,21 @@ class AppiumClient extends SeleniumDriver {
     }
   }
 
+  override def adb(command: String): String = {
+    ""
+  }
+
+  override def sendText(text: String): Unit = {
+
+  }
 
   override def launchApp(): Unit = {
     appiumDriver.launchApp()
   }
-  override def reStartDriver(): Unit={
+
+  override def reStartDriver(): Unit = {
   }
+
   override def getPageSource(): String = {
     appiumDriver.getPageSource
   }

@@ -14,8 +14,8 @@ import javax.imageio.ImageIO
 import scala.sys.process._
 
 /**
-  * Created by seveniruby on 18/10/31.
-  */
+ * Created by seveniruby on 18/10/31.
+ */
 class AdbDriver extends ReactWebDriver {
   DynamicEval.init()
   var conf: CrawlerConf = _
@@ -53,7 +53,7 @@ class AdbDriver extends ReactWebDriver {
     log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
   }
 
-  override def reStartDriver(): Unit ={
+  override def reStartDriver(): Unit = {
   }
 
   override def swipe(startX: Double = 0.9, startY: Double = 0.1, endX: Double = 0.9, endY: Double = 0.1): Unit = {
@@ -79,9 +79,11 @@ class AdbDriver extends ReactWebDriver {
   override def tap(): this.type = {
     click()
   }
+
   override def tapLocation(x: Int, y: Int): this.type = {
     this
   }
+
   override def longTap(): this.type = {
     log.error("not implement")
     this
@@ -142,6 +144,14 @@ class AdbDriver extends ReactWebDriver {
 
   override def findElements(element: URIElement, findBy: String): List[AnyRef] = {
     List(element)
+  }
+
+  override def adb(command: String): String = {
+    ""
+  }
+
+  override def sendText(text: String): Unit = {
+
   }
 
   def getAdb(): String = {

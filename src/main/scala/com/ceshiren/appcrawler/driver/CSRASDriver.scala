@@ -23,10 +23,10 @@ class CSRASDriver extends ReactWebDriver {
 
   //csras本地映射的地址
   var systemPort = ""
-  var otherApps = ""
   var packageName = ""
   var activityName = ""
   var uuid = ""
+  var otherApps: List[String] = List[String]()
 
   def this(url: String = "http://127.0.0.1:4723/wd/hub", configMap: Map[String, Any] = Map[String, Any]()) {
     this
@@ -37,17 +37,18 @@ class CSRASDriver extends ReactWebDriver {
     systemPort = configMap.getOrElse("systemPort", "").toString
     uuid = configMap.getOrElse("uuid", "").toString
     adb = getAdb()
-//    log.info(configMap.toString())
+    //    log.info(configMap.toString())
     if (systemPort.equals("")) {
       log.info("No systemPort Set In Config,Use Default Port:7778")
       systemPort = "7778"
     }
-    otherApps = configMap.getOrElse("otherApps", "").toString
-
-    // 确认设备中Driver状态，不存在则进行安装
-    val apkPath = shell(s"${adb} shell 'pm list packages | grep com.hogwarts.csruiautomatorserver ||:'")
+    otherApps = configMap.getOrElse("otherApps", List[String]()).asInstanceOf[List[String]]
+    // 安装辅助APP
+    installOtherApps()
+    // 确认设备中Driver状态
+    val apkPath = adb(s"shell 'pm list packages | grep com.hogwarts.csruiautomatorserver ||:'")
     if (apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1) {
-      installDriver()
+      log.info("CSRASDriver Not Exist In Device,Need Install")
     }
 
     //设备driver连接设置
@@ -55,34 +56,29 @@ class CSRASDriver extends ReactWebDriver {
 
     if (configMap.getOrElse("noReset", "").toString.toLowerCase.equals("false")
       && !packageName.contains("tencent")) {
-      shell(s"${adb} shell pm clear ${packageName}")
+      adb(s"shell pm clear ${packageName}")
     } else {
       log.info("need need to reset app")
     }
 
     if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "").toString.toLowerCase.equals("true")) {
-      shell(s"${adb} shell am start -W -n ${packageName}/${activityName}")
+      adb(s"shell am start -W -n ${packageName}/${activityName}")
     }
     else if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "").toString.toLowerCase.equals("false")) {
-      shell(s"${adb} shell am start -S -W -n ${packageName}/${activityName}")
+      adb(s"shell am start -S -W -n ${packageName}/${activityName}")
     } else {
       log.info("dont run am start")
     }
   }
-
-  //在设备中安装driver
-  def installDriver(): Unit = {
-    log.info("Driver Not Exist In Device,Need Install")
-    if (otherApps.equals("")) {
-      otherApps = s"${System.getProperty("user.dir")}/driver.apk"
-      log.info(s"No otherApps Set In Config,Use Default Path:./driver.apk")
-    }
-    log.info(s"Install Driver To Device From ${otherApps}")
-    //安装apk
-    shell(s"${adb} install '${otherApps}'")
-
-
+  // 安装辅助APP
+  def installOtherApps(): Unit = {
+    log.info("Install otherApps")
+    otherApps.foreach(app => {
+      log.info(s"Install App To Device From ${app}")
+      adb(s"install '${app}'")
+    })
   }
+
 
   def setPackage(): Unit = {
     val r = session.post(s"${getServerUrl}/package?package=${packageName}")
@@ -92,21 +88,26 @@ class CSRASDriver extends ReactWebDriver {
   //设备driver连接设置
   def initDriver(): Unit = {
     // 给Driver设置权限，使驱动可以自行开启辅助功能
-    shell(s"${adb} shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
+    adb(s"shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
     // 启动Driver
-    shell(s"${adb} shell am force-stop com.hogwarts.csruiautomatorserver")
-    shell(s"${adb} shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
+    driverStart()
 
+    Thread.sleep(3000)
     //设置端口转发，将driver的端口映射到本地，方便进行请求
-    shell(s"${adb} forward tcp:${systemPort} tcp:7777")
+    adb(s"forward tcp:${systemPort} tcp:7777")
     // 等待远程服务连接完毕
     // todo:将等待改为通过轮询接口判断设备上的服务是否启动
-    Thread.sleep(3000)
     setPackage()
     //获取包过滤参数
     //    val packageFilter =
     log.info(s"Driver Filter Package is ${getPackageFilter}")
 
+  }
+
+  def driverStart(): Unit = {
+    adb(s"shell am force-stop com.hogwarts.csruiautomatorserver")
+    adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver/.MainActivity")
+    adb(s"shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
   }
 
   //拼接Driver访问地址
@@ -121,13 +122,13 @@ class CSRASDriver extends ReactWebDriver {
   }
 
   override def event(keycode: String): Unit = {
-    shell(s"${adb} shell input keyevent ${keycode}")
+    adb(s"shell input keyevent ${keycode}")
     log.info(s"event=${keycode}")
   }
 
   //todo: outside of Raster 问题
   override def getDeviceInfo(): Unit = {
-    val size = shell(s"${adb} shell wm size").split(' ').last.split('x')
+    val size = adb(s"shell wm size").split(' ').last.split('x')
     screenHeight = size.last.trim.toInt
     screenWidth = size.head.trim.toInt
     log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
@@ -139,7 +140,7 @@ class CSRASDriver extends ReactWebDriver {
     val yStart = startY * screenHeight
     val yEnd = endY * screenHeight
     log.info(s"swipe screen from (${xStart},${yStart}) to (${xEnd},${yEnd})")
-    shell(s"${adb} shell input swipe ${xStart} ${yStart} ${xEnd} ${yEnd}")
+    adb(s"shell input swipe ${xStart} ${yStart} ${xEnd} ${yEnd}")
   }
 
 
@@ -157,7 +158,7 @@ class CSRASDriver extends ReactWebDriver {
 
   override def click(): this.type = {
     val center = currentURIElement.center()
-    shell(s"${adb} shell input tap ${center.x} ${center.y}")
+    adb(s"shell input tap ${center.x} ${center.y}")
     this
   }
 
@@ -168,23 +169,23 @@ class CSRASDriver extends ReactWebDriver {
   override def tapLocation(x: Int, y: Int): this.type = {
     val pointX = x * screenWidth
     val pointY = y * screenHeight
-    shell(s"${adb} shell input tap ${pointX} ${pointY}")
+    adb(s"shell input tap ${pointX} ${pointY}")
     this
   }
 
   override def longTap(): this.type = {
     val center = currentURIElement.center()
     log.info(s"longTap element in (${center.x},${center.y})")
-    shell(s"${adb} shell input swipe ${center.x} ${center.y} ${center.x + 0.1} ${center.y + 0.1} 2000")
+    adb(s"shell input swipe ${center.x} ${center.y} ${center.x + 0.1} ${center.y + 0.1} 2000")
     this
   }
 
   override def back(): Unit = {
-    shell(s"${adb} shell input keyevent 4")
+    adb(s"shell input keyevent 4")
   }
 
   override def backApp(): Unit = {
-    shell(s"${adb} shell am start -W -n ${packageName}/${activityName}")
+    adb(s"shell am start -W -n ${packageName}/${activityName}")
   }
 
   override def getPageSource(): String = {
@@ -212,7 +213,7 @@ class CSRASDriver extends ReactWebDriver {
 
   override def sendKeys(content: String): Unit = {
     tap()
-    shell(s"${adb} shell input text ${content}")
+    adb(s"shell input text ${content}")
   }
 
   override def launchApp(): Unit = {
@@ -226,13 +227,12 @@ class CSRASDriver extends ReactWebDriver {
 
   override def reStartDriver(): Unit = {
     log.info("reStartDriver")
-    shell(s"${adb} shell am force-stop com.hogwarts.csruiautomatorserver")
-    shell(s"${adb} shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
+    driverStart()
     Thread.sleep(2000)
     setPackage()
     // todo:需要优化
     // 重启服务后需要通过页面动作触发page source刷新，保证能够获取到最新的界面数据
-    swipe(0.5, 0.5, 0.5, 0.4)
+    swipe(0.5, 0.4, 0.5, 0.5)
     Thread.sleep(1000)
   }
 
@@ -248,6 +248,14 @@ class CSRASDriver extends ReactWebDriver {
     } else {
       adbCMD
     }
+  }
+
+  override def sendText(text: String): Unit = {
+    adb(s"shell am broadcast -a ADB_INPUT_TEXT --es msg '${text}'")
+  }
+
+  override def adb(command: String): String = {
+    shell(s"${adb} ${command}")
   }
 
   def shell(cmd: String): String = {
