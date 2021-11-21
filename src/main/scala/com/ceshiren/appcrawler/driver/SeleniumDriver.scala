@@ -229,7 +229,7 @@ class SeleniumDriver extends ReactWebDriver {
     back()
   }
 
-  override def reStartDriver(waitTime:Int): Unit = {
+  override def reStartDriver(waitTime:Int=2000): Unit = {
   }
 
   def config(key: String, value: Any): Unit = {

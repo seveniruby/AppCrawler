@@ -116,7 +116,7 @@ class MockDriver extends ReactWebDriver {
     List(System.getenv("ANDROID_HOME"), "platform-tools/adb").mkString(File.separator)
   }
 
-  override def reStartDriver(waitTime:Int): Unit = {
+  override def reStartDriver(waitTime:Int=2000): Unit = {
   }
 
   def shell(cmd: String): String = {

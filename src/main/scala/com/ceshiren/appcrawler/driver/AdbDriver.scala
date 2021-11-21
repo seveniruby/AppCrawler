@@ -53,7 +53,7 @@ class AdbDriver extends ReactWebDriver {
     log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
   }
 
-  override def reStartDriver(waitTime:Int): Unit = {
+  override def reStartDriver(waitTime:Int=2000): Unit = {
   }
 
   override def swipe(startX: Double = 0.9, startY: Double = 0.1, endX: Double = 0.9, endY: Double = 0.1): Unit = {
