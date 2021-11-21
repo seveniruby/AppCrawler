@@ -229,11 +229,14 @@ class CSRASDriver extends ReactWebDriver {
     log.info("reStartDriver")
     driverStart()
     Thread.sleep(waitTime)
+    log.info(s"Wait ${waitTime}ms")
     setPackage()
-    // todo:需要优化
-    // 重启服务后需要通过页面动作触发page source刷新，保证能够获取到最新的界面数据
-    swipe(0.5, 0.4, 0.5, 0.5)
+    // 重启服务后需要通过呼出和收回系统通知栏触发page source刷新，保证能够获取到最新的界面数据
+    adb("shell cmd statusbar expand-notifications")
+    Thread.sleep(1500)
+    adb("shell cmd statusbar collapse")
     Thread.sleep(waitTime)
+    log.info(s"Wait ${waitTime}ms")
   }
 
   def getAdb(): String = {
