@@ -1,6 +1,5 @@
 package com.ceshiren.appcrawler.driver
 
-import com.ceshiren.appcrawler.AppCrawler
 import com.ceshiren.appcrawler.core.CrawlerConf
 import com.ceshiren.appcrawler.model.URIElement
 import com.ceshiren.appcrawler.utils.Log.log
@@ -10,11 +9,9 @@ import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.remote.{DesiredCapabilities, RemoteWebDriver}
 import org.openqa.selenium.{OutputType, Rectangle, TakesScreenshot, WebElement}
 
-import java.awt.{BasicStroke, Color}
 import java.io.File
 import java.net.URL
 import java.util.concurrent.TimeUnit
-import javax.imageio.ImageIO
 import scala.jdk.CollectionConverters._
 
 /**

@@ -1,6 +1,6 @@
 package com.ceshiren.appcrawler.utils
 
-import com.brsanthu.googleanalytics.{GoogleAnalytics}
+import com.brsanthu.googleanalytics.GoogleAnalytics
 
 /**
   * Created by seveniruby on 16/2/26.

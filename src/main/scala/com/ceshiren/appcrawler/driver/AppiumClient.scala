@@ -1,10 +1,10 @@
 package com.ceshiren.appcrawler.driver
 
+import com.ceshiren.appcrawler.AppiumTouchAction
 import com.ceshiren.appcrawler.model.URIElement
-import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.DynamicEval
+import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.LogicUtils.asyncTask
-import com.ceshiren.appcrawler.{AppCrawler, AppiumTouchAction}
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.android.nativekey.{AndroidKey, KeyEvent}
 import io.appium.java_client.ios.IOSDriver

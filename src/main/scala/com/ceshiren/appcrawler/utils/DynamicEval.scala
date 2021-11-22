@@ -1,13 +1,11 @@
 package com.ceshiren.appcrawler.utils
 
 import com.ceshiren.appcrawler.plugin.Plugin
-import Log.log
-import org.apache.commons.io.FileUtils
+import com.ceshiren.appcrawler.utils.Log.log
 
 import java.io.File
-import java.nio.charset.Charset
 import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
-import scala.sys.process.{BasicIO, Process, ProcessIO}
+import scala.sys.process.Process
 import scala.tools.nsc.interpreter.shell.{ReplReporterImpl, ShellConfig}
 import scala.tools.nsc.interpreter.{IMain, Results}
 import scala.tools.nsc.{Global, Settings}

@@ -1,6 +1,5 @@
 package com.ceshiren.appcrawler.plugin
 
-import com.ceshiren.appcrawler.AppCrawler
 import com.ceshiren.appcrawler.core.Crawler
 import com.ceshiren.appcrawler.model.URIElement
 import com.ceshiren.appcrawler.utils.Log.log

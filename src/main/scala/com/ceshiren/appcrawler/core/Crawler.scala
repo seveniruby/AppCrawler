@@ -7,6 +7,8 @@ import com.ceshiren.appcrawler.plugin.Plugin
 import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.LogicUtils.{asyncTask, handleException}
 import com.ceshiren.appcrawler.utils._
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.scalatest.ConfigMap
@@ -24,6 +26,8 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by seveniruby on 15/11/28.
   */
+
+@JsonInclude(Include.NON_NULL)
 class Crawler {
   //todo: 需要重构为抽象和实现类
   var driver: ReactWebDriver = _
@@ -83,7 +87,7 @@ class Crawler {
     defaultPlugins.foreach(name => pluginClasses.append(Class.forName(name).newInstance().asInstanceOf[Plugin]))
     //把插件jar文件放到classpath下即可
     conf.pluginList.foreach(name => {
-      if (defaultPlugins.forall(_ != name)) {
+      if (!defaultPlugins.contains(name)) {
         log.info(s"load com.ceshiren.appcrawler.plugin $name")
         pluginClasses.append(Class.forName(name).newInstance().asInstanceOf[Plugin])
       }
