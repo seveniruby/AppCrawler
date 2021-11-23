@@ -2,16 +2,18 @@ package com.ceshiren.appcrawler.driver
 
 import com.ceshiren.appcrawler.core.CrawlerConf
 import com.ceshiren.appcrawler.model.URIElement
-import com.ceshiren.appcrawler.utils.DynamicEval
+import com.ceshiren.appcrawler.utils.{DynamicEval, Log}
 import com.ceshiren.appcrawler.utils.Log.log
+import com.ceshiren.appcrawler.utils.LogicUtils.{asyncTask, retryToSuccess}
 import org.openqa.selenium.Rectangle
 
 import java.io.File
 import scala.sys.process._
+import scala.util.{Failure, Success, Try}
 
 /**
- * Created by seveniruby on 18/10/31.
- */
+  * Created by seveniruby on 18/10/31.
+  */
 class CSRASDriver extends ReactWebDriver {
   DynamicEval.init()
   var conf: CrawlerConf = _
@@ -67,6 +69,7 @@ class CSRASDriver extends ReactWebDriver {
       log.info("dont run am start")
     }
   }
+
   // 安装辅助APP
   def installOtherApps(): Unit = {
     log.info("Install otherApps")
@@ -88,8 +91,6 @@ class CSRASDriver extends ReactWebDriver {
     adb(s"shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
     // 启动Driver
     driverStart()
-
-    Thread.sleep(3000)
     //设置端口转发，将driver的端口映射到本地，方便进行请求
     adb(s"forward tcp:${systemPort} tcp:7777")
     // 等待远程服务连接完毕
@@ -102,9 +103,11 @@ class CSRASDriver extends ReactWebDriver {
   }
 
   def driverStart(): Unit = {
-    adb(s"shell am force-stop com.hogwarts.csruiautomatorserver")
+    adb(s"shell 'am force-stop com.hogwarts.csruiautomatorserver && ps | grep com.hogwarts.csruiautomatorserver ||: ' ")
+    adb(s"shell 'am force-stop com.hogwarts.csruiautomatorserver && ps | grep com.hogwarts.csruiautomatorserver ||: ' ")
     adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver/.MainActivity")
     adb(s"shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
+    retryToSuccess(timeoutMS = 20000, name = "wait csras driver")(session.get(s"${getServerUrl}/ping").text() == "pong")
   }
 
   //拼接Driver访问地址
@@ -225,7 +228,6 @@ class CSRASDriver extends ReactWebDriver {
   override def reStartDriver(): Unit = {
     log.info("reStartDriver")
     driverStart()
-    Thread.sleep(2000)
     setPackage()
     // todo:需要优化
     // 重启服务后需要通过页面动作触发page source刷新，保证能够获取到最新的界面数据
