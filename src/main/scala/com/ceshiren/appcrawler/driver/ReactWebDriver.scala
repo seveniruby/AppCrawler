@@ -1,17 +1,14 @@
 package com.ceshiren.appcrawler.driver
 
-import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.core.Crawler
 import com.ceshiren.appcrawler.model.{PageSource, URIElement}
 import com.ceshiren.appcrawler.utils.Log.log
-import com.ceshiren.appcrawler.utils.LogicUtils.{asyncTask, handleException}
-import com.ceshiren.appcrawler.utils.{TData, XPathUtil}
+import com.ceshiren.appcrawler.utils.LogicUtils.asyncTask
+import com.ceshiren.appcrawler.utils.TData
 import org.openqa.selenium.Rectangle
 
 import java.io.File
-import java.util.concurrent.{Callable, Executors, TimeUnit, TimeoutException}
 import scala.collection.mutable.ListBuffer
-import scala.util.{Failure, Success, Try}
 
 /**
  * Created by seveniruby on 2017/4/17.
@@ -156,7 +153,7 @@ abstract class ReactWebDriver {
     this
   }
 
-  def reStartDriver(waitTime:Int=2000): Unit = {
+  def reStartDriver(waitTime:Int=2000, action: String = "swipe"): Unit = {
   }
 
   def longTap(): this.type = {

@@ -1,15 +1,11 @@
 package com.ceshiren.appcrawler.driver
 
-import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.core.CrawlerConf
 import com.ceshiren.appcrawler.model.URIElement
 import com.ceshiren.appcrawler.utils.Log.log
-import com.ceshiren.appcrawler.utils.DynamicEval
 import org.openqa.selenium.Rectangle
 
-import java.awt.{BasicStroke, Color}
 import java.io.File
-import javax.imageio.ImageIO
 import scala.io.Source
 import scala.sys.process._
 
@@ -116,7 +112,7 @@ class MockDriver extends ReactWebDriver {
     List(System.getenv("ANDROID_HOME"), "platform-tools/adb").mkString(File.separator)
   }
 
-  override def reStartDriver(waitTime:Int=2000): Unit = {
+  override def reStartDriver(waitTime:Int=2000, action: String = "swipe"): Unit = {
   }
 
   def shell(cmd: String): String = {

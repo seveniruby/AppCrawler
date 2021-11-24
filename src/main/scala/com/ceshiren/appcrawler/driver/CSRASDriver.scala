@@ -1,20 +1,19 @@
 package com.ceshiren.appcrawler.driver
 
-import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.core.CrawlerConf
 import com.ceshiren.appcrawler.model.URIElement
+import com.ceshiren.appcrawler.utils.{DynamicEval, Log}
 import com.ceshiren.appcrawler.utils.Log.log
-import com.ceshiren.appcrawler.utils.DynamicEval
+import com.ceshiren.appcrawler.utils.LogicUtils.{asyncTask, retryToSuccess}
 import org.openqa.selenium.Rectangle
 
-import java.awt.{BasicStroke, Color}
 import java.io.File
-import javax.imageio.ImageIO
 import scala.sys.process._
+import scala.util.{Failure, Success, Try}
 
 /**
- * Created by seveniruby on 18/10/31.
- */
+  * Created by seveniruby on 18/10/31.
+  */
 class CSRASDriver extends ReactWebDriver {
   DynamicEval.init()
   var conf: CrawlerConf = _
@@ -97,8 +96,6 @@ class CSRASDriver extends ReactWebDriver {
     adb(s"shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
     // 启动Driver
     driverStart()
-
-    Thread.sleep(3000)
     //设置端口转发，将driver的端口映射到本地，方便进行请求
     adb(s"forward tcp:${systemPort} tcp:7777")
     // 等待远程服务连接完毕
@@ -111,11 +108,11 @@ class CSRASDriver extends ReactWebDriver {
   }
 
   def driverStart(): Unit = {
-    // 有时候应用一次停不掉，两次确保停止
-    adb(s"shell am force-stop com.hogwarts.csruiautomatorserver")
-    adb(s"shell am force-stop com.hogwarts.csruiautomatorserver")
+    adb(s"shell 'am force-stop com.hogwarts.csruiautomatorserver && ps | grep com.hogwarts.csruiautomatorserver ||: ' ")
+    adb(s"shell 'am force-stop com.hogwarts.csruiautomatorserver && ps | grep com.hogwarts.csruiautomatorserver ||: ' ")
     adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver/.MainActivity")
     adb(s"shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
+    retryToSuccess(timeoutMS = 20000, name = "wait csras driver")(session.get(s"${getServerUrl}/ping").text() == "pong")
   }
 
   //拼接Driver访问地址
@@ -237,16 +234,22 @@ class CSRASDriver extends ReactWebDriver {
     List(element)
   }
 
-  override def reStartDriver(waitTime: Int = 2000): Unit = {
+  override def reStartDriver(waitTime: Int = 2000, action: String = "swipe"): Unit = {
     log.info("reStartDriver")
     driverStart()
     Thread.sleep(waitTime)
     log.info(s"Wait ${waitTime}ms")
     setPackage()
-    // 重启服务后需要通过呼出和收回系统通知栏触发page source刷新，保证能够获取到最新的界面数据
-    adb("shell cmd statusbar expand-notifications")
-    Thread.sleep(1500)
-    adb("shell cmd statusbar collapse")
+    action match {
+      case "swipe" =>
+        // 滑动屏幕，刷新page_source
+        swipe(0.5, 0.4, 0.5, 0.5)
+      case "statusbar" =>
+        // 重启服务后需要通过呼出和收回系统通知栏触发page source刷新，保证能够获取到最新的界面数据
+        adb("shell cmd statusbar expand-notifications")
+        Thread.sleep(1500)
+        adb("shell cmd statusbar collapse")
+    }
     Thread.sleep(waitTime)
     log.info(s"Wait ${waitTime}ms")
   }

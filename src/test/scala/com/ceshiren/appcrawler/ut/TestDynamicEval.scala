@@ -48,7 +48,8 @@ class TestDynamicEval extends FunSuite {
     DynamicEval.shell("adb")
     DynamicEval.shell("adb devices")
     DynamicEval.shell("bash -c 'adb devices; echo xxx;'")
-
+    DynamicEval.shell("bash -c 'adb devices > tmp.log &'")
+    DynamicEval.shell("bash -c 'jobs -l '")
   }
 
 

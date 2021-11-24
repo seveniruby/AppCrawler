@@ -1,19 +1,16 @@
 package com.ceshiren.appcrawler.utils
 
-import Log.log
+import com.ceshiren.appcrawler.utils.Log.log
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import org.w3c.dom.{Attr, Document, Node, NodeList}
 import org.xml.sax.InputSource
 
-import java.io.{StringReader, StringWriter}
+import java.io.StringReader
 import javax.xml.parsers.{DocumentBuilder, DocumentBuilderFactory}
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
-import javax.xml.transform.{OutputKeys, TransformerFactory}
 import javax.xml.xpath.{XPath, XPathConstants, XPathFactory}
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
 
 
 /**

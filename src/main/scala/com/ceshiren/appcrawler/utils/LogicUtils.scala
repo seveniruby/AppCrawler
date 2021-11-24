@@ -34,6 +34,31 @@ object LogicUtils {
     }
   }
 
+  def retryToSuccess(timeoutMS: Int, intervalMS: Int = 500, name: String = "")(callback: => Boolean): Try[Boolean] = {
+    val start = System.currentTimeMillis()
+    var r = false
+    var error: Throwable = new Exception()
+    do {
+      Try(callback) match {
+        case Success(value) => {
+          r = value
+        }
+        case Failure(exception) => {
+          error = exception
+        }
+      }
+      Thread sleep (intervalMS)
+      log.info(s"name=${name} wait")
+    } while (System.currentTimeMillis() - start < timeoutMS && !r)
+    log.info(s"name=${name} finish")
+    if (r) {
+      Success(r)
+    } else {
+      Failure(error)
+    }
+
+
+  }
 
   def asyncTask[T](timeout: Int = 30, name: String = "", needThrow: Boolean = false)(callback: => T): Either[T, Throwable] = {
     //todo: 异步线程消耗资源厉害，需要改进

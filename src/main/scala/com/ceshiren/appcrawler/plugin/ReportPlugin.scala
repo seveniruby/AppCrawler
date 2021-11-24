@@ -2,7 +2,6 @@ package com.ceshiren.appcrawler.plugin
 
 import com.ceshiren.appcrawler.model.URIElement
 import com.ceshiren.appcrawler.plugin.report.ReportFactory
-import com.ceshiren.appcrawler.report.MvnReplace
 import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.LogicUtils.asyncTask
 

@@ -1,7 +1,6 @@
 package com.ceshiren.appcrawler.model;
 
 import com.ceshiren.appcrawler.utils.Log;
-import com.ceshiren.appcrawler.utils.TData$;
 import com.ceshiren.appcrawler.utils.XPathUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
