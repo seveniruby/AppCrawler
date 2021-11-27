@@ -127,7 +127,9 @@ class CSRASDriver extends ReactWebDriver {
     adb(s"shell 'am force-stop com.hogwarts.csruiautomatorserver && ps | grep com.hogwarts.csruiautomatorserver ||: ' ")
     adb(s"shell 'am force-stop com.hogwarts.csruiautomatorserver && ps | grep com.hogwarts.csruiautomatorserver ||: ' ")
     adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver/.CSRAccessibilityService")
-    //    adb(s"shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
+    // Android11需要多关闭重启一次服务才能够正常的启动起来。
+    adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver")
+    adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver/.CSRAccessibilityService")
     retryToSuccess(timeoutMS = 20000, name = "wait csras driver")(session.get(s"${getServerUrl}/ping").text() == "pong")
   }
 
