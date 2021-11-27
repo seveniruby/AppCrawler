@@ -83,13 +83,13 @@ class CSRASDriver extends ReactWebDriver {
       val APKPackageName = getPackageName(app)
       if(APKPackageName==null){
         log.info(s"Can Not Get PackageName From $app")
-        log.info(s"Install App To Device From $app")
+        log.info(s"Install App $app To Device")
         adb(s"install '$app'")
       }else{
         if(getAPKInstallStatus(APKPackageName)){
-          log.info(s"$app Already Exist In Device,Not Install")
+          log.info(s"$app Already Exist In Device,Skip Install")
         }else{
-          log.info(s"Install App To Device From $app")
+          log.info(s"Install App $app To Device")
           adb(s"install '$app'")
         }
       }
