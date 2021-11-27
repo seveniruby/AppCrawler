@@ -46,7 +46,7 @@ class CSRASDriver extends ReactWebDriver {
     // 安装辅助APP
     installOtherApps()
     // 确认设备中Driver状态
-    if (getAPKInstallStatus("com.hogwarts.csruiautomatorserver")) {
+    if (!getAPKInstallStatus("com.hogwarts.csruiautomatorserver")) {
       log.info("CSRUIAutomatorServer Not Exist In Device,Need Install")
     }
 
