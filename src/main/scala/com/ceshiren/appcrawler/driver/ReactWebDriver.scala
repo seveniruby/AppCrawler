@@ -11,8 +11,8 @@ import java.io.File
 import scala.collection.mutable.ListBuffer
 
 /**
- * Created by seveniruby on 2017/4/17.
- */
+  * Created by seveniruby on 2017/4/17.
+  */
 
 //todo: 用标准的class代替，用trait会让很多java工程师无法理解。
 abstract class ReactWebDriver {
@@ -78,11 +78,11 @@ abstract class ReactWebDriver {
   //todo: 有的时候会出现极少内容的page source
 
   /**
-   * <hierarchy class="hierarchy" height="1794" index="0" rotation="0" width="1080">
-   * <android.widget.FrameLayout bounds="[0,0][1080,1794]" checkable="false" checked="false" class="android.widget.FrameLayout" clickable="false" displayed="true" enabled="true" focusable="false" focused="false" index="0" long-clickable="false" package="com.example.android.apis" password="false" scrollable="false" selected="false" text=""/>
-   * </hierarchy>
-   *
-   */
+    * <hierarchy class="hierarchy" height="1794" index="0" rotation="0" width="1080">
+    * <android.widget.FrameLayout bounds="[0,0][1080,1794]" checkable="false" checked="false" class="android.widget.FrameLayout" clickable="false" displayed="true" enabled="true" focusable="false" focused="false" index="0" long-clickable="false" package="com.example.android.apis" password="false" scrollable="false" selected="false" text=""/>
+    * </hierarchy>
+    *
+    */
   def getPageSourceWithRetry(): PageSource = {
     page = null
     log.info("start to get page source from appium")
@@ -156,6 +156,12 @@ abstract class ReactWebDriver {
   def reStartDriver(): Unit = {
   }
 
+  def startDriver(): Unit = {
+  }
+
+  def stopDriver(): Unit = {
+  }
+
   def longTap(): this.type = {
     this
   }
@@ -211,10 +217,6 @@ abstract class ReactWebDriver {
   }
 
   def getAppName(): String = {
-    ""
-  }
-
-  def adb(command: String): String = {
     ""
   }
 

@@ -94,13 +94,6 @@ object DynamicEval {
 
 
   private def eval(code: String): Unit = {
-    if (!isLoaded) {
-      log.debug("first import")
-      instance.eval("import sys.process._")
-      instance.eval("val driver=com.ceshiren.appcrawler.AppCrawler.crawler.driver")
-      instance.eval("def crawl(depth:Int)=com.ceshiren.appcrawler.AppCrawler.crawler.crawlWithRetry(depth)")
-      isLoaded = true
-    }
     log.info(code)
     log.info(instance.eval(code))
     log.info("eval finish")
@@ -113,6 +106,16 @@ object DynamicEval {
 
   def init(classDir: String = ""): Unit = {
     instance = new DynamicEval(classDir)
+  }
+
+  def load(): Unit ={
+    if (!isLoaded) {
+      log.debug("first import")
+      instance.eval("import sys.process._")
+      instance.eval("val driver=com.ceshiren.appcrawler.AppCrawler.crawler.driver")
+      instance.eval("def crawl(depth:Int)=com.ceshiren.appcrawler.AppCrawler.crawler.crawlWithRetry(depth)")
+      isLoaded = true
+    }
   }
 
   def loadPlugins(pluginDir: String = ""): List[Plugin] = {

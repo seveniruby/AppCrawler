@@ -210,10 +210,6 @@ class SeleniumDriver extends ReactWebDriver {
     }
   }
 
-  override def adb(command: String): String = {
-    ""
-  }
-
   override def sendText(text: String): Unit = {
 
   }

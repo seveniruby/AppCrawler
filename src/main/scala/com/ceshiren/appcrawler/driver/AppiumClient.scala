@@ -225,10 +225,6 @@ class AppiumClient extends SeleniumDriver {
     }
   }
 
-  override def adb(command: String): String = {
-    ""
-  }
-
   override def sendText(text: String): Unit = {
 
   }

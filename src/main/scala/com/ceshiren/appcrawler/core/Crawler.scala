@@ -148,6 +148,8 @@ class Crawler {
       this.driver = existDriver
     }
 
+    DynamicEval.load()
+
     log.info(s"platformName=${platformName} driver=${driver}")
     log.info(AppCrawler.banner)
     waitAppLoaded()
@@ -1314,6 +1316,9 @@ class Crawler {
     //exitCrawl=true
 
     log.info(s"ctrl c interval = ${signals.intervalMS()}")
+
+    driver.stopDriver()
+
     Try(pluginClasses.foreach(_.stop())) match {
       case Success(v) => {}
       case Failure(e) => {
@@ -1321,6 +1326,7 @@ class Crawler {
       }
     }
     log.info("generate report finish")
+
     System.exit(0)
 
   }

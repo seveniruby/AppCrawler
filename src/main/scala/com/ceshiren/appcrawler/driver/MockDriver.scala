@@ -102,10 +102,6 @@ class MockDriver extends ReactWebDriver {
     List(element)
   }
 
-  override def adb(command: String): String = {
-    ""
-  }
-
   override def sendText(text: String): Unit = {
 
   }

@@ -26,13 +26,15 @@ class CrawlerConf {
     "appActivity" -> ".ApiDemos",
     "noReset" -> "true",
     "fullReset" -> "false",
-    "dontStopAppOnReset" -> "true"
+    "dontStopAppOnReset" -> "false"
   )
 
   val waitAppLoadedTimeoutDescription = "隐式等待app加载完成的最大时间 ms"
   var waitAppLoadedTimeout = 10000
   val waitAppLoadedDescription = "显式等待app加载完成的判断条件"
-  var waitAppLoaded: ListBuffer[Step] = ListBuffer[Step]()
+  var waitAppLoaded: ListBuffer[Step] = ListBuffer[Step](
+    Step(xpath = "//*[contains(@text, 'App')]")
+  )
 
   val implicitlyWaitTestCaseDescription = "在测试用例执行阶段隐式等待一个控件出现的最大时间 ms"
   var implicitlyWaitTestCase = 3000

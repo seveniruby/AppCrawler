@@ -14,16 +14,11 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by seveniruby on 18/10/31.
   */
-class CSRASDriver extends ReactWebDriver {
-  var conf: CrawlerConf = _
-  private var adb = ""
+class CSRASDriver extends AdbDriver {
   private val session = requests.Session()
 
   //csras本地映射的地址
   var systemPort = "7778"
-  var packageName = ""
-  var activityName = ""
-  var uuid = ""
   var otherApps: List[String] = List[String]()
 
   def this(configMap: Map[String, Any] = Map[String, Any]()) {
@@ -35,7 +30,6 @@ class CSRASDriver extends ReactWebDriver {
     activityName = configMap.getOrElse("appActivity", "").toString
     systemPort = configMap.getOrElse("systemPort", systemPort).toString
     uuid = configMap.getOrElse("uuid", "").toString
-    adb = getAdb()
     //    log.info(configMap.toString())
     if (systemPort.equals("")) {
       log.info("No systemPort Set In Config,Use Default Port:7778")
@@ -143,16 +137,6 @@ class CSRASDriver extends ReactWebDriver {
     adb(s"shell input swipe ${xStart} ${yStart} ${xEnd} ${yEnd}")
   }
 
-
-  override def screenshot(): File = {
-    val file = File.createTempFile("tmp", ".png")
-    log.info(file.getAbsolutePath)
-    val cmd = s"${adb} exec-out screencap -p"
-    log.info(cmd)
-    (cmd #> file).!!
-    file
-  }
-
   //todo: 重构到独立的trait中
 
 
@@ -234,35 +218,5 @@ class CSRASDriver extends ReactWebDriver {
     swipe(0.5, 0.4, 0.5, 0.5)
     Thread.sleep(1000)
   }
-
-  def getAdb(): String = {
-    var adbCMD = ""
-    if (System.getenv("ANDROID_HOME") != null) {
-      adbCMD = List(System.getenv("ANDROID_HOME"), "platform-tools/adb").mkString(File.separator)
-    } else {
-      adbCMD = "adb"
-    }
-    if (uuid != null && uuid.nonEmpty) {
-      s"${adbCMD} -s ${uuid}"
-    } else {
-      adbCMD
-    }
-  }
-
-  override def sendText(text: String): Unit = {
-    adb(s"shell am broadcast -a ADB_INPUT_TEXT --es msg '${text}'")
-  }
-
-  override def adb(command: String): String = {
-    shell(s"${adb} ${command}")
-  }
-
-  def shell(cmd: String): String = {
-    log.info(cmd)
-    val result = cmd.!!
-    log.info(result)
-    result
-  }
-
 }
 

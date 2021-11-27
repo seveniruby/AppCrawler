@@ -11,8 +11,7 @@ import java.io.File
 import scala.collection.mutable
 import scala.sys.process._
 
-class UIAutomator2ServerDriver extends ReactWebDriver {
-  private var adb = ""
+class UIAutomator2ServerDriver extends AdbDriver {
   private val session = requests.Session()
 
   //本地映射的地址
@@ -20,21 +19,20 @@ class UIAutomator2ServerDriver extends ReactWebDriver {
   var serverPort = "6790"
   val driverPackageName = "io.appium.uiautomator2.server.test"
   val driverActivityName = "androidx.test.runner.AndroidJUnitRunner"
-  var packageName = ""
-  var activityName = ""
-  var uuid = ""
   var otherApps: List[String] = List[String]()
+  var sessionid = ""
+
+  var daemon: Thread = _
 
   def this(configMap: Map[String, Any] = Map[String, Any]()) {
     this
 
-//    val url = configMap.getOrElse("appium", "http://127.0.0.1:6790/wd/hub")
-//    log.info(s"url=${url}")
+    //    val url = configMap.getOrElse("appium", "http://127.0.0.1:6790/wd/hub")
+    //    log.info(s"url=${url}")
     packageName = configMap.getOrElse("appPackage", "").toString
     activityName = configMap.getOrElse("appActivity", "").toString
     systemPort = configMap.getOrElse("systemPort", systemPort).toString
     uuid = configMap.getOrElse("uuid", "").toString
-    adb = getAdb()
     //    log.info(configMap.toString())
     if (systemPort.isEmpty) {
       log.info(s"No systemPort Set In Config,Use Default Port: ${systemPort}")
@@ -96,9 +94,27 @@ class UIAutomator2ServerDriver extends ReactWebDriver {
     adb(s"shell 'am force-stop ${driverPackageName} && ps | grep ${driverPackageName} ||: ' ")
     adb(s"shell 'am force-stop ${driverPackageName} && ps | grep ${driverPackageName} ||: ' ")
     //放入后台
-    val cmd=s"bash -c '${adb} shell am instrument -w -e disableAnalytics true ${driverPackageName}/${driverActivityName} & ' "
-    Runtime.getRuntime.exec(cmd)
+
+    daemon = new Thread(() => {
+      log.info("daemon start")
+      adb(s"shell am instrument -w -e disableAnalytics true ${driverPackageName}/${driverActivityName} ")
+      log.info("daemon finish")
+    })
+    daemon.start()
     retryToSuccess(timeoutMS = 20000, name = "wait driver")(session.get(s"${getServerUrl}/sessions").text().contains("sessionId"))
+    retryToSuccess(timeoutMS = 20000, name = "wait session created") {
+      val res = session.post(s"${getServerUrl}/session", data = "{\"capabilities\": {}}").text()
+      sessionid = res.split("\"")(3)
+      log.debug(s"sessionid = ${sessionid}")
+      sessionid.nonEmpty
+    }
+    log.debug(session.get(s"${getServerUrl}/sessions").text())
+  }
+
+  override def stopDriver(): Unit = {
+    session.delete(s"${getServerUrl}/session/${sessionid}")
+    log.info(s"stop session ${sessionid}")
+    daemon.stop()
   }
 
   //拼接Driver访问地址
@@ -106,114 +122,17 @@ class UIAutomator2ServerDriver extends ReactWebDriver {
     s"http://127.0.0.1:${systemPort}/wd/hub"
   }
 
-  override def event(keycode: String): Unit = {
-    adb(s"shell input keyevent ${keycode}")
-    log.info(s"event=${keycode}")
-  }
-
-  //todo: outside of Raster 问题
-  override def getDeviceInfo(): Unit = {
-    val size = adb(s"shell wm size").split(' ').last.split('x')
-    screenHeight = size.last.trim.toInt
-    screenWidth = size.head.trim.toInt
-    log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
-  }
-
-  override def swipe(startX: Double = 0.9, startY: Double = 0.1, endX: Double = 0.9, endY: Double = 0.1): Unit = {
-    val xStart = startX * screenWidth
-    val xEnd = endX * screenWidth
-    val yStart = startY * screenHeight
-    val yEnd = endY * screenHeight
-    log.info(s"swipe screen from (${xStart},${yStart}) to (${xEnd},${yEnd})")
-    adb(s"shell input swipe ${xStart} ${yStart} ${xEnd} ${yEnd}")
-  }
-
-
-  override def screenshot(): File = {
-    val file = File.createTempFile("tmp", ".png")
-    log.info(file.getAbsolutePath)
-    val cmd = s"${adb} exec-out screencap -p"
-    log.info(cmd)
-    (cmd #> file).!!
-    file
-  }
-
-  //todo: 重构到独立的trait中
-
-
-  override def click(): this.type = {
-    val center = currentURIElement.center()
-    adb(s"shell input tap ${center.x} ${center.y}")
-    this
-  }
-
-  override def tap(): this.type = {
-    click()
-  }
-
-  override def tapLocation(x: Int, y: Int): this.type = {
-    val pointX = x * screenWidth
-    val pointY = y * screenHeight
-    adb(s"shell input tap ${pointX} ${pointY}")
-    this
-  }
-
-  override def longTap(): this.type = {
-    val center = currentURIElement.center()
-    log.info(s"longTap element in (${center.x},${center.y})")
-    adb(s"shell input swipe ${center.x} ${center.y} ${center.x + 0.1} ${center.y + 0.1} 2000")
-    this
-  }
-
-  override def back(): Unit = {
-    adb(s"shell input keyevent 4")
-  }
-
-  override def backApp(): Unit = {
-    adb(s"shell am start -W -n ${packageName}/${activityName}")
-  }
 
   override def getPageSource(): String = {
-    val res = session.post(s"${getServerUrl}/session", data = "{\"capabilities\": {}}").text()
-    val sessionId = res.split("\"")(3)
-    log.debug(s"sessionid = ${sessionId}")
-    val r=session.get(s"${getServerUrl}/session/${sessionId}/source").text()
-    session.delete(s"${getServerUrl}/session/${sessionId}")
+    val r = session.get(s"${getServerUrl}/session/${sessionid}/source").text()
     r
   }
+
 
   override def getAppName(): String = {
     page.getNodeListByKey("/*/*").head.getOrElse("package", "").toString
   }
 
-  override def getUrl(): String = {
-    ""
-  }
-
-  override def getRect(): Rectangle = {
-    //selenium下还没有正确的赋值，只能通过api获取
-    if (currentURIElement.getHeight != 0) {
-      //log.info(s"location=${location} size=${size} x=${currentURIElement.x} y=${currentURIElement.y} width=${currentURIElement.width} height=${currentURIElement.height}" )
-      new Rectangle(currentURIElement.getX, currentURIElement.getY, currentURIElement.getHeight, currentURIElement.getWidth)
-    } else {
-      log.error("rect height < 0")
-      return null
-    }
-  }
-
-  override def sendKeys(content: String): Unit = {
-    tap()
-    adb(s"shell input text ${content}")
-  }
-
-  override def launchApp(): Unit = {
-    //driver.get(capabilities.getCapability("app").toString)
-    back()
-  }
-
-  override def findElements(element: URIElement, findBy: String): List[AnyRef] = {
-    List(element)
-  }
 
   override def reStartDriver(): Unit = {
     log.info("reStartDriver")
@@ -225,34 +144,6 @@ class UIAutomator2ServerDriver extends ReactWebDriver {
     Thread.sleep(1000)
   }
 
-  def getAdb(): String = {
-    var adbCMD = ""
-    if (System.getenv("ANDROID_HOME") != null) {
-      adbCMD = List(System.getenv("ANDROID_HOME"), "platform-tools/adb").mkString(File.separator)
-    } else {
-      adbCMD = "adb"
-    }
-    if (uuid != null && uuid.nonEmpty) {
-      s"${adbCMD} -s ${uuid}"
-    } else {
-      adbCMD
-    }
-  }
-
-  override def sendText(text: String): Unit = {
-    adb(s"shell am broadcast -a ADB_INPUT_TEXT --es msg '${text}'")
-  }
-
-  override def adb(command: String): String = {
-    shell(s"${adb} ${command}")
-  }
-
-  def shell(cmd: String): String = {
-    log.info(cmd)
-    val result = cmd.!!
-    log.info(result)
-    result
-  }
 
 }
 
