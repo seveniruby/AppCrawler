@@ -140,7 +140,7 @@ class Crawler {
 
     if (existDriver == null) {
       log.info("prepare setup Appium")
-      setupAppium()
+      setupCrawler()
       //driver.getAppStringMap
     } else {
       //集成到测试用例中，比如有人写appium测试用例，在自动化后可以直接调用api进行遍历
@@ -250,7 +250,7 @@ class Crawler {
     conf.capability ++= Map("app" -> "")
     conf.capability ++= Map("dontStopAppOnReset" -> "true")
     conf.capability ++= Map("noReset" -> "true")
-    setupAppium()
+    setupCrawler()
     waitAppLoaded()
     firstRefresh()
   }
@@ -291,7 +291,7 @@ class Crawler {
     new AutomationSuite().execute("run steps", ConfigMap("crawler" -> this))
   }
 
-  def setupAppium(): Unit = {
+  def setupCrawler(): Unit = {
     //driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
     //PageFactory.initElements(new AppiumFieldDecorator(driver, 10, TimeUnit.SECONDS), this)
     //implicitlyWait(Span(10, Seconds))
@@ -302,15 +302,17 @@ class Crawler {
 
     log.info(s"afterAllMax=${conf.afterAllMax}")
     DynamicEval.isLoaded = false
+    driver=setupDriver(conf.capability.getOrElse("automationName", "").toString)
 
+    GA.log(conf.capability.getOrElse("appPackage", "") + conf.capability.getOrElse("bundleId", "").toString)
+  }
+
+  def setupDriver(automationName: String): ReactWebDriver ={
     //todo: 主要做遍历测试和异常测试. 所以暂不使用selendroid
-    val url = conf.capability("appium").toString
-    val automationName = conf.capability.getOrElse("automationName", "").toString
     log.info(automationName)
-    automationName match {
+    val driver=automationName match {
       case "selenium" => {
-        driver = new SeleniumDriver(url, conf.capability)
-
+        new SeleniumDriver(conf.capability)
       }
       //todo: 以后使用restful接口支持atx和macaca
       /*      case "macaca" => {
@@ -319,7 +321,7 @@ class Crawler {
             }*/
       case "adb" => {
         log.info("user adb")
-        driver = new AdbDriver(url, conf.capability)
+        new AdbDriver(conf.capability)
       }
 
 
@@ -337,22 +339,24 @@ class Crawler {
         }
       }*/
 
+      case "uiautomator2server" => {
+        log.info("user CSRAS csruiautomatorserver")
+        new UIAutomator2ServerDriver(conf.capability)
+      }
       case "csras" => {
         log.info("user CSRAS csruiautomatorserver")
-        driver = new CSRASDriver(url, conf.capability)
+        new CSRASDriver(conf.capability)
       }
       case _ => {
         log.info("use AppiumClient")
         log.info(conf.capability)
         //fixed: appium 6.0.0 has bug with okhttp
         //System.setProperty("webdriver.http.factory", "apache")
-        driver = new AppiumClient(url, conf.capability)
-        log.info(driver)
+        new AppiumClient(conf.capability)
       }
     }
-
-    GA.log(conf.capability.getOrElse("appPackage", "") + conf.capability.getOrElse("bundleId", "").toString)
-
+    log.info(driver)
+    driver
   }
 
   /**

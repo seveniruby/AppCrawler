@@ -19,8 +19,10 @@ class MockDriver extends ReactWebDriver {
   var packageName = ""
   var activityName = ""
 
-  def this(url: String = "http://127.0.0.1:4723/wd/hub", configMap: Map[String, Any] = Map[String, Any]()) {
+  def this(configMap: Map[String, Any] = Map[String, Any]()) {
     this
+
+    val url=configMap.getOrElse("appium", "http://127.0.0.1:4723/wd/hub")
     log.info(s"url=${url}")
     packageName = configMap.getOrElse("appPackage", "").toString
     activityName = configMap.getOrElse("appActivity", "").toString

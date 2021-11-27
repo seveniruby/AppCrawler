@@ -26,6 +26,7 @@ class CrawlerConf {
     "appActivity" -> ".ApiDemos",
     "noReset" -> "true",
     "fullReset" -> "false",
+    "dontStopAppOnReset" -> "true"
   )
 
   val waitAppLoadedTimeoutDescription = "隐式等待app加载完成的最大时间 ms"

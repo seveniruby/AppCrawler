@@ -115,10 +115,6 @@ object DynamicEval {
     instance = new DynamicEval(classDir)
   }
 
-  def reset(): Unit = {
-
-  }
-
   def loadPlugins(pluginDir: String = ""): List[Plugin] = {
     val pluginDirFile = new java.io.File(pluginDir)
     if (pluginDirFile.exists() == false) {

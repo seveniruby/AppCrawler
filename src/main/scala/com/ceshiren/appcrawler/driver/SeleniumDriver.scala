@@ -15,18 +15,19 @@ import java.util.concurrent.TimeUnit
 import scala.jdk.CollectionConverters._
 
 /**
- * Created by seveniruby on 16/8/9.
- */
+  * Created by seveniruby on 16/8/9.
+  */
 class SeleniumDriver extends ReactWebDriver {
-  DynamicEval.init()
   var conf: CrawlerConf = _
 
   val capabilities = new DesiredCapabilities()
   var driver: RemoteWebDriver = _
   var currentElement: WebElement = _
 
-  def this(url: String = "http://127.0.0.1:4723/wd/hub", configMap: Map[String, Any] = Map[String, Any]()) {
+  def this(configMap: Map[String, Any] = Map[String, Any]()) {
     this
+
+    val url=configMap.getOrElse("appium", "http://127.0.0.1:4723/wd/hub").toString
 
     log.info(s"url=${url}")
 

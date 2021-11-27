@@ -2,25 +2,24 @@ package com.ceshiren.appcrawler.driver
 
 import com.ceshiren.appcrawler.core.CrawlerConf
 import com.ceshiren.appcrawler.model.URIElement
-import com.ceshiren.appcrawler.utils.{DynamicEval, Log}
+import com.ceshiren.appcrawler.utils.{DynamicEval, TData}
 import com.ceshiren.appcrawler.utils.Log.log
-import com.ceshiren.appcrawler.utils.LogicUtils.{asyncTask, retryToSuccess}
+import com.ceshiren.appcrawler.utils.LogicUtils.retryToSuccess
 import org.openqa.selenium.Rectangle
 
 import java.io.File
+import scala.collection.mutable
 import scala.sys.process._
-import scala.util.{Failure, Success, Try}
 
-/**
-  * Created by seveniruby on 18/10/31.
-  */
-class CSRASDriver extends ReactWebDriver {
-  var conf: CrawlerConf = _
+class UIAutomator2ServerDriver extends ReactWebDriver {
   private var adb = ""
   private val session = requests.Session()
 
-  //csras本地映射的地址
-  var systemPort = "7778"
+  //本地映射的地址
+  var systemPort = "6791"
+  var serverPort = "6790"
+  val driverPackageName = "io.appium.uiautomator2.server.test"
+  val driverActivityName = "androidx.test.runner.AndroidJUnitRunner"
   var packageName = ""
   var activityName = ""
   var uuid = ""
@@ -29,25 +28,24 @@ class CSRASDriver extends ReactWebDriver {
   def this(configMap: Map[String, Any] = Map[String, Any]()) {
     this
 
-    val url = configMap.getOrElse("appium", "http://127.0.0.1:4723/wd/hub")
-    log.info(s"url=${url}")
+//    val url = configMap.getOrElse("appium", "http://127.0.0.1:6790/wd/hub")
+//    log.info(s"url=${url}")
     packageName = configMap.getOrElse("appPackage", "").toString
     activityName = configMap.getOrElse("appActivity", "").toString
     systemPort = configMap.getOrElse("systemPort", systemPort).toString
     uuid = configMap.getOrElse("uuid", "").toString
     adb = getAdb()
     //    log.info(configMap.toString())
-    if (systemPort.equals("")) {
-      log.info("No systemPort Set In Config,Use Default Port:7778")
-      systemPort = "7778"
+    if (systemPort.isEmpty) {
+      log.info(s"No systemPort Set In Config,Use Default Port: ${systemPort}")
     }
     otherApps = configMap.getOrElse("otherApps", List[String]()).asInstanceOf[List[String]]
     // 安装辅助APP
     installOtherApps()
     // 确认设备中Driver状态
-    val apkPath = adb(s"shell 'pm list packages | grep com.hogwarts.csruiautomatorserver ||:'")
-    if (apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1) {
-      log.info("CSRASDriver Not Exist In Device,Need Install")
+    val apkPath = adb(s"shell 'pm list packages | grep ${driverPackageName} ||:'")
+    if (apkPath.indexOf(s"${driverPackageName}") == -1) {
+      log.info("Not Exist In Device,Need Install")
     }
 
     //设备driver连接设置
@@ -66,6 +64,7 @@ class CSRASDriver extends ReactWebDriver {
     else if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "").toString.toLowerCase.equals("false")) {
       adb(s"shell am start -S -W -n ${packageName}/${activityName}")
     } else {
+      //小程序不能运行am start
       log.info("dont run am start")
     }
   }
@@ -87,38 +86,24 @@ class CSRASDriver extends ReactWebDriver {
 
   //设备driver连接设置
   def initDriver(): Unit = {
-    // 给Driver设置权限，使驱动可以自行开启辅助功能
-    adb(s"shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
     // 启动Driver
     driverStart()
     //设置端口转发，将driver的端口映射到本地，方便进行请求
-    adb(s"forward tcp:${systemPort} tcp:7777")
-    // 等待远程服务连接完毕
-    // todo:将等待改为通过轮询接口判断设备上的服务是否启动
-    setPackage()
-    //获取包过滤参数
-    //    val packageFilter =
-    log.info(s"Driver Filter Package is ${getPackageFilter}")
-
+    adb(s"forward tcp:${systemPort} tcp:${serverPort}")
   }
 
   def driverStart(): Unit = {
-    adb(s"shell 'am force-stop com.hogwarts.csruiautomatorserver && ps | grep com.hogwarts.csruiautomatorserver ||: ' ")
-    adb(s"shell 'am force-stop com.hogwarts.csruiautomatorserver && ps | grep com.hogwarts.csruiautomatorserver ||: ' ")
-    adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver/.MainActivity")
-    adb(s"shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
-    retryToSuccess(timeoutMS = 20000, name = "wait csras driver")(session.get(s"${getServerUrl}/ping").text() == "pong")
+    adb(s"shell 'am force-stop ${driverPackageName} && ps | grep ${driverPackageName} ||: ' ")
+    adb(s"shell 'am force-stop ${driverPackageName} && ps | grep ${driverPackageName} ||: ' ")
+    //放入后台
+    val cmd=s"bash -c '${adb} shell am instrument -w -e disableAnalytics true ${driverPackageName}/${driverActivityName} & ' "
+    Runtime.getRuntime.exec(cmd)
+    retryToSuccess(timeoutMS = 20000, name = "wait driver")(session.get(s"${getServerUrl}/sessions").text().contains("sessionId"))
   }
 
   //拼接Driver访问地址
   def getServerUrl: String = {
-    val driverUrl = "http://127.0.0.1"
-    driverUrl + ":" + systemPort
-  }
-
-  def getPackageFilter: String = {
-    //通过发送请求，设置关注的包名，过滤掉多余的数据
-    session.get(s"${getServerUrl}/package").text()
+    s"http://127.0.0.1:${systemPort}/wd/hub"
   }
 
   override def event(keycode: String): Unit = {
@@ -189,15 +174,20 @@ class CSRASDriver extends ReactWebDriver {
   }
 
   override def getPageSource(): String = {
-    session.get(s"${getServerUrl}/source").text()
+    val res = session.post(s"${getServerUrl}/session", data = "{\"capabilities\": {}}").text()
+    val sessionId = res.split("\"")(3)
+    log.debug(s"sessionid = ${sessionId}")
+    val r=session.get(s"${getServerUrl}/session/${sessionId}/source").text()
+    session.delete(s"${getServerUrl}/session/${sessionId}")
+    r
   }
 
   override def getAppName(): String = {
-    session.get(s"${getServerUrl}/fullName").text().split('/').head
+    page.getNodeListByKey("/*/*").head.getOrElse("package", "").toString
   }
 
   override def getUrl(): String = {
-    session.get(s"${getServerUrl}/fullName").text().split('/').last.stripLineEnd
+    ""
   }
 
   override def getRect(): Rectangle = {
