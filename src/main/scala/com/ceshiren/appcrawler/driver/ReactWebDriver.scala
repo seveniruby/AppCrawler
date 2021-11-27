@@ -286,7 +286,7 @@ abstract class ReactWebDriver {
 
 
   def attribute(key: String): String = {
-    nodes().head.get(key).get.toString
+    nodes().head(key).toString
   }
 
   def apply(key: String): String = {
