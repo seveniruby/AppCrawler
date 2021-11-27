@@ -1,5 +1,6 @@
 package com.ceshiren.appcrawler.driver
 
+import com.ceshiren.appcrawler.GetAPKPackage.getPackageName
 import com.ceshiren.appcrawler.core.CrawlerConf
 import com.ceshiren.appcrawler.model.URIElement
 import com.ceshiren.appcrawler.utils.{DynamicEval, Log}
@@ -12,8 +13,8 @@ import scala.sys.process._
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Created by seveniruby on 18/10/31.
-  */
+ * Created by seveniruby on 18/10/31.
+ */
 class CSRASDriver extends ReactWebDriver {
   DynamicEval.init()
   var conf: CrawlerConf = _
@@ -45,9 +46,8 @@ class CSRASDriver extends ReactWebDriver {
     // 安装辅助APP
     installOtherApps()
     // 确认设备中Driver状态
-    val apkPath = adb(s"shell 'pm list packages | grep com.hogwarts.csruiautomatorserver ||:'")
-    if (apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1) {
-      log.info("CSRASDriver Not Exist In Device,Need Install")
+    if (getAPKInstallStatus("com.hogwarts.csruiautomatorserver")) {
+      log.info("CSRUIAutomatorServer Not Exist In Device,Need Install")
     }
 
     //设备driver连接设置
@@ -70,12 +70,29 @@ class CSRASDriver extends ReactWebDriver {
     }
   }
 
+  def getAPKInstallStatus(packageName: String): Boolean = {
+    // 确认设备中Driver状态
+    val apkPath = adb(s"shell 'pm list packages | grep ${packageName} ||:'")
+    apkPath.indexOf(packageName) != -1
+  }
+
   // 安装辅助APP
   def installOtherApps(): Unit = {
     log.info("Install otherApps")
     otherApps.foreach(app => {
-      log.info(s"Install App To Device From ${app}")
-      adb(s"install '${app}'")
+      val APKPackageName = getPackageName(app)
+      if(APKPackageName==null){
+        log.info(s"Can Not Get PackageName From $app")
+        log.info(s"Install App To Device From $app")
+        adb(s"install '$app'")
+      }else{
+        if(getAPKInstallStatus(APKPackageName)){
+          log.info(s"$app Already Exist In Device,Not Install")
+        }else{
+          log.info(s"Install App To Device From $app")
+          adb(s"install '$app'")
+        }
+      }
     })
   }
 
@@ -87,13 +104,12 @@ class CSRASDriver extends ReactWebDriver {
     } catch {
       case e: Exception => log.error(e.printStackTrace())
     }
-
   }
 
   //设备driver连接设置
   def initDriver(): Unit = {
     // 给Driver设置权限，使驱动可以自行开启辅助功能
-    adb(s"shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
+    //    adb(s"shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
     // 启动Driver
     driverStart()
     //设置端口转发，将driver的端口映射到本地，方便进行请求
@@ -110,8 +126,8 @@ class CSRASDriver extends ReactWebDriver {
   def driverStart(): Unit = {
     adb(s"shell 'am force-stop com.hogwarts.csruiautomatorserver && ps | grep com.hogwarts.csruiautomatorserver ||: ' ")
     adb(s"shell 'am force-stop com.hogwarts.csruiautomatorserver && ps | grep com.hogwarts.csruiautomatorserver ||: ' ")
-    adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver/.MainActivity")
-    adb(s"shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
+    adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver/.CSRAccessibilityService")
+    //    adb(s"shell am start com.hogwarts.csruiautomatorserver/com.hogwarts.csruiautomatorserver.MainActivity")
     retryToSuccess(timeoutMS = 20000, name = "wait csras driver")(session.get(s"${getServerUrl}/ping").text() == "pong")
   }
 
@@ -234,6 +250,9 @@ class CSRASDriver extends ReactWebDriver {
     List(element)
   }
 
+  // 重启Driver服务
+  // waitTime: 重启中途步骤的等待时间，会在启动服务之后/结束重启之前进行两次等待，单位为 毫秒
+  // action: 重启后用于重新获取页面page_source的动作，默认swipe，在页面中间小幅度滑动。支持statusbar，将系统通知栏下拉和还原
   override def reStartDriver(waitTime: Int = 2000, action: String = "swipe"): Unit = {
     log.info("reStartDriver")
     driverStart()
@@ -247,7 +266,7 @@ class CSRASDriver extends ReactWebDriver {
       case "statusbar" =>
         // 重启服务后需要通过呼出和收回系统通知栏触发page source刷新，保证能够获取到最新的界面数据
         adb("shell cmd statusbar expand-notifications")
-        Thread.sleep(1500)
+        Thread.sleep(2000)
         adb("shell cmd statusbar collapse")
     }
     Thread.sleep(waitTime)
