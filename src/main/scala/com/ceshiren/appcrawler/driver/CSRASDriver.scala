@@ -72,7 +72,7 @@ class CSRASDriver extends ReactWebDriver {
 
   def getAPKInstallStatus(packageName: String): Boolean = {
     // 确认设备中Driver状态
-    val apkPath = adb(s"shell 'pm list packages | grep ${packageName} ||:'")
+    val apkPath = adb(s"shell 'pm list packages | grep package:${packageName}"+"$ ||:'")
     apkPath.indexOf(packageName) != -1
   }
 
@@ -127,6 +127,7 @@ class CSRASDriver extends ReactWebDriver {
     adb(s"shell 'am force-stop com.hogwarts.csruiautomatorserver && ps | grep com.hogwarts.csruiautomatorserver ||: ' ")
     adb(s"shell 'am force-stop com.hogwarts.csruiautomatorserver && ps | grep com.hogwarts.csruiautomatorserver ||: ' ")
     adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver/.CSRAccessibilityService")
+    Thread.sleep(500)
     // Android11需要多关闭重启一次服务才能够正常的启动起来。
     adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver")
     adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver/.CSRAccessibilityService")
