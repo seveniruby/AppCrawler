@@ -23,13 +23,6 @@ class CSRASDriver extends AdbDriver {
     val apkPath = adb(s"shell 'pm list packages | grep com.hogwarts.csruiautomatorserver ||:'")
     if (apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1) {
       log.info("CSRASDriver Not Exist In Device,Need Install")
-      otherApps = configMap.getOrElse("otherApps", List[String]()).asInstanceOf[List[String]]
-      // 安装辅助APP
-      installOtherApps()
-      // 确认设备中Driver状态
-      if (!getAPKInstallStatus("com.hogwarts.csruiautomatorserver")) {
-        log.info("CSRUIAutomatorServer Not Exist In Device,Need Install")
-      }
 
       //设备driver连接设置
       initDriver()
