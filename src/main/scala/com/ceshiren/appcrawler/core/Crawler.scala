@@ -46,12 +46,7 @@ class Crawler {
   var currentUrl = ""
 
   private var exitCrawl = false
-  private var backRetry = 0
-  //最大重试次数
-  var backMaxRetry = 5
   private var afterAllRetry = 0
-  private var notFoundRetry = 0
-  private var notFoundMax = 2
   //滑动最大重试次数
   var stopAll = false
   val signals = new DataRecord()
@@ -300,7 +295,6 @@ class Crawler {
 
     //todo: init all var
     afterAllRetry = 0
-    backRetry = 0
 
     log.info(s"afterAllMax=${conf.afterAllMax}")
     DynamicEval.isLoaded = false
@@ -422,10 +416,6 @@ class Crawler {
     //超时退出
     if ((new Date().getTime - startTime) > conf.maxTime * 1000) {
       log.fatal("maxTime out Quit need exit")
-      return true
-    }
-    if (backRetry >= backMaxRetry) {
-      log.fatal(s"backRetry ${backRetry} >= backMaxRetry ${backMaxRetry} need exit")
       return true
     }
 
@@ -814,24 +804,6 @@ class Crawler {
     store.saveResImg(getBasePathName() + ".clicked.png")
     //todo: 内存消耗太大，改用文件存储
     store.saveResDom(driver.page.toXML)
-
-    element.getAction match {
-      case this.backAction => {
-        backRetry += 1
-      }
-      case this.backAppAction => {
-        backRetry += 1
-      }
-      case this.afterAllAction => {
-        //afterAllMax可以控制最大尝试次数
-      }
-      case _ => {
-        // backRetry判断退出App的次数
-        backRetry = 0
-      }
-    }
-
-    log.info(s"backRetry=${backRetry}")
 
     pluginClasses.foreach(p => p.afterElementAction(element))
   }

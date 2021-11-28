@@ -2,7 +2,6 @@ package com.ceshiren.appcrawler.driver
 
 import com.ceshiren.appcrawler.AppiumTouchAction
 import com.ceshiren.appcrawler.model.URIElement
-import com.ceshiren.appcrawler.utils.DynamicEval
 import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.LogicUtils.asyncTask
 import io.appium.java_client.android.AndroidDriver

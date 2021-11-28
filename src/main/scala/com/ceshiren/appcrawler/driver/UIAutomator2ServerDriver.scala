@@ -1,15 +1,7 @@
 package com.ceshiren.appcrawler.driver
 
-import com.ceshiren.appcrawler.core.CrawlerConf
-import com.ceshiren.appcrawler.model.URIElement
-import com.ceshiren.appcrawler.utils.{DynamicEval, TData}
 import com.ceshiren.appcrawler.utils.Log.log
 import com.ceshiren.appcrawler.utils.LogicUtils.retryToSuccess
-import org.openqa.selenium.Rectangle
-
-import java.io.File
-import scala.collection.mutable
-import scala.sys.process._
 
 class UIAutomator2ServerDriver extends AdbDriver {
   private val session = requests.Session()
