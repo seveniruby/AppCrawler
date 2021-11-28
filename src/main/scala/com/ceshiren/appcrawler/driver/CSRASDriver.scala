@@ -23,25 +23,26 @@ class CSRASDriver extends AdbDriver {
     val apkPath = adb(s"shell 'pm list packages | grep com.hogwarts.csruiautomatorserver ||:'")
     if (apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1) {
       log.info("CSRASDriver Not Exist In Device,Need Install")
+    }
 
-      //设备driver连接设置
-      initDriver()
+    //设备driver连接设置
+    initDriver()
+    driverStart()
 
-      if (configMap.getOrElse("noReset", "").toString.toLowerCase.equals("false")
-        && !packageName.contains("tencent")) {
-        adb(s"shell pm clear ${packageName}")
-      } else {
-        log.info("need need to reset app")
-      }
+    if (configMap.getOrElse("noReset", "").toString.toLowerCase.equals("false")
+      && !packageName.contains("tencent")) {
+      adb(s"shell pm clear ${packageName}")
+    } else {
+      log.info("need need to reset app")
+    }
 
-      if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "").toString.toLowerCase.equals("true")) {
-        adb(s"shell am start -W -n ${packageName}/${activityName}")
-      }
-      else if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "").toString.toLowerCase.equals("false")) {
-        adb(s"shell am start -S -W -n ${packageName}/${activityName}")
-      } else {
-        log.info("dont run am start")
-      }
+    if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "").toString.toLowerCase.equals("true")) {
+      adb(s"shell am start -W -n ${packageName}/${activityName}")
+    }
+    else if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "").toString.toLowerCase.equals("false")) {
+      adb(s"shell am start -S -W -n ${packageName}/${activityName}")
+    } else {
+      log.info("dont run am start")
     }
   }
 
@@ -90,14 +91,6 @@ class CSRASDriver extends AdbDriver {
     //设置端口转发，将driver的端口映射到本地，方便进行请求
     adb(s"forward tcp:${systemPort} tcp:7777")
     // 启动Driver
-    driverStart()
-
-    // 等待远程服务连接完毕
-    // todo:将等待改为通过轮询接口判断设备上的服务是否启动
-    setPackage()
-    //获取包过滤参数
-    //    val packageFilter =
-    log.info(s"Driver Filter Package is ${getPackageFilter}")
 
   }
 
@@ -110,6 +103,14 @@ class CSRASDriver extends AdbDriver {
     adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver")
     adb(s"shell settings put secure enabled_accessibility_services com.hogwarts.csruiautomatorserver/.CSRAccessibilityService")
     retryToSuccess(timeoutMS = 20000, name = "wait csras driver")(session.get(s"${getServerUrl}/ping").text() == "pong")
+
+
+    // 等待远程服务连接完毕
+    // todo:将等待改为通过轮询接口判断设备上的服务是否启动
+    setPackage()
+    //获取包过滤参数
+    //    val packageFilter =
+    log.info(s"Driver Filter Package is ${getPackageFilter}")
   }
 
   //拼接Driver访问地址
@@ -121,10 +122,6 @@ class CSRASDriver extends AdbDriver {
   def getPackageFilter: String = {
     //通过发送请求，设置关注的包名，过滤掉多余的数据
     session.get(s"${getServerUrl}/package").text()
-  }
-
-  override def backApp(): Unit = {
-    adb(s"shell am start -W -n ${packageName}/${activityName}")
   }
 
   override def getPageSource(): String = {
@@ -150,21 +147,19 @@ class CSRASDriver extends AdbDriver {
   override def reStartDriver(waitTime: Int = 2000, action: String = "swipe"): Unit = {
     log.info("reStartDriver")
     driverStart()
-    Thread.sleep(waitTime)
-    log.info(s"Wait ${waitTime}ms")
-    setPackage()
     action match {
       case "swipe" =>
         // 滑动屏幕，刷新page_source
         swipe(0.5, 0.4, 0.5, 0.5)
+        swipe(0.5, 0.5, 0.5, 0.4)
       case "statusbar" =>
         // 重启服务后需要通过呼出和收回系统通知栏触发page source刷新，保证能够获取到最新的界面数据
         adb("shell cmd statusbar expand-notifications")
         Thread.sleep(2000)
         adb("shell cmd statusbar collapse")
     }
-    Thread.sleep(waitTime)
-    log.info(s"Wait ${waitTime}ms")
   }
+  //action: "driver.restartDriver(); driver.doRefresh("swipe")"
+
 }
 

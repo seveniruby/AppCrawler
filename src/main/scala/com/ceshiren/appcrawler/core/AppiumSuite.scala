@@ -7,7 +7,6 @@ import org.scalatest.selenium.WebBrowser
   */
 class AppiumSuite extends FunSuite
   with Matchers
-  with WebBrowser
   with BeforeAndAfterAll
   with BeforeAndAfterEach {
 
