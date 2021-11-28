@@ -110,9 +110,6 @@ class MockDriver extends ReactWebDriver {
     List(System.getenv("ANDROID_HOME"), "platform-tools/adb").mkString(File.separator)
   }
 
-  override def reStartDriver(): Unit = {
-  }
-
   def shell(cmd: String): String = {
     log.info(cmd)
     val result = cmd.!!

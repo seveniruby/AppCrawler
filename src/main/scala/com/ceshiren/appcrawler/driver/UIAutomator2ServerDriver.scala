@@ -15,29 +15,18 @@ class UIAutomator2ServerDriver extends AdbDriver {
   private val session = requests.Session()
 
   //本地映射的地址
-  var systemPort = "6791"
+  systemPort = "6791"
   var serverPort = "6790"
   val driverPackageName = "io.appium.uiautomator2.server.test"
   val driverActivityName = "androidx.test.runner.AndroidJUnitRunner"
-  var otherApps: List[String] = List[String]()
+  otherApps = List[String]()
   var sessionid = ""
 
   var daemon: Thread = _
 
   def this(configMap: Map[String, Any] = Map[String, Any]()) {
     this
-
-    //    val url = configMap.getOrElse("appium", "http://127.0.0.1:6790/wd/hub")
-    //    log.info(s"url=${url}")
-    packageName = configMap.getOrElse("appPackage", "").toString
-    activityName = configMap.getOrElse("appActivity", "").toString
-    systemPort = configMap.getOrElse("systemPort", systemPort).toString
-    uuid = configMap.getOrElse("uuid", "").toString
-    //    log.info(configMap.toString())
-    if (systemPort.isEmpty) {
-      log.info(s"No systemPort Set In Config,Use Default Port: ${systemPort}")
-    }
-    otherApps = configMap.getOrElse("otherApps", List[String]()).asInstanceOf[List[String]]
+    initConfig(configMap)
     // 安装辅助APP
     installOtherApps()
     // 确认设备中Driver状态
@@ -77,17 +66,12 @@ class UIAutomator2ServerDriver extends AdbDriver {
   }
 
 
-  def setPackage(): Unit = {
-    val r = session.post(s"${getServerUrl}/package?package=${packageName}")
-    log.info(r)
-  }
-
   //设备driver连接设置
   def initDriver(): Unit = {
-    // 启动Driver
-    driverStart()
     //设置端口转发，将driver的端口映射到本地，方便进行请求
     adb(s"forward tcp:${systemPort} tcp:${serverPort}")
+    // 启动Driver
+    driverStart()
   }
 
   def driverStart(): Unit = {
@@ -133,17 +117,15 @@ class UIAutomator2ServerDriver extends AdbDriver {
     page.getNodeListByKey("/*/*").head.getOrElse("package", "").toString
   }
 
-
-  override def reStartDriver(): Unit = {
+  override def reStartDriver(waitTime: Int, action: String): Unit = {
     log.info("reStartDriver")
     driverStart()
-    setPackage()
     // todo:需要优化
     // 重启服务后需要通过页面动作触发page source刷新，保证能够获取到最新的界面数据
     swipe(0.5, 0.4, 0.5, 0.5)
     Thread.sleep(1000)
-  }
 
+  }
 
 }
 

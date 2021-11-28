@@ -20,7 +20,7 @@ abstract class ReactWebDriver {
   var screenWidth = 0
   var screenHeight = 0
   var page: PageSource = null;
-  val appiumExecResults: ListBuffer[String] = ListBuffer[String]()
+  val execResults: ListBuffer[String] = ListBuffer[String]()
 
   var loc = ""
   var index = 0

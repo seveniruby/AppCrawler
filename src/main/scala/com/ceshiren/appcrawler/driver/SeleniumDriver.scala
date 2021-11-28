@@ -223,9 +223,6 @@ class SeleniumDriver extends ReactWebDriver {
     back()
   }
 
-  override def reStartDriver(): Unit = {
-  }
-
   def config(key: String, value: Any): Unit = {
     capabilities.setCapability(key, value)
   }

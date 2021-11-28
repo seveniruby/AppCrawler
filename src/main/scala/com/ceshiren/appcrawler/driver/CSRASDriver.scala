@@ -1,16 +1,8 @@
 package com.ceshiren.appcrawler.driver
 
 import com.ceshiren.appcrawler.GetAPKPackage.getPackageName
-import com.ceshiren.appcrawler.core.CrawlerConf
-import com.ceshiren.appcrawler.model.URIElement
-import com.ceshiren.appcrawler.utils.{DynamicEval, Log}
 import com.ceshiren.appcrawler.utils.Log.log
-import com.ceshiren.appcrawler.utils.LogicUtils.{asyncTask, retryToSuccess}
-import org.openqa.selenium.Rectangle
-
-import java.io.File
-import scala.sys.process._
-import scala.util.{Failure, Success, Try}
+import com.ceshiren.appcrawler.utils.LogicUtils.retryToSuccess
 
 /**
   * Created by seveniruby on 18/10/31.
@@ -19,61 +11,50 @@ class CSRASDriver extends AdbDriver {
   private val session = requests.Session()
 
   //csras本地映射的地址
-  var systemPort = "7778"
-  var otherApps: List[String] = List[String]()
+  systemPort = "7778"
+  otherApps = List[String]()
 
   def this(configMap: Map[String, Any] = Map[String, Any]()) {
     this
-
-    val url = configMap.getOrElse("appium", "http://127.0.0.1:4723/wd/hub")
-    log.info(s"url=${url}")
-    packageName = configMap.getOrElse("appPackage", "").toString
-    activityName = configMap.getOrElse("appActivity", "").toString
-    systemPort = configMap.getOrElse("systemPort", systemPort).toString
-    uuid = configMap.getOrElse("uuid", "").toString
-    //    log.info(configMap.toString())
-    if (systemPort.equals("")) {
-      log.info("No systemPort Set In Config,Use Default Port:7778")
-      systemPort = "7778"
-    }
-    otherApps = configMap.getOrElse("otherApps", List[String]()).asInstanceOf[List[String]]
+    initConfig(configMap)
     // 安装辅助APP
     installOtherApps()
     // 确认设备中Driver状态
     val apkPath = adb(s"shell 'pm list packages | grep com.hogwarts.csruiautomatorserver ||:'")
     if (apkPath.indexOf("com.hogwarts.csruiautomatorserver") == -1) {
       log.info("CSRASDriver Not Exist In Device,Need Install")
-    otherApps = configMap.getOrElse("otherApps", List[String]()).asInstanceOf[List[String]]
-    // 安装辅助APP
-    installOtherApps()
-    // 确认设备中Driver状态
-    if (!getAPKInstallStatus("com.hogwarts.csruiautomatorserver")) {
-      log.info("CSRUIAutomatorServer Not Exist In Device,Need Install")
-    }
+      otherApps = configMap.getOrElse("otherApps", List[String]()).asInstanceOf[List[String]]
+      // 安装辅助APP
+      installOtherApps()
+      // 确认设备中Driver状态
+      if (!getAPKInstallStatus("com.hogwarts.csruiautomatorserver")) {
+        log.info("CSRUIAutomatorServer Not Exist In Device,Need Install")
+      }
 
-    //设备driver连接设置
-    initDriver()
+      //设备driver连接设置
+      initDriver()
 
-    if (configMap.getOrElse("noReset", "").toString.toLowerCase.equals("false")
-      && !packageName.contains("tencent")) {
-      adb(s"shell pm clear ${packageName}")
-    } else {
-      log.info("need need to reset app")
-    }
+      if (configMap.getOrElse("noReset", "").toString.toLowerCase.equals("false")
+        && !packageName.contains("tencent")) {
+        adb(s"shell pm clear ${packageName}")
+      } else {
+        log.info("need need to reset app")
+      }
 
-    if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "").toString.toLowerCase.equals("true")) {
-      adb(s"shell am start -W -n ${packageName}/${activityName}")
-    }
-    else if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "").toString.toLowerCase.equals("false")) {
-      adb(s"shell am start -S -W -n ${packageName}/${activityName}")
-    } else {
-      log.info("dont run am start")
+      if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "").toString.toLowerCase.equals("true")) {
+        adb(s"shell am start -W -n ${packageName}/${activityName}")
+      }
+      else if (packageName.nonEmpty && configMap.getOrElse("dontStopAppOnReset", "").toString.toLowerCase.equals("false")) {
+        adb(s"shell am start -S -W -n ${packageName}/${activityName}")
+      } else {
+        log.info("dont run am start")
+      }
     }
   }
 
   def getAPKInstallStatus(packageName: String): Boolean = {
     // 确认设备中Driver状态
-    val apkPath = adb(s"shell 'pm list packages | grep package:${packageName}"+"$ ||:'")
+    val apkPath = adb(s"shell 'pm list packages | grep package:${packageName}" + "$ ||:'")
     apkPath.indexOf(packageName) != -1
   }
 
@@ -82,14 +63,14 @@ class CSRASDriver extends AdbDriver {
     log.info("Install otherApps")
     otherApps.foreach(app => {
       val APKPackageName = getPackageName(app)
-      if(APKPackageName==null){
+      if (APKPackageName == null) {
         log.info(s"Can Not Get PackageName From $app")
         log.info(s"Install App $app To Device")
         adb(s"install '$app'")
-      }else{
-        if(getAPKInstallStatus(APKPackageName)){
+      } else {
+        if (getAPKInstallStatus(APKPackageName)) {
           log.info(s"$app Already Exist In Device,Skip Install")
-        }else{
+        } else {
           log.info(s"Install App $app To Device")
           adb(s"install '$app'")
         }
@@ -111,10 +92,13 @@ class CSRASDriver extends AdbDriver {
   def initDriver(): Unit = {
     // 给Driver设置权限，使驱动可以自行开启辅助功能
     //    adb(s"shell pm grant com.hogwarts.csruiautomatorserver android.permission.WRITE_SECURE_SETTINGS")
-    // 启动Driver
-    driverStart()
+
+
     //设置端口转发，将driver的端口映射到本地，方便进行请求
     adb(s"forward tcp:${systemPort} tcp:7777")
+    // 启动Driver
+    driverStart()
+
     // 等待远程服务连接完毕
     // todo:将等待改为通过轮询接口判断设备上的服务是否启动
     setPackage()
@@ -146,59 +130,6 @@ class CSRASDriver extends AdbDriver {
     session.get(s"${getServerUrl}/package").text()
   }
 
-  override def event(keycode: String): Unit = {
-    adb(s"shell input keyevent ${keycode}")
-    log.info(s"event=${keycode}")
-  }
-
-  //todo: outside of Raster 问题
-  override def getDeviceInfo(): Unit = {
-    val size = adb(s"shell wm size").split(' ').last.split('x')
-    screenHeight = size.last.trim.toInt
-    screenWidth = size.head.trim.toInt
-    log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
-  }
-
-  override def swipe(startX: Double = 0.9, startY: Double = 0.1, endX: Double = 0.9, endY: Double = 0.1): Unit = {
-    val xStart = startX * screenWidth
-    val xEnd = endX * screenWidth
-    val yStart = startY * screenHeight
-    val yEnd = endY * screenHeight
-    log.info(s"swipe screen from (${xStart},${yStart}) to (${xEnd},${yEnd})")
-    adb(s"shell input swipe ${xStart} ${yStart} ${xEnd} ${yEnd}")
-  }
-
-  //todo: 重构到独立的trait中
-
-
-  override def click(): this.type = {
-    val center = currentURIElement.center()
-    adb(s"shell input tap ${center.x} ${center.y}")
-    this
-  }
-
-  override def tap(): this.type = {
-    click()
-  }
-
-  override def tapLocation(x: Int, y: Int): this.type = {
-    val pointX = x * screenWidth
-    val pointY = y * screenHeight
-    adb(s"shell input tap ${pointX} ${pointY}")
-    this
-  }
-
-  override def longTap(): this.type = {
-    val center = currentURIElement.center()
-    log.info(s"longTap element in (${center.x},${center.y})")
-    adb(s"shell input swipe ${center.x} ${center.y} ${center.x + 0.1} ${center.y + 0.1} 2000")
-    this
-  }
-
-  override def back(): Unit = {
-    adb(s"shell input keyevent 4")
-  }
-
   override def backApp(): Unit = {
     adb(s"shell am start -W -n ${packageName}/${activityName}")
   }
@@ -219,30 +150,6 @@ class CSRASDriver extends AdbDriver {
     appUrl
   }
 
-  override def getRect(): Rectangle = {
-    //selenium下还没有正确的赋值，只能通过api获取
-    if (currentURIElement.getHeight != 0) {
-      //log.info(s"location=${location} size=${size} x=${currentURIElement.x} y=${currentURIElement.y} width=${currentURIElement.width} height=${currentURIElement.height}" )
-      new Rectangle(currentURIElement.getX, currentURIElement.getY, currentURIElement.getHeight, currentURIElement.getWidth)
-    } else {
-      log.error("rect height < 0")
-      return null
-    }
-  }
-
-  override def sendKeys(content: String): Unit = {
-    tap()
-    adb(s"shell input text ${content}")
-  }
-
-  override def launchApp(): Unit = {
-    //driver.get(capabilities.getCapability("app").toString)
-    back()
-  }
-
-  override def findElements(element: URIElement, findBy: String): List[AnyRef] = {
-    List(element)
-  }
 
   // 重启Driver服务
   // waitTime: 重启中途步骤的等待时间，会在启动服务之后/结束重启之前进行两次等待，单位为 毫秒

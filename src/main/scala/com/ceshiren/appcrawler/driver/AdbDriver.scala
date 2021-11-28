@@ -14,8 +14,11 @@ import scala.sys.process._
   */
 class AdbDriver extends ReactWebDriver {
   var conf: CrawlerConf = _
-  val adb = getAdb()
+  val adb: String = getAdb()
   var uuid = ""
+
+  var systemPort = "7777"
+  var otherApps: List[String] = List[String]()
 
   var packageName = ""
   var activityName = ""
@@ -23,20 +26,28 @@ class AdbDriver extends ReactWebDriver {
   var currentApp = ""
   var currentUrl = ""
 
+
   def this(configMap: Map[String, Any] = Map[String, Any]()) {
     this
-
-    val url = configMap.getOrElse("appium", "http://127.0.0.1:4723/wd/hub")
-    log.info(s"url=${url}")
-    packageName = configMap.getOrElse("appPackage", "").toString
-    activityName = configMap.getOrElse("appActivity", "").toString
-
+    initConfig(configMap)
     if (configMap.getOrElse("noReset", "").toString.equals("false")) {
       shell(s"${adb} shell pm clear ${packageName}")
     } else {
       log.info("need need to reset app")
     }
     shell(s"${adb} shell am start -W -n ${packageName}/${activityName}")
+  }
+
+  def initConfig(configMap: Map[String, Any]) = {
+    packageName = configMap.getOrElse("appPackage", "").toString
+    activityName = configMap.getOrElse("appActivity", "").toString
+    systemPort = configMap.getOrElse("systemPort", systemPort).toString
+    uuid = configMap.getOrElse("uuid", "").toString
+    //    log.info(configMap.toString())
+    if (systemPort.isEmpty) {
+      log.info(s"No systemPort Set In Config,Use Default Port: ${systemPort}")
+    }
+    otherApps = configMap.getOrElse("otherApps", List[String]()).asInstanceOf[List[String]]
   }
 
 
@@ -51,10 +62,6 @@ class AdbDriver extends ReactWebDriver {
     screenHeight = size.last.trim.toInt
     screenWidth = size.head.trim.toInt
     log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
-  }
-
-
-  override def reStartDriver(): Unit = {
   }
 
   override def swipe(startX: Double = 0.9, startY: Double = 0.1, endX: Double = 0.9, endY: Double = 0.1): Unit = {
