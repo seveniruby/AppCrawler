@@ -1,7 +1,8 @@
 package com.ceshiren.appcrawler.driver;
 
-import static com.ceshiren.appcrawler.utils.Log.log;
 import org.openqa.selenium.By;
+
+import static com.ceshiren.appcrawler.utils.Log.log;
 
 public class MockDDT {
     String driver;

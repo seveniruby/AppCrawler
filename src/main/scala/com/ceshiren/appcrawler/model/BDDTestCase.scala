@@ -3,7 +3,6 @@ package com.ceshiren.appcrawler.model
 import com.ceshiren.appcrawler.driver.{BaseDDT, MockDDT, SeleniumDDT}
 import com.ceshiren.appcrawler.utils.Log.log
 
-import java.lang.reflect.Method
 import scala.collection.mutable.ListBuffer
 
 case class BDDTestCase(

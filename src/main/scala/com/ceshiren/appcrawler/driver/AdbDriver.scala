@@ -2,7 +2,6 @@ package com.ceshiren.appcrawler.driver
 
 import com.ceshiren.appcrawler.core.CrawlerConf
 import com.ceshiren.appcrawler.model.URIElement
-import com.ceshiren.appcrawler.utils.DynamicEval
 import com.ceshiren.appcrawler.utils.Log.log
 import org.openqa.selenium.Rectangle
 

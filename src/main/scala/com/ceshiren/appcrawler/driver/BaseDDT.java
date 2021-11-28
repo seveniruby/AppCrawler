@@ -1,7 +1,6 @@
 package com.ceshiren.appcrawler.driver;
 
 import org.apache.commons.io.IOUtils;
-import org.openqa.selenium.By;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
