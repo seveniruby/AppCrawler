@@ -3,6 +3,17 @@ package com.ceshiren.appcrawler.pro;
 import com.ceshiren.appcrawler.utils.Log;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.SecureRandom;
+import java.security.Signature;
+import java.util.Arrays;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import javax.xml.bind.DatatypeConverter;
 import java.io.File;
 import java.nio.charset.StandardCharsets;

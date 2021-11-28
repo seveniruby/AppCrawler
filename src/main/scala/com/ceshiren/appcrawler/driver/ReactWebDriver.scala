@@ -11,8 +11,8 @@ import java.io.File
 import scala.collection.mutable.ListBuffer
 
 /**
- * Created by seveniruby on 2017/4/17.
- */
+  * Created by seveniruby on 2017/4/17.
+  */
 
 //todo: 用标准的class代替，用trait会让很多java工程师无法理解。
 abstract class ReactWebDriver {
@@ -156,6 +156,12 @@ abstract class ReactWebDriver {
   def reStartDriver(waitTime:Int=2000, action: String = "swipe"): Unit = {
   }
 
+  def startDriver(): Unit = {
+  }
+
+  def stopDriver(): Unit = {
+  }
+
   def longTap(): this.type = {
     this
   }
@@ -211,10 +217,6 @@ abstract class ReactWebDriver {
   }
 
   def getAppName(): String = {
-    ""
-  }
-
-  def adb(command: String): String = {
     ""
   }
 
@@ -286,7 +288,7 @@ abstract class ReactWebDriver {
 
 
   def attribute(key: String): String = {
-    nodes().head.get(key).get.toString
+    nodes().head(key).toString
   }
 
   def apply(key: String): String = {

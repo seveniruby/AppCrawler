@@ -18,18 +18,18 @@ import java.time.Duration
 import scala.jdk.CollectionConverters._
 
 /**
- * Created by seveniruby on 16/8/9.
- */
+  * Created by seveniruby on 16/8/9.
+  */
 class AppiumClient extends SeleniumDriver {
-  DynamicEval.init()
 
   var androidDriver: AndroidDriver[MobileElement] = _
   var iosDriver: IOSDriver[MobileElement] = _
   var appiumDriver: AppiumDriver[MobileElement] = _
 
-  def this(url: String = "http://127.0.0.1:4723/wd/hub", configMap: Map[String, Any] = Map[String, Any]()) {
+  def this(configMap: Map[String, Any] = Map[String, Any]()) {
     this
 
+    val url=configMap.getOrElse("appium", "http://127.0.0.1:4723/wd/hub").toString
     val settings = configMap.getOrElse("settings", Map[String, String]())
 
     configMap.filterNot(x => x._1.equals("settings")).foreach(c => config(c._1, c._2))
@@ -225,10 +225,6 @@ class AppiumClient extends SeleniumDriver {
     }
   }
 
-  override def adb(command: String): String = {
-    ""
-  }
-
   override def sendText(text: String): Unit = {
 
   }
@@ -237,7 +233,7 @@ class AppiumClient extends SeleniumDriver {
     appiumDriver.launchApp()
   }
 
-  override def reStartDriver(waitTime:Int=2000, action: String = "swipe"): Unit = {
+  override def reStartDriver(): Unit = {
   }
 
   override def getPageSource(): String = {

@@ -1,0 +1,146 @@
+---
+pluginList:
+- "com.ceshiren.appcrawler.plugin.TagLimitPlugin"
+- "com.ceshiren.appcrawler.plugin.ReportPlugin"
+logLevel: "TRACE"
+reportTitle: "华为"
+saveScreen: true
+screenshotTimeout: 20
+currentDriver: "android"
+tagLimitMax: 3
+tagLimit:
+- xpath: //*[../*[@selected='true']]
+  count: 12
+maxTime: 10800
+resultDir: ""
+capability:
+  newCommandTimeout: 120
+  launchTimeout: 120000
+  platformVersion: ""
+  platformName: ""
+  autoWebview: "false"
+  autoLaunch: "true"
+  noReset: "false"
+  androidInstallTimeout: 180000
+androidCapability:
+  deviceName: "192.168.0.103:5555"
+  appPackage: "com.shafa.market"
+  appActivity: ".ShafaMainAct"
+  app: ""
+  appium: "http://127.0.0.1:4723/wd/hub"
+#  nativeWebScreenshot: "true"
+defineUrl:
+- //*[@selected='true' and contains(name(), 'TextView')]/@text
+appWhiteList:
+- android
+- com.shafa.market
+baseUrl:
+- ".*MainActivity"
+- ".*SNBHomeView.*"
+maxDepth: 20
+headFirst: true
+enterWebView: true
+urlBlackList:
+- ".*球友.*"
+- ".*png.*"
+- ".*Talk.*"
+- ".*Chat.*"
+- ".*Safari.*"
+- "WriteStatus.*"
+- "Browser.*"
+- "MyselfUser"
+- ".*MyselfUser.*"
+- ".*股市直播.*"
+#urlWhiteList:
+#- ".*Main.*"
+backButton:
+- "//*[@resource-id='action_back']"
+- "//*[@resource-id='android:id/up']"
+- "//*[@resource-id='android:id/home']"
+- "//*[@resource-id='android:id/action_bar_title']"
+- "//*[@name='nav_icon_back']"
+- "//*[@name='Back']"
+- "//*[@name='返回']"
+- "//*[@name='确定']"
+defaultBackAction:
+- import sys.process._;
+- Thread.sleep(5000)
+- val name=Seq("adb", "shell", "dumpsys window windows | grep mCurrentFocus").!!.split(" ")(4).split("/")(0)
+- println(s"kill package ${name}")
+- Seq("adb", "shell", s"am force-stop ${name}").!!
+#firstList:
+selectedList:
+#android非空标签
+- //*[@clickable='true']
+- //*[@clickable='true']//*[contains(name(), 'Text') and string-length(@text)>0 and string-length(@text)<10 ]
+#通用的button和image
+- //*[@clickable='true']//*[contains(name(), 'Button')]
+- //*[@clickable='true']//*[contains(name(), 'Image')]
+#todo:如果多个规则都包含相同控件, 如何排序
+#处于选中状态的同级控件最后点击
+lastList:
+- //*[../*[@selected='true']]
+- //*[../../*/*[@selected='true']]
+- //*[../../*/*[@selected='true'] and contains(@resource-id, 'tab_')]
+blackList:
+- //*[contains(name(), 'EditText')]
+- 运行
+- 提交评论
+- //*[@text='全部更新']
+- //*[@text='全部更新']/..//*
+- //*[../*[@text='全部更新']]
+- "[0-9].*"
+triggerActions:
+#- action: "click"
+#  xpath: "沙发桌面"
+#  times: 1
+- action: "click"
+  xpath: "退出"
+  times: 0
+- action: "click"
+  xpath: "不保存"
+  times: 0
+- action: "click"
+  xpath: "确定"
+  times: 0
+- action: "click"
+  xpath: "关闭"
+  times: 0
+- action: "click"
+  xpath: "取消"
+  times: 0
+- action: "click"
+  xpath: "我要退出"
+  times: 0
+- action: "click"
+  xpath: "知道了"
+  times: 0
+#所有view的叶子节点 一般表示游戏
+- action: monkey
+  xpath: //android.view.View[not(*) and contains(@bounds, "[0,0]") ]
+  times: 20
+startupActions:
+- println(driver)
+beforeElementAction:
+- xpath: //*[@resource-id="com.shafa.market:id/nav"]//android.widget.TextView
+  action: MiniAppium.event(21)
+#- Thread.sleep(3000)
+#- println(driver.getPageSource())
+afterElementAction:
+- println(driver)
+#afterUrlFinished:
+#- monkey()
+monkeyEvents:
+- 19
+- 19
+- 19
+- 19
+- 20
+- 21
+- 22
+- 23
+- 23
+- 23
+- 23
+- 23
+- 66

@@ -1,0 +1,64 @@
+                  ---
+logLevel: "TRACE"
+reportTitle: 如期
+xpathAttributes: ["name", "label", "value", "resource-id", "content-desc", "class", "text"]
+androidCapability:
+  platformName: "Android"
+  noReset: "false"
+  fullReset: "false"
+  dontStopAppOnReset: "true"
+  newCommandTimeout: 120
+  unicodeKeyboard: "true"
+  resetKeyboard: "true"
+  #应用配置
+  app: ""
+  #app: "/Users/seveniruby/Desktop/baiduyun/百度云同步盘/seven/Dropbox/sihanjishu/startup/测吧/业务/如期/tfs_ruqi_云测_v2.1.0.apk"
+  deviceName: "127.0.0.1:6886"
+  appPackage: "com.tritonsfs.ruqi"
+  appActivity: ".ui.activity.SplashActivity"
+  appium: "http://127.0.0.1:4723/wd/hub"
+maxDepth: 10
+selectedList: []
+backButton:
+- xpath: rl_left_first
+appWhiteList: ["com.android.packageinstaller"]
+waitLoading: 3000
+waitLaunch: 10000
+triggerActions:
+- { xpath: "//*[contains(@class, 'Button') and contains(@text, '安装') and not(contains(@package, 'com.tritonsfs.ruqi')) ]" }
+- { xpath: "//*[contains(@class, 'Button') and contains(@text, '允许') and not(contains(@package, 'com.tritonsfs.ruqi')) ]" }
+- { xpath: "//*[contains(@class, 'Button') and contains(@text, '信任') and not(contains(@package, 'com.tritonsfs.ruqi')) ]" }
+- { xpath: "//*[contains(@resource-id, 'permission_allow_button')]"}
+- { xpath: "//*[contains(@resource-id, 'iv_pager') and @clickable='false' ]", action: "driver.swipe(0.9, 0.5, 0.1, 0.5)" }
+- { xpath: "//*[contains(@resource-id, 'iv_pager') and @clickable='true' ]" }
+- { xpath: "//*[contains(@resource-id, 'et_login_phone') and not(contains(@text, '156 0053 4760'))]", action: 15600534760 }
+- { xpath: iv_roll_circle_loading, action: Thread.sleep(1000) }
+- { xpath: 获取验证码 }
+- { xpath: 短信验证码, action: "123456" }
+- { xpath: 登录, times: 1 }
+- { xpath: 以后再说 }
+- { xpath: 请输入图片验证码, action: "1234" }
+- { xpath: tv_sms_submit }
+- { xpath: 评估额度, times: 1 }
+- { xpath: 基本信息, times: 1 }
+- { xpath: "^人行征信$", times: 1 }
+- { xpath: 芝麻信用, times: 1 }
+- { xpath: 新手指引, times: 1 }
+- { xpath: 息费试算, times: 1 }
+- { xpath: 申请查询, times: 1 }
+- { xpath: 帮助中心, times: 1 }
+- { xpath: 信用生活, times: 1 }
+- { xpath: 学车分期, times: 1 }
+- { xpath: 更多精彩, times: 1 }
+- { xpath: 借款管家, times: 1 }
+- { xpath: 信用报告, times: 1 }
+- { xpath: 网信贷, times: 1 }
+- { xpath: 信用乐, times: 1 }
+- { xpath: ^我的$, times: 1 }
+- { xpath: 实名认证, times: 1 }
+- { xpath: 个人资料, times: 1 }
+- { xpath: "//*[contains(@text, '个人资料')]/ancestor::*//*[contains(@text, '人行征信') ]", times: 1 }
+- { xpath: 我的借款, times: 1 }
+- { xpath: 银行卡, times: 1 }
+- { xpath: "//*[contains(@text, '银行账户管理')]/ancestor::*//*[contains(@resource-id, 'ib_right_first') ]", times: 1 }
+- { xpath: iv_shooting_bank_card, times: 1 }

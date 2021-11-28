@@ -17,8 +17,9 @@ class SeleniumDriverTest extends FunSuite with BeforeAndAfterEach {
 
   test("testGetPageSource") {
 
-    val selenium=new SeleniumDriver(url = "http://127.0.0.1:4444/wd/hub", configMap = Map(
-      "browserName"-> "chrome"
+    val selenium=new SeleniumDriver( configMap = Map(
+      "browserName"-> "chrome",
+      "url" -> "http://127.0.0.1:4444/wd/hub"
     ))
 
     selenium.conf=new CrawlerConf()

@@ -19,8 +19,10 @@ class MockDriver extends ReactWebDriver {
   var packageName = ""
   var activityName = ""
 
-  def this(url: String = "http://127.0.0.1:4723/wd/hub", configMap: Map[String, Any] = Map[String, Any]()) {
+  def this(configMap: Map[String, Any] = Map[String, Any]()) {
     this
+
+    val url=configMap.getOrElse("appium", "http://127.0.0.1:4723/wd/hub")
     log.info(s"url=${url}")
     packageName = configMap.getOrElse("appPackage", "").toString
     activityName = configMap.getOrElse("appActivity", "").toString
@@ -100,10 +102,6 @@ class MockDriver extends ReactWebDriver {
     List(element)
   }
 
-  override def adb(command: String): String = {
-    ""
-  }
-
   override def sendText(text: String): Unit = {
 
   }
@@ -112,7 +110,7 @@ class MockDriver extends ReactWebDriver {
     List(System.getenv("ANDROID_HOME"), "platform-tools/adb").mkString(File.separator)
   }
 
-  override def reStartDriver(waitTime:Int=2000, action: String = "swipe"): Unit = {
+  override def reStartDriver(): Unit = {
   }
 
   def shell(cmd: String): String = {

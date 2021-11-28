@@ -10,21 +10,24 @@ import java.io.File
 import scala.sys.process._
 
 /**
- * Created by seveniruby on 18/10/31.
- */
+  * Created by seveniruby on 18/10/31.
+  */
 class AdbDriver extends ReactWebDriver {
-  DynamicEval.init()
   var conf: CrawlerConf = _
   val adb = getAdb()
+  var uuid = ""
 
   var packageName = ""
   var activityName = ""
 
-  def this(url: String = "http://127.0.0.1:4723/wd/hub", configMap: Map[String, Any] = Map[String, Any]()) {
+  var currentApp = ""
+  var currentUrl = ""
+
+  def this(configMap: Map[String, Any] = Map[String, Any]()) {
     this
+
+    val url = configMap.getOrElse("appium", "http://127.0.0.1:4723/wd/hub")
     log.info(s"url=${url}")
-
-
     packageName = configMap.getOrElse("appPackage", "").toString
     activityName = configMap.getOrElse("appActivity", "").toString
 
@@ -38,26 +41,38 @@ class AdbDriver extends ReactWebDriver {
 
 
   override def event(keycode: String): Unit = {
-    log.error("not implement")
+    adb(s"shell input keyevent ${keycode}")
+    log.info(s"event=${keycode}")
   }
 
   //todo: outside of Raster 问题
   override def getDeviceInfo(): Unit = {
-    val size = shell(s"${adb} shell wm size").split(' ').last.split('x')
+    val size = adb(s"shell wm size").split(' ').last.split('x')
     screenHeight = size.last.trim.toInt
     screenWidth = size.head.trim.toInt
     log.info(s"screenWidth=${screenWidth} screenHeight=${screenHeight}")
   }
 
-  override def reStartDriver(waitTime:Int=2000, action: String = "swipe"): Unit = {
+
+  override def reStartDriver(): Unit = {
   }
 
   override def swipe(startX: Double = 0.9, startY: Double = 0.1, endX: Double = 0.9, endY: Double = 0.1): Unit = {
-    log.error("not implement")
+    val xStart = startX * screenWidth
+    val xEnd = endX * screenWidth
+    val yStart = startY * screenHeight
+    val yEnd = endY * screenHeight
+    log.info(s"swipe screen from (${xStart},${yStart}) to (${xEnd},${yEnd})")
+    adb(s"shell input swipe ${xStart} ${yStart} ${xEnd} ${yEnd}")
   }
 
 
   override def screenshot(): File = {
+    //    val file = File.createTempFile("tmp", ".png")
+    //    log.info(s"screenshot to ${file.getCanonicalPath}")
+    //    adb(s"exec-out screencap -p > ${file.getCanonicalPath}", verbose = false)
+    //    file
+
     val file = File.createTempFile("tmp", ".png")
     log.info(file.getAbsolutePath)
     val cmd = s"${adb} exec-out screencap -p"
@@ -68,7 +83,7 @@ class AdbDriver extends ReactWebDriver {
 
   override def click(): this.type = {
     val center = currentURIElement.center()
-    shell(s"${adb} shell input tap ${center.x} ${center.y}")
+    adb(s"shell input tap ${center.x} ${center.y}")
     this
   }
 
@@ -77,44 +92,46 @@ class AdbDriver extends ReactWebDriver {
   }
 
   override def tapLocation(x: Int, y: Int): this.type = {
+    val pointX = x * screenWidth
+    val pointY = y * screenHeight
+    adb(s"shell input tap ${pointX} ${pointY}")
     this
   }
 
   override def longTap(): this.type = {
-    log.error("not implement")
+    val center = currentURIElement.center()
+    log.info(s"longTap element in (${center.x},${center.y})")
+    adb(s"shell input swipe ${center.x} ${center.y} ${center.x + 0.1} ${center.y + 0.1} 2000")
     this
   }
 
   override def back(): Unit = {
-    shell(s"${adb} shell input keyevent 4")
+    adb(s"shell input keyevent 4")
   }
 
+
   override def backApp(): Unit = {
-    shell(s"${adb} shell am start -W -n ${packageName}/${activityName}")
+    adb(s"shell am start -W -n ${packageName}/${activityName}")
   }
 
   override def getPageSource(): String = {
     //todo: null root问题, idle wait timeout问题, Uiautomator dump太鸡肋了，没啥用, https://github.com/appium/appium-uiautomator2-server/pull/80
-    shell(
-      s"""${adb} shell eval "[ -f /data/local/tmp/source.xml ] && rm /data/local/tmp/source.xml >/dev/null 2>&1 ;
+    adb(
+      s"""shell eval "[ -f /data/local/tmp/source.xml ] && rm /data/local/tmp/source.xml >/dev/null 2>&1 ;
          |uiautomator dump /data/local/tmp/source.xml > /dev/null;
          |cat /data/local/tmp/source.xml || echo ERROR " """.stripMargin)
   }
 
   override def getAppName(): String = {
     //    val appName=shell(s"${adb} shell dumpsys window windows | grep mFocusedApp=").split('/').head.split(' ').last
-    val appName = shell(s"${adb} shell dumpsys window displays | grep mCurrentFocus=").split('/').head.split(' ').last
-    if (appName.contains("=null")) {
-      shell(s"${adb} shell dumpsys window windows")
-      System.exit(1)
-      appName
-    } else {
-      appName
-    }
+    val res = adb("shell \"dumpsys window windows | grep 'Focus.* .*/.*}' | grep -o '[^ /]*/[^ }]*' | head -1 \" ").split("/")
+    currentApp = res.head
+    currentUrl = res.last
+    currentApp
   }
 
   override def getUrl(): String = {
-    shell(s"${adb} shell dumpsys window displays | grep mCurrentFocus=").split('/').last.split('}').head
+    currentUrl
   }
 
   override def getRect(): Rectangle = {
@@ -130,7 +147,7 @@ class AdbDriver extends ReactWebDriver {
 
   override def sendKeys(content: String): Unit = {
     tap()
-    shell(s"${adb} shell input text ${content}")
+    adb(s"shell input text ${content}")
   }
 
   override def launchApp(): Unit = {
@@ -142,24 +159,39 @@ class AdbDriver extends ReactWebDriver {
     List(element)
   }
 
-  override def adb(command: String): String = {
-    ""
-  }
-
-  override def sendText(text: String): Unit = {
-
+  def shell(cmd: String, verbose: Boolean = true): String = {
+    if (verbose) {
+      log.info(cmd)
+    }
+    val result = cmd.!!
+    if (verbose) {
+      log.info(result)
+    }
+    result
   }
 
   def getAdb(): String = {
-    List(System.getenv("ANDROID_HOME"), "platform-tools/adb").mkString(File.separator)
+    var adbCMD = ""
+    if (System.getenv("ANDROID_HOME") != null) {
+      adbCMD = List(System.getenv("ANDROID_HOME"), "platform-tools/adb").mkString(File.separator)
+    } else {
+      adbCMD = "adb"
+    }
+    if (uuid != null && uuid.nonEmpty) {
+      s"${adbCMD} -s ${uuid}"
+    } else {
+      adbCMD
+    }
   }
 
-  def shell(cmd: String): String = {
-    log.info(cmd)
-    val result = cmd.!!
-    log.info(result)
-    result
+  override def sendText(text: String): Unit = {
+    adb(s"shell am broadcast -a ADB_INPUT_TEXT --es msg '${text}'")
   }
+
+  def adb(command: String, verbose: Boolean = true): String = {
+    shell(s"${adb} ${command}", verbose)
+  }
+
 
 }
 

@@ -1,0 +1,74 @@
+---
+logLevel: "TRACE"
+saveScreen: true
+showCancel: true
+reportTitle: AppCrawler雪球内部版
+tagLimitMax: 1
+currentDriver: "android"
+maxTime: 10800
+
+sortByAttribute: depth
+capability:
+  newCommandTimeout: 120
+  launchTimeout: 120000
+  platformVersion: ""
+  platformName: ""
+  autoWebview: "false"
+  autoLaunch: "true"
+  noReset: "false"
+androidCapability:
+  deviceName: "demo"
+  appPackage: "com.xueqiu.android"
+  appActivity: ".view.WelcomeActivityAlias"
+  app: ""
+  appium: "http://127.0.0.1:4723/wd/hub"
+  fullReset: false
+  noReset: true
+  automationName: uiautomator2
+iosCapability:
+  deviceName: "iPhone 7 Plus"
+  #bundleId: "com.xueqiu"
+  bundleId: com.example.apple-samplecode.UICatalog
+  screenshotWaitTimeout: "10"
+  platformVersion: "10.2"
+  autoAcceptAlerts: "true"
+  automationName: xcuitest
+  app: /Users/seveniruby/projects/ios-uicatalog/build/Debug-iphonesimulator/UICatalog.app
+  #app: "/Users/seveniruby/Library/Developer/Xcode/DerivedData/Snowball-ckpjegabufjxgxfeqyxgkmjuwmct/Build/Products/Debug-iphonesimulator/Snowball.app"
+  appium: "http://127.0.0.1:4723/wd/hub"
+maxDepth: 8
+selectedList:
+#android非空标签
+- //*[@clickable="true"]//android.widget.TextView[string-length(@text)>0 and string-length(@text)<20]
+- //android.widget.EditText
+#ios
+- //*[contains(name(), 'Text') and string-length(@value)>0 and string-length(@value)<20 ]
+#通用的button和image
+- //*[contains(name(), 'Button')]
+- //*[contains(name(), 'Image')]
+triggerActions:
+- action: 123
+  xpath: //*[contains(name(), "EditText")]
+#  times: 10
+  pri: 0
+- xpath: "不保存"
+tagLimit:
+- xpath: //*[../*[@selected='true']]
+  count: 12
+- xpath: //*[../../*/*[@selected='true']]
+  count: 12
+urlBlackList:
+- ".*UserProfileActivity.*"
+- ".*LoginOption.*"
+- ".*球友.*"
+- ".*png.*"
+- ".*Talk.*"
+- ".*Chat.*"
+- ".*Safari.*"
+- "WriteStatus.*"
+- "Browser.*"
+- "MyselfUser"
+- ".*MyselfUser.*"
+- ".*股市直播.*"
+#urlWhiteList:
+#- ".*Main.*"
