@@ -1,0 +1,83 @@
+---
+pluginList:
+- "com.ceshiren.appcrawler.plugin.FlowDiff"
+#- "com.ceshiren.appcrawler.plugin.ProxyPlugin"
+logLevel: "TRACE"
+saveScreen: true
+reportTitle: 美团app自动遍历报告
+screenshotTimeout: 20
+tagLimitMax: 2
+currentDriver: "android"
+maxTime: 10800
+resultDir: ""
+capability:
+  newCommandTimeout: 120
+  launchTimeout: 120000
+  platformVersion: ""
+  platformName: ""
+  noReset: "true"
+androidCapability:
+  deviceName: "demo"
+  appPackage: "com.sankuai.meituan.takeoutnew"
+  appActivity: ".ui.page.boot.WelcomeActivity"
+  app: ""
+  appium: "http://127.0.0.1:4723/wd/hub"
+iosCapability:
+  deviceName: "iPhone 6 Plus"
+  bundleId: "com.meituan.iToGo.ep"
+  screenshotWaitTimeout: "10"
+  platformVersion: "10.2"
+  app: "/Users/seveniruby/Downloads/app/waimai.app"
+  appium: "http://127.0.0.1:4730/wd/hub"
+  automationName: "xcuitest"
+defineUrl:
+- "//*[@selected='true']/@text"
+- "//*[@selected='true']/@text"
+- "//*[contains(name(), 'NavigationBar')]/@label"
+baseUrl:
+- ".*MainActivity"
+- ".*SNBHomeView.*"
+maxDepth: 20
+headFirst: true
+enterWebView: true
+urlBlackList: []
+backButton: []
+firstList:
+- "//*[contains(name(), 'Popover')]//*"
+- "//*[contains(name(), 'Window')][3]//*"
+- "//*[contains(name(), 'Window')][2]//*"
+selectedList:
+#android非空标签
+- //*[clickable="true"]
+- //*[clickable="true"]//android.widget.TextView[string-length(@text)>0 and string-length(@text)<20]
+- //android.widget.EditText
+- //*[contains(name(), 'Text') and string-length(@text)>0 and string-length(@text)<20 ]
+#ios
+- //*[contains(name(), 'Text') and string-length(@value)>0 and string-length(@value)<20 ]
+#通用的button和image
+- //*[contains(name(), 'Button')]
+- //*[contains(name(), 'Image')]
+- //*[@resource-id="com.xueqiu.android:id/minute_period_container"]
+#todo:如果多个规则都包含相同控件, 如何排序
+#处于选中状态的同级控件最后点击
+lastList: []
+blackList:
+- //*[contains(name(), 'TextField')]
+- //*[contains(name(), 'EditText')]
+#排除掉ios的状态栏
+- //*[contains(name(), 'StatusBar')]//*
+triggerActions:
+- xpath: 聚餐加个菜
+- xpath: 眉州
+tagLimit:
+- xpath: //*[../*[@selected='true']]
+  count: 12
+- xpath: //*[../../*/*[@selected='true']]
+  count: 12
+startupActions:
+- swipe("left")
+- swipe("right")
+- swipe("down")
+beforeElementAction: []
+afterElementAction:
+- driver.executeScript("alert(777)")

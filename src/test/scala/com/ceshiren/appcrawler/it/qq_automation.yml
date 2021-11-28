@@ -1,0 +1,51 @@
+---
+pluginList:
+- "com.ceshiren.appcrawler.plugin.FlowDiff"
+#- "com.ceshiren.appcrawler.plugin.ProxyPlugin"
+logLevel: "TRACE"
+saveScreen: false
+reportTitle: AppCrawler雪球内部版
+screenshotTimeout: 20
+tagLimitMax: 20000
+swipeRetryMax: 300
+currentDriver: "android"
+maxTime: 10800
+resultDir: ""
+xpathAttributes: ["name", "label", "value", "resource-id", "content-desc", "class", "text"]
+androidCapability:
+  platformName: "Android"
+  #automationName: uiautomator2
+  dontStopAppOnReset: "true"
+  newCommandTimeout: 120
+  #unicodeKeyboard: "true"
+  #resetKeyboard: "true"
+  #应用配置
+  deviceName: "demo"
+  appPackage: "com.tencent.mobileqq"
+  appActivity: ".activity.SplashActivity"
+  app: ""
+  appium: "http://127.0.0.1:4723/wd/hub"
+defineUrl:
+- string(//*[@content-desc='群成员默认排序']/@content-desc)
+- string(//*[contains(@content-desc, '加好友') and @clickable='true']/@content-desc)
+- string(//*[@text=' 管理员 ']/@text)
+- "^.*\\([0-9]{5,}\\)"
+maxDepth: 10
+selectedList:
+- xpath: //*[contains(@text, 'LV')]/../*/*
+triggerActions:
+- xpath: "//*[@text='消息']/ancestor::*//*[contains(name(), 'EditText')]"
+- { xpath: "//*[contains(@text, '看点')]/ancestor::*//*[contains(name(), 'EditText')]", action: "Selenium" }
+- xpath: 来自.*群
+- xpath: 来自.*群聊
+- xpath: 群资料卡
+- xpath: ^共[0-9]*人
+- { xpath: "^加载中.*", action: "Thread.sleep(5000)" }
+beforeRestart:
+#- "adb devices" #| "grep BNU0217628002684" #|| "adb kill-server" #&& "adb devices"!
+- "adb devices" #| "grep BNU0217628002684" #|| "adb kill-server" #&& "adb devices"!
+afterUrlFinished:
+- given:
+  - //*[@content-desc='群聊成员默认排序']
+  when:
+    action: "driver.swipe(0.5, 0.7, 0.5, 0.3)"

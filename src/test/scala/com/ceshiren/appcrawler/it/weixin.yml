@@ -1,0 +1,49 @@
+---
+pluginList: []
+logLevel: "TRACE"
+saveScreen: false
+reportTitle: AppCrawler雪球内部版
+screenshotTimeout: 20
+tagLimitMax: 500
+currentDriver: "android"
+maxTime: 10800
+resultDir: ""
+capability:
+  newCommandTimeout: 120
+  launchTimeout: 120000
+  platformVersion: ""
+  platformName: ""
+  autoWebview: "false"
+  autoLaunch: "true"
+  noReset: true
+  fullReset: false
+androidCapability:
+  deviceName: "demo"
+  appPackage: "com.tencent.mm"
+  appActivity: ".ui.LauncherUI"
+  app: ""
+  appium: "http://127.0.0.1:4723/wd/hub"
+maxDepth: 20
+selectedList:
+- //*[contains(@text, '第二届')]
+- //*[contains(@content-desc, '聊天信息')]
+- //*[@text='发消息' or @text='添加到通讯录']
+- //*[@text='发送']
+- //*[contains(@content-desc, '搜索')]
+- //android.widget.ListView//android.widget.ImageView
+triggerActions:
+- xpath: //*[@text='搜索']
+  action: ceshiren
+  times: 1
+- xpath: //*[contains(@text, '第二届')]
+  times: 1
+- xpath: //*[contains(@content-desc, '聊天信息')]
+  times: 1
+- xpath: //*[@text='添加到通讯录']
+- xpath: //*[@text='发送']
+- xpath: //*[contains(@content-desc, '搜索')]
+  times: 1
+backButton:
+- //*[@content-desc='返回']
+afterElementAction:
+- Thread.sleep(1000)

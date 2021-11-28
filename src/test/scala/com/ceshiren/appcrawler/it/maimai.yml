@@ -1,0 +1,88 @@
+---
+logLevel: "TRACE"
+saveScreen: true
+reportTitle: ""
+screenshotTimeout: 20
+currentDriver: "Android"
+swipeRetryMax: 2
+waitLoading: 1000
+waitLaunch: 10000
+tagLimitMax: 300
+tagLimit: []
+showCancel: false
+maxTime: 10800
+resultDir: "/tmp/maimai/"
+sikuliImages: ""
+devices:
+- platformName: ""
+  platformVersion: "9.2"
+  deviceName: "iPhone 6"
+capability:
+  appActivity: ""
+  appium: "http://127.0.0.1:4723/wd/hub"
+  noReset: "true"
+  app: ""
+  appPackage: ""
+  fullReset: "false"
+  dontStopAppOnReset: true
+androidCapability:
+  app: ""
+  appPackage: "com.taou.maimai"
+#  appActivity: ".SplashActivity"
+  appActivity: .MainActivity
+iosCapability:
+  app: ""
+  bundleId: ""
+  autoAcceptAlerts: "true"
+xpathAttributes:
+- "name"
+- "label"
+- "value"
+- "resource-id"
+- "content-desc"
+- "index"
+- "text"
+defineUrl:
+- //*[@text='职位详情' and @instance='0' ]/ancestor::*//*[@class='android.view.View' and (@instance='16' or @instance='17') ]
+- //*[@text='极速联系' and @instance='0' ]/ancestor::*//*[@class='android.view.View' and @instance='1' ]
+- //*[@text='求职' and @instance='0' ]
+baseUrl: []
+appWhiteList: []
+maxDepth: 6
+sortByAttribute:
+- "depth"
+- "selected"
+enterWebView: true
+urlBlackList: []
+urlWhiteList: []
+defaultBackAction: []
+backButton: []
+firstList: []
+selectedList:
+- xpath: 回复过
+  action: click
+- xpath: 极速联系
+  action: click
+blackList: []
+triggerActions: []
+autoCrawl: true
+assert:
+  name: "ceshiren AppCrawler"
+  steps: []
+testcase:
+  name: "ceshiren AppCrawler"
+  steps:
+  - xpath: 人脉办事
+    action: click
+  - xpath: 求职招聘
+    action: click
+beforeElementAction: []
+afterElementAction: []
+afterUrlFinished:
+- given:
+  - 互联网测试
+  when:
+    action: "driver.swipe(0.5, 0.7, 0.5, 0.3)"
+beforeRestart: []
+monkeyEvents: []
+monkeyRunTimeSeconds: 30
