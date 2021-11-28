@@ -1,17 +1,14 @@
 package com.ceshiren.appcrawler.driver
 
-import com.ceshiren.appcrawler._
 import com.ceshiren.appcrawler.core.Crawler
 import com.ceshiren.appcrawler.model.{PageSource, URIElement}
 import com.ceshiren.appcrawler.utils.Log.log
-import com.ceshiren.appcrawler.utils.LogicUtils.{asyncTask, handleException}
-import com.ceshiren.appcrawler.utils.{TData, XPathUtil}
+import com.ceshiren.appcrawler.utils.LogicUtils.asyncTask
+import com.ceshiren.appcrawler.utils.TData
 import org.openqa.selenium.Rectangle
 
 import java.io.File
-import java.util.concurrent.{Callable, Executors, TimeUnit, TimeoutException}
 import scala.collection.mutable.ListBuffer
-import scala.util.{Failure, Success, Try}
 
 /**
  * Created by seveniruby on 2017/4/17.
@@ -81,11 +78,11 @@ abstract class ReactWebDriver {
   //todo: 有的时候会出现极少内容的page source
 
   /**
-    * <hierarchy class="hierarchy" height="1794" index="0" rotation="0" width="1080">
-    * <android.widget.FrameLayout bounds="[0,0][1080,1794]" checkable="false" checked="false" class="android.widget.FrameLayout" clickable="false" displayed="true" enabled="true" focusable="false" focused="false" index="0" long-clickable="false" package="com.example.android.apis" password="false" scrollable="false" selected="false" text=""/>
-    * </hierarchy>
-    *
-    */
+   * <hierarchy class="hierarchy" height="1794" index="0" rotation="0" width="1080">
+   * <android.widget.FrameLayout bounds="[0,0][1080,1794]" checkable="false" checked="false" class="android.widget.FrameLayout" clickable="false" displayed="true" enabled="true" focusable="false" focused="false" index="0" long-clickable="false" package="com.example.android.apis" password="false" scrollable="false" selected="false" text=""/>
+   * </hierarchy>
+   *
+   */
   def getPageSourceWithRetry(): PageSource = {
     page = null
     log.info("start to get page source from appium")
@@ -156,7 +153,7 @@ abstract class ReactWebDriver {
     this
   }
 
-  def reStartDriver(): Unit = {
+  def reStartDriver(waitTime:Int=2000, action: String = "swipe"): Unit = {
   }
 
   def longTap(): this.type = {
@@ -217,13 +214,19 @@ abstract class ReactWebDriver {
     ""
   }
 
+  def adb(command: String): String = {
+    ""
+  }
 
+  def sendText(text: String): Unit = {
+
+  }
 
   def existElement(): Boolean = {
     currentURIElement != null
   }
 
-  def setWaitTimeOut(timeout: Long ): Unit ={
+  def setWaitTimeOut(timeout: Long): Unit = {
 
   }
 
@@ -232,13 +235,13 @@ abstract class ReactWebDriver {
     getPageSourceWithRetry()
     val start = System.currentTimeMillis()
     var end: Long = 0
-    var nodeList:List[Map[String ,Object]]=List()
+    var nodeList: List[Map[String, Object]] = List()
     do {
       log.trace(s"find ${key}")
-      nodeList=page.getNodeListByKey(key)
+      nodeList = page.getNodeListByKey(key)
       end = System.currentTimeMillis()
       Thread.sleep(500)
-    } while (end - start < timeout && nodeList.isEmpty )
+    } while (end - start < timeout && nodeList.isEmpty)
   }
 
   def event(keycode: String): Unit = {}

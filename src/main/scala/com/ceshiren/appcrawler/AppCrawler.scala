@@ -241,7 +241,9 @@ object AppCrawler {
               ).filter(_.nonEmpty).headOption.getOrElse("")
             }"
         }
-
+        if (crawlerConf.reportTitle.nonEmpty) {
+          ReportFactory.title = crawlerConf.reportTitle
+        }
         //todo: 用switch替代
         //重新生成功能
         if (config.report != "" && config.candidate.isEmpty && config.template == "") {
@@ -250,9 +252,7 @@ object AppCrawler {
           val report = ReportFactory.getReportEngine("scalatest")
 
           ReportFactory.showCancel = crawlerConf.showCancel
-          if (crawlerConf.reportTitle.nonEmpty) {
-            ReportFactory.title = crawlerConf.reportTitle
-          }
+
           val store = report.loadResult(s"${config.report}/elements.yml")
           ReportFactory.initStore(store)
           report.genTestCase(config.report)

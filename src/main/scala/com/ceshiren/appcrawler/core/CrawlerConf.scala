@@ -14,10 +14,6 @@ import scala.io.Source
   * Created by seveniruby on 16/1/6.
   */
 class CrawlerConf {
-  val maxTimeDescription = "最大运行时间"
-  var maxTime = 3600 * 3
-  val maxDepthDescription = "默认的最大深度10, 结合baseUrl可很好的控制遍历的范围"
-  var maxDepth = 10
 
   /** sikuli的数据 */
   //var sikuliImages=""
@@ -32,6 +28,16 @@ class CrawlerConf {
     "fullReset" -> "false",
   )
 
+  val waitAppLoadedTimeoutDescription = "隐式等待app加载完成的最大时间 ms"
+  var waitAppLoadedTimeout = 10000
+  val waitAppLoadedDescription = "显式等待app加载完成的判断条件"
+  var waitAppLoaded: ListBuffer[Step] = ListBuffer[Step]()
+
+  val implicitlyWaitTestCaseDescription = "在测试用例执行阶段隐式等待一个控件出现的最大时间 ms"
+  var implicitlyWaitTestCase = 3000
+  val implicitlyWaitCrawlDescription = "在遍历阶段隐式等待一个控件出现的最大时间 ms"
+  var implicitlyWaitCrawl = 0
+
   //测试用例
   val testcaseDescription = "测试用例设置，用于遍历开始之前的一些前置操作，比如自动登录"
   var testcase = ReactTestCase(
@@ -41,12 +47,10 @@ class CrawlerConf {
     )
   )
 
-  //todo: 去掉triggerAction
-  val triggerActionsDescription = "在遍历过程中需要随时处理的一些操作，比如弹框、登录等"
-  var triggerActions = ListBuffer[Step](
-    Step(xpath = "permission_allow_button", times = 3),
-    Step(xpath = "允许", times = 3)
-  )
+  val maxTimeDescription = "最大运行时间"
+  var maxTime = 3600 * 3
+  val maxDepthDescription = "默认的最大深度10, 结合baseUrl可很好的控制遍历的范围"
+  var maxDepth = 10
 
   val selectedListDescription = "默认遍历列表，只有出现在这个列表里的控件范围才会被遍历"
   var selectedList = ListBuffer[Step](
@@ -68,9 +72,17 @@ class CrawlerConf {
     Step(xpath = "//*[@clickable='true']/*[contains(@class, 'Image')]"),
     Step(xpath = "//*[@clickable='true' and contains(@class, 'Button')]"),
   )
+
+  val triggerActionsDescription = "在遍历过程中需要随时处理的一些操作，比如弹框、登录等"
+  var triggerActions = ListBuffer[Step](
+    Step(xpath = "permission_allow_button", times = 3),
+    Step(xpath = "允许", times = 3)
+  )
+
   val blackListDescription = "黑名单列表 matches风格, 默认排除内容包含2个数字的控件"
   var blackList = ListBuffer[Step](
-    Step(xpath = ".*[0-9]{2}.*")
+    Step(xpath = ".*[0-9]{2}.*"),
+    Step(xpath = "Get Music")
   )
   val firstListDescription = "优先遍历列表，同时出现在selectedList与firstList中的控件会被优先遍历"
   var firstList = ListBuffer[Step](
@@ -84,7 +96,6 @@ class CrawlerConf {
   var backButton = ListBuffer[Step](
     Step(xpath = "Navigate up")
   )
-
 
   val xpathAttributesDescription = "在生成一个控件的唯一定位符中应该包含的关键属性"
   var xpathAttributes = List(
@@ -111,31 +122,20 @@ class CrawlerConf {
   val urlWhiteListDescription = "url白名单，仅在这些界面内遍历"
   var urlWhiteList = ListBuffer[String]()
 
-  //todo: 准备废除
-  val beforeStartWaitDescription = "启动一个app默认等待的时间"
-  val waitAppLoadedDescription="显式等待app加载完成的判断条件"
-  var waitAppLoaded: ListBuffer[Step] =ListBuffer[Step]()
-  //在重启session之前做的事情
+  val beforeRestartDescription = "在重启session之前做的事情"
   var beforeRestart: ListBuffer[String] = ListBuffer[String]()
 
   val beforeElementDescription = "在遍历每个控件之前默认执行的动作"
   var beforeElement: ListBuffer[Step] = ListBuffer[Step]()
-  val implicitlyWaitAppDescription="隐式等待app加载完成的最大时间 ms"
-  var implicitlyWaitApp = 30000
-  val implicitlyWaitTestCaseDescription="在测试用例执行阶段隐式等待一个控件出现的最大时间 ms"
-  var implicitlyWaitTestCase = 3000
-  val implicitlyWaitCrawlDescription="在遍历阶段隐式等待一个控件出现的最大时间 ms"
-  var implicitlyWaitCrawl = 0
-
   val afterElementDescription = "在遍历每个控件之后默认执行的动作"
-  var afterElement = ListBuffer[Step](
+  var afterElement: ListBuffer[Step] = ListBuffer[Step](
     //Step(xpath="/*/*", action="Thread.sleep(500)")
   )
   val afterElementWaitDescription = "在遍历每个控件之后默认等待的时间，用于等待新页面加载"
   var afterElementWait = 1000
 
   val afterAllDescription = "在遍历完当前页面内的所有控件后，是否需要刷新或者滑动"
-  var afterAll = ListBuffer[Step]()
+  var afterAll: ListBuffer[Step] = ListBuffer[Step]()
 
   val afterAllMaxDescription = "afterAll的最大重试次数，比如连续滑动2次都没新元素即取消"
   var afterAllMax = 2
@@ -143,7 +143,7 @@ class CrawlerConf {
   val tagLimitMaxDescription = "相似控件最多点击几次"
   var tagLimitMax = 20
 
-  val tagAttributesDescription="用于判断是否是相似控件的关键属性，祖先节点具备相同的属性认为是相似"
+  val tagAttributesDescription = "用于判断是否是相似控件的关键属性，祖先节点具备相同的属性认为是相似"
   var tagAttributes = List(
     "name()",
     //iOS
@@ -159,7 +159,7 @@ class CrawlerConf {
     Step(xpath = "确定", times = 1000),
     Step(xpath = "取消", times = 1000),
     Step(xpath = "share_comment_guide_btn_name", times = 1000),
-    Step(xpath="//*[contains(@class, 'List')]//*", times=2)
+    Step(xpath = "//*[contains(@class, 'List')]//*", times = 2)
   )
   val assertGlobalDescription = "全局断言"
   var assertGlobal = List[Step]()

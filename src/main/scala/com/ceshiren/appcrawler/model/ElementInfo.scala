@@ -1,11 +1,8 @@
 package com.ceshiren.appcrawler.model
 
-import com.ceshiren.appcrawler.AppCrawler
-import com.ceshiren.appcrawler.core.{Status, StatusType}
 import com.ceshiren.appcrawler.core.Status.Status
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.ceshiren.appcrawler.core.{Status, StatusType}
 import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
-import net.minidev.json.annotate.JsonIgnore
 
 case class ElementInfo(
                         var reqDom: String = "",

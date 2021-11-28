@@ -1,6 +1,5 @@
 package com.ceshiren.appcrawler.utils
 
-import com.ceshiren.appcrawler.AppCrawler
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory

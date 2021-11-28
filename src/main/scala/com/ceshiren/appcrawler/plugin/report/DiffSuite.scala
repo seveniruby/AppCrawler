@@ -1,6 +1,5 @@
 package com.ceshiren.appcrawler.plugin.report
 
-import com.ceshiren.appcrawler.AppCrawler
 import com.ceshiren.appcrawler.core.Status
 import com.ceshiren.appcrawler.model.{ElementInfo, URIElement}
 import com.ceshiren.appcrawler.plugin.scalatest.SuiteToClass
