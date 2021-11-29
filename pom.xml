@@ -9,6 +9,7 @@
     <version>2.7.2</version>
     <name>appcrawler</name>
     <description>app crawler for automation testing, 全平台遍历测试工具，霍格沃兹测试开发学社出品，交流论坛 https://ceshiren.com/c/opensource/appcrawler</description>
+<!--    <packaging>pom</packaging>-->
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

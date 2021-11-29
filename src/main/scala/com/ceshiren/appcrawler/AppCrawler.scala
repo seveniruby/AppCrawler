@@ -14,17 +14,7 @@ import java.nio.charset.Charset
   * Created by seveniruby on 16/4/24.
   */
 object AppCrawler {
-  val banner =
-    """
-      |
-      |--------------------------------------------------
-      |appcrawler v2专业版 全平台自动遍历测试工具
-      |专业版：appcrawler专业版目标是为企业打造业务测试智能机器人
-      |Q&A: https://ceshiren.com/c/opensource/appcrawler
-      |author: 测吧（北京）科技有限公司
-      |--------------------------------------------------
-      |""".stripMargin
-
+  var banner=Banner.banner
   var crawler = new Crawler
   val startTime = new java.text.SimpleDateFormat("YYYYMMddHHmmss").format(new java.util.Date().getTime)
 
@@ -82,6 +72,10 @@ object AppCrawler {
     val parser = createParser()
     parseParams(parser, args_new)
     sys.exit()
+  }
+
+  def setBanner(banner: String): Unit ={
+    this.banner=banner
   }
 
   def createParser(): scopt.OptionParser[Param] = {
@@ -176,10 +170,10 @@ object AppCrawler {
   def parseParams(parser: scopt.OptionParser[Param], args_new: Array[String]): Unit = {
     parser.parse(args_new, Param()) match {
       case Some(config) => {
-        if(config.trace){
+        if (config.trace) {
           Log.setLevel(Level.TRACE)
         }
-        if(config.debug){
+        if (config.debug) {
           Log.setLevel(Level.DEBUG)
         }
         if (config.encoding.nonEmpty) {
@@ -238,7 +232,7 @@ object AppCrawler {
                 crawlerConf.capability.getOrElse("bundleId", "").toString,
                 crawlerConf.capability.getOrElse("app", "").toString.split(File.separator.replace("\\", "\\\\")).last,
                 crawlerConf.capability.getOrElse("browserName", "").toString
-              ).filter(_.nonEmpty).headOption.getOrElse("")
+              ).find(_.nonEmpty).getOrElse("")
             }"
         }
         if (crawlerConf.reportTitle.nonEmpty) {

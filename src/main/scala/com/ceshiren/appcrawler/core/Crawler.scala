@@ -146,7 +146,7 @@ class Crawler {
     DynamicEval.load()
 
     log.info(s"platformName=${platformName} driver=${driver}")
-    log.info(AppCrawler.banner)
+    log.info(Banner.banner)
     waitAppLoaded()
 
     log.info(s"driver=${existDriver}")
@@ -336,19 +336,23 @@ class Crawler {
       }*/
 
       case "uiautomator2server" => {
-        log.info("user CSRAS csruiautomatorserver")
+        log.info("use uiautomator2server")
         new UIAutomator2ServerDriver(conf.capability)
       }
-      case "csras" => {
-        log.info("user CSRAS csruiautomatorserver")
-        new CSRASDriver(conf.capability)
-      }
-      case _ => {
+      case appium if appium==null || appium.isEmpty || appium.toLowerCase.equals("appium") => {
         log.info("use AppiumClient")
         log.info(conf.capability)
         //fixed: appium 6.0.0 has bug with okhttp
         //System.setProperty("webdriver.http.factory", "apache")
         new AppiumClient(conf.capability)
+      }
+      case className => {
+        log.info(s"use ${className}")
+        val clazz=Class.forName(className)
+        log.info(clazz)
+        val instance=clazz.getConstructor(classOf[immutable.Map[String, Any]]).newInstance(conf.capability).asInstanceOf[ReactWebDriver]
+        log.info(instance)
+        instance
       }
     }
     log.info(driver)
