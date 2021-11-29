@@ -8,3 +8,4 @@ xueqiu.json
 *.swp
 *.iml
 allure-*
+/.gradle
