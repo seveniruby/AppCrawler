@@ -13,7 +13,7 @@ import scala.sys.process._
   */
 class AdbDriver extends ReactWebDriver {
   var conf: CrawlerConf = _
-  val adb: String = getAdb()
+  var adb: String = getAdb()
   var uuid = ""
 
   var systemPort = "7777"
@@ -42,6 +42,7 @@ class AdbDriver extends ReactWebDriver {
     activityName = configMap.getOrElse("appActivity", "").toString
     systemPort = configMap.getOrElse("systemPort", systemPort).toString
     uuid = configMap.getOrElse("uuid", "").toString
+    adb = getAdb()
     //    log.info(configMap.toString())
     if (systemPort.isEmpty) {
       log.info(s"No systemPort Set In Config,Use Default Port: ${systemPort}")
