@@ -1302,6 +1302,7 @@ class Crawler {
       }
     }
     log.info("generate report finish")
+    log.info("report in "+conf.resultDir)
 
     System.exit(0)
 
