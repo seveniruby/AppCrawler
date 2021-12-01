@@ -34,7 +34,7 @@ class Crawler {
   var conf = new CrawlerConf()
 
   /** 存放插件类 */
-  val pluginClasses = ListBuffer[Plugin]()
+  val pluginClasses: ListBuffer[Plugin] = ListBuffer[Plugin]()
 
   var store: URIElementStore = _
 
@@ -53,7 +53,7 @@ class Crawler {
   signals.append(1)
   private val startTime = new Date().getTime
 
-  val urlStack = mutable.Stack[String]()
+  val urlStack: mutable.Stack[String] = mutable.Stack[String]()
 
   protected val backDistance = new DataRecord()
   val appNameRecord = new DataRecord()
@@ -241,12 +241,12 @@ class Crawler {
   def restart(): Unit = {
     if (conf.beforeRestart != null) {
       log.info("execute shell on restart")
-      conf.beforeRestart.foreach(DynamicEval.dsl(_))
+      conf.beforeRestart.foreach(DynamicEval.dsl)
     }
     log.info("restart appium")
-    conf.capability ++= Map("app" -> "")
-    conf.capability ++= Map("dontStopAppOnReset" -> "true")
-    conf.capability ++= Map("noReset" -> "true")
+    conf.capability ++= mutable.Map("app" -> "")
+    conf.capability ++= mutable.Map("dontStopAppOnReset" -> "true")
+    conf.capability ++= mutable.Map("noReset" -> "true")
     setupCrawler()
     waitAppLoaded()
     firstRefresh()
@@ -442,9 +442,9 @@ class Crawler {
 
     //url白名单, 第一次进入了白名单的范围, 就始终在白名单中. 不然就算不在白名单中也得遍历.
     //上层是白名单, 当前不是白名单才需要返回
-    if (conf.urlWhiteList.size > 0
-      && conf.urlWhiteList.filter(urlStack.head.matches(_)).isEmpty
-      && conf.urlWhiteList.filter(urlStack.tail.headOption.getOrElse("").matches(_)).nonEmpty) {
+    if (conf.urlWhiteList.nonEmpty
+      && !conf.urlWhiteList.exists(urlStack.head.matches(_))
+      && conf.urlWhiteList.exists(urlStack.tail.headOption.getOrElse("").matches(_))) {
       log.warn(s"${urlStack.head} not in urlWhiteList should return")
       result = true
     }
@@ -834,18 +834,18 @@ class Crawler {
       } else {
         None
       }
-    }).filter(_.nonEmpty).map(someStep => {
+    }).filter(_.nonEmpty).flatMap(someStep => {
       getURIElementsByStep(someStep.get).map(e => {
         e.setAction(someStep.get.getAction())
         e
       })
-    }).flatten.distinct.toList
+    }).distinct.toList
       //排序，depth小的在前面，但是带有back action的控件排在最后
       .sortWith(_.getDepth < _.getDepth)
       .sortWith(_.getAction.indexOf("Back") < _.getAction.indexOf("Back"))
       //追加到backButton后面，depth小的放前面
       .map(e => {
-        if (conf.backButton.filter(_.getXPath() == e.getXpath).size == 0 && e.getAction != backAction) {
+        if (!conf.backButton.exists(_.getXPath() == e.getXpath) && e.getAction != backAction) {
           log.info(s"find new back button from history ${e}")
           conf.backButton.append(model.Step(xpath = e.getXpath, action = e.getAction))
         }
@@ -890,7 +890,7 @@ class Crawler {
     //找到可能的关闭按钮, 取第一个可用的关闭按钮
     log.trace(conf.backButton)
     conf.backButton.flatMap(step => getURIElementsByStep(step)).headOption match {
-      case Some(backElement) if appNameRecord.isDiff() == false => {
+      case Some(backElement) if !appNameRecord.isDiff() => {
 
         if (isEndlessLoop()) {
           return Some(getEventElement("Back"))
@@ -905,7 +905,7 @@ class Crawler {
         }
 
         // 通过配置文件设置的Xpath找到返回键，将其真实Xpath添加进List
-        if (conf.backButton.filter(_.getXPath() == backElement.getXpath).size == 0 && backElement.getAction != backAction) {
+        if (!conf.backButton.exists(_.getXPath() == backElement.getXpath) && backElement.getAction != backAction) {
           log.info(s"find new back button from configuration file ${backElement}")
           conf.backButton.append(model.Step(xpath = backElement.getXpath, action = backElement.getAction))
         }
@@ -916,7 +916,7 @@ class Crawler {
         log.info("can't find backButton button from config")
         log.info("find backButton from history")
         getPredictBackNodes().headOption match {
-          case Some(backElement) if appNameRecord.isDiff() == false => {
+          case Some(backElement) if !appNameRecord.isDiff() => {
             //app相同并且找到back控件才点击. 否则就默认back
             //todo: bug hierarchy click出现
             if (backElement.getAction.isEmpty) {
@@ -937,7 +937,7 @@ class Crawler {
   }
 
 
-  def fixElementAction(element: URIElement) = {
+  def fixElementAction(element: URIElement): Unit = {
     pluginClasses.foreach(c => c.fixElementAction(element))
   }
 
@@ -997,7 +997,7 @@ class Crawler {
 
     //查找正常的元素
     if (nextElement.isEmpty) {
-      nextElement = getAvailableElement(driver.page, true)
+      nextElement = getAvailableElement(driver.page, skipSmall = true)
     }
 
     if (nextElement.isEmpty) {
@@ -1052,10 +1052,10 @@ class Crawler {
     log.info(s"current index = ${store.getClickedElementsList.size - 1}")
     log.info(s"current xpath = ${element.getXpath}")
     log.info(s"current action = ${element.getAction}")
-    log.info(s"current element = ${element.elementUri}")
+    log.info(s"current element = ${element.elementUri()}")
     log.info(s"current url = ${element.getUrl}")
     log.info(s"current tag path = ${element.getAncestor()}")
-    log.info(s"current file name = ${element.elementUri.take(100)}")
+    log.info(s"current file name = ${element.elementUri().take(100)}")
 
     store.saveReqHash(contentHash.last().toString)
     store.saveReqDom(driver.page.toXML)
@@ -1216,7 +1216,7 @@ class Crawler {
   def saveScreen(force: Boolean = false): Unit = {
     //如果是schema相同. 界面基本不变. 那么就跳过截图加快速度.
     val originPath = getBasePathName() + ".clicked.png"
-    if (pluginClasses.map(p => p.screenshot(originPath)).contains(true)) {
+    if (pluginClasses.exists(p => p.screenshot(originPath))) {
       return
     }
     if (conf.screenshot || force) {

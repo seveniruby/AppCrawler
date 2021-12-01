@@ -21,6 +21,7 @@ import java.nio.charset.{Charset, StandardCharsets}
 import java.util.Base64
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.{XPathConstants, XPathFactory}
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
@@ -93,23 +94,21 @@ object TData {
     def loop(m: Map[String, _]): String = {
       val attributes = ListBuffer[(String, _)]()
       val children = new mutable.StringBuilder()
-      m.foreach(mm => {
-        mm match {
-          case (k: String, vl: List[Map[_, _]]) => {
-            val vll = vl.asInstanceOf[List[Map[String, _]]]
-            children.append(vll.map(loop).mkString)
-          }
-          case (k: String, v) => {
-            if (k.equals("tag") == false
-              && k.equals("innerText") == false
-              && k.equals("alt") == false
-              && k.equals("title") == false
-              && k.equals("\"") == false) {
-              attributes.append(mm)
-            }
+      m.foreach {
+        case (k: String, vl: List[Map[_, _]]) => {
+          val vll = vl.asInstanceOf[List[Map[String, _]]]
+          children.append(vll.map(loop).mkString)
+        }
+        case mm@(k: String, v) => {
+          if (!k.equals("tag")
+                      && !k.equals("innerText")
+                      && !k.equals("alt")
+                      && !k.equals("title")
+                      && !k.equals("\"")) {
+            attributes.append(mm)
           }
         }
-      })
+      }
       val tag = m.getOrElse("tag", "node").toString.toLowerCase
       if (children.toString().trim.nonEmpty) {
         s"""
@@ -233,7 +232,7 @@ object TData {
   def toSchema(content: String): mutable.Map[String, String] = {
     val map = flatten(from(content))
     val mapNew = mutable.Map[String, String]()
-    map.map { case (k, v) => {
+    map.foreach { case (k, v) => {
       v match {
         case null => mapNew(k) = "null"
         case _ => mapNew(k) = v.getClass.getSimpleName
@@ -245,6 +244,7 @@ object TData {
   }
 
   //从扁平化结构重新拼装为完整结构
+  @tailrec
   def pushToMap(origin: mutable.Map[String, Any], keys: Array[String], value: Any): Unit = {
     if (keys.length == 1) {
       origin(keys.head) = value
@@ -306,10 +306,10 @@ object TData {
   private def xpathList(raw: String, path: String, encoding: String = "UTF-8"): Any = {
     val doc = builder.parse(IOUtils.toInputStream(raw, encoding))
     val array = xpathObject.compile(path).evaluate(doc, XPathConstants.NODESET).asInstanceOf[NodeList]
-    0.until(array.getLength).map(i => {
+    0.until(array.getLength).flatMap(i => {
       val children = array.item(i).getChildNodes
       0.until(children.getLength).map(j => children.item(j).getNodeValue)
-    }).flatten.toList
+    }).toList
   }
 
   private def xpathSingle(raw: String, path: String, encoding: String = "UTF-8"): Any = {
@@ -348,7 +348,7 @@ object TData {
 
   def dataDriver(templateFile: String, dataFile: String, key: String = "template"): Array[java.util.Map[String, String]] = {
     val path = if (templateFile.head == '/') {
-      templateFile.takeRight(templateFile.size - 1)
+      templateFile.takeRight(templateFile.length - 1)
     } else {
       templateFile
     }

@@ -46,7 +46,7 @@ abstract class ReactWebDriver {
           case len if len > 1 => {
             log.warn(s"find count ${v.size}, you should check your dom file")
             //有些公司可能存在重名id
-            arr.foreach(log.info)
+            arr.foreach(log.debug)
             log.warn("just use the first one")
             return arr.head
           }
@@ -70,9 +70,9 @@ abstract class ReactWebDriver {
 
   def backApp(): Unit = {}
 
-  def launchApp()
+  def launchApp(): Unit
 
-  def getPageSource(): String
+  def getPageSource: String
 
 
   //todo: 有的时候会出现极少内容的page source
@@ -265,19 +265,19 @@ abstract class ReactWebDriver {
   //支持宽松查找，自动刷新查找，自动滚动查找
   def getNodeListByKeyWithRetry(key: String): List[Map[String, Any]] = {
     var array = getNodeListByKey(key)
-    if (array.size == 0) {
+    if (array.isEmpty) {
       getPageSourceWithRetry()
       log.debug("retry 1")
       array = getNodeListByKey(key)
     }
 
-    if (array.size == 0) {
+    if (array.isEmpty) {
       getPageSourceWithRetry()
       log.debug("retry 2")
       array = getNodeListByKey(key)
     }
 
-    if (array.size == 0) {
+    if (array.isEmpty) {
       getPageSourceWithRetry()
       log.debug("retry 3")
       array = getNodeListByKey(key)

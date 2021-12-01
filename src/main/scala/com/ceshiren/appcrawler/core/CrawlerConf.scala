@@ -18,9 +18,9 @@ class CrawlerConf {
   /** sikuli的数据 */
   //var sikuliImages=""
   //todo: 通过数据驱动，支持多设备
-  val capabilityDescription = "appium的capability通用配置，其中automationName代表自动化的驱动引擎，" +
+  val capabilityDescription: String = "appium的capability通用配置，其中automationName代表自动化的驱动引擎，" +
     "除了支持appium的所有引擎外，额外增加了adb和selenium的支持"
-  var capability = Map[String, Any](
+  var capability: Map[String, Any] = Map[String, Any](
     //默认不清空数据，防止有人用于微信和qq
     "appPackage" -> "io.appium.android.apis",
     "appActivity" -> ".ApiDemos",
@@ -43,7 +43,7 @@ class CrawlerConf {
 
   //测试用例
   val testcaseDescription = "测试用例设置，用于遍历开始之前的一些前置操作，比如自动登录"
-  var testcase = ReactTestCase(
+  var testcase: ReactTestCase = ReactTestCase(
     name = "AppCrawler TestCase",
     steps = List[Step](
       Step(xpath = "/*/*", action = "Thread.sleep(1000)")
@@ -51,12 +51,12 @@ class CrawlerConf {
   )
 
   val maxTimeDescription = "最大运行时间"
-  var maxTime = 3600 * 3
+  var maxTime: Int = 3600 * 3
   val maxDepthDescription = "默认的最大深度10, 结合baseUrl可很好的控制遍历的范围"
   var maxDepth = 10
 
   val selectedListDescription = "默认遍历列表，只有出现在这个列表里的控件范围才会被遍历"
-  var selectedList = ListBuffer[Step](
+  var selectedList: ListBuffer[Step] = ListBuffer[Step](
     Step(xpath = "//*[contains(name(), 'Button')]"),
     //android专属
     Step(xpath = "//*[contains(name(), 'Text') and @clickable='true' and string-length(@text)<10]"),
@@ -77,26 +77,26 @@ class CrawlerConf {
   )
 
   val triggerActionsDescription = "在遍历过程中需要随时处理的一些操作，比如弹框、登录等"
-  var triggerActions = ListBuffer[Step](
+  var triggerActions: ListBuffer[Step] = ListBuffer[Step](
     Step(xpath = "permission_allow_button", times = 3),
     Step(xpath = "允许", times = 3)
   )
 
   val blackListDescription = "黑名单列表 matches风格, 默认排除内容包含2个数字的控件"
-  var blackList = ListBuffer[Step](
+  var blackList: ListBuffer[Step] = ListBuffer[Step](
     Step(xpath = ".*[0-9]{2}.*"),
     Step(xpath = "Get Music")
   )
   val firstListDescription = "优先遍历列表，同时出现在selectedList与firstList中的控件会被优先遍历"
-  var firstList = ListBuffer[Step](
+  var firstList: ListBuffer[Step] = ListBuffer[Step](
   )
   val lastListDescription = "最后遍历列表，同时出现在selectedList与lastList中的控件会被最后遍历"
-  var lastList = ListBuffer[Step](
+  var lastList: ListBuffer[Step] = ListBuffer[Step](
     Step(xpath = "//*[@selected='true']/..//*"),
     Step(xpath = "//*[@selected='true']/../..//*")
   )
   val backButtonDescription = "后退按钮列表，默认在所有控件遍历完成后，才会最后点击后退按钮。目前具备了自动判断返回按钮的能力，默认不需要配置"
-  var backButton = ListBuffer[Step](
+  var backButton: ListBuffer[Step] = ListBuffer[Step](
     Step(xpath = "Navigate up")
   )
 
@@ -117,13 +117,13 @@ class CrawlerConf {
   val findByDescription = "默认生成控件唯一定位符的表达式风格，可选项 default|android|id|xpath，默认会自动判断是否使用android定位或者ios定位"
   var findBy = "xpath"
   val baseUrlDescription = "设置一个起始点，从这个起始点开始计算深度，比如默认从登录后的界面开始计算"
-  var baseUrl = List[String]()
+  var baseUrl: List[String] = List[String]()
   val appWhiteListDescription = "app白名单，允许在这些app里进行遍历"
-  var appWhiteList = ListBuffer[String]()
+  var appWhiteList: ListBuffer[String] = ListBuffer[String]()
   val urlBlackListDescription = "url黑名单，用于排除某些页面的遍历"
-  var urlBlackList = ListBuffer[String]()
+  var urlBlackList: ListBuffer[String] = ListBuffer[String]()
   val urlWhiteListDescription = "url白名单，仅在这些界面内遍历"
-  var urlWhiteList = ListBuffer[String]()
+  var urlWhiteList: ListBuffer[String] = ListBuffer[String]()
 
   val beforeRestartDescription = "在重启session之前做的事情"
   var beforeRestart: ListBuffer[String] = ListBuffer[String]()
@@ -157,7 +157,7 @@ class CrawlerConf {
     "id", "name", "tag", "class"
   )
   val tagLimitDescription = "设置部分相似控件的最大遍历次数"
-  var tagLimit = ListBuffer[Step](
+  var tagLimit: ListBuffer[Step] = ListBuffer[Step](
     //特殊的按钮，可以一直被遍历
     Step(xpath = "确定", times = 1000),
     Step(xpath = "取消", times = 1000),
@@ -165,10 +165,10 @@ class CrawlerConf {
     Step(xpath = "//*[contains(@class, 'List')]//*", times = 2)
   )
   val assertGlobalDescription = "全局断言"
-  var assertGlobal = List[Step]()
+  var assertGlobal: List[Step] = List[Step]()
 
   val suiteNameDescription = "报告中的测试套件名字可以由列表内的控件内容替换，增强报告中关键界面的辨识度"
-  var suiteName = List[String](
+  var suiteName: List[String] = List[String](
     "//*[@selected='true']//android.widget.TextView/@text"
   )
   val screenshotDescription = "是否截图"
@@ -184,13 +184,13 @@ class CrawlerConf {
 
   val pluginListDescription = "插件列表，暂时禁用，太高级了，很多人不会用"
 
-  val Description =
+  val Description: String =
     """
       |在selectedList firstList lastList等很多配置中，需要填充的是测试步骤Step类型
       |Step类型由given（满足条件）when（条件满足的行为）then（断言）三部分组成
       |Step可以简化为xpath（定位表达式，支持xpath 正则 包含关系）与action（点击 输入等行为）
       |""".stripMargin.replace("\n", "。")
-  var pluginList = List[String]()
+  var pluginList: List[String] = List[String]()
 
   def save(path: String): Unit = {
 
@@ -212,14 +212,14 @@ class CrawlerConf {
     println(mapper.writeValueAsString(this))
   }
 
-  def toJson(): String = {
+  def toJson: String = {
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)
 
   }
 
-  def toYaml(): String = {
+  def toYaml: String = {
     val mapper = new ObjectMapper(new YAMLFactory())
     mapper.registerModule(DefaultScalaModule)
     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)
