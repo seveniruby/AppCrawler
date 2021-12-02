@@ -72,7 +72,7 @@ abstract class ReactWebDriver {
 
   def launchApp(): Unit
 
-  def getPageSource: String
+  def getPageSource(): String
 
 
   //todo: 有的时候会出现极少内容的page source

@@ -219,7 +219,7 @@ class CrawlerConf {
 
   }
 
-  def toYaml: String = {
+  def toYaml(): String = {
     val mapper = new ObjectMapper(new YAMLFactory())
     mapper.registerModule(DefaultScalaModule)
     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)

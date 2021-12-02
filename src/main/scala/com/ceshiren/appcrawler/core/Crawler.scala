@@ -307,18 +307,16 @@ class Crawler {
     //todo: 主要做遍历测试和异常测试. 所以暂不使用selendroid
     log.info(automationName)
     val driver=automationName match {
-      case "selenium" => {
+      case "selenium" =>
         new SeleniumDriver(conf.capability)
-      }
       //todo: 以后使用restful接口支持atx和macaca
       /*      case "macaca" => {
               log.info("use macaca")
               driver = new MacacaDriver(url, conf.capability)
             }*/
-      case "adb" => {
+      case "adb" =>
         log.info("user adb")
         new AdbDriver(conf.capability)
-      }
 
 
       //todo: 把androidDriver与seleniumdriver独立
@@ -335,25 +333,21 @@ class Crawler {
         }
       }*/
 
-      case "uiautomator2server" => {
+      case "uiautomator2server" =>
         log.info("use uiautomator2server")
         new UIAutomator2ServerDriver(conf.capability)
-      }
-      case appium if appium==null || appium.isEmpty || appium.toLowerCase.equals("appium") => {
-        log.info("use AppiumClient")
-        log.info(conf.capability)
-        //fixed: appium 6.0.0 has bug with okhttp
-        //System.setProperty("webdriver.http.factory", "apache")
-        new AppiumClient(conf.capability)
-      }
-      case className => {
+      case className if className.contains(".") =>
         log.info(s"use ${className}")
         val clazz=Class.forName(className)
         log.info(clazz)
         val instance=clazz.getConstructor(classOf[immutable.Map[String, Any]]).newInstance(conf.capability).asInstanceOf[ReactWebDriver]
         log.info(instance)
         instance
-      }
+      case _ =>
+        log.info("use AppiumClient")
+        //fixed: appium 6.0.0 has bug with okhttp
+        //System.setProperty("webdriver.http.factory", "apache")
+        new AppiumClient(conf.capability)
     }
     log.info(driver)
     driver
@@ -1074,7 +1068,8 @@ class Crawler {
       }
       case this.backAppAction => {
         log.info("backApp")
-        driver.launchApp()
+//        driver.launchApp()
+        driver.backApp()
       }
       case this.afterAllAction => {
         if (conf.afterAll != null) {
