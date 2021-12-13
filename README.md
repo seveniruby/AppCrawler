@@ -396,7 +396,7 @@ pluginList: []
 ## 编译
 
 ```bash
-mvn clean package -DskipTests
+mvn clean package
 ```
 
 ## 技术交流

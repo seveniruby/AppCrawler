@@ -333,9 +333,6 @@ class Crawler {
         }
       }*/
 
-      case "uiautomator2server" =>
-        log.info("use uiautomator2server")
-        new UIAutomator2ServerDriver(conf.capability)
       case className if className.contains(".") =>
         log.info(s"use ${className}")
         val clazz=Class.forName(className)
